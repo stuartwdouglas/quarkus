@@ -33,7 +33,6 @@ import io.undertow.io.IoCallback;
 import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.resource.Resource;
-import io.undertow.server.handlers.resource.ResourceChangeListener;
 import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.util.ETag;
 import io.undertow.util.MimeMappings;
@@ -83,21 +82,6 @@ public class KnownPathResourceManager implements ResourceManager {
             return new DirectoryResource(path);
         }
         return underlying.getResource(path);
-    }
-
-    @Override
-    public boolean isResourceChangeListenerSupported() {
-        return underlying.isResourceChangeListenerSupported();
-    }
-
-    @Override
-    public void registerResourceChangeListener(ResourceChangeListener listener) {
-        underlying.registerResourceChangeListener(listener);
-    }
-
-    @Override
-    public void removeResourceChangeListener(ResourceChangeListener listener) {
-        underlying.removeResourceChangeListener(listener);
     }
 
     @Override

@@ -9,11 +9,13 @@ import static io.undertow.util.StatusCodes.UNAUTHORIZED;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 
 import org.jboss.logging.Logger;
 
+import io.netty.buffer.ByteBuf;
 import io.undertow.UndertowLogger;
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.SecurityContext;
@@ -44,20 +46,11 @@ public class CustomAuth implements AuthenticationMechanism {
                 if (current.toLowerCase(Locale.ENGLISH).startsWith(LOWERCASE_BASIC_PREFIX)) {
 
                     String base64Challenge = current.substring(PREFIX_LENGTH);
-                    String plainChallenge = null;
-                    try {
-                        ByteBuffer decode = FlexBase64.decode(base64Challenge);
-
-                        plainChallenge = new String(decode.array(), decode.arrayOffset(), decode.limit(),
-                                StandardCharsets.UTF_8);
-                        UndertowLogger.SECURITY_LOGGER.infof("Found basic auth header %s (decoded using charset %s) in %s",
-                                plainChallenge, StandardCharsets.UTF_8, exchange);
-                    } catch (IOException e) {
-                        UndertowLogger.SECURITY_LOGGER.infof(e, "Failed to decode basic auth header %s in %s", base64Challenge,
-                                exchange);
-                    }
+                    String plainChallenge = new String(Base64.getDecoder().decode(base64Challenge), StandardCharsets.UTF_8);
+                    UndertowLogger.SECURITY_LOGGER.infof("Found basic auth header %s (decoded using charset %s) in %s",
+                            plainChallenge, StandardCharsets.UTF_8, exchange);
                     int colonPos;
-                    if (plainChallenge != null && (colonPos = plainChallenge.indexOf(COLON)) > -1) {
+                    if ((colonPos = plainChallenge.indexOf(COLON)) > -1) {
                         String userName = plainChallenge.substring(0, colonPos);
                         char[] password = plainChallenge.substring(colonPos + 1).toCharArray();
 

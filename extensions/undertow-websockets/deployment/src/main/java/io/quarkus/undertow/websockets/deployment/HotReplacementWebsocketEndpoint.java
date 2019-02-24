@@ -1,6 +1,7 @@
 package io.quarkus.undertow.websockets.deployment;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,9 +27,9 @@ import javax.websocket.server.ServerEndpoint;
 import javax.websocket.server.ServerEndpointConfig;
 
 import org.jboss.logging.Logger;
-import org.xnio.IoUtils;
 
 import io.quarkus.deployment.devmode.HotReplacementContext;
+import io.undertow.util.IoUtils;
 
 @ServerEndpoint(value = HotReplacementWebsocketEndpoint.QUARKUS_HOT_RELOAD, configurator = HotReplacementWebsocketEndpoint.ServerConfigurator.class)
 public class HotReplacementWebsocketEndpoint {
@@ -66,7 +67,7 @@ public class HotReplacementWebsocketEndpoint {
     public void error(Throwable t) {
         logger.error("Error in hot replacement websocket connection", t);
         currentConnection.messages.add(new Message()); //unblock a waiting thread
-        IoUtils.safeClose(currentConnection.connection);
+        safeClose(currentConnection.connection);
     }
 
     @OnOpen
@@ -204,6 +205,16 @@ public class HotReplacementWebsocketEndpoint {
             }
 
             super.modifyHandshake(sec, request, response);
+        }
+    }
+
+    static void safeClose(Closeable c) {
+        if (c != null) {
+            try {
+                c.close();
+            } catch (IOException e) {
+                //ignore
+            }
         }
     }
 }
