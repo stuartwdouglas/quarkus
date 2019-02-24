@@ -28,6 +28,7 @@ import javax.websocket.MessageHandler;
 import javax.websocket.Session;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.common.http.TestHTTPResource;
@@ -40,6 +41,7 @@ public class WebsocketTestCase {
     URI uri;
 
     @Test
+    @Disabled("Web socket client is not yet implemented")
     public void websocketTest() throws Exception {
 
         LinkedBlockingDeque<String> message = new LinkedBlockingDeque<>();

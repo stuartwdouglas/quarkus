@@ -35,15 +35,10 @@ public class UndertowWebsocketTemplate {
 
     private static final Logger log = Logger.getLogger(UndertowWebsocketTemplate.class);
 
-    public void setupWorker(RuntimeValue<Undertow> undertow) {
-        WorkerSupplier.worker = undertow.getValue().getWorker();
-    }
-
     @SuppressWarnings("unchecked")
     public WebSocketDeploymentInfo createDeploymentInfo(Set<String> annotatedEndpoints, Set<String> endpoints,
             Set<String> serverApplicationConfigClasses) {
         WebSocketDeploymentInfo container = new WebSocketDeploymentInfo();
-        container.setWorker(new WorkerSupplier());
         Set<Class<? extends Endpoint>> allScannedEndpointImplementations = new HashSet<>();
         for (String i : endpoints) {
             try {
