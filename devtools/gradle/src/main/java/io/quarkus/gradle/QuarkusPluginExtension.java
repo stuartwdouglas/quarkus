@@ -117,18 +117,6 @@ public class QuarkusPluginExtension {
         this.finalName = finalName;
     }
 
-    public String groupId() {
-        return project.getGroup().toString();
-    }
-
-    public String artifactId() {
-        return project.getName();
-    }
-
-    public String version() {
-        return project.getVersion().toString();
-    }
-
     public boolean uberJar() {
         return false;
     }

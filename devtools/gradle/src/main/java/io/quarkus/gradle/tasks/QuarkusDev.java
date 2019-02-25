@@ -32,11 +32,17 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.gradle.api.GradleException;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
 
+import io.quarkus.bootstrap.model.AppDependency;
+import io.quarkus.bootstrap.model.AppModel;
+import io.quarkus.bootstrap.resolver.BootstrapAppModelResolver;
+import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
+import io.quarkus.bootstrap.resolver.maven.workspace.LocalProject;
 import io.quarkus.dev.ClassLoaderCompiler;
 import io.quarkus.dev.DevModeMain;
 import io.quarkus.gradle.QuarkusPluginExtension;
@@ -144,7 +150,7 @@ public class QuarkusDev extends QuarkusTask {
 
         try {
             List<String> args = new ArrayList<>();
-            args.add("java");
+            args.add(findJavaTool());
             if (getDebug() == null) {
                 // debug mode not specified
                 // make sure 5005 is not used, we don't want to just fail if something else is using it
@@ -199,13 +205,26 @@ public class QuarkusDev extends QuarkusTask {
             // Do not include URIs in the manifest, because some JVMs do not like that
             StringBuilder classPathManifest = new StringBuilder();
             StringBuilder classPath = new StringBuilder();
-            for (File f : extension.dependencyFiles()) {
-                addToClassPaths(classPathManifest, classPath, f);
+
+            final AppModel appModel;
+            try {
+                final LocalProject localProject = LocalProject
+                        .resolveLocalProjectWithWorkspace(LocalProject.locateCurrentProjectDir(extension.buildDir().toPath()));
+                appModel = new BootstrapAppModelResolver(MavenArtifactResolver.builder()
+                        .setOffline(false)
+                        .setWorkspace(localProject.getWorkspace())
+                        .build())
+                                .resolveModel(localProject.getAppArtifact());
+            } catch (Exception e) {
+                throw new MojoExecutionException("Failed to resolve Quarkus application model", e);
             }
+            for (AppDependency appDep : appModel.getAllDependencies()) {
+                addToClassPaths(classPathManifest, classPath, appDep.getArtifact().getPath().toFile());
+            }
+
             args.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
             File wiringClassesDirectory = new File(getBuildDir(), "wiring-classes");
             wiringClassesDirectory.mkdirs();
-
             addToClassPaths(classPathManifest, classPath, wiringClassesDirectory);
 
             //we also want to add the maven plugin jar to the class path
@@ -294,6 +313,45 @@ public class QuarkusDev extends QuarkusTask {
         }
     }
 
+    /**
+     * Search for the java command in the order:
+     * 1. maven-toolchains plugin configuration
+     * 2. java.home location
+     * 3. java[.exe] on the system path
+     *
+     * @return the java command to use
+     */
+    protected String findJavaTool() {
+        // use the same JVM as the one used to run Maven (the "java.home" one)
+        String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        File javaCheck = new File(java);
+        if (!javaCheck.canExecute()) {
+
+            java = null;
+            // Try executable extensions if windows
+            if (OS.determineOS() == OS.WINDOWS && System.getenv().containsKey("PATHEXT")) {
+                String extpath = System.getenv("PATHEXT");
+                String[] exts = extpath.split(";");
+                for (String ext : exts) {
+                    File winExe = new File(javaCheck.getAbsolutePath() + ext);
+                    if (winExe.canExecute()) {
+                        java = winExe.getAbsolutePath();
+                        break;
+                    }
+                }
+            }
+            // Fallback to java on the path
+            if (java == null) {
+                if (OS.determineOS() == OS.WINDOWS) {
+                    java = "java.exe";
+                } else {
+                    java = "java";
+                }
+            }
+        }
+        return java;
+    }
+
     private void addToClassPaths(StringBuilder classPathManifest, StringBuilder classPath, File file)
             throws MalformedURLException {
         URI uri = file.toPath().toAbsolutePath().toUri();
@@ -307,4 +365,43 @@ public class QuarkusDev extends QuarkusTask {
         classPath.append(" ");
     }
 
+    /**
+     * Enum to classify the os.name system property
+     */
+    static enum OS {
+        WINDOWS, LINUX, MAC, OTHER;
+
+        private String version;
+
+        public String getVersion() {
+            return version;
+        }
+
+        public void setVersion(String version) {
+            this.version = version;
+        }
+
+        static OS determineOS() {
+            OS os = OS.OTHER;
+            String osName = System.getProperty("os.name");
+            osName = osName.toLowerCase();
+            if (osName.contains("windows")) {
+                os = OS.WINDOWS;
+            } else if (osName.contains("linux")
+                    || osName.contains("freebsd")
+                    || osName.contains("unix")
+                    || osName.contains("sunos")
+                    || osName.contains("solaris")
+                    || osName.contains("aix")) {
+                os = OS.LINUX;
+            } else if (osName.contains("mac os")) {
+                os = OS.MAC;
+            } else {
+                os = OS.OTHER;
+            }
+
+            os.setVersion(System.getProperty("os.version"));
+            return os;
+        }
+    }
 }
