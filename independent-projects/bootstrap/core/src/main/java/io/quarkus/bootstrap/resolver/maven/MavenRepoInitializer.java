@@ -194,25 +194,25 @@ public class MavenRepoInitializer {
 
     public static List<RemoteRepository> getRemoteRepos(Settings settings) throws AppModelResolverException {
 
-        final Map<String, Profile> profilesMap = settings.getProfilesAsMap();
         final List<RemoteRepository> remotes = new ArrayList<>();
 
-        for (String profileName : settings.getActiveProfiles()) {
-            final Profile profile = profilesMap.get(profileName);
-            final List<Repository> repositories = profile.getRepositories();
-            for (Repository repo : repositories) {
-                final RemoteRepository.Builder repoBuilder = new RemoteRepository.Builder(repo.getId(), repo.getLayout(), repo.getUrl());
-                org.apache.maven.settings.RepositoryPolicy policy = repo.getReleases();
-                if (policy != null) {
-                    repoBuilder.setReleasePolicy(
-                            new RepositoryPolicy(policy.isEnabled(), policy.getUpdatePolicy(), policy.getChecksumPolicy()));
+        for (Profile profile : settings.getProfiles()) {
+            if(profile.getActivation() != null && profile.getActivation().isActiveByDefault()) {
+                final List<Repository> repositories = profile.getRepositories();
+                for (Repository repo : repositories) {
+                    final RemoteRepository.Builder repoBuilder = new RemoteRepository.Builder(repo.getId(), repo.getLayout(), repo.getUrl());
+                    org.apache.maven.settings.RepositoryPolicy policy = repo.getReleases();
+                    if (policy != null) {
+                        repoBuilder.setReleasePolicy(
+                                new RepositoryPolicy(policy.isEnabled(), policy.getUpdatePolicy(), policy.getChecksumPolicy()));
+                    }
+                    policy = repo.getSnapshots();
+                    if (policy != null) {
+                        repoBuilder.setSnapshotPolicy(
+                                new RepositoryPolicy(policy.isEnabled(), policy.getUpdatePolicy(), policy.getChecksumPolicy()));
+                    }
+                    remotes.add(repoBuilder.build());
                 }
-                policy = repo.getSnapshots();
-                if (policy != null) {
-                    repoBuilder.setSnapshotPolicy(
-                            new RepositoryPolicy(policy.isEnabled(), policy.getUpdatePolicy(), policy.getChecksumPolicy()));
-                }
-                remotes.add(repoBuilder.build());
             }
         }
         return remotes;
