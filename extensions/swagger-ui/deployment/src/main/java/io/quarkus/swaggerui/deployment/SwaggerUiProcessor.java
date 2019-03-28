@@ -13,6 +13,7 @@ import java.util.jar.JarFile;
 
 import javax.inject.Inject;
 
+import org.apache.commons.io.FileUtils;
 import org.jboss.logging.Logger;
 
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
@@ -27,6 +28,7 @@ import io.quarkus.deployment.index.ClassPathArtifactResolver;
 import io.quarkus.deployment.index.ResolvedArtifact;
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.quarkus.smallrye.openapi.deployment.SmallRyeOpenApiProcessor;
 import io.quarkus.swaggerui.runtime.SwaggerUiTemplate;
 import io.quarkus.undertow.deployment.ServletExtensionBuildItem;
 
@@ -59,6 +61,11 @@ public class SwaggerUiProcessor {
         return new FeatureBuildItem(FeatureBuildItem.SWAGGER_UI);
     }
 
+    SmallRyeOpenApiProcessor.SmallRyeOpenApiConfig openapi;
+
+    private static String cachedOpenAPIPath;
+    private static String cachedDirectory;
+
     /**
      * Register the Swagger UI servlet extension
      *
@@ -70,24 +77,47 @@ public class SwaggerUiProcessor {
     @Record(ExecutionTime.STATIC_INIT)
     public void registerSwaggerUiServletExtension(SwaggerUiTemplate template,
             BuildProducer<ServletExtensionBuildItem> servletExtension,
-            BeanContainerBuildItem container,
-            ShutdownContextBuildItem shutdown) {
+            BeanContainerBuildItem container) {
         if (launch.getLaunchMode().isDevOrTest()) {
+            if (cachedDirectory == null) {
+                Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            FileUtils.deleteDirectory(new File(cachedDirectory));
+                        } catch (IOException e) {
+                            log.error("Failed to clean swagger UI on shutdown", e);
+                        }
+                    }
+                }, "Swagger UI Shutdown Hook"));
+            }
+            if (cachedDirectory == null || !cachedOpenAPIPath.equals(openapi.path)) {
+                if (cachedDirectory != null) {
+                    try {
+                        FileUtils.deleteDirectory(new File(cachedDirectory));
+                    } catch (IOException e) {
+                        log.error("Failed to clean swagger UI on shutdown", e);
+                    }
+                    cachedDirectory = null;
+                    cachedOpenAPIPath = null;
+                }
+            }
             try {
                 ResolvedArtifact artifact = getSwaggerUiArtifact();
                 Path tempDir = Files.createTempDirectory(TEMP_DIR_PREFIX);
                 extractSwaggerUi(artifact, tempDir);
                 updateApiUrl(tempDir.resolve("index.html"));
-                servletExtension.produce(
-                        new ServletExtensionBuildItem(
-                                template.createSwaggerUiExtension(
-                                        swaggerUiConfig.path,
-                                        tempDir.toAbsolutePath().toString(),
-                                        container.getValue(),
-                                        shutdown)));
+                cachedDirectory = tempDir.toAbsolutePath().toString();
+                cachedOpenAPIPath = openapi.path;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            servletExtension.produce(
+                    new ServletExtensionBuildItem(
+                            template.createSwaggerUiExtension(
+                                    swaggerUiConfig.path,
+                                    cachedDirectory,
+                                    container.getValue())));
         }
     }
 
@@ -113,7 +143,7 @@ public class SwaggerUiProcessor {
 
     private void updateApiUrl(Path indexHtml) throws IOException {
         String content = new String(Files.readAllBytes(indexHtml));
-        content = content.replaceAll(SWAGGER_UI_DEFAULT_API_URL, OPEN_API_DEFAULT_URL);
+        content = content.replaceAll(SWAGGER_UI_DEFAULT_API_URL, openapi.path);
         Files.write(indexHtml, content.getBytes());
     }
 
