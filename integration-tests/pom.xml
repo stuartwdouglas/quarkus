@@ -43,6 +43,7 @@
         <module>hibernate-orm-panache</module>
         <module>hibernate-search-elasticsearch</module>
         <module>vertx-http</module>
+        <module>coroutines</module>
         <module>vertx</module>
         <module>spring-di</module>
         <module>spring-web</module>
