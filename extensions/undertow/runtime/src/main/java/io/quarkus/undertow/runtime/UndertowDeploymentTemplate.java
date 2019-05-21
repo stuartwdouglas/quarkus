@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
@@ -42,8 +40,6 @@ import javax.servlet.ServletException;
 
 import org.jboss.logging.Logger;
 import org.wildfly.common.net.Inet;
-import org.xnio.Xnio;
-import org.xnio.XnioWorker;
 
 import io.quarkus.arc.ManagedContext;
 import io.quarkus.arc.runtime.BeanContainer;
@@ -61,7 +57,6 @@ import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.server.handlers.resource.PathResourceManager;
-import io.undertow.server.handlers.resource.Resource;
 import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.server.session.SessionIdGenerator;
 import io.undertow.servlet.ServletExtension;
@@ -283,9 +278,7 @@ public class UndertowDeploymentTemplate {
                 shutdown.addShutdownTask(new Runnable() {
                     @Override
                     public void run() {
-                        XnioWorker worker = undertow.getWorker();
                         undertow.stop();
-                        worker.shutdown();
                         undertow = null;
                     }
                 });
@@ -345,22 +338,18 @@ public class UndertowDeploymentTemplate {
                 rootHandler = i.wrap(rootHandler);
             }
 
-            XnioWorker.Builder workerBuilder = Xnio.getInstance().createWorkerBuilder()
-                    .setExternalExecutorService(executor);
-
             Undertow.Builder builder = Undertow.builder()
                     .addHttpListener(port, config.host)
+                    .setWorker(executor)
                     .setHandler(rootHandler);
             if (config.ioThreads.isPresent()) {
-                workerBuilder.setWorkerIoThreads(config.ioThreads.getAsInt());
+                builder.setIoThreads(config.ioThreads.getAsInt());
             } else if (launchMode.isDevOrTest()) {
                 //we limit the number of IO and worker threads in development and testing mode
-                workerBuilder.setWorkerIoThreads(2);
+                builder.setIoThreads(2);
             } else {
-                workerBuilder.setWorkerIoThreads(Runtime.getRuntime().availableProcessors() * 2);
+                builder.setIoThreads(Runtime.getRuntime().availableProcessors() * 2);
             }
-            XnioWorker worker = workerBuilder.build();
-            builder.setWorker(worker);
             if (sslContext != null) {
                 log.debugf("Starting Undertow HTTPS listener on port %d", sslPort);
                 builder.addHttpsListener(sslPort, config.host, sslContext);
