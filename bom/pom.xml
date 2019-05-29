@@ -160,6 +160,7 @@
         <!-- Used for integration tests, to make sure webjars work-->
         <bootstrap.version>3.1.0</bootstrap.version>
         <keycloak.version>6.0.1</keycloak.version>
+        <quarkus-router.version>1.0-SNAPSHOT</quarkus-router.version>
     </properties>
 
     <dependencyManagement>
@@ -832,6 +833,11 @@
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkus.router</groupId>
+                <artifactId>quarkus-router</artifactId>
+                <version>${quarkus-router.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.undertow</groupId>

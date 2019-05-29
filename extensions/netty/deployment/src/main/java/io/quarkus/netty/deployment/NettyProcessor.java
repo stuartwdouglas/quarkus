@@ -16,8 +16,6 @@
 
 package io.quarkus.netty.deployment;
 
-import java.util.function.Supplier;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -25,6 +23,7 @@ import org.jboss.logging.Logger;
 
 import io.netty.channel.EventLoopGroup;
 import io.quarkus.arc.deployment.RuntimeBeanBuildItem;
+import io.quarkus.builder.item.SimpleBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -70,11 +69,16 @@ class NettyProcessor {
 
     @BuildStep
     @Record(ExecutionTime.STATIC_INIT)
-    void createExecutors(BuildProducer<RuntimeBeanBuildItem> runtimeBeanBuildItemBuildProducer,
-            NettyTemplate template) {
+    void createExecutorBeans(BuildProducer<RuntimeBeanBuildItem> runtimeBeanBuildItemBuildProducer,
+                             BuildProducer<EventLoopGroupBuildItem> eventLoopGroupBuildItemBuildProducer,
+                             BuildProducer<BossGroupSupplierBuildItem> bossGroupBuildItemBuildProducer,
+                             NettyTemplate template) {
         //TODO: configuration
-        Supplier<Object> boss = template.createEventLoop(1);
-        Supplier<Object> worker = template.createEventLoop(0);
+        NettyTemplate.EventLoopGroupSupplier boss = template.createSupplier()
+        NettyTemplate.EventLoopGroupSupplier worker = template.createSupplier()
+        bossGroupBuildItemBuildProducer.produce(new BossGroupSupplierBuildItem(boss));
+        eventLoopGroupBuildItemBuildProducer.produce(new EventLoopGroupBuildItem(worker));
+
 
         runtimeBeanBuildItemBuildProducer.produce(RuntimeBeanBuildItem.builder(EventLoopGroup.class)
                 .setSupplier(boss)
@@ -87,4 +91,40 @@ class NettyProcessor {
                 .build());
     }
 
+    @BuildStep
+    @Record(ExecutionTime.RUNTIME_INIT)
+    void createExecutors(NettyTemplate template,
+                         BossGroupSupplierBuildItem bossGroupSupplierBuildItem,
+                         EventLoopGroupSupplierBuildItem eventLoopGroupSupplierBuildItem) {
+        template.initBossGroup(bossGroupSupplierBuildItem.group);
+    }
+
+
+
+    final class BossGroupSupplierBuildItem extends SimpleBuildItem {
+
+        private final NettyTemplate.EventLoopGroupSupplier group;
+
+        public BossGroupSupplierBuildItem(NettyTemplate.EventLoopGroupSupplier group) {
+            this.group = group;
+        }
+
+        public NettyTemplate.EventLoopGroupSupplier getGroup() {
+            return group;
+        }
+    }
+
+
+    final class EventLoopGroupSupplierBuildItem extends SimpleBuildItem {
+
+        private final NettyTemplate.EventLoopGroupSupplier group;
+
+        public EventLoopGroupSupplierBuildItem(NettyTemplate.EventLoopGroupSupplier group) {
+            this.group = group;
+        }
+
+        public NettyTemplate.EventLoopGroupSupplier getGroup() {
+            return group;
+        }
+    }
 }

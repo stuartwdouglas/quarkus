@@ -18,12 +18,12 @@ public final class RuntimeBeanBuildItem extends MultiBuildItem {
 
     final String scope;
     final String type;
-    final Supplier<Object> supplier;
+    final Supplier<? extends Object> supplier;
     final RuntimeValue<?> runtimeValue;
     final NavigableMap<String, NavigableMap<String, Object>> qualifiers;
     final boolean removable;
 
-    RuntimeBeanBuildItem(String scope, String type, Supplier<Object> supplier,
+    RuntimeBeanBuildItem(String scope, String type, Supplier<? extends Object> supplier,
             NavigableMap<String, NavigableMap<String, Object>> qualifiers, boolean removable,
             RuntimeValue<?> runtimeValue) {
         if (supplier != null && runtimeValue != null) {
@@ -45,7 +45,7 @@ public final class RuntimeBeanBuildItem extends MultiBuildItem {
         return type;
     }
 
-    public Supplier<Object> getSupplier() {
+    public Supplier<? extends Object> getSupplier() {
         return supplier;
     }
 
@@ -75,7 +75,7 @@ public final class RuntimeBeanBuildItem extends MultiBuildItem {
         String scope = Dependent.class.getName();
         boolean removable = true;
         final String type;
-        Supplier<Object> supplier;
+        Supplier<? extends Object> supplier;
         RuntimeValue<?> value;
         final NavigableMap<String, NavigableMap<String, Object>> qualifiers = new TreeMap<>();
 
@@ -116,7 +116,7 @@ public final class RuntimeBeanBuildItem extends MultiBuildItem {
             return this;
         }
 
-        public Builder setSupplier(Supplier<Object> supplier) {
+        public Builder setSupplier(Supplier<? extends Object> supplier) {
             this.supplier = Objects.requireNonNull(supplier);
             return this;
         }

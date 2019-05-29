@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.quarkus.undertow.runtime;
+package io.quarkus.netty.runtime;
 
 import java.util.OptionalInt;
 
@@ -23,7 +23,6 @@ import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 import io.quarkus.runtime.configuration.ssl.ServerSslConfig;
-import io.quarkus.undertow.runtime.filters.CORSConfig;
 
 /**
  * Configuration which applies to the HTTP server.
@@ -60,12 +59,6 @@ public class HttpConfig {
     @ConfigItem(defaultValue = "0.0.0.0")
     public String host;
 
-    /**
-     * The number if IO threads used to perform IO. This will be automatically set to a reasonable value based on
-     * the number of CPU cores if it is not provided
-     */
-    @ConfigItem
-    public OptionalInt ioThreads;
 
     /**
      * The SSL config

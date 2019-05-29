@@ -42,6 +42,7 @@
         <!-- HTTP -->
         <module>undertow</module>
         <module>undertow-websockets</module>
+        <module>netty-http</module>
 
         <!-- Monitoring -->
         <module>smallrye-health</module>

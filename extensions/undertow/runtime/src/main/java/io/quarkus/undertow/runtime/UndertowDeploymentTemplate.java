@@ -101,33 +101,16 @@ public class UndertowDeploymentTemplate {
         }
     };
 
-    private static volatile Undertow undertow;
-    private static final List<HandlerWrapper> hotDeploymentWrappers = new CopyOnWriteArrayList<>();
     private static volatile List<Path> hotDeploymentResourcePaths;
-    private static volatile HttpHandler currentRoot = ResponseCodeHandler.HANDLE_404;
-
-    private static final AttachmentKey<Collection<io.quarkus.arc.ContextInstanceHandle<?>>> REQUEST_CONTEXT = AttachmentKey
-            .create(Collection.class);
-
     public static void setHotDeploymentResources(List<Path> resources) {
         hotDeploymentResourcePaths = resources;
     }
 
-    public static void startServerAfterFailedStart() {
-        try {
-            HttpConfig config = new HttpConfig();
-            ConfigInstantiator.handleObject(config);
+    private static volatile Undertow undertow;
+    private static volatile HttpHandler currentRoot = ResponseCodeHandler.HANDLE_404;
 
-            ThreadPoolConfig threadPoolConfig = new ThreadPoolConfig();
-            ConfigInstantiator.handleObject(threadPoolConfig);
-
-            ExecutorService service = ExecutorTemplate.createDevModeExecutorForFailedStart(threadPoolConfig);
-            //we can't really do
-            doServerStart(config, LaunchMode.DEVELOPMENT, config.ssl.toSSLContext(), service);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static final AttachmentKey<Collection<io.quarkus.arc.ContextInstanceHandle<?>>> REQUEST_CONTEXT = AttachmentKey
+            .create(Collection.class);
 
     public RuntimeValue<DeploymentInfo> createDeployment(String name, Set<String> knownFile, Set<String> knownDirectories,
             LaunchMode launchMode, ShutdownContext context) {

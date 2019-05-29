@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc.
+ * Copyright 2019 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package io.quarkus.undertow.runtime;
+package io.quarkus.netty.runtime.filters;
 
-import io.quarkus.runtime.annotations.ConfigItem;
-import io.quarkus.runtime.annotations.ConfigPhase;
-import io.quarkus.runtime.annotations.ConfigRoot;
+import io.quarkus.netty.runtime.HttpConfig;
+import io.quarkus.router.Router;
+import io.quarkus.runtime.annotations.Template;
 
-/**
- * Configuration which applies to the HTTP server at build time.
- */
-@ConfigRoot(name = "http", phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
-public class HttpBuildConfig {
+@Template
+public class CORSTemplate {
 
-    /**
-     * The CORS config
-     */
-    @ConfigItem(name = "cors")
-    public boolean corsEnabled = false;
+    public void setupCorsFilter(HttpConfig config, Router router) {
+        if (config.cors.enabled) {
+            router.addFilter(new CORSFilter(config.cors));
+        }
+    }
 }

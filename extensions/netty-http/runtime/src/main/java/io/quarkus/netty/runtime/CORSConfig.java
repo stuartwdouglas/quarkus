@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.quarkus.undertow.runtime.filters;
+package io.quarkus.netty.runtime;
 
 import java.util.Optional;
 
@@ -22,6 +22,12 @@ import io.quarkus.runtime.annotations.ConfigItem;
 
 @ConfigGroup
 public class CORSConfig {
+
+    /**
+     * If the cors filter should be enabled
+     */
+    @ConfigItem(defaultValue = "false")
+    public boolean enabled;
 
     /**
      * Origins allowed for CORS
