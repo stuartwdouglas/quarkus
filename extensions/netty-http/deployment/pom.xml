@@ -25,7 +25,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>quarkus--netty-http-deployment</artifactId>
+    <artifactId>quarkus-netty-http-deployment</artifactId>
     <name>Quarkus - Netty HTTP - Deployment</name>
 
     <dependencies>

@@ -27,7 +27,6 @@ import java.util.EventListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
@@ -46,14 +45,11 @@ import org.wildfly.common.net.Inet;
 
 import io.quarkus.arc.ManagedContext;
 import io.quarkus.arc.runtime.BeanContainer;
-import io.quarkus.runtime.ExecutorTemplate;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ShutdownContext;
-import io.quarkus.runtime.ThreadPoolConfig;
 import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.annotations.Template;
-import io.quarkus.runtime.configuration.ConfigInstantiator;
 import io.undertow.Undertow;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -102,6 +98,7 @@ public class UndertowDeploymentTemplate {
     };
 
     private static volatile List<Path> hotDeploymentResourcePaths;
+
     public static void setHotDeploymentResources(List<Path> resources) {
         hotDeploymentResourcePaths = resources;
     }

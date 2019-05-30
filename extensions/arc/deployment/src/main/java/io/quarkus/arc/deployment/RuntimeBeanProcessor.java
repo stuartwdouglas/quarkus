@@ -51,7 +51,7 @@ public class RuntimeBeanProcessor {
             if (bean.runtimeValue != null) {
                 map.put(name, template.createSupplier(bean.runtimeValue));
             } else {
-                map.put(name, bean.supplier);
+                map.put(name, (Supplier<Object>) bean.supplier);
             }
 
             MethodCreator producer = c.getMethodCreator("produce_" + name, bean.type);

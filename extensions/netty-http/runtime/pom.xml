@@ -29,11 +29,6 @@
     <name>Quarkus - Netty HTTP - Runtime</name>
 
     <dependencies>
-        <!--
-          Netty is broken down in multiple modules; we depend only on a core selection
-          so to have substitutions compile.
-          Consumers should be able to add additional modules.
-          -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec</artifactId>

@@ -35,7 +35,7 @@ public class NettyHTTPTemplate {
     }
 
 
-    public static void addHotDeploymentWrapper(HandlerWrapper handlerWrapper) {
+    public static void addHotDeploymentWrapper(RouterFilter handlerWrapper) {
         hotDeploymentWrappers.add(handlerWrapper);
     }
 
