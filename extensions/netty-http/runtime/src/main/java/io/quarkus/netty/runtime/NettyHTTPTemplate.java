@@ -1,13 +1,22 @@
 package io.quarkus.netty.runtime;
 
-import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 
 import javax.net.ssl.SSLContext;
 
-import io.quarkus.router.RouterFilter;
+import org.jboss.logging.Logger;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInboundHandler;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.quarkus.runtime.ExecutorTemplate;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.ThreadPoolConfig;
@@ -16,7 +25,11 @@ import io.quarkus.runtime.configuration.ConfigInstantiator;
 
 @Template
 public class NettyHTTPTemplate {
-    private static final List<RouterFilter> hotDeploymentWrappers = new CopyOnWriteArrayList<>();
+    private static final List<ChannelInboundHandler> hotDeploymentWrappers = new CopyOnWriteArrayList<>();
+
+    private static final List<Channel> channels = new ArrayList<>();
+
+    private static Logger log = Logger.getLogger(NettyHTTPTemplate.class);
 
     public static void startServerAfterFailedStart() {
         try {
@@ -26,16 +39,21 @@ public class NettyHTTPTemplate {
             ThreadPoolConfig threadPoolConfig = new ThreadPoolConfig();
             ConfigInstantiator.handleObject(threadPoolConfig);
 
+            IoConfig ioConfig = new IoConfig();
+            ConfigInstantiator.handleObject(ioConfig);
+
+
             ExecutorService service = ExecutorTemplate.createDevModeExecutorForFailedStart(threadPoolConfig);
+            NioEventLoopGroup boosGroup = NettyTemplate.initBoosGroupForFailedStart();
+            NioEventLoopGroup mainLoop = NettyTemplate.initEventLoopForFailedStart(ioConfig);
             //we can't really do
-            doServerStart(config, LaunchMode.DEVELOPMENT, config.ssl.toSSLContext(), service);
+            doServerStart(config, LaunchMode.DEVELOPMENT, config.ssl.toSSLContext(), service, boosGroup, mainLoop);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-
-    public static void addHotDeploymentWrapper(RouterFilter handlerWrapper) {
+    public static void addHotDeploymentHandler(ChannelInboundHandler handlerWrapper) {
         hotDeploymentWrappers.add(handlerWrapper);
     }
 
@@ -46,28 +64,20 @@ public class NettyHTTPTemplate {
      * be no chance to use hot deployment to fix the error. In development mode we start Undertow early, so any error
      * on boot can be corrected via the hot deployment handler
      */
-    private static void doServerStart(HttpConfig config, LaunchMode launchMode, SSLContext sslContext, ExecutorService executor) {
-        if (undertow == null) {
+    private static void doServerStart(HttpConfig config, LaunchMode launchMode, SSLContext sslContext,
+                                      ExecutorService service, NioEventLoopGroup boosGroup, NioEventLoopGroup workerGroup) {
+        if (channels.isEmpty()) {
             int port = config.determinePort(launchMode);
             int sslPort = config.determineSslPort(launchMode);
-            log.debugf("Starting Undertow on port %d", port);
-            HttpHandler rootHandler = new CanonicalPathHandler(ROOT_HANDLER);
-            for (HandlerWrapper i : hotDeploymentWrappers) {
-                rootHandler = i.wrap(rootHandler);
-            }
+            log.debugf("Starting HTTP on port %d", port);
 
-            Undertow.Builder builder = Undertow.builder()
-                    .addHttpListener(port, config.host)
-                    .setWorker(executor)
-                    .setHandler(rootHandler);
-            if (config.ioThreads.isPresent()) {
-                builder.setIoThreads(config.ioThreads.getAsInt());
-            } else if (launchMode.isDevOrTest()) {
-                //we limit the number of IO and worker threads in development and testing mode
-                builder.setIoThreads(2);
-            } else {
-                builder.setIoThreads(Runtime.getRuntime().availableProcessors() * 2);
-            }
+            Channel ch = bootstrap(boosGroup, workerGroup)
+                    .childHandler(new NettyRouterInitializer(worker, rootHandler, null))
+                    .bind(listener.host, listener.port).sync().channel();
+
+            channels.add(ch);
+
+
             if (sslContext != null) {
                 log.debugf("Starting Undertow HTTPS listener on port %d", sslPort);
                 builder.addHttpsListener(sslPort, config.host, sslContext);
@@ -76,6 +86,18 @@ public class NettyHTTPTemplate {
                     .build();
             undertow.start();
         }
+    }
+
+    private static ServerBootstrap bootstrap(NioEventLoopGroup bossGroup, NioEventLoopGroup workerGroup) {
+        ByteBufAllocator allocator = PooledByteBufAllocator.DEFAULT;
+        //TODO: socket options
+        return new ServerBootstrap()
+                .option(ChannelOption.ALLOCATOR, allocator)
+                .childOption(ChannelOption.ALLOCATOR, allocator)
+                // Requires EpollServerSocketChannel
+//                .childOption(EpollChannelOption.TCP_CORK, socketOptions.get(UndertowOptions.CORK, true))
+                .group(bossGroup, workerGroup)
+                .channel(NioServerSocketChannel.class);
     }
 
 }

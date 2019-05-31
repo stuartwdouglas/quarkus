@@ -31,6 +31,7 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.substrate.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.substrate.SubstrateConfigBuildItem;
 import io.quarkus.netty.BossGroup;
+import io.quarkus.netty.runtime.IoConfig;
 import io.quarkus.netty.runtime.NettyTemplate;
 
 class NettyProcessor {
@@ -73,9 +74,8 @@ class NettyProcessor {
                              BuildProducer<EventLoopGroupBuildItem> eventLoopGroupBuildItemBuildProducer,
                              BuildProducer<BossGroupSupplierBuildItem> bossGroupBuildItemBuildProducer,
                              NettyTemplate template) {
-        //TODO: configuration
-        NettyTemplate.EventLoopGroupSupplier boss = template.createSupplier()
-        NettyTemplate.EventLoopGroupSupplier worker = template.createSupplier()
+        NettyTemplate.EventLoopGroupSupplier boss = template.createSupplier();
+        NettyTemplate.EventLoopGroupSupplier worker = template.createSupplier();
         bossGroupBuildItemBuildProducer.produce(new BossGroupSupplierBuildItem(boss));
         eventLoopGroupBuildItemBuildProducer.produce(new EventLoopGroupBuildItem(worker));
 
@@ -95,8 +95,10 @@ class NettyProcessor {
     @Record(ExecutionTime.RUNTIME_INIT)
     void createExecutors(NettyTemplate template,
                          BossGroupSupplierBuildItem bossGroupSupplierBuildItem,
-                         EventLoopGroupSupplierBuildItem eventLoopGroupSupplierBuildItem) {
+                         EventLoopGroupSupplierBuildItem eventLoopGroupSupplierBuildItem,
+                         IoConfig config) {
         template.initBossGroup(bossGroupSupplierBuildItem.group);
+        template.initEventLoopGroup(eventLoopGroupSupplierBuildItem.group, config);
     }
 
 

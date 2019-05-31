@@ -9,39 +9,36 @@ import io.quarkus.runtime.annotations.Template;
 @Template
 public class NettyTemplate {
 
+    private static volatile NioEventLoopGroup bossGroup;
+    private static volatile NioEventLoopGroup mainGroup;
+
     public EventLoopGroupSupplier createSupplier() {
         return new EventLoopGroupSupplier();
     }
 
     public void initBossGroup(EventLoopGroupSupplier supplier) {
-        supplier.val = new NioEventLoopGroup(1);
+        if (bossGroup == null) {
+            bossGroup = new NioEventLoopGroup(1);
+        }
+        supplier.val = bossGroup;
     }
 
     public void initEventLoopGroup(EventLoopGroupSupplier supplier, IoConfig config) {
-        supplier.val = new NioEventLoopGroup(config);
+        if (mainGroup == null) {
+            mainGroup = new NioEventLoopGroup(config.ioThreads.orElse(0));
+        }
+        supplier.val = mainGroup;
     }
 
-    public Supplier<EventLoopGroup> createEventLoop(int nThreads) {
-        return new Supplier<EventLoopGroup>() {
+    public static NioEventLoopGroup initBoosGroupForFailedStart() {
+        return bossGroup = new NioEventLoopGroup(1);
+    }
 
-            volatile EventLoopGroup val;
-
-            @Override
-            public EventLoopGroup get() {
-                if (val == null) {
-                    synchronized (this) {
-                        if (val == null) {
-                            val = new NioEventLoopGroup(nThreads);
-                        }
-                    }
-                }
-                return val;
-            }
-        };
+    public static NioEventLoopGroup initEventLoopForFailedStart(IoConfig ioConfig) {
+        return mainGroup = new NioEventLoopGroup(ioConfig.ioThreads.orElse(0));
     }
 
     public static class EventLoopGroupSupplier implements Supplier<EventLoopGroup> {
-
 
         volatile EventLoopGroup val;
 
