@@ -23,6 +23,7 @@ import io.quarkus.deployment.builditem.JavaLibraryPathAdditionalPathBuildItem;
 import io.quarkus.deployment.builditem.MainBytecodeRecorderBuildItem;
 import io.quarkus.deployment.builditem.MainClassBuildItem;
 import io.quarkus.deployment.builditem.ObjectSubstitutionBuildItem;
+import io.quarkus.deployment.builditem.PersistentServiceBuildItem;
 import io.quarkus.deployment.builditem.SslTrustStoreSystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.StaticBytecodeRecorderBuildItem;
 import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
@@ -60,7 +61,8 @@ class MainClassBuildStep {
             List<FeatureBuildItem> features,
             BuildProducer<ApplicationClassNameBuildItem> appClassNameProducer,
             List<BytecodeRecorderObjectLoaderBuildItem> loaders,
-            ClassOutputBuildItem classOutput) {
+            ClassOutputBuildItem classOutput,
+            List<PersistentServiceBuildItem> persistentServiceBuildItems) {
 
         String appClassName = APP_CLASS + COUNT.incrementAndGet();
         appClassNameProducer.produce(new ApplicationClassNameBuildItem(appClassName));
@@ -113,7 +115,7 @@ class MainClassBuildStep {
 
         // Application class: start method
 
-        mv = file.getMethodCreator("doStart", void.class, String[].class);
+        mv = file.getMethodCreator("doStart", boolean.class, String[].class);
         mv.setModifiers(Modifier.PROTECTED | Modifier.FINAL);
 
         // very first thing is to set system props (for run time, which use substitutions for a different
@@ -207,7 +209,8 @@ class MainClassBuildStep {
         cb.invokeVirtualMethod(ofMethod(Throwable.class, "printStackTrace", void.class), cb.getCaughtException());
         cb.invokeVirtualMethod(ofMethod(StartupContext.class, "close", void.class), startupContext);
         cb.throwException(RuntimeException.class, "Failed to start quarkus", cb.getCaughtException());
-        mv.returnValue(null);
+        boolean persistentApplication = !persistentServiceBuildItems.isEmpty();
+        mv.returnValue(mv.load(persistentApplication));
 
         // Application class: stop method
 

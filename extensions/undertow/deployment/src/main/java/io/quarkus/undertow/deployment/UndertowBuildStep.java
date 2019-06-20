@@ -87,6 +87,7 @@ import io.quarkus.deployment.builditem.ExecutorBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.ObjectSubstitutionBuildItem;
+import io.quarkus.deployment.builditem.PersistentServiceBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.substrate.ReflectiveClassBuildItem;
@@ -148,6 +149,12 @@ public class UndertowBuildStep {
                 launchMode.getLaunchMode());
         undertowProducer.accept(new UndertowBuildItem(ut));
         return new ServiceStartBuildItem("undertow");
+    }
+
+    @BuildStep
+    PersistentServiceBuildItem persistentServiceBuildItem() {
+        //apps that run Undertow should not immediately exit
+        return new PersistentServiceBuildItem();
     }
 
     @BuildStep()

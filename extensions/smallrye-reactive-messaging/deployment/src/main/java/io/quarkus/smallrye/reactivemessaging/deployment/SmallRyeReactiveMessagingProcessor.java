@@ -28,6 +28,7 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.PersistentServiceBuildItem;
 import io.quarkus.deployment.builditem.substrate.ReflectiveClassBuildItem;
 import io.quarkus.smallrye.reactivemessaging.runtime.SmallRyeReactiveMessagingLifecycle;
 import io.quarkus.smallrye.reactivemessaging.runtime.SmallRyeReactiveMessagingTemplate;
@@ -50,6 +51,12 @@ public class SmallRyeReactiveMessagingProcessor {
     @BuildStep
     AdditionalBeanBuildItem beans() {
         return new AdditionalBeanBuildItem(SmallRyeReactiveMessagingLifecycle.class);
+    }
+
+    @BuildStep
+    PersistentServiceBuildItem persistentServiceBuildItem() {
+        //apps that run reactive messaging should not immediately exit
+        return new PersistentServiceBuildItem();
     }
 
     @BuildStep

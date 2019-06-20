@@ -35,6 +35,7 @@ public abstract class Application {
 
     private int state = ST_INITIAL;
     private volatile boolean shutdownRequested;
+    private volatile boolean persistentApplication;
     private static volatile Application currentApplication;
 
     /**
@@ -81,7 +82,7 @@ public abstract class Application {
             stateLock.unlock();
         }
         try {
-            doStart(args);
+            persistentApplication = doStart(args);
         } catch (Throwable t) {
             stateLock.lock();
             try {
@@ -99,9 +100,10 @@ public abstract class Application {
         } finally {
             stateLock.unlock();
         }
+
     }
 
-    protected abstract void doStart(String[] args);
+    protected abstract boolean doStart(String[] args);
 
     /**
      * Stop the application. If another thread is also trying to stop the application, this method waits for that
@@ -194,16 +196,20 @@ public abstract class Application {
             final ShutdownHookThread shutdownHookThread = new ShutdownHookThread(Thread.currentThread());
             Runtime.getRuntime().addShutdownHook(shutdownHookThread);
             start(args);
-            try {
-                while (!shutdownRequested) {
-                    Thread.interrupted();
-                    LockSupport.park(shutdownHookThread);
+            if (persistentApplication) {
+                try {
+                    while (!shutdownRequested) {
+                        Thread.interrupted();
+                        LockSupport.park(shutdownHookThread);
+                    }
+                } finally {
+                    stop();
                 }
-            } finally {
-                stop();
             }
         } finally {
-            exit();
+            if (persistentApplication) {
+                exit();
+            }
         }
     }
 
@@ -239,17 +245,44 @@ public abstract class Application {
 
         @Override
         public void run() {
-            shutdownRequested = true;
-            LockSupport.unpark(mainThread);
-            final Lock stateLock = Application.this.stateLock;
-            final Condition stateCond = Application.this.stateCond;
-            stateLock.lock();
+            boolean runExit = false;
             try {
-                while (state != ST_EXIT) {
-                    stateCond.awaitUninterruptibly();
+                if (!persistentApplication && !shutdownRequested) {
+                    //we are stopping because all threads have exited
+                    //or the JVM has been asked to exit
+                    if (state == ST_STARTING) {
+                        //we have existed as part of the startup process
+                        state = ST_STOPPING;
+                    }
+                    //just forcible shut down
+                    try {
+                        Application.this.doStop();
+                    } finally {
+                        Application.this.exit();
+                    }
+                    return;
+                } else if (!persistentApplication) {
+                    //another thread has actually run the shutdown
+                    runExit = true;
+                }
+                shutdownRequested = true;
+                LockSupport.unpark(mainThread);
+                final Lock stateLock = Application.this.stateLock;
+                final Condition stateCond = Application.this.stateCond;
+                stateLock.lock();
+
+                try {
+                    int waitCode = runExit ? ST_STOPPED : ST_EXIT;
+                    while (state != waitCode) {
+                        stateCond.awaitUninterruptibly();
+                    }
+                } finally {
+                    stateLock.unlock();
                 }
             } finally {
-                stateLock.unlock();
+                if (runExit) {
+                    Application.this.exit();
+                }
             }
         }
 
