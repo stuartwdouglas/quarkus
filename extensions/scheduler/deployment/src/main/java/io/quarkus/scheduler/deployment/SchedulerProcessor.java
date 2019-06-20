@@ -49,6 +49,7 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.AnnotationProxyBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
+import io.quarkus.deployment.builditem.PersistentServiceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.logging.LogCleanupFilterBuildItem;
 import io.quarkus.deployment.util.HashUtil;
@@ -82,6 +83,12 @@ public class SchedulerProcessor {
     @BuildStep
     AdditionalBeanBuildItem beans() {
         return new AdditionalBeanBuildItem(SchedulerConfiguration.class, QuartzScheduler.class);
+    }
+
+    @BuildStep
+    PersistentServiceBuildItem persistentServiceBuildItem() {
+        //apps that run the scheduler should not immediately exit
+        return new PersistentServiceBuildItem();
     }
 
     @BuildStep

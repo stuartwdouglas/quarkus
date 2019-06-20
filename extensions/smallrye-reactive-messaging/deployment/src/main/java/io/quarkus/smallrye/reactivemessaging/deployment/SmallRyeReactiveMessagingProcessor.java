@@ -53,6 +53,7 @@ import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.smallrye.reactivemessaging.runtime.QuarkusMediatorConfiguration;
+import io.quarkus.deployment.builditem.PersistentServiceBuildItem;
 import io.quarkus.smallrye.reactivemessaging.runtime.SmallRyeReactiveMessagingLifecycle;
 import io.quarkus.smallrye.reactivemessaging.runtime.SmallRyeReactiveMessagingRecorder;
 import io.smallrye.reactive.messaging.Invoker;
@@ -77,6 +78,11 @@ public class SmallRyeReactiveMessagingProcessor {
     AdditionalBeanBuildItem beans() {
         // We add the connector and stream qualifiers to make them part of the index.
         return new AdditionalBeanBuildItem(SmallRyeReactiveMessagingLifecycle.class, Connector.class, Stream.class);
+    }
+
+    PersistentServiceBuildItem persistentServiceBuildItem() {
+        //apps that run reactive messaging should not immediately exit
+        return new PersistentServiceBuildItem();
     }
 
     @BuildStep

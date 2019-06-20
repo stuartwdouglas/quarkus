@@ -17,6 +17,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
+import io.quarkus.deployment.builditem.PersistentServiceBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -89,6 +90,12 @@ class VertxHttpProcessor {
         }
 
         return new VertxWebRouterBuildItem(router);
+    }
+
+    @BuildStep
+    PersistentServiceBuildItem persistentServiceBuildItem() {
+        //apps that run Undertow should not immediately exit
+        return new PersistentServiceBuildItem();
     }
 
     @BuildStep

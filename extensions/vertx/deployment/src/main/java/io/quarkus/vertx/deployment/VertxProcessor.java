@@ -34,6 +34,7 @@ import io.quarkus.deployment.builditem.AnnotationProxyBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
+import io.quarkus.deployment.builditem.PersistentServiceBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -54,6 +55,12 @@ class VertxProcessor {
     @BuildStep
     AdditionalBeanBuildItem registerBean() {
         return AdditionalBeanBuildItem.unremovableOf(VertxProducer.class);
+    }
+
+    @BuildStep
+    PersistentServiceBuildItem persistentServiceBuildItem() {
+        //apps that run vertx should not immediately exit
+        return new PersistentServiceBuildItem();
     }
 
     @BuildStep
