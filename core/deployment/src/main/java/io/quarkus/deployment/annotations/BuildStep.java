@@ -79,4 +79,12 @@ public @interface BuildStep {
      * TODO: this should be a different annotation?
      */
     String[] applicationArchiveMarkers() default {};
+
+    /**
+     * Indicates file names that will stop an archive being considered an application archive, even if it otherwise would
+     * have been.
+     *
+     * TODO: this belongs in a different annotation
+     */
+    String[] applicationArchiveExclusionMarkers() default {};
 }

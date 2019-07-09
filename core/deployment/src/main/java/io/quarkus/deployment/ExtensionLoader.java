@@ -50,6 +50,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.AdditionalApplicationArchiveMarkerBuildItem;
+import io.quarkus.deployment.builditem.AdditionalApplicationArchiveMarkerExclusionBuildItem;
 import io.quarkus.deployment.builditem.BuildTimeConfigurationBuildItem;
 import io.quarkus.deployment.builditem.BuildTimeRunTimeFixedConfigurationBuildItem;
 import io.quarkus.deployment.builditem.CapabilityBuildItem;
@@ -297,6 +298,7 @@ public final class ExtensionLoader {
             }
             final BuildStep buildStep = method.getAnnotation(BuildStep.class);
             final String[] archiveMarkers = buildStep.applicationArchiveMarkers();
+            final String[] archiveExclusionMarkers = buildStep.applicationArchiveMarkers();
             final String[] capabilities = buildStep.providesCapabilities();
             final Parameter[] methodParameters = method.getParameters();
             final Record recordAnnotation = method.getAnnotation(Record.class);
@@ -309,6 +311,13 @@ public final class ExtensionLoader {
                         bc.produce(new AdditionalApplicationArchiveMarkerBuildItem(marker));
                     }
                 }).produces(AdditionalApplicationArchiveMarkerBuildItem.class).build());
+            }
+            if (archiveExclusionMarkers.length > 0) {
+                chainConfig = chainConfig.andThen(bcb -> bcb.addBuildStep(bc -> {
+                    for (String marker : archiveExclusionMarkers) {
+                        bc.produce(new AdditionalApplicationArchiveMarkerExclusionBuildItem(marker));
+                    }
+                }).produces(AdditionalApplicationArchiveMarkerExclusionBuildItem.class).build());
             }
             if (capabilities.length > 0) {
                 chainConfig = chainConfig.andThen(bcb -> bcb.addBuildStep(bc -> {

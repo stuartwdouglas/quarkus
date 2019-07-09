@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ import io.quarkus.deployment.ApplicationArchiveImpl;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.AdditionalApplicationArchiveBuildItem;
 import io.quarkus.deployment.builditem.AdditionalApplicationArchiveMarkerBuildItem;
+import io.quarkus.deployment.builditem.AdditionalApplicationArchiveMarkerExclusionBuildItem;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.ApplicationIndexBuildItem;
 import io.quarkus.deployment.builditem.ArchiveRootBuildItem;
@@ -69,12 +71,17 @@ public class ApplicationArchiveBuildStep {
     @BuildStep
     ApplicationArchivesBuildItem build(ArchiveRootBuildItem root, ApplicationIndexBuildItem appindex,
             List<AdditionalApplicationArchiveMarkerBuildItem> appMarkers,
+            List<AdditionalApplicationArchiveMarkerExclusionBuildItem> exclusionMarkers,
             List<AdditionalApplicationArchiveBuildItem> additionalApplicationArchiveBuildItem,
             LiveReloadBuildItem liveReloadContext) throws IOException {
 
         Set<String> markerFiles = new HashSet<>();
+        Set<String> exclusionsFiles = new HashSet<>();
         for (AdditionalApplicationArchiveMarkerBuildItem i : appMarkers) {
             markerFiles.add(i.getFile());
+        }
+        for (AdditionalApplicationArchiveMarkerExclusionBuildItem i : exclusionMarkers) {
+            exclusionsFiles.add(i.getFile());
         }
 
         IndexCache indexCache = liveReloadContext.getContextObject(IndexCache.class);
@@ -84,14 +91,15 @@ public class ApplicationArchiveBuildStep {
         }
 
         List<ApplicationArchive> applicationArchives = scanForOtherIndexes(Thread.currentThread().getContextClassLoader(),
-                markerFiles, root.getArchiveLocation(), additionalApplicationArchiveBuildItem, indexCache);
+                markerFiles, root.getArchiveLocation(), additionalApplicationArchiveBuildItem, indexCache, exclusionsFiles);
         return new ApplicationArchivesBuildItem(
                 new ApplicationArchiveImpl(appindex.getIndex(), root.getArchiveRoot(), null, false, root.getArchiveLocation()),
                 applicationArchives);
     }
 
     private List<ApplicationArchive> scanForOtherIndexes(ClassLoader classLoader, Set<String> applicationArchiveFiles,
-            Path appRoot, List<AdditionalApplicationArchiveBuildItem> additionalApplicationArchives, IndexCache indexCache)
+            Path appRoot, List<AdditionalApplicationArchiveBuildItem> additionalApplicationArchives, IndexCache indexCache,
+            Set<String> exclusionsFiles)
             throws IOException {
         Set<Path> dependenciesToIndex = new HashSet<>();
         //get paths that are included via index-dependencies
@@ -106,6 +114,17 @@ public class ApplicationArchiveBuildStep {
 
         for (AdditionalApplicationArchiveBuildItem i : additionalApplicationArchives) {
             dependenciesToIndex.add(i.getPath());
+        }
+
+        //remove archives that have been explicitly excluded
+        Iterator<Path> it = dependenciesToIndex.iterator();
+        while (it.hasNext()) {
+            Path archivePath = it.next();
+            for (String exclude : exclusionsFiles) {
+                if (Files.exists(archivePath.resolve(exclude))) {
+                    it.remove();
+                }
+            }
         }
 
         return indexPaths(dependenciesToIndex, classLoader, indexCache);
