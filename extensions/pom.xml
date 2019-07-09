@@ -33,6 +33,7 @@
         <module>smallrye-opentracing</module>
         <module>smallrye-fault-tolerance</module>
         <module>jaeger</module>
+        <module>health-integration</module>
 
         <!-- REST services -->
         <module>resteasy-common</module>

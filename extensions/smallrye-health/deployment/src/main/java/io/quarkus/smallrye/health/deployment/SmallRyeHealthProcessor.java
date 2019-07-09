@@ -1,9 +1,11 @@
 package io.quarkus.smallrye.health.deployment;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.microprofile.health.Health;
+import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.Liveness;
 import org.eclipse.microprofile.health.Readiness;
 import org.eclipse.microprofile.health.spi.HealthCheckResponseProvider;
@@ -11,6 +13,7 @@ import org.jboss.jandex.DotName;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
+import io.quarkus.arc.deployment.RuntimeBeanBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -18,6 +21,8 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.deployment.util.ServiceUtil;
+import io.quarkus.healthextension.deployment.LivelinessCheckBuildItem;
+import io.quarkus.healthextension.deployment.ReadinessCheckBuildItem;
 import io.quarkus.kubernetes.spi.KubernetesHealthLivenessPathBuildItem;
 import io.quarkus.kubernetes.spi.KubernetesHealthReadinessPathBuildItem;
 import io.quarkus.runtime.annotations.ConfigItem;
@@ -126,5 +131,30 @@ class SmallRyeHealthProcessor {
                 .produce(new KubernetesHealthLivenessPathBuildItem(health.rootPath + health.livenessPath));
         readinessPathItemProducer
                 .produce(new KubernetesHealthReadinessPathBuildItem(health.rootPath + health.readinessPath));
+    }
+
+    @BuildStep
+    @Record(ExecutionTime.STATIC_INIT)
+    public void handleAutomaticLiveliness(List<LivelinessCheckBuildItem> livelinessChecks,
+            List<ReadinessCheckBuildItem> readinessChecks,
+            BuildProducer<RuntimeBeanBuildItem> runtimeBeanProducer,
+            SmallRyeHealthTemplate template) {
+        for (LivelinessCheckBuildItem item : livelinessChecks) {
+            runtimeBeanProducer
+                    .produce(RuntimeBeanBuildItem.builder(HealthCheck.class)
+                            .setSupplier(template.createHealthCheck(item.getName(), item.getHealthCheck()))
+                            .addQualifier(Liveness.class)
+                            .build());
+
+        }
+
+        for (ReadinessCheckBuildItem item : readinessChecks) {
+            runtimeBeanProducer
+                    .produce(RuntimeBeanBuildItem.builder(HealthCheck.class)
+                            .setSupplier(template.createHealthCheck(item.getName(), item.getHealthCheck()))
+                            .addQualifier(Readiness.class)
+                            .build());
+
+        }
     }
 }
