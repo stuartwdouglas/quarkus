@@ -84,6 +84,7 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.ExecutorBuildItem;
+import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.ObjectSubstitutionBuildItem;
@@ -129,6 +130,11 @@ public class UndertowBuildStep {
 
     @Inject
     CombinedIndexBuildItem combinedIndexBuildItem;
+
+    @BuildStep
+    FeatureBuildItem feature() {
+        return new FeatureBuildItem(FeatureBuildItem.UNDERTOW);
+    }
 
     @BuildStep
     @Record(RUNTIME_INIT)
