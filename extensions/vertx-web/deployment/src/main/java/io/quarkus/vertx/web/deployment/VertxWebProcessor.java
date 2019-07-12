@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Singleton;
@@ -131,7 +132,8 @@ class VertxWebProcessor {
             LaunchModeBuildItem launchMode,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
             ShutdownContextBuildItem shutdown,
-            VertxBuildItem vertx) {
+            VertxBuildItem vertx,
+            Optional<DefaultRouteBuildItem> defaultRoute) {
 
         ClassOutput classOutput = new ClassOutput() {
             @Override
@@ -150,7 +152,7 @@ class VertxWebProcessor {
         }
         recorder.configureRouter(vertx.getVertx(), beanContainer.getValue(), routeConfigs, vertxHttpConfiguration,
                 launchMode.getLaunchMode(),
-                shutdown);
+                shutdown, defaultRoute.map(DefaultRouteBuildItem::getHandler).orElse(null));
         return new ServiceStartBuildItem("vertx-web");
     }
 

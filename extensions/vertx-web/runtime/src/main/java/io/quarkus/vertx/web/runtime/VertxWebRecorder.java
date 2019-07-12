@@ -25,6 +25,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -44,10 +45,11 @@ public class VertxWebRecorder {
     private static volatile HttpServer server;
 
     public void configureRouter(RuntimeValue<Vertx> vertx, BeanContainer container, Map<String, List<Route>> routeHandlers,
-            VertxHttpConfiguration vertxHttpConfiguration, LaunchMode launchMode, ShutdownContext shutdown) {
+            VertxHttpConfiguration vertxHttpConfiguration, LaunchMode launchMode, ShutdownContext shutdown,
+            Handler<HttpServerRequest> defaultRoute) {
 
         List<io.vertx.ext.web.Route> appRoutes = initialize(vertx.getValue(), vertxHttpConfiguration, routeHandlers,
-                launchMode);
+                launchMode, defaultRoute);
         container.instance(RouterProducer.class).initialize(router);
 
         if (launchMode == LaunchMode.DEVELOPMENT) {
@@ -59,12 +61,22 @@ public class VertxWebRecorder {
                     }
                 }
             });
+        } else {
+            shutdown.addShutdownTask(new Runnable() {
+                @Override
+                public void run() {
+                    server.close();
+                    router = null;
+                    server = null;
+                }
+            });
         }
     }
 
     List<io.vertx.ext.web.Route> initialize(Vertx vertx, VertxHttpConfiguration vertxHttpConfiguration,
             Map<String, List<Route>> routeHandlers,
-            LaunchMode launchMode) {
+            LaunchMode launchMode,
+            Handler<HttpServerRequest> defaultRoute) {
         List<io.vertx.ext.web.Route> routes = new ArrayList<>();
         if (router == null) {
             router = Router.router(vertx);
@@ -82,6 +94,16 @@ public class VertxWebRecorder {
         // Make it also possible to register the route handlers programmatically
         Event<Object> event = Arc.container().beanManager().getEvent();
         event.select(Router.class).fire(router);
+
+        if (defaultRoute != null) {
+            //TODO: can we skip the router if no other routes?
+            router.route().handler(new Handler<RoutingContext>() {
+                @Override
+                public void handle(RoutingContext event) {
+                    defaultRoute.handle(event.request());
+                }
+            });
+        }
 
         // Start the server
         if (server == null) {
@@ -153,6 +175,7 @@ public class VertxWebRecorder {
                 route.consumes(consumes);
             }
         }
+        route.handler(BodyHandler.create());
         switch (routeAnnotation.type()) {
             case NORMAL:
                 route.handler(handler);

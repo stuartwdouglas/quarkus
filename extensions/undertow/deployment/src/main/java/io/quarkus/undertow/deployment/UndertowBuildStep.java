@@ -106,13 +106,15 @@ import io.quarkus.undertow.runtime.ServletSecurityInfoSubstitution;
 import io.quarkus.undertow.runtime.UndertowDeploymentRecorder;
 import io.quarkus.undertow.runtime.UndertowHandlersConfServletExtension;
 import io.quarkus.undertow.runtime.filters.CORSRecorder;
-import io.undertow.Undertow;
+import io.quarkus.vertx.web.deployment.DefaultRouteBuildItem;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.HttpMethodSecurityInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.ServletSecurityInfo;
 import io.undertow.servlet.handlers.DefaultServlet;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 
 //TODO: break this up, it is getting too big
 public class UndertowBuildStep {
@@ -136,17 +138,16 @@ public class UndertowBuildStep {
             ServletDeploymentManagerBuildItem servletDeploymentManagerBuildItem,
             List<HttpHandlerWrapperBuildItem> wrappers,
             ShutdownContextBuildItem shutdown,
-            Consumer<UndertowBuildItem> undertowProducer,
-            LaunchModeBuildItem launchMode,
+            Consumer<DefaultRouteBuildItem> undertowProducer,
             ExecutorBuildItem executorBuildItem,
             CORSRecorder corsRecorder,
             HttpConfig config) throws Exception {
         corsRecorder.setHttpConfig(config);
-        RuntimeValue<Undertow> ut = recorder.startUndertow(shutdown, executorBuildItem.getExecutorProxy(),
+        Handler<HttpServerRequest> ut = recorder.startUndertow(shutdown, executorBuildItem.getExecutorProxy(),
                 servletDeploymentManagerBuildItem.getDeploymentManager(),
-                config, wrappers.stream().map(HttpHandlerWrapperBuildItem::getValue).collect(Collectors.toList()),
-                launchMode.getLaunchMode());
-        undertowProducer.accept(new UndertowBuildItem(ut));
+                wrappers.stream().map(HttpHandlerWrapperBuildItem::getValue).collect(Collectors.toList()));
+
+        undertowProducer.accept(new DefaultRouteBuildItem(ut));
         return new ServiceStartBuildItem("undertow");
     }
 
