@@ -80,7 +80,6 @@ public class VertxWebRecorder {
         List<io.vertx.ext.web.Route> routes = new ArrayList<>();
         if (router == null) {
             router = Router.router(vertx);
-            router.route().handler(BodyHandler.create());
             if (hotReplacementHandler != null) {
                 router.route().blockingHandler(hotReplacementHandler);
             }
