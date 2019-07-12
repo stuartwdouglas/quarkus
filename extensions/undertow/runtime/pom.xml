@@ -18,6 +18,10 @@
             <artifactId>quarkus-arc</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-vertx-web</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.oracle.substratevm</groupId>
             <artifactId>svm</artifactId>
         </dependency>
@@ -26,12 +30,12 @@
             <artifactId>undertow-servlet</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-nio</artifactId>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-vertx-backend</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-api</artifactId>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-http-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

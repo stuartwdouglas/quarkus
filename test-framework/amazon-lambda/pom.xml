@@ -28,6 +28,10 @@
             <artifactId>undertow-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-vertx-backend</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>

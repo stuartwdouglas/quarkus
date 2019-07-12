@@ -21,6 +21,9 @@ public class SubstrateSystemPropertiesBuildStep {
         final Properties properties = new Properties();
         for (SubstrateSystemPropertyBuildItem i : props) {
             if (properties.containsKey(i.getKey())) {
+                if (i.getValue().equals(properties.get(i.getKey()))) {
+                    continue;
+                }
                 throw new RuntimeException("Duplicate native image system property under " + i.getKey()
                         + " conflicting values of " + i.getValue() + " and " + properties.get(i.getKey()));
             }
