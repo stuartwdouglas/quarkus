@@ -3,9 +3,7 @@ package io.quarkus.vertx.web.runtime;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -19,7 +17,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.enterprise.event.Event;
 
 import org.jboss.logging.Logger;
-import org.wildfly.common.iteration.CodePointIterator;
 
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.runtime.BeanContainer;
@@ -28,7 +25,10 @@ import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ShutdownContext;
 import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.runtime.configuration.ConfigInstantiator;
 import io.quarkus.runtime.configuration.ssl.ServerSslConfig;
+import io.quarkus.vertx.runtime.VertxConfiguration;
+import io.quarkus.vertx.runtime.VertxRecorder;
 import io.quarkus.vertx.web.Route;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -58,6 +58,29 @@ public class VertxWebRecorder {
     private static volatile Router router;
     private static volatile HttpServer server;
     private static volatile HttpServer sslServer;
+
+    public static void startServerAfterFailedStart() {
+        VertxConfiguration vertxConfiguration = new VertxConfiguration();
+        ConfigInstantiator.handleObject(vertxConfiguration);
+        VertxRecorder.initialize(vertxConfiguration);
+
+        try {
+            HttpConfiguration config = new HttpConfiguration();
+            ConfigInstantiator.handleObject(config);
+
+            router = Router.router(VertxRecorder.getVertx());
+            if (hotReplacementHandler != null) {
+                router.route().blockingHandler(hotReplacementHandler);
+            }
+
+            //we can't really do
+            doServerStart(VertxRecorder.getVertx(), config, LaunchMode.DEVELOPMENT);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
     public void configureRouter(RuntimeValue<Vertx> vertx, BeanContainer container, Map<String, List<Route>> routeHandlers,
             List<Handler<RoutingContext>> filters,
@@ -132,17 +155,16 @@ public class VertxWebRecorder {
 
         // Start the server
         if (server == null) {
-            doServerStart(vertx, httpConfiguration, launchMode, event);
+            doServerStart(vertx, httpConfiguration, launchMode);
         }
         return routes;
     }
 
-    private void doServerStart(Vertx vertx, HttpConfiguration httpConfiguration, LaunchMode launchMode, Event<Object> event)
+    private static void doServerStart(Vertx vertx, HttpConfiguration httpConfiguration, LaunchMode launchMode)
             throws IOException {
         CountDownLatch latch = new CountDownLatch(1);
         // Http server configuration
         HttpServerOptions httpServerOptions = createHttpServerOptions(httpConfiguration, launchMode);
-        event.select(HttpServerOptions.class).fire(httpServerOptions);
         AtomicReference<Throwable> failure = new AtomicReference<>();
 
         server = vertx.createHttpServer(httpServerOptions).requestHandler(router)
@@ -205,7 +227,8 @@ public class VertxWebRecorder {
      * Get an {@code HttpServerOptions} for this server configuration, or null if SSL should not be enabled
      *
      */
-    public HttpServerOptions createSslOptions(HttpConfiguration httpConfiguration, LaunchMode launchMode) throws IOException {
+    private static HttpServerOptions createSslOptions(HttpConfiguration httpConfiguration, LaunchMode launchMode)
+            throws IOException {
         ServerSslConfig sslConfig = httpConfiguration.ssl;
         //TODO: static fields break config
         Logger log = Logger.getLogger("io.quarkus.configuration.ssl");
@@ -237,7 +260,7 @@ public class VertxWebRecorder {
 
             //load the data
             byte[] data;
-            final InputStream keystoreAsResource = this.getClass().getClassLoader()
+            final InputStream keystoreAsResource = Thread.currentThread().getContextClassLoader()
                     .getResourceAsStream(keyStorePath.toString());
 
             if (keystoreAsResource != null) {
@@ -290,7 +313,7 @@ public class VertxWebRecorder {
         return serverOptions;
     }
 
-    public byte[] doRead(InputStream is) throws IOException {
+    private static byte[] doRead(InputStream is) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
         int r;
@@ -300,24 +323,7 @@ public class VertxWebRecorder {
         return out.toByteArray();
     }
 
-    static CodePointIterator load(final Path path) throws IOException {
-        final int size = Math.toIntExact(Files.size(path));
-        char[] chars = new char[size];
-        int c = 0;
-        try (InputStream is = Files.newInputStream(path)) {
-            try (InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                while (c < size) {
-                    final int res = isr.read(chars, c, size - c);
-                    if (res == -1)
-                        break;
-                    c += res;
-                }
-            }
-        }
-        return CodePointIterator.ofChars(chars, 0, c);
-    }
-
-    private HttpServerOptions createHttpServerOptions(HttpConfiguration httpConfiguration, LaunchMode launchMode) {
+    private static HttpServerOptions createHttpServerOptions(HttpConfiguration httpConfiguration, LaunchMode launchMode) {
         // TODO other config properties
         HttpServerOptions options = new HttpServerOptions();
         options.setHost(httpConfiguration.host);

@@ -20,6 +20,11 @@ public class VertxHotReplacementSetup implements HotReplacementSetup {
         VertxWebRecorder.setHotReplacement(this::handleHotReplacementRequest);
     }
 
+    @Override
+    public void handleFailedInitialStart() {
+        VertxWebRecorder.startServerAfterFailedStart();
+    }
+
     void handleHotReplacementRequest(RoutingContext routingContext) {
 
         if (nextUpdate > System.currentTimeMillis()) {
