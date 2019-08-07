@@ -4,6 +4,9 @@ import io.quarkus.builder.item.SimpleBuildItem;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 
+/**
+ * A build item that represents a handler for the default route
+ */
 public final class DefaultRouteBuildItem extends SimpleBuildItem {
 
     private final Handler<HttpServerRequest> handler;

@@ -95,17 +95,13 @@ import io.quarkus.deployment.builditem.substrate.SubstrateConfigBuildItem;
 import io.quarkus.deployment.builditem.substrate.SubstrateResourceBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.deployment.util.ServiceUtil;
-import io.quarkus.kubernetes.spi.KubernetesPortBuildItem;
 import io.quarkus.runtime.RuntimeValue;
-import io.quarkus.undertow.runtime.HttpBuildConfig;
-import io.quarkus.undertow.runtime.HttpConfig;
 import io.quarkus.undertow.runtime.HttpSessionContext;
 import io.quarkus.undertow.runtime.ServletProducer;
 import io.quarkus.undertow.runtime.ServletSecurityInfoProxy;
 import io.quarkus.undertow.runtime.ServletSecurityInfoSubstitution;
 import io.quarkus.undertow.runtime.UndertowDeploymentRecorder;
 import io.quarkus.undertow.runtime.UndertowHandlersConfServletExtension;
-import io.quarkus.undertow.runtime.filters.CORSRecorder;
 import io.quarkus.vertx.web.deployment.DefaultRouteBuildItem;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
@@ -139,25 +135,13 @@ public class UndertowBuildStep {
             List<HttpHandlerWrapperBuildItem> wrappers,
             ShutdownContextBuildItem shutdown,
             Consumer<DefaultRouteBuildItem> undertowProducer,
-            ExecutorBuildItem executorBuildItem,
-            CORSRecorder corsRecorder,
-            HttpConfig config) throws Exception {
-        corsRecorder.setHttpConfig(config);
+            ExecutorBuildItem executorBuildItem) throws Exception {
         Handler<HttpServerRequest> ut = recorder.startUndertow(shutdown, executorBuildItem.getExecutorProxy(),
                 servletDeploymentManagerBuildItem.getDeploymentManager(),
                 wrappers.stream().map(HttpHandlerWrapperBuildItem::getValue).collect(Collectors.toList()));
 
         undertowProducer.accept(new DefaultRouteBuildItem(ut));
         return new ServiceStartBuildItem("undertow");
-    }
-
-    @BuildStep()
-    @Record(STATIC_INIT)
-    public void buildCorsFilter(CORSRecorder corsRecorder, HttpBuildConfig buildConfig,
-            BuildProducer<ServletExtensionBuildItem> extensionProducer) {
-        if (buildConfig.corsEnabled) {
-            extensionProducer.produce(new ServletExtensionBuildItem(corsRecorder.buildCORSExtension()));
-        }
     }
 
     @BuildStep
@@ -186,11 +170,6 @@ public class UndertowBuildStep {
     void runtimeReinit(BuildProducer<RuntimeReinitializedClassBuildItem> producer) {
         producer.produce(new RuntimeReinitializedClassBuildItem("org.wildfly.common.net.HostName"));
         producer.produce(new RuntimeReinitializedClassBuildItem("org.wildfly.common.os.Process"));
-    }
-
-    @BuildStep
-    public void kubernetes(HttpConfig config, BuildProducer<KubernetesPortBuildItem> portProducer) {
-        portProducer.produce(new KubernetesPortBuildItem(config.port, "http"));
     }
 
     /**

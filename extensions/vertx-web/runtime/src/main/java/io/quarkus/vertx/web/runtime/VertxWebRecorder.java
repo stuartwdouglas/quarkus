@@ -45,10 +45,11 @@ public class VertxWebRecorder {
     private static volatile HttpServer server;
 
     public void configureRouter(RuntimeValue<Vertx> vertx, BeanContainer container, Map<String, List<Route>> routeHandlers,
-            VertxHttpConfiguration vertxHttpConfiguration, LaunchMode launchMode, ShutdownContext shutdown,
+            List<Handler<RoutingContext>> filters,
+            HttpConfiguration httpConfiguration, LaunchMode launchMode, ShutdownContext shutdown,
             Handler<HttpServerRequest> defaultRoute) {
 
-        List<io.vertx.ext.web.Route> appRoutes = initialize(vertx.getValue(), vertxHttpConfiguration, routeHandlers,
+        List<io.vertx.ext.web.Route> appRoutes = initialize(vertx.getValue(), httpConfiguration, routeHandlers, filters,
                 launchMode, defaultRoute);
         container.instance(RouterProducer.class).initialize(router);
 
@@ -73,8 +74,9 @@ public class VertxWebRecorder {
         }
     }
 
-    List<io.vertx.ext.web.Route> initialize(Vertx vertx, VertxHttpConfiguration vertxHttpConfiguration,
+    List<io.vertx.ext.web.Route> initialize(Vertx vertx, HttpConfiguration httpConfiguration,
             Map<String, List<Route>> routeHandlers,
+            List<Handler<RoutingContext>> filters,
             LaunchMode launchMode,
             Handler<HttpServerRequest> defaultRoute) {
         List<io.vertx.ext.web.Route> routes = new ArrayList<>();
@@ -87,13 +89,18 @@ public class VertxWebRecorder {
         for (Entry<String, List<Route>> entry : routeHandlers.entrySet()) {
             Handler<RoutingContext> handler = createHandler(entry.getKey());
             for (Route route : entry.getValue()) {
-                routes.add(addRoute(router, handler, route));
+                routes.add(addRoute(router, handler, route, filters));
             }
         }
         // Make it also possible to register the route handlers programmatically
         Event<Object> event = Arc.container().beanManager().getEvent();
         event.select(Router.class).fire(router);
 
+        for (Handler<RoutingContext> i : filters) {
+            if (i != null) {
+                router.route().handler(i);
+            }
+        }
         if (defaultRoute != null) {
             //TODO: can we skip the router if no other routes?
             router.route().handler(new Handler<RoutingContext>() {
@@ -108,7 +115,7 @@ public class VertxWebRecorder {
         if (server == null) {
             CountDownLatch latch = new CountDownLatch(1);
             // Http server configuration
-            HttpServerOptions httpServerOptions = createHttpServerOptions(vertxHttpConfiguration, launchMode);
+            HttpServerOptions httpServerOptions = createHttpServerOptions(httpConfiguration, launchMode);
             event.select(HttpServerOptions.class).fire(httpServerOptions);
             AtomicReference<Throwable> failure = new AtomicReference<>();
             server = vertx.createHttpServer(httpServerOptions).requestHandler(router)
@@ -139,15 +146,16 @@ public class VertxWebRecorder {
         return routes;
     }
 
-    private HttpServerOptions createHttpServerOptions(VertxHttpConfiguration vertxHttpConfiguration, LaunchMode launchMode) {
+    private HttpServerOptions createHttpServerOptions(HttpConfiguration httpConfiguration, LaunchMode launchMode) {
         // TODO other config properties
         HttpServerOptions options = new HttpServerOptions();
-        options.setHost(vertxHttpConfiguration.host);
-        options.setPort(vertxHttpConfiguration.determinePort(launchMode));
+        options.setHost(httpConfiguration.host);
+        options.setPort(httpConfiguration.determinePort(launchMode));
         return options;
     }
 
-    private io.vertx.ext.web.Route addRoute(Router router, Handler<RoutingContext> handler, Route routeAnnotation) {
+    private io.vertx.ext.web.Route addRoute(Router router, Handler<RoutingContext> handler, Route routeAnnotation,
+            List<Handler<RoutingContext>> filters) {
         io.vertx.ext.web.Route route;
         if (!routeAnnotation.regex().isEmpty()) {
             route = router.routeWithRegex(routeAnnotation.regex());
@@ -172,6 +180,12 @@ public class VertxWebRecorder {
         if (routeAnnotation.consumes().length > 0) {
             for (String consumes : routeAnnotation.consumes()) {
                 route.consumes(consumes);
+            }
+        }
+
+        for (Handler<RoutingContext> i : filters) {
+            if (i != null) {
+                route.handler(i);
             }
         }
         route.handler(BodyHandler.create());

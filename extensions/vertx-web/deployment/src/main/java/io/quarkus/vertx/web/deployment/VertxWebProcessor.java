@@ -50,13 +50,15 @@ import io.quarkus.gizmo.ClassOutput;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.kubernetes.spi.KubernetesPortBuildItem;
 import io.quarkus.vertx.deployment.VertxBuildItem;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RoutingExchange;
+import io.quarkus.vertx.web.runtime.HttpConfiguration;
 import io.quarkus.vertx.web.runtime.RouterProducer;
 import io.quarkus.vertx.web.runtime.RoutingExchangeImpl;
-import io.quarkus.vertx.web.runtime.VertxHttpConfiguration;
 import io.quarkus.vertx.web.runtime.VertxWebRecorder;
+import io.quarkus.vertx.web.runtime.cors.CORSRecorder;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
@@ -72,11 +74,23 @@ class VertxWebProcessor {
     private static final DotName ROUTING_EXCHANGE = DotName.createSimple(RoutingExchange.class.getName());
     private static final String HANDLER_SUFFIX = "_RouteHandler";
 
-    VertxHttpConfiguration vertxHttpConfiguration;
+    HttpConfiguration httpConfiguration;
+
+    @BuildStep
+    @Record(ExecutionTime.RUNTIME_INIT)
+    FilterBuildItem cors(CORSRecorder recorder,
+            HttpConfiguration configuration) {
+        return new FilterBuildItem(recorder.corsHandler(configuration));
+    }
 
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FeatureBuildItem.VERTX_WEB);
+    }
+
+    @BuildStep
+    public void kubernetes(HttpConfiguration config, BuildProducer<KubernetesPortBuildItem> portProducer) {
+        portProducer.produce(new KubernetesPortBuildItem(config.port, "http"));
     }
 
     @BuildStep
@@ -133,7 +147,8 @@ class VertxWebProcessor {
             BuildProducer<ReflectiveClassBuildItem> reflectiveClasses,
             ShutdownContextBuildItem shutdown,
             VertxBuildItem vertx,
-            Optional<DefaultRouteBuildItem> defaultRoute) {
+            Optional<DefaultRouteBuildItem> defaultRoute,
+            List<FilterBuildItem> filters) {
 
         ClassOutput classOutput = new ClassOutput() {
             @Override
@@ -150,7 +165,8 @@ class VertxWebProcessor {
             routeConfigs.put(handlerClass, routes);
             reflectiveClasses.produce(new ReflectiveClassBuildItem(false, false, handlerClass));
         }
-        recorder.configureRouter(vertx.getVertx(), beanContainer.getValue(), routeConfigs, vertxHttpConfiguration,
+        recorder.configureRouter(vertx.getVertx(), beanContainer.getValue(), routeConfigs,
+                filters.stream().map(FilterBuildItem::getHandler).collect(Collectors.toList()), httpConfiguration,
                 launchMode.getLaunchMode(),
                 shutdown, defaultRoute.map(DefaultRouteBuildItem::getHandler).orElse(null));
         return new ServiceStartBuildItem("vertx-web");
