@@ -36,10 +36,10 @@ public class ConfigInstantiator {
 
         try {
             Class cls = o.getClass();
-            if (!cls.getName().endsWith("Config")) {
+            if (!cls.getName().endsWith("Config") && !cls.getName().endsWith("Configuration")) {
                 return;
             }
-            for (Field field : cls.getFields()) {
+            for (Field field : cls.getDeclaredFields()) {
                 ConfigItem configItem = field.getDeclaredAnnotation(ConfigItem.class);
                 if (configItem == null || field.getType().isAnnotationPresent(ConfigGroup.class)) {
                     Object newInstance = field.getType().newInstance();
