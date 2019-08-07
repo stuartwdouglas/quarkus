@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 import javax.enterprise.event.Event;
 
@@ -30,7 +32,12 @@ import io.quarkus.runtime.configuration.ssl.ServerSslConfig;
 import io.quarkus.vertx.runtime.VertxConfiguration;
 import io.quarkus.vertx.runtime.VertxRecorder;
 import io.quarkus.vertx.web.Route;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Verticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
@@ -56,8 +63,8 @@ public class VertxWebRecorder {
     private static volatile Handler<RoutingContext> hotReplacementHandler;
 
     private static volatile Router router;
-    private static volatile HttpServer server;
-    private static volatile HttpServer sslServer;
+
+    private static volatile String deploymentId;
 
     public static void startServerAfterFailedStart() {
         VertxConfiguration vertxConfiguration = new VertxConfiguration();
@@ -104,13 +111,20 @@ public class VertxWebRecorder {
             shutdown.addShutdownTask(new Runnable() {
                 @Override
                 public void run() {
-                    server.close();
-                    router = null;
-                    server = null;
-                    if (sslServer != null) {
-                        sslServer.close();
-                        sslServer = null;
+                    CountDownLatch latch = new CountDownLatch(1);
+                    vertx.getValue().undeploy(deploymentId, new Handler<AsyncResult<Void>>() {
+                        @Override
+                        public void handle(AsyncResult<Void> event) {
+                            latch.countDown();
+                        }
+                    });
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
+                    router = null;
+                    deploymentId = null;
                 }
             });
         }
@@ -154,7 +168,7 @@ public class VertxWebRecorder {
         }
 
         // Start the server
-        if (server == null) {
+        if (deploymentId == null) {
             doServerStart(vertx, httpConfiguration, launchMode);
         }
         return routes;
@@ -165,62 +179,36 @@ public class VertxWebRecorder {
         CountDownLatch latch = new CountDownLatch(1);
         // Http server configuration
         HttpServerOptions httpServerOptions = createHttpServerOptions(httpConfiguration, launchMode);
-        AtomicReference<Throwable> failure = new AtomicReference<>();
-
-        server = vertx.createHttpServer(httpServerOptions).requestHandler(router)
-                .listen(ar -> {
-                    if (ar.succeeded()) {
-                        // TODO log proper message
-                        Timing.setHttpServer(String.format(
-                                "Listening on: http://%s:%s", httpServerOptions.getHost(), httpServerOptions.getPort()));
-
-                    } else {
-                        // We can't throw an exception from here as we are on the event loop.
-                        // We store the failure in a reference.
-                        // The reference will be checked in the main thread, and the failure re-thrown.
-                        failure.set(ar.cause());
-                    }
-                    latch.countDown();
-                });
-
-        try {
-            latch.await();
-            if (failure.get() != null) {
-                throw new IllegalStateException("Unable to start the HTTP server", failure.get());
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Unable to start the HTTP server", e);
-        }
-
-        CountDownLatch sslLatch = new CountDownLatch(1);
         HttpServerOptions sslConfig = createSslOptions(httpConfiguration, launchMode);
-        if (sslConfig != null) {
-            sslServer = vertx.createHttpServer(sslConfig).requestHandler(router)
-                    .listen(ar -> {
-                        if (ar.succeeded()) {
-                            // TODO log proper message
-                            Timing.setHttpServer(String.format(
-                                    "Listening on: https://%s:%s", httpServerOptions.getHost(), httpServerOptions.getPort()));
 
-                        } else {
-                            // We can't throw an exception from here as we are on the event loop.
-                            // We store the failure in a reference.
-                            // The reference will be checked in the main thread, and the failure re-thrown.
-                            failure.set(ar.cause());
-                        }
-                        sslLatch.countDown();
-                    });
-            try {
-                latch.await();
-                if (failure.get() != null) {
-                    throw new IllegalStateException("Unable to start the HTTP server", failure.get());
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new IllegalStateException("Unable to start the HTTP server", e);
+        int ioThreads = httpConfiguration.ioThreads.orElse(Runtime.getRuntime().availableProcessors() * 2);
+        CompletableFuture<String> futureResult = new CompletableFuture<>();
+        vertx.deployVerticle(new Supplier<Verticle>() {
+            @Override
+            public Verticle get() {
+                return new WebDeploymentVerticle(httpConfiguration.determinePort(launchMode),
+                        httpConfiguration.determineSslPort(launchMode), httpConfiguration.host, httpServerOptions, sslConfig,
+                        router);
             }
+        }, new DeploymentOptions().setInstances(ioThreads), new Handler<AsyncResult<String>>() {
+            @Override
+            public void handle(AsyncResult<String> event) {
+                if (event.failed()) {
+                    futureResult.completeExceptionally(event.cause());
+                } else {
+                    futureResult.complete(event.result());
+                }
+            }
+        });
+        try {
+            deploymentId = futureResult.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Unable to start HTTP server", e);
         }
+
+        // TODO log proper message
+        Timing.setHttpServer(String.format(
+                "Listening on: http://%s:%s", httpServerOptions.getHost(), httpServerOptions.getPort()));
     }
 
     /**
@@ -400,4 +388,68 @@ public class VertxWebRecorder {
         }
     }
 
+    private static class WebDeploymentVerticle implements Verticle {
+
+        private final int port;
+        private final int httpsPort;
+        private final String host;
+        private HttpServer httpServer;
+        private HttpServer httpsServer;
+        private Vertx vertx;
+        private final HttpServerOptions httpOptions;
+        private final HttpServerOptions httpsOptions;
+        private final Router router;
+
+        public WebDeploymentVerticle(int port, int httpsPort, String host, HttpServerOptions httpOptions,
+                HttpServerOptions httpsOptions, Router router) {
+            this.port = port;
+            this.httpsPort = httpsPort;
+            this.host = host;
+            this.httpOptions = httpOptions;
+            this.httpsOptions = httpsOptions;
+            this.router = router;
+        }
+
+        @Override
+        public Vertx getVertx() {
+            return vertx;
+        }
+
+        @Override
+        public void init(Vertx vertx, Context context) {
+            this.vertx = vertx;
+        }
+
+        @Override
+        public void start(Future<Void> startFuture) throws Exception {
+            httpServer = vertx.createHttpServer(httpOptions);
+            httpServer.requestHandler(router);
+            httpServer.listen(port, host);
+            if (httpsOptions != null) {
+                httpsServer = vertx.createHttpServer(httpsOptions);
+                httpsServer.requestHandler(router);
+                httpsServer.listen(httpsPort, host);
+            }
+            startFuture.complete();
+        }
+
+        @Override
+        public void stop(Future<Void> stopFuture) throws Exception {
+            httpServer.close(new Handler<AsyncResult<Void>>() {
+                @Override
+                public void handle(AsyncResult<Void> event) {
+                    if (httpsServer != null) {
+                        httpsServer.close(new Handler<AsyncResult<Void>>() {
+                            @Override
+                            public void handle(AsyncResult<Void> event) {
+                                stopFuture.complete();
+                            }
+                        });
+                    } else {
+                        stopFuture.complete();
+                    }
+                }
+            });
+        }
+    }
 }

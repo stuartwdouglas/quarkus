@@ -1,5 +1,7 @@
 package io.quarkus.vertx.web.runtime;
 
+import java.util.OptionalInt;
+
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
@@ -55,6 +57,13 @@ public class HttpConfiguration {
      * The SSL config
      */
     public ServerSslConfig ssl;
+
+    /**
+     * The number if IO threads used to perform IO. This will be automatically set to a reasonable value based on
+     * the number of CPU cores if it is not provided
+     */
+    @ConfigItem
+    public OptionalInt ioThreads;
 
     public int determinePort(LaunchMode launchMode) {
         return launchMode == LaunchMode.TEST ? testPort : port;

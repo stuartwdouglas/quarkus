@@ -11,6 +11,7 @@ import java.util.OptionalLong;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
+import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.smallrye.config.SmallRyeConfig;
 
@@ -40,7 +41,7 @@ public class ConfigInstantiator {
             }
             for (Field field : cls.getFields()) {
                 ConfigItem configItem = field.getDeclaredAnnotation(ConfigItem.class);
-                if (configItem == null) {
+                if (configItem == null || field.getType().isAnnotationPresent(ConfigGroup.class)) {
                     Object newInstance = field.getType().newInstance();
                     field.set(o, newInstance);
                     handleObject(prefix + "." + dashify(field.getName()), newInstance, config);
