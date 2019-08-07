@@ -1,5 +1,6 @@
 package io.quarkus.vertx.web.deployment;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -148,7 +149,7 @@ class VertxWebProcessor {
             ShutdownContextBuildItem shutdown,
             VertxBuildItem vertx,
             Optional<DefaultRouteBuildItem> defaultRoute,
-            List<FilterBuildItem> filters) {
+            List<FilterBuildItem> filters) throws IOException {
 
         ClassOutput classOutput = new ClassOutput() {
             @Override

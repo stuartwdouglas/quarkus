@@ -1,16 +1,25 @@
 package io.quarkus.vertx.web.runtime;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.enterprise.event.Event;
 
 import org.jboss.logging.Logger;
+import org.wildfly.common.iteration.CodePointIterator;
 
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.runtime.BeanContainer;
@@ -19,13 +28,18 @@ import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.ShutdownContext;
 import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.runtime.configuration.ssl.ServerSslConfig;
 import io.quarkus.vertx.web.Route;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.net.JksOptions;
+import io.vertx.core.net.PemKeyCertOptions;
+import io.vertx.core.net.PfxOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -43,11 +57,12 @@ public class VertxWebRecorder {
 
     private static volatile Router router;
     private static volatile HttpServer server;
+    private static volatile HttpServer sslServer;
 
     public void configureRouter(RuntimeValue<Vertx> vertx, BeanContainer container, Map<String, List<Route>> routeHandlers,
             List<Handler<RoutingContext>> filters,
             HttpConfiguration httpConfiguration, LaunchMode launchMode, ShutdownContext shutdown,
-            Handler<HttpServerRequest> defaultRoute) {
+            Handler<HttpServerRequest> defaultRoute) throws IOException {
 
         List<io.vertx.ext.web.Route> appRoutes = initialize(vertx.getValue(), httpConfiguration, routeHandlers, filters,
                 launchMode, defaultRoute);
@@ -69,6 +84,10 @@ public class VertxWebRecorder {
                     server.close();
                     router = null;
                     server = null;
+                    if (sslServer != null) {
+                        sslServer.close();
+                        sslServer = null;
+                    }
                 }
             });
         }
@@ -78,7 +97,7 @@ public class VertxWebRecorder {
             Map<String, List<Route>> routeHandlers,
             List<Handler<RoutingContext>> filters,
             LaunchMode launchMode,
-            Handler<HttpServerRequest> defaultRoute) {
+            Handler<HttpServerRequest> defaultRoute) throws IOException {
         List<io.vertx.ext.web.Route> routes = new ArrayList<>();
         if (router == null) {
             router = Router.router(vertx);
@@ -113,17 +132,54 @@ public class VertxWebRecorder {
 
         // Start the server
         if (server == null) {
-            CountDownLatch latch = new CountDownLatch(1);
-            // Http server configuration
-            HttpServerOptions httpServerOptions = createHttpServerOptions(httpConfiguration, launchMode);
-            event.select(HttpServerOptions.class).fire(httpServerOptions);
-            AtomicReference<Throwable> failure = new AtomicReference<>();
-            server = vertx.createHttpServer(httpServerOptions).requestHandler(router)
+            doServerStart(vertx, httpConfiguration, launchMode, event);
+        }
+        return routes;
+    }
+
+    private void doServerStart(Vertx vertx, HttpConfiguration httpConfiguration, LaunchMode launchMode, Event<Object> event)
+            throws IOException {
+        CountDownLatch latch = new CountDownLatch(1);
+        // Http server configuration
+        HttpServerOptions httpServerOptions = createHttpServerOptions(httpConfiguration, launchMode);
+        event.select(HttpServerOptions.class).fire(httpServerOptions);
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+
+        server = vertx.createHttpServer(httpServerOptions).requestHandler(router)
+                .listen(ar -> {
+                    if (ar.succeeded()) {
+                        // TODO log proper message
+                        Timing.setHttpServer(String.format(
+                                "Listening on: http://%s:%s", httpServerOptions.getHost(), httpServerOptions.getPort()));
+
+                    } else {
+                        // We can't throw an exception from here as we are on the event loop.
+                        // We store the failure in a reference.
+                        // The reference will be checked in the main thread, and the failure re-thrown.
+                        failure.set(ar.cause());
+                    }
+                    latch.countDown();
+                });
+
+        try {
+            latch.await();
+            if (failure.get() != null) {
+                throw new IllegalStateException("Unable to start the HTTP server", failure.get());
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Unable to start the HTTP server", e);
+        }
+
+        CountDownLatch sslLatch = new CountDownLatch(1);
+        HttpServerOptions sslConfig = createSslOptions(httpConfiguration, launchMode);
+        if (sslConfig != null) {
+            sslServer = vertx.createHttpServer(sslConfig).requestHandler(router)
                     .listen(ar -> {
                         if (ar.succeeded()) {
                             // TODO log proper message
                             Timing.setHttpServer(String.format(
-                                    "Listening on: http://%s:%s", httpServerOptions.getHost(), httpServerOptions.getPort()));
+                                    "Listening on: https://%s:%s", httpServerOptions.getHost(), httpServerOptions.getPort()));
 
                         } else {
                             // We can't throw an exception from here as we are on the event loop.
@@ -131,7 +187,7 @@ public class VertxWebRecorder {
                             // The reference will be checked in the main thread, and the failure re-thrown.
                             failure.set(ar.cause());
                         }
-                        latch.countDown();
+                        sslLatch.countDown();
                     });
             try {
                 latch.await();
@@ -143,7 +199,122 @@ public class VertxWebRecorder {
                 throw new IllegalStateException("Unable to start the HTTP server", e);
             }
         }
-        return routes;
+    }
+
+    /**
+     * Get an {@code HttpServerOptions} for this server configuration, or null if SSL should not be enabled
+     *
+     */
+    public HttpServerOptions createSslOptions(HttpConfiguration httpConfiguration, LaunchMode launchMode) throws IOException {
+        ServerSslConfig sslConfig = httpConfiguration.ssl;
+        //TODO: static fields break config
+        Logger log = Logger.getLogger("io.quarkus.configuration.ssl");
+        final Optional<Path> certFile = sslConfig.certificate.file;
+        final Optional<Path> keyFile = sslConfig.certificate.keyFile;
+        final Optional<Path> keyStoreFile = sslConfig.certificate.keyStoreFile;
+        final String keystorePassword = sslConfig.certificate.keyStorePassword;
+        final HttpServerOptions serverOptions = new HttpServerOptions();
+        if (certFile.isPresent() && keyFile.isPresent()) {
+            PemKeyCertOptions pemKeyCertOptions = new PemKeyCertOptions()
+                    .setCertPath(certFile.get().toAbsolutePath().toString())
+                    .setKeyPath(keyFile.get().toAbsolutePath().toString());
+            serverOptions.setPemKeyCertOptions(pemKeyCertOptions);
+        } else if (keyStoreFile.isPresent()) {
+            final Path keyStorePath = keyStoreFile.get();
+            final Optional<String> keyStoreFileType = sslConfig.certificate.keyStoreFileType;
+            final String type;
+            if (keyStoreFileType.isPresent()) {
+                type = keyStoreFileType.get().toLowerCase();
+            } else {
+                final String pathName = keyStorePath.toString();
+                if (pathName.endsWith(".p12") || pathName.endsWith(".pkcs12") || pathName.endsWith(".pfx")) {
+                    type = "pkcs12";
+                } else {
+                    // assume jks
+                    type = "jks";
+                }
+            }
+
+            //load the data
+            byte[] data;
+            final InputStream keystoreAsResource = this.getClass().getClassLoader()
+                    .getResourceAsStream(keyStorePath.toString());
+
+            if (keystoreAsResource != null) {
+                try (InputStream is = keystoreAsResource) {
+                    data = doRead(is);
+                }
+            } else {
+                try (InputStream is = Files.newInputStream(keyStorePath)) {
+                    data = doRead(is);
+                }
+            }
+
+            switch (type) {
+                case "pkcs12": {
+                    PfxOptions options = new PfxOptions()
+                            .setPassword(keystorePassword)
+                            .setValue(Buffer.buffer(data));
+                    serverOptions.setPfxKeyCertOptions(options);
+                    break;
+                }
+                case "jks": {
+                    JksOptions options = new JksOptions()
+                            .setPassword(keystorePassword)
+                            .setValue(Buffer.buffer(data));
+                    serverOptions.setKeyStoreOptions(options);
+                    break;
+                }
+                default:
+                    throw new IllegalArgumentException("Unknown keystore type: " + type + " valid types are jks or pkcs12");
+            }
+
+        } else {
+            return null;
+        }
+
+        for (String i : sslConfig.cipherSuites) {
+            if (!i.isEmpty()) {
+                serverOptions.addEnabledCipherSuite(i);
+            }
+        }
+
+        for (String i : sslConfig.protocols) {
+            if (!i.isEmpty()) {
+                serverOptions.addEnabledSecureTransportProtocol(i);
+            }
+        }
+        serverOptions.setSsl(true);
+        serverOptions.setHost(httpConfiguration.host);
+        serverOptions.setPort(httpConfiguration.determineSslPort(launchMode));
+        return serverOptions;
+    }
+
+    public byte[] doRead(InputStream is) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[1024];
+        int r;
+        while ((r = is.read(buf)) > 0) {
+            out.write(buf, 0, r);
+        }
+        return out.toByteArray();
+    }
+
+    static CodePointIterator load(final Path path) throws IOException {
+        final int size = Math.toIntExact(Files.size(path));
+        char[] chars = new char[size];
+        int c = 0;
+        try (InputStream is = Files.newInputStream(path)) {
+            try (InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                while (c < size) {
+                    final int res = isr.read(chars, c, size - c);
+                    if (res == -1)
+                        break;
+                    c += res;
+                }
+            }
+        }
+        return CodePointIterator.ofChars(chars, 0, c);
     }
 
     private HttpServerOptions createHttpServerOptions(HttpConfiguration httpConfiguration, LaunchMode launchMode) {
