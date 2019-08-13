@@ -151,6 +151,7 @@
         <!-- Used for integration tests, to make sure webjars work-->
         <bootstrap.version>3.1.0</bootstrap.version>
         <keycloak.version>6.0.1</keycloak.version>
+        <quarkus-keycloak.version>1.0.0.Alpha1-SNAPSHOT</quarkus-keycloak.version>
         <subethasmtp.version>3.1.7</subethasmtp.version>
         <hibernate-quarkus-local-cache.version>0.1.0</hibernate-quarkus-local-cache.version>
         <kogito.version>0.2.0</kogito.version>
@@ -2031,9 +2032,9 @@
                 <version>${keycloak.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.keycloak</groupId>
-                <artifactId>keycloak-undertow-adapter</artifactId>
-                <version>${keycloak.version}</version>
+                <groupId>io.quarkus.keycloak</groupId>
+                <artifactId>quarkus-keycloak-adapter</artifactId>
+                <version>${quarkus-keycloak.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.keycloak</groupId>
