@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Supplier;
 
@@ -209,6 +210,12 @@ public class UndertowDeploymentRecorder {
                 : new QuarkusInstanceFactory(beanContainer.instanceFactory(servletClass));
         ServletInfo servletInfo = new ServletInfo(name, (Class<? extends Servlet>) servletClass,
                 factory);
+        servletInfo.setExecutor(new Executor() {
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        });
         for (Map.Entry<String, String> e : initParams.entrySet()) {
             servletInfo.addInitParam(e.getKey(), e.getValue());
         }
