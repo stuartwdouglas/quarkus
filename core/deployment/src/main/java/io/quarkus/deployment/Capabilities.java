@@ -11,6 +11,7 @@ public final class Capabilities extends SimpleBuildItem {
 
     public static final String CDI_ARC = "io.quarkus.cdi";
     public static final String TRANSACTIONS = "io.quarkus.transactions";
+    public static final String SECURITY = "io.quarkus.security";
 
     private final Set<String> capabilities;
 
