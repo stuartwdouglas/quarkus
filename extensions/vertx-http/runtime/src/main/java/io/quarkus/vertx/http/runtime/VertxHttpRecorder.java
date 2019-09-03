@@ -42,7 +42,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.impl.Http1xServerConnection;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
@@ -131,7 +130,7 @@ public class VertxHttpRecorder {
         return new RuntimeValue<>(router);
     }
 
-    public void finalizeRouter(BeanContainer container, Handler<HttpServerRequest> defaultRouteHandler,
+    public void finalizeRouter(BeanContainer container, Handler<RoutingContext> defaultRouteHandler,
             List<Handler<RoutingContext>> filters, LaunchMode launchMode, ShutdownContext shutdown) {
         // install the default route at the end
         if (defaultRouteHandler != null) {
@@ -147,7 +146,7 @@ public class VertxHttpRecorder {
             defaultRoute.handler(new Handler<RoutingContext>() {
                 @Override
                 public void handle(RoutingContext event) {
-                    defaultRouteHandler.handle(event.request());
+                    defaultRouteHandler.handle(event);
                 }
             });
         }
