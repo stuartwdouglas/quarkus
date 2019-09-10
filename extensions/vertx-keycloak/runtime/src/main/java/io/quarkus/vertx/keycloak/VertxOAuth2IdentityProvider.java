@@ -2,7 +2,6 @@ package io.quarkus.vertx.keycloak;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.regex.Pattern;
 
 import javax.enterprise.context.ApplicationScoped;
 
@@ -14,6 +13,8 @@ import io.quarkus.security.runtime.QuarkusPrincipal;
 import io.quarkus.security.runtime.QuarkusSecurityIdentity;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.oauth2.AccessToken;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
 
@@ -48,24 +49,18 @@ public class VertxOAuth2IdentityProvider implements IdentityProvider<TokenAuthen
                     return;
                 }
                 AccessToken token = event.result();
-                String scope = token.principal().getString("scope");
                 QuarkusSecurityIdentity.Builder builder = QuarkusSecurityIdentity.builder();
                 builder.setPrincipal(new QuarkusPrincipal(token.principal().getString("username")));
-                // avoid the case when scope is the literal "null" value.
-                if (scope != null) {
-                    for (String authority : scope.split(Pattern.quote(auth.getScopeSeparator()))) {
-                        System.out.println(authority);
-                        builder.addRole(authority);
+                JsonObject realmAccess = token.accessToken().getJsonObject("realm_access");
+                if (realmAccess != null) {
+                    JsonArray roles = realmAccess.getJsonArray("roles");
+                    if (roles != null) {
+                        for (Object authority : roles) {
+                            builder.addRole(authority.toString());
+                        }
                     }
                 }
-                token.isAuthorized("admin", new Handler<AsyncResult<Boolean>>() {
-                    @Override
-                    public void handle(AsyncResult<Boolean> event) {
-                        System.out.println("Usert " + token.principal().getString("username") + " AUTH " + event.result());
-                    }
-                });
                 builder.addCredential(request.getToken());
-                System.out.println(token);
                 result.complete(builder.build());
             }
         });

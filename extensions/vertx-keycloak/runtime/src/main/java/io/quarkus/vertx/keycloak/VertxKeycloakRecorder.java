@@ -1,8 +1,14 @@
 package io.quarkus.vertx.keycloak;
 
+import java.security.SecureRandom;
+import java.util.concurrent.CompletableFuture;
+
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.oauth2.OAuth2Auth;
@@ -47,8 +53,29 @@ public class VertxKeycloakRecorder {
                     .setPublicKey(config.realmPublicKey.get()));
         }
 
-        OAuth2Auth auth = OAuth2Auth.create(vertx.getValue(), OAuth2FlowType.AUTH_CODE, options);
-        auth.rbacHandler(new KeycloakRBACImpl(options));
+        byte[] bogus = new byte[512];
+        new SecureRandom().nextBytes(bogus);
+
+        options.addPubSecKey(new PubSecKeyOptions().setSymmetric(true).setPublicKey(Base64.encode(bogus)).setAlgorithm("HS512"));
+
+        options.setFlow(OAuth2FlowType.AUTH_JWT);
+
+        OAuth2Auth auth = OAuth2Auth.create(vertx.getValue(), options);
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        auth.loadJWK(new Handler<AsyncResult<Void>>() {
+            @Override
+            public void handle(AsyncResult<Void> event) {
+                //TODO: handle this better
+                if (event.failed()) {
+                    cf.completeExceptionally(event.cause());
+                } else {
+                    cf.complete(null);
+                }
+            }
+        });
+        cf.join();
+        KeycloakRBACImpl rbac = new KeycloakRBACImpl(options);
+        auth.rbacHandler(rbac);
 
         beanContainer.instance(VertxOAuth2IdentityProvider.class).setAuth(auth);
         VertxOAuth2AuthenticationMechanism mechanism = beanContainer.instance(VertxOAuth2AuthenticationMechanism.class);
