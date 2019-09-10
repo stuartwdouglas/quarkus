@@ -309,9 +309,10 @@
                 <artifactId>quarkus-elytron-security-oauth2</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>io.quarkus</groupId>
-                <artifactId>quarkus-vertx-web-security</artifactId>
+                <artifactId>quarkus-vertx-keycloak</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1828,6 +1829,11 @@
             <dependency>
                 <groupId>io.vertx</groupId>
                 <artifactId>vertx-pg-client</artifactId>
+                <version>${vertx.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.vertx</groupId>
+                <artifactId>vertx-auth-oauth2</artifactId>
                 <version>${vertx.version}</version>
             </dependency>
             <dependency>
