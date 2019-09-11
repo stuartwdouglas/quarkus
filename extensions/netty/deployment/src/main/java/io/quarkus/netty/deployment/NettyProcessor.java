@@ -39,6 +39,8 @@ class NettyProcessor {
 
         SubstrateConfigBuildItem.Builder builder = SubstrateConfigBuildItem.builder()
                 .addNativeImageSystemProperty("io.netty.noUnsafe", "true")
+                .addNativeImageSystemProperty("io.netty.allocator.numHeapArenas", "0")
+                .addNativeImageSystemProperty("io.netty.allocator.numDirectArenas", "0")
                 .addRuntimeInitializedClass("io.netty.handler.ssl.JdkNpnApplicationProtocolNegotiator")
                 .addRuntimeInitializedClass("io.netty.handler.ssl.ReferenceCountedOpenSslEngine")
                 .addRuntimeInitializedClass("io.netty.handler.ssl.ReferenceCountedOpenSslContext")
