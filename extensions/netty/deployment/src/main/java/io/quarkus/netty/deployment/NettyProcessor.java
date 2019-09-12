@@ -45,6 +45,9 @@ class NettyProcessor {
                 .addRuntimeInitializedClass("io.netty.handler.ssl.ReferenceCountedOpenSslClientContext")
                 .addRuntimeInitializedClass("io.netty.handler.ssl.util.ThreadLocalInsecureRandom")
                 .addRuntimeInitializedClass("io.netty.handler.ssl.ConscryptAlpnSslEngine")
+                .addNativeImageSystemProperty("io.netty.allocator.numHeapArenas", "1")
+                .addNativeImageSystemProperty("io.netty.allocator.numDirectArenas", "1")
+                .addNativeImageSystemProperty("sun.nio.ch.maxUpdateArraySize", "1024")
                 .addNativeImageSystemProperty("io.netty.leakDetection.level", "DISABLED");
         try {
             Class.forName("io.netty.handler.codec.http.HttpObjectEncoder");
