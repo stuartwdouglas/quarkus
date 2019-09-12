@@ -174,7 +174,7 @@ public class VertxHttpRecorder {
         HttpServerOptions httpServerOptions = createHttpServerOptions(httpConfiguration, launchMode);
         HttpServerOptions sslConfig = createSslOptions(httpConfiguration, launchMode);
 
-        int ioThreads = httpConfiguration.ioThreads.orElse(Runtime.getRuntime().availableProcessors() * 2);
+        int ioThreads = httpConfiguration.ioThreads.orElse(calculateDefaultIOThreads());
         CompletableFuture<String> futureResult = new CompletableFuture<>();
         vertx.deployVerticle(new Supplier<Verticle>() {
             @Override
@@ -231,6 +231,19 @@ public class VertxHttpRecorder {
         // TODO log proper message
         Timing.setHttpServer(String.format(
                 "Listening on: http://%s:%s", httpServerOptions.getHost(), httpServerOptions.getPort()));
+    }
+
+    private static int calculateDefaultIOThreads() {
+        //we only allow one event loop per 4mb of ram at the most
+        //its hard to say what this number should be, but it is also obvious
+        //that for constrained environments we don't want a lot of event loops
+        //lets start with 4mb and adjust as needed
+        int recommended = Runtime.getRuntime().availableProcessors() * 2;
+        long mem = Runtime.getRuntime().maxMemory();
+        long memInMb = mem / (1024 * 1024);
+        long maxAllowed = memInMb / 4;
+
+        return (int) Math.max(2, Math.min(maxAllowed, recommended));
     }
 
     /**
