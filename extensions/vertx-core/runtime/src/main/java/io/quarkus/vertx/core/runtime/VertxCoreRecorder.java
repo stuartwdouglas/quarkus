@@ -88,6 +88,7 @@ public class VertxCoreRecorder {
     }
 
     public static void initializeWeb(VertxConfiguration conf) {
+        System.setProperty("vertx.disableH2c", "true");
         if (webVertx != null) {
         } else if (conf == null) {
             webVertx = Vertx.vertx();

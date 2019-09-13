@@ -4,10 +4,13 @@ import java.util.function.BooleanSupplier;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.Delete;
 import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.quarkus.vertx.core.runtime.VertxCoreRecorder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -19,6 +22,8 @@ import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.eventbus.impl.HandlerHolder;
 import io.vertx.core.eventbus.impl.MessageImpl;
 import io.vertx.core.eventbus.impl.clustered.ClusterNodeInfo;
+import io.vertx.core.http.impl.HttpServerChannelInitializer;
+import io.vertx.core.http.impl.HttpServerConnection;
 import io.vertx.core.impl.HAManager;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.resolver.DefaultResolverProvider;
@@ -219,6 +224,46 @@ final class Target_io_vertx_core_json_Json {
         throw new RuntimeException("Vertx JSON not enabled");
     }
 
+}
+
+@TargetClass(className = "io.vertx.core.net.TCPSSLOptions")
+final class Target_io_vertx_core_net_TCPSSLOptions {
+
+    @Substitute
+    public boolean isUseAlpn() {
+        return false;
+    }
+}
+
+@TargetClass(className = "io.vertx.core.http.impl.HttpServerChannelInitializer")
+final class Target_io_vertx_core_http_impl_HttpServerChannelInitializer {
+
+    @Substitute
+    private void handleHttp2(Channel ch) {
+        throw new IllegalStateException("Native image does not support HTTP/2");
+    }
+}
+
+@TargetClass(className = "io.vertx.core.eventbus.EventBusOptions")
+final class Target_io_vertx_core_eventbus_EventBusOptions {
+    @Substitute
+    public boolean isClustered() {
+        return false;
+    }
+}
+
+@TargetClass(className = "io.vertx.core.http.impl.Http1xUpgradeToH2CHandler")
+final class Target_io_vertx_core_http_impl_Http1xUpgradeToH2CHandler {
+
+    @Alias
+    private HttpServerChannelInitializer initializer;
+    @Alias
+    private io.vertx.core.net.impl.HandlerHolder<? extends Handler<HttpServerConnection>> holder;
+
+    @Substitute
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        throw new IllegalStateException("No H2 in native image");
+    }
 }
 
 class JsonDisabled implements BooleanSupplier {
