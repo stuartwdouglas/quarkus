@@ -1,5 +1,7 @@
 package io.quarkus.vertx.core.deployment;
 
+import java.util.function.Supplier;
+
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -48,7 +50,7 @@ class VertxCommonProcessor {
     CoreVertxBuildItem build(VertxCoreRecorder recorder, BeanContainerBuildItem beanContainer,
             LaunchModeBuildItem launchMode, ShutdownContextBuildItem shutdown, VertxConfiguration config) {
 
-        RuntimeValue<Vertx> vertx = recorder.configureVertx(beanContainer.getValue(), config,
+        Supplier<Vertx> vertx = recorder.configureVertx(beanContainer.getValue(), config,
                 launchMode.getLaunchMode(), shutdown);
 
         return new CoreVertxBuildItem(vertx);
