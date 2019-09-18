@@ -281,6 +281,7 @@ public class UndertowBuildStep {
             ShutdownContextBuildItem shutdownContext,
             KnownPathsBuildItem knownPaths,
             ServletConfig servletConfig) throws Exception {
+        reflectiveClasses.accept(new ReflectiveClassBuildItem(false, false, "sun.nio.ch.EPollSelectorProvider"));
 
         ObjectSubstitutionBuildItem.Holder holder = new ObjectSubstitutionBuildItem.Holder(ServletSecurityInfo.class,
                 ServletSecurityInfoProxy.class, ServletSecurityInfoSubstitution.class);
