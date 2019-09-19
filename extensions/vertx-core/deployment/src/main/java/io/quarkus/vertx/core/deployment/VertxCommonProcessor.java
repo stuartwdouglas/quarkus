@@ -24,6 +24,7 @@ class VertxCommonProcessor {
     SubstrateConfigBuildItem build() {
         return SubstrateConfigBuildItem.builder()
                 .addNativeImageSystemProperty("vertx.disableDnsResolver", "true")
+                .addNativeImageSystemProperty("vertx.disableWebsockets", "true")
                 .addRuntimeInitializedClass("io.vertx.core.http.impl.VertxHttp2ClientUpgradeCodec")
                 .build();
     }

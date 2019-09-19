@@ -8,6 +8,7 @@ import com.oracle.svm.core.annotate.Delete;
 import com.oracle.svm.core.annotate.Substitute;
 import com.oracle.svm.core.annotate.TargetClass;
 
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.quarkus.vertx.core.runtime.VertxCoreRecorder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -19,6 +20,8 @@ import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.eventbus.impl.HandlerHolder;
 import io.vertx.core.eventbus.impl.MessageImpl;
 import io.vertx.core.eventbus.impl.clustered.ClusterNodeInfo;
+import io.vertx.core.http.impl.HttpServerRequestImpl;
+import io.vertx.core.http.impl.ServerWebSocketImpl;
 import io.vertx.core.impl.HAManager;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.resolver.DefaultResolverProvider;
@@ -219,6 +222,30 @@ final class Target_io_vertx_core_json_Json {
         throw new RuntimeException("Vertx JSON not enabled");
     }
 
+}
+
+@TargetClass(className = "io.vertx.core.http.impl.Http1xServerConnection")
+final class Target_io_vertx_core_http_impl_Http1xServerConnection {
+    @Substitute
+    ServerWebSocketImpl createWebSocket(HttpServerRequestImpl request) {
+        throw new RuntimeException("Not implemented");
+    }
+
+}
+
+@TargetClass(className = "io.vertx.core.http.impl.Http1xConnectionBase")
+final class Target_io_vertx_core_http_impl_Http1xConnectionBase {
+
+    @Substitute
+    void handleWsFrame(WebSocketFrame msg) {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Substitute
+    void closeWithPayload(short code, String reason, Handler<AsyncResult<Void>> handler) {
+        throw new RuntimeException("Not implemented");
+
+    }
 }
 
 class JsonDisabled implements BooleanSupplier {
