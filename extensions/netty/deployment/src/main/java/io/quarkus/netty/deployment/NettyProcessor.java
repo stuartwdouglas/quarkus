@@ -33,6 +33,12 @@ class NettyProcessor {
         InternalLoggerFactory.setDefaultFactory(new JBossNettyLoggerFactory());
     }
 
+    @Record(ExecutionTime.STATIC_INIT)
+    @BuildStep
+    public void limitMem(NettyRecorder recorder) {
+        recorder.setEpollLimits();
+    }
+
     @BuildStep
     SubstrateConfigBuildItem build(BuildProducer<JniBuildItem> jni) {
         boolean enableJni = false;

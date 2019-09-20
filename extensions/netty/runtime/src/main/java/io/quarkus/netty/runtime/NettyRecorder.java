@@ -2,6 +2,7 @@ package io.quarkus.netty.runtime;
 
 import java.util.function.Supplier;
 
+import org.graalvm.nativeimage.ImageInfo;
 import org.jboss.logging.Logger;
 
 import io.netty.channel.DefaultChannelId;
@@ -14,7 +15,14 @@ public class NettyRecorder {
 
     private static final Logger log = Logger.getLogger(NettyRecorder.class);
 
+    public void setEpollLimits() {
+        if (ImageInfo.inImageBuildtimeCode()) {
+            System.setProperty("sun.nio.ch.maxUpdateArraySize", "100");
+        }
+    }
+
     public void eagerlyInitChannelId() {
+        System.out.println("PROP " + System.getProperty("sun.nio.ch.maxUpdateArraySize"));
         //this class is slow to init and can block the IO thread and cause a warning
         //we init it from a throway thread to stop this
         //we do it from another thread so as not to affect start time
