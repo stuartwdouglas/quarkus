@@ -28,6 +28,10 @@
             <artifactId>jakarta.inject-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-launcher</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config</artifactId>
             <exclusions>

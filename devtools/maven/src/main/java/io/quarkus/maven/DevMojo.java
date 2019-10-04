@@ -592,7 +592,11 @@ public class DevMojo extends AbstractMojo {
                                             .setRepositories(repos)));
 
             for (ArtifactResult appDep : cpRes.getArtifactResults()) {
-                addToClassPaths(classPathManifest, devModeContext, appDep.getArtifact().getFile());
+                //we only use the launcher for launching from the IDE, we need to exclude it
+                if (!(appDep.getArtifact().getGroupId().equals("io.quarkus")
+                        && appDep.getArtifact().getArtifactId().equals("quarkus-launcher"))) {
+                    addToClassPaths(classPathManifest, devModeContext, appDep.getArtifact().getFile());
+                }
             }
 
             args.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");

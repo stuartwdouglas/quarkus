@@ -3,6 +3,7 @@ package io.quarkus.dev;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +28,7 @@ public class DevModeContext implements Serializable {
     private String sourceEncoding;
 
     private final List<File> classesRoots = new ArrayList<>();
+    private final List<URL> additionalClassPathElements = new ArrayList<>();
     private File frameworkClassesDir;
     private File cacheDir;
     private File projectDir;
@@ -78,6 +80,10 @@ public class DevModeContext implements Serializable {
 
     public List<File> getClassesRoots() {
         return classesRoots;
+    }
+
+    public List<URL> getAdditionalClassPathElements() {
+        return additionalClassPathElements;
     }
 
     public File getFrameworkClassesDir() {
