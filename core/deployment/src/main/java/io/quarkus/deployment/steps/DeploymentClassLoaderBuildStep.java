@@ -14,15 +14,16 @@ public class DeploymentClassLoaderBuildStep {
 
     @BuildStep
     DeploymentClassLoaderBuildItem classloader(ApplicationArchivesBuildItem archivesBuildItem) {
-        return new DeploymentClassLoaderBuildItem(new DeploymentClassLoader(archivesBuildItem));
+        return new DeploymentClassLoaderBuildItem(
+                new DeploymentClassLoader(archivesBuildItem, Thread.currentThread().getContextClassLoader()));
     }
 
     static class DeploymentClassLoader extends ClassLoader {
 
         private final ApplicationArchivesBuildItem archivesBuildItem;
 
-        DeploymentClassLoader(ApplicationArchivesBuildItem archivesBuildItem) {
-            super(DeploymentClassLoaderBuildStep.class.getClassLoader());
+        DeploymentClassLoader(ApplicationArchivesBuildItem archivesBuildItem, ClassLoader parent) {
+            super(parent);
             this.archivesBuildItem = archivesBuildItem;
         }
 
@@ -37,12 +38,8 @@ public class DeploymentClassLoaderBuildStep {
             if (c != null) {
                 return c;
             }
-            if (name.startsWith("java.")) {
-                return super.loadClass(name, resolve);
-            }
             ApplicationArchive applicationArchive = archivesBuildItem.containingArchive(name);
             if (applicationArchive != null) {
-
                 try {
                     try (InputStream res = Files
                             .newInputStream(applicationArchive.getChildPath(name.replace(".", "/") + ".class"))) {
@@ -50,7 +47,6 @@ public class DeploymentClassLoaderBuildStep {
                         return defineClass(name, data, 0, data.length);
                     }
                 } catch (IOException e) {
-                    throw new ClassNotFoundException("IO Exception", e);
                 }
             }
             return super.loadClass(name, resolve);
