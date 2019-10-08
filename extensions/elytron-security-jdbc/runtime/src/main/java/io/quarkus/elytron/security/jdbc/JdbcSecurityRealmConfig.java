@@ -14,19 +14,13 @@ public class JdbcSecurityRealmConfig {
     /**
      * The authentication mechanism
      */
-    @ConfigItem(defaultValue = "BASIC")
-    public String authMechanism;
-
-    /**
-     * The authentication mechanism
-     */
     @ConfigItem(defaultValue = "Quarkus")
     public String realmName;
 
     /**
-     * If the properties store is enabled.
+     * If the JDBC store is enabled.
      */
-    @ConfigItem
+    @ConfigItem(defaultValue = "true")
     public boolean enabled;
 
     /**
@@ -39,7 +33,6 @@ public class JdbcSecurityRealmConfig {
     @Override
     public String toString() {
         return "JdbcRealmConfig{" +
-                "authMechanism='" + authMechanism + '\'' +
                 ", realmName='" + realmName + '\'' +
                 ", enabled=" + enabled +
                 ", principalQueries=" + principalQueries +
