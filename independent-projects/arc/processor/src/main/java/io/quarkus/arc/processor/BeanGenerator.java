@@ -43,6 +43,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -130,6 +131,9 @@ public class BeanGenerator extends AbstractGenerator {
         }
         baseNameBuilder.append("_");
         baseNameBuilder.append(bean.getIdentifier());
+        if (Boolean.TRUE.toString().equals(System.getProperty("quarkus.random-synthetic-bean-names"))) {
+            baseNameBuilder.append(Integer.toHexString(new Random().nextInt()));
+        }
         baseNameBuilder.append(SYNTHETIC_SUFFIX);
         String baseName = baseNameBuilder.toString();
 
