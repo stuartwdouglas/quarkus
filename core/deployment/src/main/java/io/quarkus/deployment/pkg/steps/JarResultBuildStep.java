@@ -542,7 +542,7 @@ public class JarResultBuildStep {
                 log.warn("Your MANIFEST.MF already defined a MAIN_CLASS entry. Quarkus has overwritten your existing entry.");
             }
         }
-        attributes.put(Attributes.Name.MAIN_CLASS, config.mainClass);
+        attributes.put(Attributes.Name.MAIN_CLASS, "io.quarkus.runner.GeneratedMain");
         if (config.manifest.addImplementationEntries && !attributes.containsKey(Attributes.Name.IMPLEMENTATION_TITLE)) {
             String name = ApplicationInfoBuildItem.UNSET_VALUE.equals(applicationInfo.getName()) ? appArtifact.getArtifactId()
                     : applicationInfo.getName();

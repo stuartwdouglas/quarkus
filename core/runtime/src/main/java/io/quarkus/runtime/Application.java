@@ -64,6 +64,7 @@ public abstract class Application {
      *           letting the user hook into it.
      */
     public final void start(String[] args) {
+        CommandLineArguments.setCommandLineArguments(args);
         currentApplication = this;
         final Lock stateLock = this.stateLock;
         stateLock.lock();

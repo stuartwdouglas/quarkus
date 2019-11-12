@@ -1,6 +1,7 @@
 package io.quarkus.deployment.pkg;
 
 import java.util.List;
+import java.util.Optional;
 
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigRoot;
@@ -32,10 +33,11 @@ public class PackageConfig {
     public ManifestConfig manifest;
 
     /**
-     * The entry point of the application. In most cases this should not be modified.
+     * The entry point of the application. This will be invoked after the application has started in a new
+     * thread.
      */
-    @ConfigItem(defaultValue = "io.quarkus.runner.GeneratedMain")
-    public String mainClass;
+    @ConfigItem
+    public Optional<String> mainClass;
 
     /**
      * Files that should not be copied to the output artifact
