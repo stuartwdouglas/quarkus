@@ -490,7 +490,7 @@ public class DevMojo extends AbstractMojo {
             for (Map.Entry<Object, Object> e : System.getProperties().entrySet()) {
                 devModeContext.getSystemProperties().put(e.getKey().toString(), (String) e.getValue());
             }
-
+            devModeContext.setProjectDir(project.getFile().getParentFile());
             devModeContext.getBuildSystemProperties().putAll((Map) project.getProperties());
 
             //  this is a minor hack to allow ApplicationConfig to be populated with defaults
@@ -563,13 +563,13 @@ public class DevMojo extends AbstractMojo {
                         .build())
                                 .setDevMode(true)
                                 .resolveModel(localProject.getAppArtifact());
-                if (appModel.getAllDependencies().isEmpty()) {
+                if (appModel.getFullDeploymentDeps().isEmpty()) {
                     throw new RuntimeException("Unable to resolve application dependencies");
                 }
             } catch (Exception e) {
                 throw new MojoExecutionException("Failed to resolve Quarkus application model", e);
             }
-            for (AppDependency appDep : appModel.getAllDependencies()) {
+            for (AppDependency appDep : appModel.getFullDeploymentDeps()) {
                 addToClassPaths(classPathManifest, devModeContext, appDep.getArtifact().getPath().toFile());
             }
 

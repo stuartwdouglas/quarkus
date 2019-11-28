@@ -90,7 +90,7 @@ public class BootstrapMavenOptions {
 
     public String[] getOptionValues(String name) {
         final Object o = options.get(name);
-        return o == null ? null : (String[]) o;
+        return o == null ? null : o instanceof String ? new String[] {o.toString()} : (String[]) o;
     }
 
     public boolean isEmpty() {

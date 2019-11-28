@@ -6,7 +6,6 @@ import java.util.Map;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.testing.Test;
 
-import io.quarkus.bootstrap.BootstrapClassLoaderFactory;
 import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.gradle.QuarkusPluginExtension;
 
@@ -34,7 +33,7 @@ public class QuarkusTestConfig extends QuarkusTask {
 
             for (Test test : getProject().getTasks().withType(Test.class)) {
                 final Map<String, Object> props = test.getSystemProperties();
-                props.put(BootstrapClassLoaderFactory.PROP_DEPLOYMENT_CP, deploymentCp);
+                //props.put(BootstrapClassLoaderFactory.PROP_DEPLOYMENT_CP, deploymentCp);
                 props.put("native.image.path", nativeRunner);
             }
         } catch (Exception e) {

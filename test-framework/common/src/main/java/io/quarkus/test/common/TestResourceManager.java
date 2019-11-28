@@ -87,7 +87,7 @@ public class TestResourceManager {
         ConfigProviderResolver cpr = ConfigProviderResolver.instance();
         try {
             cpr.releaseConfig(cpr.getConfig());
-        } catch (IllegalStateException ignored) {
+        } catch (Throwable ignored) {
         }
     }
 

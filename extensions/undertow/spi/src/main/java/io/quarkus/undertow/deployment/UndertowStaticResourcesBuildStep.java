@@ -40,7 +40,7 @@ public class UndertowStaticResourcesBuildStep {
         }
     }
 
-    @BuildStep
+    @BuildStep(loadsApplicationClasses = true)
     void scanStaticResources(ApplicationArchivesBuildItem applicationArchivesBuildItem,
             BuildProducer<GeneratedResourceBuildItem> generatedResources,
             BuildProducer<KnownPathsBuildItem> knownPathsBuilds,
@@ -74,7 +74,7 @@ public class UndertowStaticResourcesBuildStep {
                 }
             }
         }
-        Enumeration<URL> resources = getClass().getClassLoader().getResources(META_INF_RESOURCES);
+        Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(META_INF_RESOURCES);
         while (resources.hasMoreElements()) {
             URL url = resources.nextElement();
             if (url.getProtocol().equals("jar")) {

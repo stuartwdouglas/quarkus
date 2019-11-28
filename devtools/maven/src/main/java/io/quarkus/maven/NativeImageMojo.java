@@ -3,7 +3,6 @@ package io.quarkus.maven;
 import static java.util.stream.Collectors.joining;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +10,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -23,19 +21,14 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
-import io.quarkus.bootstrap.model.AppArtifact;
-import io.quarkus.bootstrap.model.AppModel;
-import io.quarkus.bootstrap.resolver.AppModelResolverException;
-import io.quarkus.bootstrap.resolver.BootstrapAppModelResolver;
-import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
-import io.quarkus.creator.AppCreatorException;
-import io.quarkus.creator.CuratedApplicationCreator;
-import io.quarkus.creator.phase.augment.AugmentTask;
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.runner.bootstrap.AugmentAction;
+import io.quarkus.runner.bootstrap.AugmentResult;
 
 /**
  * Legacy mojo for backwards compatibility reasons. This should not be used in new projects
@@ -61,7 +54,7 @@ public class NativeImageMojo extends AbstractMojo {
     /**
      * The directory for compiled classes.
      */
-    @Parameter(readonly = true, required = true, defaultValue = "${project.build.directory}")
+    @Parameter(readonly = true, required = true, defaultValue = "${project.build.outputDirectory}")
     private File outputDirectory;
 
     @Parameter
@@ -186,126 +179,56 @@ public class NativeImageMojo extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
-        if (project.getPackaging().equals("pom") && appArtifact == null) {
-            getLog().info("Type of the artifact is POM and appArtifact parameter has not been set, skipping native-image goal");
+        if (project.getPackaging().equals("pom")) {
+            getLog().info("Type of the artifact is POM, skipping build goal");
             return;
         }
 
-        final CuratedApplicationCreator.Builder creatorBuilder = CuratedApplicationCreator.builder();
-
-        // The runner JAR has not been built yet, so we are going to build it
-        final AppArtifact appCoords;
-        AppArtifact managingProject = null;
-        DefaultArtifact appMvnArtifact = null;
-        if (appArtifact == null) {
-            appMvnArtifact = new DefaultArtifact(project.getArtifact().getGroupId(),
-                    project.getArtifact().getArtifactId(),
-                    project.getArtifact().getClassifier(),
-                    project.getArtifact().getArtifactHandler().getExtension(),
-                    project.getArtifact().getVersion());
-            appCoords = new AppArtifact(appMvnArtifact.getGroupId(), appMvnArtifact.getArtifactId(),
-                    appMvnArtifact.getClassifier(), appMvnArtifact.getExtension(),
-                    appMvnArtifact.getVersion());
-        } else {
-            final String[] coordsArr = appArtifact.split(":");
-            if (coordsArr.length < 2 || coordsArr.length > 5) {
-                throw new MojoExecutionException(
-                        "appArtifact expression " + appArtifact
-                                + " does not follow format groupId:artifactId:classifier:type:version");
-            }
-            final String groupId = coordsArr[0];
-            final String artifactId = coordsArr[1];
-            String classifier = "";
-            String type = "jar";
-            String version = null;
-            if (coordsArr.length == 3) {
-                version = coordsArr[2];
-            } else if (coordsArr.length > 3) {
-                classifier = coordsArr[2] == null ? "" : coordsArr[2];
-                type = coordsArr[3] == null ? "jar" : coordsArr[3];
-                if (coordsArr.length > 4) {
-                    version = coordsArr[4];
-                }
-            }
-            if (version == null) {
-                for (Artifact dep : project.getArtifacts()) {
-                    if (dep.getArtifactId().equals(artifactId)
-                            && dep.getGroupId().equals(groupId)
-                            && dep.getClassifier().equals(classifier)
-                            && dep.getType().equals(type)) {
-                        appMvnArtifact = new DefaultArtifact(dep.getGroupId(),
-                                dep.getArtifactId(),
-                                dep.getClassifier(),
-                                dep.getArtifactHandler().getExtension(),
-                                dep.getVersion());
-                        break;
-                    }
-                }
-                if (appMvnArtifact == null) {
-                    throw new MojoExecutionException(
-                            "Failed to locate " + appArtifact + " among the project dependencies");
-                }
-                appCoords = new AppArtifact(appMvnArtifact.getGroupId(), appMvnArtifact.getArtifactId(),
-                        appMvnArtifact.getClassifier(), appMvnArtifact.getExtension(),
-                        appMvnArtifact.getVersion());
-            } else {
-                appCoords = new AppArtifact(groupId, artifactId, classifier, type, version);
-                appMvnArtifact = new DefaultArtifact(groupId, artifactId, classifier, type, version);
-            }
-            managingProject = new AppArtifact(project.getArtifact().getGroupId(),
-                    project.getArtifact().getArtifactId(),
-                    project.getArtifact().getClassifier(),
-                    project.getArtifact().getArtifactHandler().getExtension(),
-                    project.getArtifact().getVersion());
-        }
-
-        final AppModel appModel;
-        final BootstrapAppModelResolver modelResolver;
+        boolean clear = false;
         try {
-            final MavenArtifactResolver mvn = MavenArtifactResolver.builder()
-                    .setRepositorySystem(repoSystem)
-                    .setRepositorySystemSession(repoSession)
-                    .setRemoteRepositories(repos)
-                    .build();
-            appCoords.setPath(mvn.resolve(appMvnArtifact).getArtifact().getFile().toPath());
-            modelResolver = new BootstrapAppModelResolver(mvn);
-            appModel = modelResolver.resolveManagedModel(appCoords, Collections.emptyList(), managingProject);
-        } catch (AppModelResolverException e) {
-            throw new MojoExecutionException("Failed to resolve application model dependencies for " + appCoords, e);
-        }
 
-        final Properties buildSystemProperties = project.getProperties();
-        final Properties projectProperties = new Properties();
-        projectProperties.putAll(buildSystemProperties);
-        projectProperties.putIfAbsent("quarkus.application.name", project.getArtifactId());
-        projectProperties.putIfAbsent("quarkus.application.version", project.getVersion());
-
-        Consumer<ConfigBuilder> config = createCustomConfig();
-        String old = System.getProperty(QUARKUS_PACKAGE_TYPE);
-        System.setProperty(QUARKUS_PACKAGE_TYPE, "native");
-
-        try (CuratedApplicationCreator appCreationContext = creatorBuilder
-                .setWorkDir(buildDir.toPath())
-                .setModelResolver(modelResolver)
-                .setBaseName(finalName)
-                .setAppArtifact(appModel.getAppArtifact())
-                .build()) {
-            AugmentTask task = AugmentTask.builder().setConfigCustomizer(config)
-
-                    .setAppClassesDir(new File(outputDirectory, "classes").toPath())
-                    .setBuildSystemProperties(projectProperties).build();
-            appCreationContext.runTask(task);
-        } catch (AppCreatorException e) {
-            throw new MojoExecutionException("Failed to generate a native image", e);
-        } finally {
-            if (old == null) {
-                System.clearProperty(QUARKUS_PACKAGE_TYPE);
-            } else {
-                System.setProperty(QUARKUS_PACKAGE_TYPE, old);
+            final Properties projectProperties = project.getProperties();
+            final Properties realProperties = new Properties();
+            for (String name : projectProperties.stringPropertyNames()) {
+                if (name.startsWith("quarkus.")) {
+                    realProperties.setProperty(name, projectProperties.getProperty(name));
+                }
             }
+            realProperties.putIfAbsent("quarkus.application.name", project.getArtifactId());
+            realProperties.putIfAbsent("quarkus.application.version", project.getVersion());
+
+            Consumer<ConfigBuilder> config = createCustomConfig();
+            String old = System.getProperty(QUARKUS_PACKAGE_TYPE);
+            System.setProperty(QUARKUS_PACKAGE_TYPE, "native");
+            try {
+                CuratedApplication curatedApplication = QuarkusBootstrap.builder(outputDirectory.toPath())
+                        .setProjectRoot(project.getBasedir().toPath())
+                        .setBuildSystemProperties(realProperties)
+                        .setBaseName(finalName)
+                        .setBaseClassLoader(BuildMojo.class.getClassLoader())
+                        .setTargetDirectory(buildDir.toPath())
+                        .build().bootstrap();
+
+                AugmentAction action = new AugmentAction(curatedApplication);
+                AugmentResult result = action.createProductionApplication();
+                //TODO: config voerrides
+
+            } finally {
+
+                if (old == null) {
+                    System.clearProperty(QUARKUS_PACKAGE_TYPE);
+                } else {
+                    System.setProperty(QUARKUS_PACKAGE_TYPE, old);
+                }
+            }
+
+        } catch (Exception e) {
+            throw new MojoExecutionException("Failed to generate native image", e);
         }
+
     }
 
+    //TODO: this needs to be changed to system props.
     private Consumer<ConfigBuilder> createCustomConfig() {
         return new Consumer<ConfigBuilder>() {
             @Override

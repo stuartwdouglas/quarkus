@@ -1,10 +1,12 @@
 package io.quarkus.arquillian;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
-import java.net.URLClassLoader;
-import java.nio.file.*;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,18 +33,19 @@ import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
-import io.quarkus.bootstrap.BootstrapClassLoaderFactory;
-import io.quarkus.bootstrap.BootstrapException;
-import io.quarkus.bootstrap.util.PropertyUtils;
+import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
+import io.quarkus.bootstrap.app.AdditionalDependency;
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildContext;
 import io.quarkus.builder.BuildStep;
-import io.quarkus.builder.item.BuildItem;
-import io.quarkus.runner.RuntimeRunner;
-import io.quarkus.runtime.LaunchMode;
+import io.quarkus.runner.bootstrap.AugmentAction;
+import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
+import io.quarkus.runner.bootstrap.StartupAction;
+import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.TestInstantiator;
-import io.quarkus.test.common.http.TestHTTPResourceManager;
 
 public class QuarkusDeployableContainer implements DeployableContainer<QuarkusConfiguration> {
 
@@ -50,7 +53,7 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
 
     @Inject
     @DeploymentScoped
-    private InstanceProducer<RuntimeRunner> runtimeRunner;
+    private InstanceProducer<RunningQuarkusApplication> runningApp;
 
     @Inject
     @DeploymentScoped
@@ -58,12 +61,13 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
 
     @Inject
     @DeploymentScoped
-    private InstanceProducer<URLClassLoader> appClassloader;
+    private InstanceProducer<ClassLoader> appClassloader;
 
     @Inject
     private Instance<TestClass> testClass;
 
     static Object testInstance;
+    static ClassLoader old;
 
     @Override
     public Class<QuarkusConfiguration> getConfigurationClass() {
@@ -78,6 +82,7 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
     @SuppressWarnings("rawtypes")
     @Override
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
+        old = Thread.currentThread().getContextClassLoader();
         if (testClass.get() == null) {
             throw new IllegalStateException("Test class not available");
         }
@@ -131,7 +136,11 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
                 // Collect all libraries
                 if (Files.exists(tmpLocation.resolve("lib"))) {
                     try (Stream<Path> libs = Files.walk(tmpLocation.resolve("lib"), 1)) {
-                        libs.forEach(libraries::add);
+                        libs.forEach((i) -> {
+                            if (i.getFileName().toString().endsWith(".jar")) {
+                                libraries.add(i);
+                            }
+                        });
                     }
                 }
             } else {
@@ -139,64 +148,36 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
             }
 
             List<Consumer<BuildChainBuilder>> customizers = new ArrayList<>();
-            try {
-                // Test class is a bean
-                Class<? extends BuildItem> buildItem = Class
-                        .forName("io.quarkus.arc.deployment.AdditionalBeanBuildItem").asSubclass(BuildItem.class);
-                customizers.add(new Consumer<BuildChainBuilder>() {
-                    @Override
-                    public void accept(BuildChainBuilder buildChainBuilder) {
-                        buildChainBuilder.addBuildStep(new BuildStep() {
-                            @Override
-                            public void execute(BuildContext context) {
-                                try {
-                                    Method factoryMethod = buildItem.getMethod("unremovableOf", Class.class);
-                                    context.produce((BuildItem) factoryMethod.invoke(null, testJavaClass));
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }).produces(buildItem)
-                                .build();
-                    }
-                });
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e);
-            }
-
-            URLClassLoader appCl;
-            try {
-                BootstrapClassLoaderFactory clFactory = BootstrapClassLoaderFactory.newInstance()
-                        .setAppClasses(appLocation)
-                        .setParent(testJavaClass.getClassLoader())
-                        .setOffline(PropertyUtils.getBooleanOrNull(BootstrapClassLoaderFactory.PROP_OFFLINE))
-                        .setLocalProjectsDiscovery(
-                                PropertyUtils.getBoolean(BootstrapClassLoaderFactory.PROP_WS_DISCOVERY, true));
-                for (Path library : libraries) {
-                    clFactory.addToClassPath(library);
+            // Test class is a bean
+            customizers.add(new Consumer<BuildChainBuilder>() {
+                @Override
+                public void accept(BuildChainBuilder buildChainBuilder) {
+                    buildChainBuilder.addBuildStep(new BuildStep() {
+                        @Override
+                        public void execute(BuildContext context) {
+                            context.produce(AdditionalBeanBuildItem.unremovableOf(testJavaClass));
+                        }
+                    }).produces(AdditionalBeanBuildItem.class)
+                            .build();
                 }
-                appCl = clFactory.newDeploymentClassLoader();
+            });
 
-            } catch (BootstrapException e) {
-                throw new IllegalStateException("Failed to create the bootstrap class loader", e);
+            QuarkusBootstrap.Builder bootstrapBuilder = QuarkusBootstrap.builder(appLocation)
+                    .setMode(QuarkusBootstrap.Mode.TEST);
+            for (Path i : libraries) {
+                bootstrapBuilder.addAdditionalApplicationArchive(new AdditionalDependency(i, false, true));
             }
+            bootstrapBuilder.setProjectRoot(PathTestHelper.getTestClassesLocation(testJavaClass));
 
-            appClassloader.set(appCl);
-
-            RuntimeRunner runner = RuntimeRunner.builder()
-                    .setLaunchMode(LaunchMode.TEST)
-                    .setClassLoader(appCl)
-                    .setTarget(appLocation)
-                    .setFrameworkClassesPath(PathTestHelper.getTestClassesLocation(testJavaClass))
-                    .addChainCustomizers(customizers)
-                    .build();
-
-            runner.run();
-            runtimeRunner.set(runner);
-
+            CuratedApplication curatedApplication = bootstrapBuilder.build().bootstrap();
+            AugmentAction augmentAction = new AugmentAction(curatedApplication, customizers);
+            StartupAction app = augmentAction.createInitialRuntimeApplication();
+            RunningQuarkusApplication runningQuarkusApplication = app.run();
+            appClassloader.set(runningQuarkusApplication.getClassLoader());
+            runningApp.set(runningQuarkusApplication);
+            Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
             // Instantiate the real test instance
-            testInstance = TestInstantiator.instantiateTest(Class
-                    .forName(testJavaClass.getName(), true, Thread.currentThread().getContextClassLoader()));
+            testInstance = TestInstantiator.instantiateTest(testJavaClass, runningQuarkusApplication.getClassLoader());
 
         } catch (Throwable t) {
             throw new DeploymentException("Unable to start the runtime runner", t);
@@ -204,64 +185,67 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
 
         ProtocolMetaData metadata = new ProtocolMetaData();
 
-        String testUri = TestHTTPResourceManager.getUri();
-        System.setProperty("test.url", testUri);
-        URI uri = URI.create(testUri);
-        HTTPContext httpContext = new HTTPContext(uri.getHost(), uri.getPort());
-        // This is to work around https://github.com/arquillian/arquillian-core/issues/216
-        httpContext.add(new Servlet("dummy", "/"));
-        metadata.addContext(httpContext);
+        try {
+            BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
+            //TODO: fix this
+            //String testUri = TestHTTPResourceManager.getUri();
+
+            System.setProperty("test.url", "http://localhost:8080");
+            URI uri = URI.create("http://localhost:8080");
+            HTTPContext httpContext = new HTTPContext(uri.getHost(), uri.getPort());
+            // This is to work around https://github.com/arquillian/arquillian-core/issues/216
+            httpContext.add(new Servlet("dummy", "/"));
+            metadata.addContext(httpContext);
+        } finally {
+            BrokenMpDelegationClassLoader.teardownBrokenClWorkaround();
+        }
         return metadata;
     }
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-        testInstance = null;
-        URLClassLoader cl = appClassloader.get();
-        if (cl != null) {
-            try {
-                cl.close();
-            } catch (IOException e) {
-                LOGGER.warn("Unable to close the deployment classloader: " + appClassloader.get(), e);
-            }
-        }
-        Path location = deploymentLocation.get();
-        if (location != null) {
-            try {
-                Files.walkFileTree(location, new FileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                        return FileVisitResult.CONTINUE;
-                    }
+        try {
+            testInstance = null;
+            Path location = deploymentLocation.get();
+            if (location != null) {
+                try {
+                    Files.walkFileTree(location, new FileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                            return FileVisitResult.CONTINUE;
+                        }
 
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                        Files.delete(file);
-                        return FileVisitResult.CONTINUE;
-                    }
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            Files.delete(file);
+                            return FileVisitResult.CONTINUE;
+                        }
 
-                    @Override
-                    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-                        return FileVisitResult.CONTINUE;
-                    }
+                        @Override
+                        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                            return FileVisitResult.CONTINUE;
+                        }
 
-                    @Override
-                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                        Files.delete(dir);
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
-            } catch (IOException e) {
-                LOGGER.warn("Unable to delete the deployment dir: " + location, e);
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                            Files.delete(dir);
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                } catch (IOException e) {
+                    LOGGER.warn("Unable to delete the deployment dir: " + location, e);
+                }
             }
-        }
-        RuntimeRunner runner = runtimeRunner.get();
-        if (runner != null) {
-            try {
-                runner.close();
-            } catch (IOException e) {
-                throw new DeploymentException("Unable to close the runtime runner", e);
+            RunningQuarkusApplication runner = runningApp.get();
+            if (runner != null) {
+                try {
+                    runner.close();
+                } catch (Exception e) {
+                    throw new DeploymentException("Unable to close the runtime runner", e);
+                }
             }
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
         }
     }
 

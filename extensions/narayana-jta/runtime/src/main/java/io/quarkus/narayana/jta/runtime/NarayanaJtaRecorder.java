@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Properties;
 
+import org.eclipse.microprofile.reactive.streams.operators.core.ReactiveStreamsEngineResolver;
+import org.eclipse.microprofile.reactive.streams.operators.spi.ReactiveStreamsFactoryResolver;
 import org.jboss.logging.Logger;
 
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
@@ -13,6 +15,7 @@ import com.arjuna.ats.jta.common.jtaPropertyManager;
 import com.arjuna.common.util.propertyservice.PropertiesFactory;
 
 import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 
 @Recorder
 public class NarayanaJtaRecorder {
@@ -20,6 +23,23 @@ public class NarayanaJtaRecorder {
     private static Properties defaultProperties;
 
     private static final Logger log = Logger.getLogger(NarayanaJtaRecorder.class);
+
+    /**
+     * see https://github.com/eclipse/microprofile-reactive-streams-operators/pull/130
+     *
+     * Transactions has a dependency on reactive streams operators (but not on the corresponding quarkus extension)
+     *
+     * We need to do this hack to force it to initialize correctly
+     */
+    public void fixReactiveStreamsOperatorsClassLoading() {
+        BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
+        try {
+            ReactiveStreamsFactoryResolver.instance();
+            ReactiveStreamsEngineResolver.instance();
+        } finally {
+            BrokenMpDelegationClassLoader.teardownBrokenClWorkaround();
+        }
+    }
 
     public void setNodeName(final TransactionManagerConfiguration transactions) {
 

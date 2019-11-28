@@ -29,6 +29,7 @@ public class DevModeContext implements Serializable {
     private final List<File> classesRoots = new ArrayList<>();
     private File frameworkClassesDir;
     private File cacheDir;
+    private File projectDir;
     private boolean test;
     private boolean abortOnFailedStart;
     // the jar file which is used to launch the DevModeMain
@@ -147,6 +148,15 @@ public class DevModeContext implements Serializable {
 
     public void setDevModeRunnerJarFile(final File devModeRunnerJarFile) {
         this.devModeRunnerJarFile = devModeRunnerJarFile;
+    }
+
+    public File getProjectDir() {
+        return projectDir;
+    }
+
+    public DevModeContext setProjectDir(File projectDir) {
+        this.projectDir = projectDir;
+        return this;
     }
 
     public static class ModuleInfo implements Serializable {

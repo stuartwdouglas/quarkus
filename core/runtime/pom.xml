@@ -102,6 +102,18 @@
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
+                <configuration>
+                    <parentFirstArtifacts>
+                        <parentFirstArtifact>io.quarkus:quarkus-bootstrap-core</parentFirstArtifact>
+                        <parentFirstArtifact>io.quarkus:quarkus-development-mode-spi</parentFirstArtifact>
+                        <parentFirstArtifact>org.jboss.logmanager:jboss-logmanager-embedded</parentFirstArtifact>
+                        <parentFirstArtifact>org.jboss.logging:jboss-logging</parentFirstArtifact>
+                        <parentFirstArtifact>org.ow2.asm:asm</parentFirstArtifact>
+                    </parentFirstArtifacts>
+                    <excludedArtifacts>
+                        <excludedArtifact>io.smallrye:smallrye-config</excludedArtifact>
+                    </excludedArtifacts>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -1,6 +1,7 @@
 package io.quarkus.narayana.jta.deployment;
 
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
+import static io.quarkus.deployment.annotations.ExecutionTime.STATIC_INIT;
 
 import java.util.Properties;
 
@@ -49,6 +50,12 @@ class NarayanaJtaProcessor {
     @BuildStep
     CapabilityBuildItem capability() {
         return new CapabilityBuildItem(Capabilities.TRANSACTIONS);
+    }
+
+    @BuildStep()
+    @Record(STATIC_INIT)
+    public void fixBokenMpClassLoading(NarayanaJtaRecorder recorder) {
+        recorder.fixReactiveStreamsOperatorsClassLoading();
     }
 
     @BuildStep

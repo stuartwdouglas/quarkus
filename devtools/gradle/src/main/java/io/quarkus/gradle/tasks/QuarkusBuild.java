@@ -1,8 +1,8 @@
 package io.quarkus.gradle.tasks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.gradle.api.GradleException;
@@ -11,12 +11,13 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
 
+import io.quarkus.bootstrap.BootstrapException;
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.model.AppArtifact;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
 import io.quarkus.bootstrap.resolver.AppModelResolverException;
-import io.quarkus.creator.AppCreatorException;
-import io.quarkus.creator.CuratedApplicationCreator;
-import io.quarkus.creator.phase.augment.AugmentTask;
+import io.quarkus.runner.bootstrap.AugmentAction;
 
 public class QuarkusBuild extends QuarkusTask {
 
@@ -62,35 +63,29 @@ public class QuarkusBuild extends QuarkusTask {
         } catch (AppModelResolverException e) {
             throw new GradleException("Failed to resolve application model " + appArtifact + " dependencies", e);
         }
-        final Map<String, ?> properties = getProject().getProperties();
-        final Properties realProperties = new Properties();
-        for (Map.Entry<String, ?> entry : properties.entrySet()) {
-            final String key = entry.getKey();
-            final Object value = entry.getValue();
-            if (key != null && value instanceof String && key.startsWith("quarkus.")) {
-                realProperties.setProperty(key, (String) value);
-            }
-        }
-        realProperties.putIfAbsent("quarkus.application.name", appArtifact.getArtifactId());
-        realProperties.putIfAbsent("quarkus.application.version", appArtifact.getVersion());
+        final Properties realProperties = getBuildSystemProperties(appArtifact);
 
         boolean clear = false;
         if (uberJar && System.getProperty("quarkus.package.uber-jar") == null) {
             System.setProperty("quarkus.package.uber-jar", "true");
             clear = true;
         }
-        try (CuratedApplicationCreator appCreationContext = CuratedApplicationCreator.builder()
-                .setWorkDir(getProject().getBuildDir().toPath())
-                .setModelResolver(modelResolver)
-                .setBaseName(extension().finalName())
-                .setAppArtifact(appArtifact).build()) {
+        try {
+            CuratedApplication appCreationContext = QuarkusBootstrap.builder(appArtifact.getPath())
+                    .setBaseClassLoader(getClass().getClassLoader())
+                    .setAppModelResolver(modelResolver)
+                    .setTargetDirectory(getProject().getBuildDir().toPath())
+                    .setBaseName(extension().finalName())
+                    .setBuildSystemProperties(realProperties)
+                    .setAppArtifact(appArtifact)
+                    .setIsolateDeployment(true)
+                    //.setConfigDir(extension().outputConfigDirectory().toPath())
+                    //.setTargetDirectory(extension().outputDirectory().toPath())
+                    .build().bootstrap();
 
-            AugmentTask task = AugmentTask.builder().setBuildSystemProperties(realProperties)
-                    .setAppClassesDir(extension().outputDirectory().toPath())
-                    .setConfigDir(extension().outputConfigDirectory().toPath()).build();
-            appCreationContext.runTask(task);
+            appCreationContext.runInAugmentClassLoader(AugmentAction.BuildTask.class.getName(), Collections.emptyMap());
 
-        } catch (AppCreatorException e) {
+        } catch (BootstrapException e) {
             throw new GradleException("Failed to build a runnable JAR", e);
         } finally {
             if (clear) {

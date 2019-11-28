@@ -3,6 +3,8 @@ package io.quarkus.it.panache;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import javax.enterprise.context.control.ActivateRequestContext;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +21,14 @@ import io.restassured.http.ContentType;
  */
 @QuarkusTest
 public class PanacheFunctionalityTest {
+
+    /**
+     * Tests that direct use of the entity in the test class does not break transformation
+     *
+     * see https://github.com/quarkusio/quarkus/issues/1724
+     */
+    @SuppressWarnings("unused")
+    Person p = new Person();
 
     @Test
     public void testPanacheFunctionality() throws Exception {
@@ -45,6 +55,7 @@ public class PanacheFunctionalityTest {
 
     @DisabledOnNativeImage
     @Test
+    @ActivateRequestContext
     public void testPanacheInTest() {
         Assertions.assertEquals(0, Person.count());
     }
