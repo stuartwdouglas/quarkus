@@ -3,6 +3,7 @@ package io.quarkus.runner.bootstrap;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ public class StartupAction {
     /**
      * Runs the application, and returns a handle that can be used to shut it down.
      */
-    public RunningQuarkusApplication run(String[] args) {
+    public RunningQuarkusApplication run(String[] args) throws Exception {
         //first
         Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers = extractTransformers();
         QuarkusClassLoader baseClassLoader = createBaseClassLoader(bytecodeTransformers);
@@ -75,8 +76,11 @@ public class StartupAction {
             Object application = appClass.newInstance();
             start.invoke(application, (Object) args);
             return new RunningQuarkusApplication((Closeable) application, runtimeClassLoader);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to start Quarkus", e);
+        } catch (InvocationTargetException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            }
+            throw new RuntimeException("Failed to start Quarkus", e.getCause());
         } finally {
             Thread.currentThread().setContextClassLoader(old);
         }

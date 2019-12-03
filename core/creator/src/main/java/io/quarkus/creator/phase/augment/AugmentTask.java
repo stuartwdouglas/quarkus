@@ -165,6 +165,7 @@ public class AugmentTask implements CuratedTask<AugmentOutcome> {
                 builder.setResolver(appState.getArtifactResolver());
                 builder.setEffectiveModel(appState.getEffectiveModel());
                 builder.setClassLoader(runnerClassLoader);
+                builder.setDeploymentClassLoader(runnerClassLoader); //TODO: temp
                 builder.setConfigCustomizer(configCustomizer);
                 builder.setBuildSystemProperties(buildSystemProperties);
                 builder.addFinal(BytecodeTransformerBuildItem.class)

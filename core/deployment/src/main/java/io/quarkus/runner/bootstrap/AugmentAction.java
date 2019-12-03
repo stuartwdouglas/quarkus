@@ -153,7 +153,7 @@ public class AugmentAction {
         ClassLoaderState classLoaderState = quarkusBootstrap.getClassLoaderState();
         //first run, we need to build all the class loaders
         QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Deployment Class Loader",
-                augmentClassLoader, false);
+                augmentClassLoader, true);
         //add the application root
         builder.addElement(ClassPathElement.fromPath(quarkusBootstrap.getApplicationRoot()));
 

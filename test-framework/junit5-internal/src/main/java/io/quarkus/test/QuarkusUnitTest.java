@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.nio.file.FileVisitResult;
@@ -277,19 +278,19 @@ public class QuarkusUnitTest
 
             final Path testLocation = PathTestHelper.getTestClassesLocation(testClass);
 
-            QuarkusBootstrap bootstrap = QuarkusBootstrap.builder(deploymentDir, LaunchMode.TEST)
-                    .addExcludedPath(testLocation)
-                    .setProjectRoot(testLocation)
-                    .addBuildChainCustomizers(customizers)
-                    .build();
-
-            runningQuarkusApplication = bootstrap.bootstrap()
-                    .curate()
-                    .createInitialRuntimeApplication()
-                    .run(new String[0]);
-            //we restore the CL at the end of the test
-            Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
             try {
+                QuarkusBootstrap bootstrap = QuarkusBootstrap.builder(deploymentDir, LaunchMode.TEST)
+                        .addExcludedPath(testLocation)
+                        .setProjectRoot(testLocation)
+                        .addBuildChainCustomizers(customizers)
+                        .build();
+
+                runningQuarkusApplication = bootstrap.bootstrap()
+                        .curate()
+                        .createInitialRuntimeApplication()
+                        .run(new String[0]);
+                //we restore the CL at the end of the test
+                Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
                 if (assertException != null) {
                     fail("The build was expected to fail");
                 }
@@ -315,9 +316,9 @@ public class QuarkusUnitTest
                     if (e instanceof RuntimeException) {
                         Throwable cause = e.getCause();
                         if (cause != null && cause instanceof BuildException) {
-                            assertException.accept(cause.getCause());
+                            assertException.accept(unwarpException(cause.getCause()));
                         } else if (cause != null) {
-                            assertException.accept(cause);
+                            assertException.accept(unwarpException(cause));
                         } else {
                             fail("Unable to unwrap the build exception from: " + e);
                         }
@@ -331,6 +332,20 @@ public class QuarkusUnitTest
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Throwable unwarpException(Throwable cause) {
+        //TODO: huge hack
+        try {
+            Class<?> localVer = QuarkusUnitTest.class.getClassLoader().loadClass(cause.getClass().getName());
+            if (localVer != cause.getClass()) {
+                Constructor<?> ctor = localVer.getConstructor(String.class, Throwable.class);
+                return (Throwable) ctor.newInstance(cause.getMessage(), cause.getCause());
+            }
+        } catch (Exception e) {
+            //failed to unwrap
+        }
+        return cause;
     }
 
     private String proxyFactoryKey(Class<?> testClass) {
