@@ -19,7 +19,6 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.logging.Logger;
 
-import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
 import io.quarkus.bootstrap.DefineClassVisibleURLClassLoader;
 import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
@@ -85,11 +84,7 @@ public class GenerateConfigTask implements CuratedTask<Path> {
 
         final AppModelResolver depResolver = appState.getArtifactResolver();
         List<AppDependency> appDeps;
-        try {
-            appDeps = appState.getEffectiveModel().getAllDependencies();
-        } catch (BootstrapDependencyProcessingException e) {
-            throw new AppCreatorException("Failed to resolve application build classpath", e);
-        }
+        appDeps = appState.getEffectiveModel().getAllDependencies();
 
         URLClassLoader runnerClassLoader = null;
         try {

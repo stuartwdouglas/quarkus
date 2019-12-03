@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.deployment.util.FileUtil;
 
-public class FileClassPathElementTestCase {
+public class DirectoryClassPathElementTestCase {
 
     static Path root;
 
@@ -34,7 +34,7 @@ public class FileClassPathElementTestCase {
 
     @Test
     public void testGetAllResources() {
-        FileClassPathElement f = new FileClassPathElement(root);
+        DirectoryClassPathElement f = new DirectoryClassPathElement(root);
         Set<String> res = f.getProvidedResources();
         Assertions.assertEquals(4, res.size());
         Assertions.assertEquals(new HashSet<>(Arrays.asList("a.txt", "b.txt", "foo", "foo/sub.txt")), res);
@@ -42,7 +42,7 @@ public class FileClassPathElementTestCase {
 
     @Test
     public void testGetResource() {
-        FileClassPathElement f = new FileClassPathElement(root);
+        DirectoryClassPathElement f = new DirectoryClassPathElement(root);
         ClassPathResource res = f.getResource("foo/sub.txt");
         Assertions.assertNotNull(res);
         Assertions.assertEquals("subdir file", new String(res.getData(), StandardCharsets.UTF_8));

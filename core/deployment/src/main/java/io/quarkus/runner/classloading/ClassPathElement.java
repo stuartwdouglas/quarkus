@@ -1,6 +1,8 @@
 package io.quarkus.runner.classloading;
 
 import java.io.Closeable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.ProtectionDomain;
 import java.util.Set;
 
@@ -30,4 +32,16 @@ public interface ClassPathElement extends Closeable {
      * @return The protection domain that should be used to define classes from this element
      */
     ProtectionDomain getProtectionDomain(ClassLoader classLoader);
+
+    /**
+     * Creates an element from a file system path
+     */
+    static ClassPathElement fromPath(Path path) {
+        ClassPathElement element;
+        if (Files.isDirectory(path)) {
+            return new DirectoryClassPathElement(path);
+        } else {
+            return new JarClassPathElement(path);
+        }
+    }
 }

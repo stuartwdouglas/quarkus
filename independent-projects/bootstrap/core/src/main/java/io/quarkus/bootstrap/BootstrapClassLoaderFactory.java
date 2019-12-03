@@ -64,7 +64,7 @@ public class BootstrapClassLoaderFactory {
     private static int addDeps(URL[] urls, int offset, List<AppDependency> deps) throws BootstrapException {
         assertCapacity(urls, offset, deps.size());
         int i = 0;
-        while(i < deps.size()) {
+        while (i < deps.size()) {
             urls[offset + i] = toURL(deps.get(i++).getArtifact().getPath());
         }
         return i + offset;
@@ -73,14 +73,14 @@ public class BootstrapClassLoaderFactory {
     private static int addPaths(URL[] urls, int offset, List<Path> deps) throws BootstrapException {
         assertCapacity(urls, offset, deps.size());
         int i = 0;
-        while(i < deps.size()) {
+        while (i < deps.size()) {
             urls[offset + i] = toURL(deps.get(i++));
         }
         return i + offset;
     }
 
     private static void assertCapacity(URL[] urls, int offset, int deps) throws BootstrapException {
-        if(urls.length < offset + deps) {
+        if (urls.length < offset + deps) {
             throw new BootstrapException("Failed to add dependency URLs: the target array of length " + urls.length
                     + " is not big enough to add " + deps + " dependencies with offset " + offset);
         }
@@ -153,11 +153,11 @@ public class BootstrapClassLoaderFactory {
      * WARNING: this method is creating a classloader by resolving all the dependencies on every call,
      * without consulting the cache.
      *
-     * @param hierarchical  whether the deployment classloader should use the classloader built using
-     * the user-defined application dependencies as its parent or all the dependencies should be loaded
-     * by the same classloader
-     * @return  classloader that is able to load both user-defined and deployment dependencies
-     * @throws BootstrapException  in case of a failure
+     * @param hierarchical whether the deployment classloader should use the classloader built using
+     *        the user-defined application dependencies as its parent or all the dependencies should be loaded
+     *        by the same classloader
+     * @return classloader that is able to load both user-defined and deployment dependencies
+     * @throws BootstrapException in case of a failure
      */
     public DefineClassVisibleURLClassLoader newAllInclusiveClassLoader(boolean hierarchical) throws BootstrapException {
         if (appClasses == null) {
@@ -165,7 +165,7 @@ public class BootstrapClassLoaderFactory {
         }
         try {
             final MavenArtifactResolver.Builder mvnBuilder = MavenArtifactResolver.builder();
-            if(offline != null) {
+            if (offline != null) {
                 mvnBuilder.setOffline(offline);
             }
             final LocalProject localProject;
@@ -179,8 +179,10 @@ public class BootstrapClassLoaderFactory {
                 }
                 appArtifact = localProject.getAppArtifact();
             } else {
-                localProject = localProjectsDiscovery ? LocalProject.loadWorkspace(Paths.get("").normalize().toAbsolutePath(), false) : null;
-                if(localProject != null) {
+                localProject = localProjectsDiscovery
+                        ? LocalProject.loadWorkspace(Paths.get("").normalize().toAbsolutePath(), false)
+                        : null;
+                if (localProject != null) {
                     mvnBuilder.setWorkspace(localProject.getWorkspace());
                 }
                 appArtifact = ModelUtils.resolveAppArtifact(appClasses);
@@ -211,24 +213,30 @@ public class BootstrapClassLoaderFactory {
         final URL[] urls = new URL[deps.size() + appCp.size() + 1];
         urls[0] = toURL(appClasses);
         int offset = addDeps(urls, 1, deps);
-        if(!appCp.isEmpty()) {
+        if (!appCp.isEmpty()) {
             addPaths(urls, offset, appCp);
         }
         return new DefineClassVisibleURLClassLoader(urls, parent);
     }
 
     public DefineClassVisibleURLClassLoader newDeploymentClassLoader() throws BootstrapException {
+        return new DefineClassVisibleURLClassLoader(resolveClassPath(true), parent);
+    }
+
+    public URL[] resolveClassPath(boolean includeDeployment) throws BootstrapException {
         if (appClasses == null) {
             throw new IllegalArgumentException("Application classes path has not been set");
         }
 
-        if(!Files.isDirectory(appClasses)) {
+        if (!Files.isDirectory(appClasses)) {
             final MavenArtifactResolver.Builder mvnBuilder = MavenArtifactResolver.builder();
             if (offline != null) {
                 mvnBuilder.setOffline(offline);
             }
-            final LocalProject localProject = localProjectsDiscovery ? LocalProject.loadWorkspace(Paths.get("").normalize().toAbsolutePath(), false) : null;
-            if(localProject != null) {
+            final LocalProject localProject = localProjectsDiscovery
+                    ? LocalProject.loadWorkspace(Paths.get("").normalize().toAbsolutePath(), false)
+                    : null;
+            if (localProject != null) {
                 mvnBuilder.setWorkspace(localProject.getWorkspace());
             }
             final MavenArtifactResolver mvn;
@@ -238,20 +246,22 @@ public class BootstrapClassLoaderFactory {
                 throw new BootstrapException("Failed to initialize bootstrap Maven artifact resolver", e);
             }
 
-            final List<AppDependency> deploymentDeps;
-            try {
-                final BootstrapAppModelResolver appModelResolver = new BootstrapAppModelResolver(mvn);
-                final AppArtifact appArtifact = ModelUtils.resolveAppArtifact(appClasses);
-                deploymentDeps = appModelResolver
-                        .resolveManagedModel(appArtifact, Collections.emptyList(),
-                                localProject == null ? null : localProject.getAppArtifact())
-                        .getDeploymentDependencies();
-            } catch (Exception e) {
-                throw new BootstrapException("Failed to resolve deployment dependencies for " + appClasses, e);
+            List<AppDependency> deploymentDeps = Collections.emptyList();
+            if(includeDeployment) {
+                try {
+                    final BootstrapAppModelResolver appModelResolver = new BootstrapAppModelResolver(mvn);
+                    final AppArtifact appArtifact = ModelUtils.resolveAppArtifact(appClasses);
+                    deploymentDeps = appModelResolver
+                            .resolveManagedModel(appArtifact, Collections.emptyList(),
+                                    localProject == null ? null : localProject.getAppArtifact())
+                            .getDeploymentDependencies();
+                } catch (Exception e) {
+                    throw new BootstrapException("Failed to resolve deployment dependencies for " + appClasses, e);
+                }
             }
 
             final URL[] urls;
-            if(appCp.isEmpty()) {
+            if (appCp.isEmpty()) {
                 urls = toURLs(deploymentDeps);
             } else {
                 urls = new URL[deploymentDeps.size() + appCp.size()];
@@ -259,7 +269,7 @@ public class BootstrapClassLoaderFactory {
                         addPaths(urls, 0, appCp),
                         deploymentDeps);
             }
-            return new DefineClassVisibleURLClassLoader(urls, parent);
+            return urls;
         }
 
         final DefineClassVisibleURLClassLoader ucl;
@@ -283,17 +293,17 @@ public class BootstrapClassLoaderFactory {
                                 debug("Deployment classloader for %s was re-created from the classpath cache",
                                         localProject.getAppArtifact());
                                 final URL[] arr;
-                                if(appCp.isEmpty()) {
+                                if (appCp.isEmpty()) {
                                     arr = urls.toArray(new URL[urls.size()]);
                                 } else {
                                     arr = new URL[urls.size() + appCp.size()];
                                     int i = 0;
-                                    while(i < urls.size()) {
+                                    while (i < urls.size()) {
                                         arr[i] = urls.get(i++);
                                     }
                                     addPaths(arr, i, appCp);
                                 }
-                                return new DefineClassVisibleURLClassLoader(arr, parent);
+                                return arr;
                             } else {
                                 debug("Cached deployment classpath has expired for %s", localProject.getAppArtifact());
                             }
@@ -302,7 +312,8 @@ public class BootstrapClassLoaderFactory {
                                     localProject.getAppArtifact());
                         }
                     } catch (IOException e) {
-                        log.warn("Failed to read deployment classpath cache from " + cachedCpPath + " for " + localProject.getAppArtifact(), e);
+                        log.warn("Failed to read deployment classpath cache from " + cachedCpPath + " for "
+                                + localProject.getAppArtifact(), e);
                     }
                 }
             }
@@ -311,9 +322,15 @@ public class BootstrapClassLoaderFactory {
             if (offline != null) {
                 mvn.setOffline(offline);
             }
-            final List<AppDependency> deploymentDeps = new BootstrapAppModelResolver(mvn.build()).resolveModel(localProject.getAppArtifact()).getDeploymentDependencies();
+            final List<AppDependency> deploymentDeps;
+            if (includeDeployment) {
+                deploymentDeps = new BootstrapAppModelResolver(mvn.build())
+                        .resolveModel(localProject.getAppArtifact()).getDeploymentDependencies();
+            } else {
+                deploymentDeps = Collections.emptyList();
+            }
             final URL[] urls;
-            if(appCp.isEmpty()) {
+            if (appCp.isEmpty()) {
                 urls = toURLs(deploymentDeps);
             } else {
                 urls = new URL[deploymentDeps.size() + appCp.size()];
@@ -321,30 +338,29 @@ public class BootstrapClassLoaderFactory {
                         addPaths(urls, 0, appCp),
                         deploymentDeps);
             }
-            if(cachedCpPath != null) {
+            if (cachedCpPath != null) {
                 persistCp(localProject, urls, deploymentDeps.size(), cachedCpPath);
             }
-            ucl = new DefineClassVisibleURLClassLoader(urls, parent);
+            return urls;
         } catch (AppModelResolverException e) {
             throw new BootstrapException("Failed to create the deployment classloader for " + localProject.getAppArtifact(), e);
         }
-        return ucl;
     }
 
     private static boolean matchesInt(String line, int value) {
-        if(line == null) {
+        if (line == null) {
             return false;
         }
         try {
             return Integer.parseInt(line) == value;
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             // does not match
         }
         return false;
     }
 
     private static void debug(String msg, Object... args) {
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug(String.format(msg, args));
         }
     }

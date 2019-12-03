@@ -20,7 +20,6 @@ import org.eclipse.aether.repository.RepositoryPolicy;
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.BootstrapConstants;
-import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
 import io.quarkus.bootstrap.model.AppArtifact;
 import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.bootstrap.model.AppModel;
@@ -173,7 +172,7 @@ public class Curator {
         List<AppDependency> appDeps;
         try {
             appDeps = modelResolver.resolveUserDependencies(appArtifact, initialDepsList.getUserDependencies());
-        } catch (AppModelResolverException | BootstrapDependencyProcessingException e) {
+        } catch (AppModelResolverException e) {
             throw new AppCreatorException("Failed to determine the list of dependencies to update", e);
         }
         final Iterator<AppDependency> depsI = appDeps.iterator();
@@ -238,15 +237,11 @@ public class Curator {
     private static void checkBannedDependencies(AppModel initialDepsList) {
         List<String> detectedBannedDependencies = new ArrayList<>();
 
-        try {
-            for (AppDependency userDependency : initialDepsList.getUserDependencies()) {
-                String ga = userDependency.getArtifact().getGroupId() + ":" + userDependency.getArtifact().getArtifactId();
-                if (!"test".equals(userDependency.getScope()) && BANNED_DEPENDENCIES.containsKey(ga)) {
-                    detectedBannedDependencies.add(ga);
-                }
+        for (AppDependency userDependency : initialDepsList.getUserDependencies()) {
+            String ga = userDependency.getArtifact().getGroupId() + ":" + userDependency.getArtifact().getArtifactId();
+            if (!"test".equals(userDependency.getScope()) && BANNED_DEPENDENCIES.containsKey(ga)) {
+                detectedBannedDependencies.add(ga);
             }
-        } catch (BootstrapDependencyProcessingException e) {
-            // ignore this
         }
 
         if (!detectedBannedDependencies.isEmpty()) {

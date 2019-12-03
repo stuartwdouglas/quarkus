@@ -312,6 +312,17 @@ public class MavenArtifactResolver {
         }
     }
 
+    public DependencyResult resolveManagedDependencies(List<Dependency> deps, List<Dependency> managedDeps, List<RemoteRepository> mainRepos, String... excludedScopes) throws AppModelResolverException {
+        try {
+
+            final List<RemoteRepository> repos = aggregateRepositories(mainRepos, remoteRepos);
+            return repoSystem.resolveDependencies(repoSession,
+                    new DependencyRequest().setCollectRequest(new CollectRequest(deps, managedDeps, repos)));
+        } catch (DependencyResolutionException e) {
+            throw new AppModelResolverException("Failed to resolve dependencies for " + deps, e);
+        }
+    }
+
     public CollectResult collectManagedDependencies(Artifact artifact, List<Dependency> deps, List<Dependency> managedDeps, String... excludedScopes) throws AppModelResolverException {
         return collectManagedDependencies(artifact, deps, managedDeps, Collections.emptyList(), excludedScopes);
     }

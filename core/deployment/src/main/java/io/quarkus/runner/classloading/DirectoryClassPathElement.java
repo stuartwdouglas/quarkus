@@ -17,11 +17,11 @@ import java.util.stream.Stream;
 /**
  * A class path element that represents a file on the file system
  */
-public class FileClassPathElement implements ClassPathElement {
+public class DirectoryClassPathElement implements ClassPathElement {
 
     private final Path root;
 
-    public FileClassPathElement(Path root) {
+    public DirectoryClassPathElement(Path root) {
         this.root = root;
     }
 
@@ -32,7 +32,7 @@ public class FileClassPathElement implements ClassPathElement {
             return new ClassPathResource() {
                 @Override
                 public ClassPathElement getContainingElement() {
-                    return FileClassPathElement.this;
+                    return DirectoryClassPathElement.this;
                 }
 
                 @Override

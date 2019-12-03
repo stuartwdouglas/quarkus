@@ -3,29 +3,47 @@ package io.quarkus.bootstrap.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
-
 /**
+ * A representation of the Quarkus dependency model for a given application.
  *
  * @author Alexey Loubyansky
  */
 public class AppModel {
 
     private final AppArtifact appArtifact;
+    /**
+     * The deployment dependencies, less the runtime parts. This will likely go away
+     */
     private final List<AppDependency> deploymentDeps;
-    private final List<AppDependency> userDeps;
+    /**
+     * The deployment dependencies, including all transitive dependencies. This is used to build an isolated class
+     * loader to run the augmentation
+     */
+    private final List<AppDependency> fullDeploymentDeps;
+
+    /**
+     * The runtime dependencies of the application, including the runtime parts of all extensions.
+     */
+    private final List<AppDependency> runtimeDeps;
+
+    /**
+     * A list of all dependencies, generated from deploymentDeps + runtimeDeps. This will likely go away.
+     */
     private List<AppDependency> allDeps;
 
-    public AppModel(AppArtifact appArtifact, List<AppDependency> userDeps, List<AppDependency> deploymentDeps) {
+    public AppModel(AppArtifact appArtifact, List<AppDependency> runtimeDeps, List<AppDependency> deploymentDeps,
+                    List<AppDependency> fullDeploymentDeps) {
         this.appArtifact = appArtifact;
-        this.userDeps = userDeps;
+        this.runtimeDeps = runtimeDeps;
         this.deploymentDeps = deploymentDeps;
+        this.fullDeploymentDeps = fullDeploymentDeps;
     }
 
-    public List<AppDependency> getAllDependencies() throws BootstrapDependencyProcessingException {
-        if(allDeps == null) {
-            allDeps = new ArrayList<>(userDeps.size() + deploymentDeps.size());
-            allDeps.addAll(userDeps);
+    @Deprecated
+    public List<AppDependency> getAllDependencies() {
+        if (allDeps == null) {
+            allDeps = new ArrayList<>(runtimeDeps.size() + deploymentDeps.size());
+            allDeps.addAll(runtimeDeps);
             allDeps.addAll(deploymentDeps);
         }
         return allDeps;
@@ -35,11 +53,23 @@ public class AppModel {
         return appArtifact;
     }
 
-    public List<AppDependency> getUserDependencies() throws BootstrapDependencyProcessingException {
-            return userDeps;
+    /**
+     * Dependencies that the user has added that have nothing to do with Quarkus (3rd party libs, additional modules etc)
+     */
+    public List<AppDependency> getUserDependencies() {
+        return runtimeDeps;
     }
 
-    public List<AppDependency> getDeploymentDependencies() throws BootstrapDependencyProcessingException {
+    /**
+     * Dependencies of the -deployment artifacts from the quarkus extensions, and all their transitive dependencies.
+     *
+     */
+    @Deprecated
+    public List<AppDependency> getDeploymentDependencies() {
         return deploymentDeps;
+    }
+
+    public List<AppDependency> getFullDeploymentDeps() {
+        return fullDeploymentDeps;
     }
 }

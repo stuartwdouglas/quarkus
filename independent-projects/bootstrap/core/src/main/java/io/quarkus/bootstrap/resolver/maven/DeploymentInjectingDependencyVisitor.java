@@ -114,16 +114,14 @@ public class DeploymentInjectingDependencyVisitor {
         if(value == null) {
             return;
         }
-        if(value != null) {
-            Artifact deploymentArtifact = toArtifact(value);
-            if(deploymentArtifact.getVersion() == null || deploymentArtifact.getVersion().isEmpty()) {
-                deploymentArtifact = deploymentArtifact.setVersion(node.getArtifact().getVersion());
-            }
-            node.setData(QUARKUS_DEPLOYMENT_ARTIFACT, deploymentArtifact);
-            runtimeNodes.add(node);
-            managedDeps.add(new Dependency(node.getArtifact(), JavaScopes.COMPILE));
-            managedDeps.add(new Dependency(deploymentArtifact, JavaScopes.COMPILE));
+        Artifact deploymentArtifact = toArtifact(value);
+        if(deploymentArtifact.getVersion() == null || deploymentArtifact.getVersion().isEmpty()) {
+            deploymentArtifact = deploymentArtifact.setVersion(node.getArtifact().getVersion());
         }
+        node.setData(QUARKUS_DEPLOYMENT_ARTIFACT, deploymentArtifact);
+        runtimeNodes.add(node);
+        managedDeps.add(new Dependency(node.getArtifact(), JavaScopes.COMPILE));
+        managedDeps.add(new Dependency(deploymentArtifact, JavaScopes.COMPILE));
     }
 
     private void replaceWith(DependencyNode originalNode, DependencyNode newNode) throws BootstrapDependencyProcessingException {

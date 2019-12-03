@@ -25,6 +25,7 @@ import io.quarkus.builder.BuildResult;
 import io.quarkus.builder.item.BuildItem;
 import io.quarkus.deployment.builditem.AdditionalApplicationArchiveBuildItem;
 import io.quarkus.deployment.builditem.ArchiveRootBuildItem;
+import io.quarkus.deployment.builditem.DeploymentClassLoaderBuildItem;
 import io.quarkus.deployment.builditem.ExtensionClassLoaderBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
@@ -40,6 +41,7 @@ public class QuarkusAugmentor {
     private static final Logger log = Logger.getLogger(QuarkusAugmentor.class);
 
     private final ClassLoader classLoader;
+    private final ClassLoader deploymentClassLoader;
     private final Path root;
     private final Set<Class<? extends BuildItem>> finalResults;
     private final List<Consumer<BuildChainBuilder>> buildChainCustomizers;
@@ -69,6 +71,7 @@ public class QuarkusAugmentor {
         this.resolver = builder.resolver;
         this.baseName = builder.baseName;
         this.configCustomizer = builder.configCustomizer;
+        this.deploymentClassLoader = builder.deploymentClassLoader;
     }
 
     public BuildResult run() throws Exception {
@@ -90,6 +93,7 @@ public class QuarkusAugmentor {
             chainBuilder.loadProviders(classLoader);
 
             chainBuilder
+                    .addInitial(DeploymentClassLoaderBuildItem.class)
                     .addInitial(ArchiveRootBuildItem.class)
                     .addInitial(ShutdownContextBuildItem.class)
                     .addInitial(LaunchModeBuildItem.class)
@@ -120,6 +124,7 @@ public class QuarkusAugmentor {
                     .produce(new LaunchModeBuildItem(launchMode))
                     .produce(new ExtensionClassLoaderBuildItem(classLoader))
                     .produce(new BuildSystemTargetBuildItem(targetDir, baseName))
+                    .produce(new DeploymentClassLoaderBuildItem(deploymentClassLoader))
                     .produce(new CurateOutcomeBuildItem(effectiveModel, resolver));
             for (Path i : additionalApplicationArchives) {
                 execBuilder.produce(new AdditionalApplicationArchiveBuildItem(i));
@@ -166,6 +171,7 @@ public class QuarkusAugmentor {
         AppModelResolver resolver;
         String baseName = "quarkus-application";
         Consumer<ConfigBuilder> configCustomizer;
+        ClassLoader deploymentClassLoader;
 
         public Builder addBuildChainCustomizer(Consumer<BuildChainBuilder> customizer) {
             this.buildChainCustomizers.add(customizer);
@@ -261,6 +267,15 @@ public class QuarkusAugmentor {
 
         public Builder setResolver(AppModelResolver resolver) {
             this.resolver = resolver;
+            return this;
+        }
+
+        public ClassLoader getDeploymentClassLoader() {
+            return deploymentClassLoader;
+        }
+
+        public Builder setDeploymentClassLoader(ClassLoader deploymentClassLoader) {
+            this.deploymentClassLoader = deploymentClassLoader;
             return this;
         }
 

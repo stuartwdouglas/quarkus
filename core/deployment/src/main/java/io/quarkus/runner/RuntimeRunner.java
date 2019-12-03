@@ -40,7 +40,7 @@ import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
-import io.quarkus.runner.classloading.FileClassPathElement;
+import io.quarkus.runner.classloading.DirectoryClassPathElement;
 import io.quarkus.runner.classloading.FilteringClassPathElement;
 import io.quarkus.runner.classloading.JarClassPathElement;
 import io.quarkus.runner.classloading.MemoryClassPathElement;
@@ -87,7 +87,7 @@ public class RuntimeRunner implements Runnable, Closeable {
             QuarkusClassLoader.Builder clb = QuarkusClassLoader.builder("Deployment time class loader", builder.classLoader,
                     false);
             for (Path i : hotDeploymentPaths) {
-                clb.addElement(new FileClassPathElement(i));
+                clb.addElement(new DirectoryClassPathElement(i));
             }
             this.loader = clb.build();
             RuntimeClassOuput classOutput = new RuntimeClassOuput(builder.getWiringClassesDir());
@@ -172,11 +172,12 @@ public class RuntimeRunner implements Runnable, Closeable {
                         .addElement(new MemoryClassPathElement(output.resources))
                         .setBytecodeTransformers(output.transformers);
                 for (Path i : hotDeploymentPaths) {
-                    clb.addElement(new FilteringClassPathElement(new FileClassPathElement(i), output.frameworkClasses));
+                    clb.addElement(new FilteringClassPathElement(new DirectoryClassPathElement(i), output.frameworkClasses));
                 }
                 for (Path i : calculateTransformableArchives(applicationArchivePaths, output.transformers)) {
                     if (Files.isDirectory(i)) {
-                        clb.addElement(new FilteringClassPathElement(new FileClassPathElement(i), output.frameworkClasses));
+                        clb.addElement(
+                                new FilteringClassPathElement(new DirectoryClassPathElement(i), output.frameworkClasses));
                     } else {
                         clb.addElement(new FilteringClassPathElement(new JarClassPathElement(i), output.frameworkClasses));
                     }
