@@ -53,6 +53,7 @@ import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.gizmo.TryBlock;
+import io.quarkus.runner.bootstrap.BrokenMpDelegationClassLoader;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.configuration.AbstractRawDefaultConfigSource;
 import io.quarkus.runtime.configuration.ConfigDiagnostic;
@@ -338,6 +339,11 @@ public final class RunTimeConfigurationGenerator {
         public void run() {
             // in clinit, load the build-time config
 
+            //HUCK HACK
+            //TODO: delete this
+            //see https://github.com/eclipse/microprofile-config/issues/390
+            clinit.invokeStaticMethod(
+                    MethodDescriptor.ofMethod(BrokenMpDelegationClassLoader.class, "setupBrokenClWorkaround", void.class));
             // make the build time config global until we read the run time config -
             // at run time (when we're ready) we update the factory and then release the build time config
             clinit.invokeStaticMethod(QCF_SET_CONFIG, clinitConfig);
@@ -579,6 +585,13 @@ public final class RunTimeConfigurationGenerator {
                     "One or more configuration errors has prevented the application from starting");
             readConfig.returnValue(null);
             readConfig.close();
+
+            //HUCK HACK
+            //TODO: delete this
+            //see https://github.com/eclipse/microprofile-config/issues/390
+            clinit.invokeStaticMethod(
+                    MethodDescriptor.ofMethod(BrokenMpDelegationClassLoader.class, "teardownBrokenClWorkaround", void.class));
+
             clinit.returnValue(null);
             clinit.close();
             cc.close();

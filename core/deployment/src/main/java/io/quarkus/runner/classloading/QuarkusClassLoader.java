@@ -78,12 +78,12 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
     @Override
     public Enumeration<URL> getResources(String nm) throws IOException {
         String name = sanitizeName(nm);
-        if (bannedResources.contains(name)) {
-            return Collections.emptyEnumeration();
-        }
+        //for resources banned means that we don't delegate to the parent, as there can be multiple resources
+        //for single resources we still respect this
+        boolean banned = bannedResources.contains(name);
         List<URL> resources = new ArrayList<>();
 
-        if (parentFirst) {
+        if (parentFirst && !banned) {
             Enumeration<URL> res = parent.getResources(nm);
             while (res.hasMoreElements()) {
                 resources.add(res.nextElement());
@@ -101,7 +101,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
                 resources.add(res.getUrl());
             }
         }
-        if (!parentFirst) {
+        if (!parentFirst && !banned) {
             Enumeration<URL> res = parent.getResources(nm);
             while (res.hasMoreElements()) {
                 resources.add(res.nextElement());

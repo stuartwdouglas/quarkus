@@ -66,7 +66,8 @@ public class TestHTTPResourceManager {
 
     private static Map<Class<?>, TestHTTPResourceProvider<?>> getProviders() {
         Map<Class<?>, TestHTTPResourceProvider<?>> map = new HashMap<>();
-        for (TestHTTPResourceProvider<?> i : ServiceLoader.load(TestHTTPResourceProvider.class)) {
+        for (TestHTTPResourceProvider<?> i : ServiceLoader.load(TestHTTPResourceProvider.class,
+                TestHTTPResourceProvider.class.getClassLoader())) {
             map.put(i.getProvidedType(), i);
         }
         return Collections.unmodifiableMap(map);

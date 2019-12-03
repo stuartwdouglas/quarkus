@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.nio.file.FileVisitResult;
@@ -26,9 +27,6 @@ import java.util.TimerTask;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -296,16 +294,20 @@ public class QuarkusUnitTest
                     fail("The build was expected to fail");
                 }
                 started = true;
-                System.setProperty("test.url", TestHTTPResourceManager.getUri());
-                Instance<?> factory;
+                //System.setProperty("test.url", TestHTTPResourceManager.getUri());
+                Object actualTest;
                 try {
-                    factory = CDI.current()
-                            .select(Class.forName(testClass.getName(), true, Thread.currentThread().getContextClassLoader()));
+                    Class<?> isolatedTestClass = Class.forName(testClass.getName(), true,
+                            Thread.currentThread().getContextClassLoader());
+                    Class<?> cdi = Thread.currentThread().getContextClassLoader().loadClass("javax.enterprise.inject.spi.CDI");
+                    Object instance = cdi.getMethod("current").invoke(null);
+                    Method selectMethod = cdi.getMethod("select", Class.class, Annotation[].class);
+                    Object cdiInstance = selectMethod.invoke(instance, isolatedTestClass, new Annotation[0]);
+                    actualTest = selectMethod.getReturnType().getMethod("get").invoke(cdiInstance);
                 } catch (Exception e) {
                     throw new TestInstantiationException("Failed to create test instance", e);
                 }
 
-                Object actualTest = factory.get();
                 extensionContext.getStore(ExtensionContext.Namespace.GLOBAL).put(testClass.getName(), actualTest);
             } catch (Throwable e) {
                 started = false;

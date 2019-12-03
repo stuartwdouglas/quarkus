@@ -53,7 +53,7 @@ public class JarClassPathElement implements ClassPathElement {
                 @Override
                 public URL getUrl() {
                     try {
-                        return new URL("jar:" + jarPath.getProtocol(), null, jarPath.getPath() + "!/" + name);
+                        return new URL("jar", null, jarPath.getProtocol() + ":" + jarPath.getPath() + "!/" + name);
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }

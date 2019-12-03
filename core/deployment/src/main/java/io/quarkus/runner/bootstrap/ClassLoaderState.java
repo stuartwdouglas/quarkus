@@ -36,6 +36,10 @@ class ClassLoaderState {
     private volatile QuarkusClassLoader baseRuntimeClassLoader;
 
     public synchronized ClassPathElement getElement(AppArtifact artifact) {
+        if (!artifact.getType().equals("jar")) {
+            //avoid the need for this sort of check in multiple places
+            return ClassPathElement.EMPTY;
+        }
         if (augmentationElements.containsKey(artifact)) {
             return augmentationElements.get(artifact);
         }
@@ -67,7 +71,7 @@ class ClassLoaderState {
     }
 
     public ClassLoaderState setBaseRuntimeClassLoader(QuarkusClassLoader baseRuntimeClassLoader) {
-        if (this.augmentClassLoader != null) {
+        if (this.baseRuntimeClassLoader != null) {
             throw new IllegalStateException("base runtime class loader can only be created once");
         }
         this.baseRuntimeClassLoader = baseRuntimeClassLoader;

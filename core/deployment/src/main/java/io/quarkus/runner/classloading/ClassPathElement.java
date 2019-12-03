@@ -1,9 +1,11 @@
 package io.quarkus.runner.classloading;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.ProtectionDomain;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -37,11 +39,32 @@ public interface ClassPathElement extends Closeable {
      * Creates an element from a file system path
      */
     static ClassPathElement fromPath(Path path) {
-        ClassPathElement element;
         if (Files.isDirectory(path)) {
             return new DirectoryClassPathElement(path);
         } else {
             return new JarClassPathElement(path);
         }
     }
+
+    static ClassPathElement EMPTY = new ClassPathElement() {
+        @Override
+        public ClassPathResource getResource(String name) {
+            return null;
+        }
+
+        @Override
+        public Set<String> getProvidedResources() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ProtectionDomain getProtectionDomain(ClassLoader classLoader) {
+            return null;
+        }
+
+        @Override
+        public void close() throws IOException {
+
+        }
+    };
 }

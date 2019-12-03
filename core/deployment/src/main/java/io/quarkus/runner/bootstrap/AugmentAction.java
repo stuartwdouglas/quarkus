@@ -84,6 +84,8 @@ public class AugmentAction {
         QuarkusAugmentor.Builder builder = QuarkusAugmentor.builder()
                 .setRoot(quarkusBootstrap.getApplicationRoot())
                 .setClassLoader(classLoader)
+                .addFinal(ApplicationClassNameBuildItem.class)
+                .setDeploymentClassLoader(buildDeploymentClassLoader(classLoader))
                 .setEffectiveModel(appModel)
                 .setResolver(appModelResolver);
 
@@ -121,9 +123,10 @@ public class AugmentAction {
         if (classLoaderState.getAugmentClassLoader() == null) {
             //first run, we need to build all the class loaders
             QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Augmentation Class Loader",
-                    ClassLoader.getSystemClassLoader(), false);
+                    ClassLoader.getSystemClassLoader(), true);
             //we want a class loader that can load the deployment artifacts and all their dependencies, but not
             //any of the runtime artifacts, or user classes
+            //this will load any deployment artifacts from the parent CL if they are present
             Set<AppArtifact> deploymentArtifacts = new HashSet<>();
             for (AppDependency i : appModel.getFullDeploymentDeps()) {
                 deploymentArtifacts.add(i.getArtifact());

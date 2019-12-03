@@ -3,6 +3,7 @@ package io.quarkus.runner.bootstrap;
 import io.quarkus.bootstrap.BootstrapAppModelFactory;
 import io.quarkus.bootstrap.BootstrapException;
 import io.quarkus.bootstrap.model.AppModel;
+import io.quarkus.runtime.LaunchMode;
 
 public class CurateAction {
 
@@ -37,7 +38,13 @@ public class CurateAction {
             //this is super simple, all we want to do is resolve all our dependencies
             //once we have this it is up to augment to set up the class loader to actually use them
             BootstrapAppModelFactory appModelFactory = BootstrapAppModelFactory.newInstance()
-                    .setAppClasses(quarkusBootstrap.getProjectRoot() != null ? quarkusBootstrap.getProjectRoot() : quarkusBootstrap.getApplicationRoot());
+                    .setAppClasses(quarkusBootstrap.getProjectRoot() != null ? quarkusBootstrap.getProjectRoot()
+                            : quarkusBootstrap.getApplicationRoot());
+            if (quarkusBootstrap.getLaunchMode() == LaunchMode.TEST) {
+                appModelFactory.setTest(true);
+            } else if (quarkusBootstrap.getLaunchMode() == LaunchMode.DEVELOPMENT) {
+                appModelFactory.setDevMode(true);
+            }
             AppModel model = appModelFactory
                     .resolveAppModel();
             return new AugmentAction(quarkusBootstrap, model, appModelFactory.getAppModelResolver());

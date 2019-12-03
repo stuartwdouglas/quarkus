@@ -73,7 +73,7 @@ public class StartupAction {
 
             Method start = appClass.getMethod("start", String[].class);
             Object application = appClass.newInstance();
-            start.invoke(application, args);
+            start.invoke(application, (Object) args);
             return new RunningQuarkusApplication((Closeable) application, runtimeClassLoader);
         } catch (Exception e) {
             throw new RuntimeException("Failed to start Quarkus", e);
@@ -126,7 +126,7 @@ public class StartupAction {
     private QuarkusClassLoader createRuntimeClassLoader(QuarkusClassLoader loader,
             Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers) {
         QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Quarkus Runtime ClassLoader",
-                ClassLoader.getSystemClassLoader(), false);
+                loader, false);
 
         builder.addElement(ClassPathElement.fromPath(quarkusBootstrap.getApplicationRoot()));
         builder.addElement(extractGeneratedResources(true));

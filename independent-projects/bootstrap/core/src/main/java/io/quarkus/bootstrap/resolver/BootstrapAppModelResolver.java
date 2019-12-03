@@ -45,6 +45,7 @@ public class BootstrapAppModelResolver implements AppModelResolver {
     protected final MavenArtifactResolver mvn;
     protected Consumer<String> buildTreeConsumer;
     protected boolean devmode;
+    protected boolean test;
 
     public BootstrapAppModelResolver(MavenArtifactResolver mvn) {
         this.mvn = mvn;
@@ -64,6 +65,11 @@ public class BootstrapAppModelResolver implements AppModelResolver {
      */
     public BootstrapAppModelResolver setDevMode(boolean devmode) {
         this.devmode = devmode;
+        return this;
+    }
+
+    public BootstrapAppModelResolver setTest(boolean test) {
+        this.test = test;
         return this;
     }
 
@@ -148,7 +154,7 @@ public class BootstrapAppModelResolver implements AppModelResolver {
             managedRepos = mvn.newResolutionRepositories(managingDescr.getRepositories());
         }
 
-        String[] excludedScopes = devmode ? new String[] { "test" } : new String[0];
+        String[] excludedScopes = devmode ? new String[] { "test" } : (test ? new String[] { "provided" } : new String[0]);
         DependencyNode resolvedDeps = mvn.resolveManagedDependencies(toAetherArtifact(appArtifact),
                 directMvnDeps, managedDeps, managedRepos, excludedScopes).getRoot();
 

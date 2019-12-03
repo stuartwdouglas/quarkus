@@ -41,10 +41,22 @@ public class BootstrapAppModelFactory {
     private boolean localProjectsDiscovery;
     private Boolean offline;
     private boolean enableClasspathCache;
+    private boolean test;
+    private boolean devMode;
 
     private BootstrapAppModelResolver bootstrapAppModelResolver;
 
     private BootstrapAppModelFactory() {
+    }
+
+    public BootstrapAppModelFactory setTest(boolean test) {
+        this.test = test;
+        return this;
+    }
+
+    public BootstrapAppModelFactory setDevMode(boolean devMode) {
+        this.devMode = devMode;
+        return this;
     }
 
     public BootstrapAppModelFactory setAppClasses(Path appClasses) {
@@ -93,7 +105,9 @@ public class BootstrapAppModelFactory {
                 }
                 final MavenArtifactResolver mvn = mvnBuilder.build();
 
-                return bootstrapAppModelResolver = new BootstrapAppModelResolver(mvn);
+                return bootstrapAppModelResolver = new BootstrapAppModelResolver(mvn)
+                        .setTest(test)
+                        .setDevMode(devMode);
             }
 
             final LocalProject localProject = localProjectsDiscovery || enableClasspathCache
@@ -106,7 +120,9 @@ public class BootstrapAppModelFactory {
             if (offline != null) {
                 mvn.setOffline(offline);
             }
-            return bootstrapAppModelResolver = new BootstrapAppModelResolver(mvn.build());
+            return bootstrapAppModelResolver = new BootstrapAppModelResolver(mvn.build())
+                    .setTest(test)
+                    .setDevMode(devMode);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create resolver for " + appClasses, e);
         }
