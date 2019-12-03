@@ -51,7 +51,8 @@ import io.quarkus.builder.BuildStep;
 import io.quarkus.builder.item.BuildItem;
 import io.quarkus.deployment.proxy.ProxyConfiguration;
 import io.quarkus.deployment.proxy.ProxyFactory;
-import io.quarkus.runner.RuntimeRunner;
+import io.quarkus.runner.bootstrap.QuarkusBootstrap;
+import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.PropertyTestUtil;
@@ -71,16 +72,17 @@ public class QuarkusUnitTest
 
     boolean started = false;
 
-    private RuntimeRunner runtimeRunner;
     private Path deploymentDir;
     private Consumer<Throwable> assertException;
     private Supplier<JavaArchive> archiveProducer;
     private List<Consumer<BuildChainBuilder>> buildChainCustomizers = new ArrayList<>();
     private Runnable afterUndeployListener;
     private String logFileName;
+
     private static final Timer timeoutTimer = new Timer("Test thread dump timer");
     private volatile TimerTask timeoutTask;
     private Properties customApplicationProperties;
+    private RunningQuarkusApplication runningQuarkusApplication;
     private ClassLoader originalClassLoader;
 
     private final RestAssuredURLManager restAssuredURLManager;
@@ -129,7 +131,7 @@ public class QuarkusUnitTest
         return this;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "rawtypes" })
     public Object createTestInstance(TestInstanceFactoryContext factoryContext, ExtensionContext extensionContext)
             throws TestInstantiationException {
         try {
@@ -277,17 +279,19 @@ public class QuarkusUnitTest
 
             final Path testLocation = PathTestHelper.getTestClassesLocation(testClass);
 
-            runtimeRunner = RuntimeRunner.builder()
-                    .setLaunchMode(LaunchMode.TEST)
-                    .setClassLoader(testClass.getClassLoader())
-                    .setTarget(deploymentDir)
-                    .excludeFromIndexing(testLocation)
-                    .setFrameworkClassesPath(testLocation)
-                    .addChainCustomizers(customizers)
+            QuarkusBootstrap bootstrap = QuarkusBootstrap.builder(deploymentDir, LaunchMode.TEST)
+                    .addExcludedPath(testLocation)
+                    .setProjectRoot(testLocation)
+                    .addBuildChainCustomizers(customizers)
                     .build();
 
+            runningQuarkusApplication = bootstrap.bootstrap()
+                    .curate()
+                    .createInitialRuntimeApplication()
+                    .run(new String[0]);
+            //we restore the CL at the end of the test
+            Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
             try {
-                runtimeRunner.run();
                 if (assertException != null) {
                     fail("The build was expected to fail");
                 }
@@ -334,8 +338,8 @@ public class QuarkusUnitTest
     @Override
     public void afterAll(ExtensionContext extensionContext) throws Exception {
         try {
-            if (runtimeRunner != null) {
-                runtimeRunner.close();
+            if (runningQuarkusApplication != null) {
+                runningQuarkusApplication.close();
             }
             if (afterUndeployListener != null) {
                 afterUndeployListener.run();

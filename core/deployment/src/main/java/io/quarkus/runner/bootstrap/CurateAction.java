@@ -32,12 +32,12 @@ public class CurateAction {
         return this;
     }
 
-    public AugmentAction run() {
+    public AugmentAction curate() {
         try {
             //this is super simple, all we want to do is resolve all our dependencies
             //once we have this it is up to augment to set up the class loader to actually use them
             BootstrapAppModelFactory appModelFactory = BootstrapAppModelFactory.newInstance()
-                    .setAppClasses(quarkusBootstrap.getApplicationRoot());
+                    .setAppClasses(quarkusBootstrap.getProjectRoot() != null ? quarkusBootstrap.getProjectRoot() : quarkusBootstrap.getApplicationRoot());
             AppModel model = appModelFactory
                     .resolveAppModel();
             return new AugmentAction(quarkusBootstrap, model, appModelFactory.getAppModelResolver());

@@ -2,6 +2,7 @@ package io.quarkus.runner.bootstrap;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -22,6 +23,12 @@ public class QuarkusBootstrap {
      * The root of the application, where the application classes live.
      */
     private final Path applicationRoot;
+
+    /**
+     * The root of the project. This may be different to the application root for tests that
+     * run in a different directory.
+     */
+    private final Path projectRoot;
 
     /**
      * Any additional application archives that should be added to the application, that would not be otherwise
@@ -55,9 +62,10 @@ public class QuarkusBootstrap {
         this.excludeFromClassPath = new ArrayList<>(builder.excludeFromClassPath);
         this.launchMode = builder.launchMode;
         this.chainCustomizers = new ArrayList<>(builder.chainCustomizers);
+        this.projectRoot = builder.projectRoot;
     }
 
-    public CurateAction start() {
+    public CurateAction bootstrap() {
         return new CurateAction(this);
     }
 
@@ -85,8 +93,17 @@ public class QuarkusBootstrap {
         return classLoaderState;
     }
 
+    Path getProjectRoot() {
+        return projectRoot;
+    }
+
+    public static Builder builder(Path applicationRoot, LaunchMode launchMode) {
+        return new Builder(applicationRoot, launchMode);
+    }
+
     public static class Builder {
         private final Path applicationRoot;
+        private Path projectRoot;
 
         private final List<AdditionalDependency> additionalApplicationArchives = new ArrayList<>();
         private final List<Path> excludeFromClassPath = new ArrayList<>();
@@ -108,12 +125,22 @@ public class QuarkusBootstrap {
             return this;
         }
 
-        public Builder addBuildChainCustomiser(Consumer<BuildChainBuilder> chainCustomiser) {
+        public Builder addBuildChainCustomizer(Consumer<BuildChainBuilder> chainCustomiser) {
             this.chainCustomizers.add(chainCustomiser);
             return this;
         }
 
-        public QuarkusBootstrap bootstrap() {
+        public Builder addBuildChainCustomizers(Collection<Consumer<BuildChainBuilder>> chainCustomizers) {
+            this.chainCustomizers.addAll(chainCustomizers);
+            return this;
+        }
+
+        public Builder setProjectRoot(Path projectRoot) {
+            this.projectRoot = projectRoot;
+            return this;
+        }
+
+        public QuarkusBootstrap build() {
             return new QuarkusBootstrap(this);
         }
 
