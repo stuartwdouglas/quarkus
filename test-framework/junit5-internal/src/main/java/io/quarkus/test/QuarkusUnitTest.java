@@ -84,7 +84,8 @@ public class QuarkusUnitTest
     private RunningQuarkusApplication runningQuarkusApplication;
     private ClassLoader originalClassLoader;
 
-    private final RestAssuredURLManager restAssuredURLManager;
+    private RestAssuredURLManager restAssuredURLManager;
+    private boolean useSecureConnection;
 
     public QuarkusUnitTest setExpectedException(Class<? extends Throwable> expectedException) {
         return assertException(t -> {
@@ -102,7 +103,7 @@ public class QuarkusUnitTest
     }
 
     private QuarkusUnitTest(boolean useSecureConnection) {
-        this.restAssuredURLManager = new RestAssuredURLManager(useSecureConnection);
+        this.useSecureConnection = useSecureConnection;
     }
 
     public QuarkusUnitTest assertException(Consumer<Throwable> assertException) {
@@ -139,7 +140,7 @@ public class QuarkusUnitTest
             ExtensionContext.Store store = extensionContext.getStore(ExtensionContext.Namespace.GLOBAL);
             Object actualTestInstance = store.get(testClass.getName());
             if (actualTestInstance != null) { //happens if a deployment exception is expected
-                TestHTTPResourceManager.inject(actualTestInstance);
+                TestHTTPResourceManager.inject(actualTestInstance, runningQuarkusApplication);
             }
             ProxyFactory<?> proxyFactory = (ProxyFactory<?>) store.get(proxyFactoryKey(testClass));
             return proxyFactory.newInstance(new InvocationHandler() {
@@ -291,11 +292,12 @@ public class QuarkusUnitTest
                         .run(new String[0]);
                 //we restore the CL at the end of the test
                 Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
+                restAssuredURLManager = new RestAssuredURLManager(runningQuarkusApplication, useSecureConnection);
                 if (assertException != null) {
                     fail("The build was expected to fail");
                 }
                 started = true;
-                //System.setProperty("test.url", TestHTTPResourceManager.getUri());
+                System.setProperty("test.url", TestHTTPResourceManager.getUri(runningQuarkusApplication));
                 Object actualTest;
                 try {
                     Class<?> isolatedTestClass = Class.forName(testClass.getName(), true,

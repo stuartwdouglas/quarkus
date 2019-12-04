@@ -9,6 +9,8 @@ import java.util.ServiceLoader;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
+import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
+
 public class TestHTTPResourceManager {
 
     public static String getUri() {
@@ -25,7 +27,15 @@ public class TestHTTPResourceManager {
         return ConfigProvider.getConfig().getValue("test.url.ssl", String.class);
     }
 
-    public static void inject(Object testCase) {
+    public static String getUri(RunningQuarkusApplication application) {
+        return application.getConfigValue("test.url", String.class).get();
+    }
+
+    public static String getSslUri(RunningQuarkusApplication application) {
+        return application.getConfigValue("test.url.ssl", String.class).get();
+    }
+
+    public static void inject(Object testCase, RunningQuarkusApplication application) {
         Map<Class<?>, TestHTTPResourceProvider<?>> providers = getProviders();
         Class<?> c = testCase.getClass();
         while (c != Object.class) {
@@ -41,15 +51,15 @@ public class TestHTTPResourceManager {
                     String val;
                     if (resource.ssl()) {
                         if (path.startsWith("/")) {
-                            val = getSslUri() + path;
+                            val = getSslUri(application) + path;
                         } else {
-                            val = getSslUri() + "/" + path;
+                            val = getSslUri(application) + "/" + path;
                         }
                     } else {
                         if (path.startsWith("/")) {
-                            val = getUri() + path;
+                            val = getUri(application) + path;
                         } else {
-                            val = getUri() + "/" + path;
+                            val = getUri(application) + "/" + path;
                         }
                     }
                     f.setAccessible(true);

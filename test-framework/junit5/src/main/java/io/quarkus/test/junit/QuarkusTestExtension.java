@@ -81,7 +81,7 @@ public class QuarkusTestExtension
      * run we remove them if this file exists.
      */
     private static final String CREATED_FILES = "CREATED_FILES.txt";
-    private final RestAssuredURLManager restAssuredURLManager = new RestAssuredURLManager(false);
+    private RestAssuredURLManager restAssuredURLManager = new RestAssuredURLManager(null, false);
 
     private ExtensionState doJavaStart(ExtensionContext context, TestResourceManager testResourceManager) {
 
