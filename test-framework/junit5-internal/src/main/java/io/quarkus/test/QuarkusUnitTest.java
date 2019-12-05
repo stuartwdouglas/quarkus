@@ -68,7 +68,8 @@ import io.quarkus.test.common.http.TestHTTPResourceManager;
  * A test extension for testing Quarkus internals, not intended for end user consumption
  */
 public class QuarkusUnitTest
-        implements BeforeAllCallback, AfterAllCallback, TestInstanceFactory, BeforeEachCallback, AfterEachCallback, InvocationInterceptor {
+        implements BeforeAllCallback, AfterAllCallback, TestInstanceFactory, BeforeEachCallback, AfterEachCallback,
+        InvocationInterceptor {
 
     static {
         System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
@@ -206,25 +207,29 @@ public class QuarkusUnitTest
     }
 
     @Override
-    public void interceptBeforeAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+    public void interceptBeforeAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
+            ExtensionContext extensionContext) throws Throwable {
         runExtensionMethod(invocationContext);
         invocation.proceed();
     }
 
     @Override
-    public void interceptBeforeEachMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+    public void interceptBeforeEachMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
+            ExtensionContext extensionContext) throws Throwable {
         runExtensionMethod(invocationContext);
         invocation.proceed();
     }
 
     @Override
-    public void interceptAfterEachMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+    public void interceptAfterEachMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
+            ExtensionContext extensionContext) throws Throwable {
         runExtensionMethod(invocationContext);
         invocation.proceed();
     }
 
     @Override
-    public void interceptAfterAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+    public void interceptAfterAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
+            ExtensionContext extensionContext) throws Throwable {
         runExtensionMethod(invocationContext);
         invocation.proceed();
     }
@@ -234,14 +239,15 @@ public class QuarkusUnitTest
         Class<?> c = actualTestClass;
         while (c != Object.class) {
             try {
-                newMethod = c.getDeclaredMethod(invocationContext.getExecutable().getName(), invocationContext.getExecutable().getParameterTypes());
+                newMethod = c.getDeclaredMethod(invocationContext.getExecutable().getName(),
+                        invocationContext.getExecutable().getParameterTypes());
                 break;
             } catch (NoSuchMethodException e) {
                 //ignore
             }
             c = c.getSuperclass();
         }
-        if(newMethod == null) {
+        if (newMethod == null) {
             throw new RuntimeException("Could not find method " + invocationContext.getExecutable() + " on test class");
         }
         try {

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 import io.quarkus.builder.BuildChainBuilder;
@@ -56,6 +57,8 @@ public class QuarkusBootstrap {
 
     private final ClassLoaderState classLoaderState = new ClassLoaderState();
 
+    private final Properties buildSystemProperties;
+
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
         this.additionalApplicationArchives = new ArrayList<>(builder.additionalApplicationArchives);
@@ -63,6 +66,7 @@ public class QuarkusBootstrap {
         this.launchMode = builder.launchMode;
         this.chainCustomizers = new ArrayList<>(builder.chainCustomizers);
         this.projectRoot = builder.projectRoot;
+        this.buildSystemProperties = builder.buildSystemProperties;
     }
 
     public CurateAction bootstrap() {
@@ -93,6 +97,10 @@ public class QuarkusBootstrap {
         return classLoaderState;
     }
 
+    Properties getBuildSystemProperties() {
+        return buildSystemProperties;
+    }
+
     Path getProjectRoot() {
         return projectRoot;
     }
@@ -109,6 +117,7 @@ public class QuarkusBootstrap {
         private final List<Path> excludeFromClassPath = new ArrayList<>();
         private final LaunchMode launchMode;
         private final List<Consumer<BuildChainBuilder>> chainCustomizers = new ArrayList<>();
+        private Properties buildSystemProperties;
 
         public Builder(Path applicationRoot, LaunchMode launchMode) {
             this.applicationRoot = applicationRoot;
@@ -138,6 +147,9 @@ public class QuarkusBootstrap {
         public Builder setProjectRoot(Path projectRoot) {
             this.projectRoot = projectRoot;
             return this;
+        }
+        public void setBuildSystemProperties(Properties buildSystemProperties) {
+            this.buildSystemProperties = buildSystemProperties;
         }
 
         public QuarkusBootstrap build() {

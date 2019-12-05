@@ -86,6 +86,7 @@ public class AugmentAction {
                 .setClassLoader(classLoader)
                 .addFinal(ApplicationClassNameBuildItem.class)
                 .setDeploymentClassLoader(buildDeploymentClassLoader(classLoader))
+                .setBuildSystemProperties(quarkusBootstrap.getBuildSystemProperties())
                 .setEffectiveModel(appModel)
                 .setResolver(appModelResolver);
 

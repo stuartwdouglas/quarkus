@@ -44,7 +44,7 @@ public class StartupAction {
     /**
      * Runs the application, and returns a handle that can be used to shut it down.
      */
-    public RunningQuarkusApplication run(String[] args) throws Exception {
+    public RunningQuarkusApplication run(String... args) throws Exception {
         //first
         Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers = extractTransformers();
         QuarkusClassLoader baseClassLoader = createBaseClassLoader(bytecodeTransformers);
