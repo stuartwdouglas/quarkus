@@ -3,7 +3,7 @@ package io.quarkus.test.common;
 import java.lang.reflect.Field;
 import java.util.Optional;
 
-import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
+import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
  * Utility class that sets the rest assured port to the default test port.
@@ -20,12 +20,9 @@ public class RestAssuredURLManager {
     private static final Field portField;
     private static final Field baseURIField;
     private static final Field basePathField;
-    private int oldPort;
-    private String oldBaseURI;
-    private String oldBasePath;
-
-    private final RunningQuarkusApplication runningQuarkusApplication;
-    private final boolean useSecureConnection;
+    private static int oldPort;
+    private static String oldBaseURI;
+    private static String oldBasePath;
 
     static {
         Field p;
@@ -49,16 +46,15 @@ public class RestAssuredURLManager {
         basePathField = basePath;
     }
 
-    public RestAssuredURLManager(RunningQuarkusApplication runningQuarkusApplication, boolean useSecureConnection) {
-        this.runningQuarkusApplication = runningQuarkusApplication;
-        this.useSecureConnection = useSecureConnection;
+    private RestAssuredURLManager() {
+
     }
 
-    private int getPortFromConfig(String key, int defaultValue) {
-        return runningQuarkusApplication.getConfigValue(key, Integer.class).orElse(defaultValue);
+    private static int getPortFromConfig(String key, int defaultValue) {
+        return ConfigProvider.getConfig().getOptionalValue(key, Integer.class).orElse(defaultValue);
     }
 
-    public void setURL() {
+    public static void setURL(boolean useSecureConnection) {
         if (portField != null) {
             try {
                 oldPort = (Integer) portField.get(null);
@@ -73,7 +69,7 @@ public class RestAssuredURLManager {
             try {
                 oldBaseURI = (String) baseURIField.get(null);
                 final String protocol = useSecureConnection ? "https://" : "http://";
-                String baseURI = protocol + runningQuarkusApplication.getConfigValue("quarkus.http.host", String.class)
+                String baseURI = protocol + ConfigProvider.getConfig().getOptionalValue("quarkus.http.host", String.class)
                         .orElse("localhost");
                 baseURIField.set(null, baseURI);
             } catch (IllegalAccessException e) {
@@ -83,7 +79,7 @@ public class RestAssuredURLManager {
         if (basePathField != null) {
             try {
                 oldBasePath = (String) basePathField.get(null);
-                Optional<String> basePath = runningQuarkusApplication.getConfigValue("quarkus.http.root-path",
+                Optional<String> basePath = ConfigProvider.getConfig().getOptionalValue("quarkus.http.root-path",
                         String.class);
                 if (basePath.isPresent()) {
                     basePathField.set(null, basePath.get());
@@ -94,7 +90,7 @@ public class RestAssuredURLManager {
         }
     }
 
-    public void clearURL() {
+    public static void clearURL() {
         if (portField != null) {
             try {
                 portField.set(null, oldPort);

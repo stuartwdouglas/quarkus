@@ -11,7 +11,9 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -34,11 +36,14 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.InvocationInterceptor;
+import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 import org.junit.jupiter.api.extension.TestInstanceFactory;
 import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
 import org.junit.jupiter.api.extension.TestInstantiationException;
@@ -63,7 +68,7 @@ import io.quarkus.test.common.http.TestHTTPResourceManager;
  * A test extension for testing Quarkus internals, not intended for end user consumption
  */
 public class QuarkusUnitTest
-        implements BeforeAllCallback, AfterAllCallback, TestInstanceFactory, BeforeEachCallback, AfterEachCallback {
+        implements BeforeAllCallback, AfterAllCallback, TestInstanceFactory, BeforeEachCallback, AfterEachCallback, InvocationInterceptor {
 
     static {
         System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
@@ -84,8 +89,10 @@ public class QuarkusUnitTest
     private RunningQuarkusApplication runningQuarkusApplication;
     private ClassLoader originalClassLoader;
 
-    private RestAssuredURLManager restAssuredURLManager;
     private boolean useSecureConnection;
+
+    private Class<?> actualTestClass;
+    private Object actualTestInstance;
 
     public QuarkusUnitTest setExpectedException(Class<? extends Throwable> expectedException) {
         return assertException(t -> {
@@ -140,7 +147,8 @@ public class QuarkusUnitTest
             ExtensionContext.Store store = extensionContext.getStore(ExtensionContext.Namespace.GLOBAL);
             Object actualTestInstance = store.get(testClass.getName());
             if (actualTestInstance != null) { //happens if a deployment exception is expected
-                TestHTTPResourceManager.inject(actualTestInstance, runningQuarkusApplication);
+                Class<?> resM = runningQuarkusApplication.getClassLoader().loadClass(TestHTTPResourceManager.class.getName());
+                resM.getDeclaredMethod("inject", Object.class).invoke(null, actualTestInstance);
             }
             ProxyFactory<?> proxyFactory = (ProxyFactory<?>) store.get(proxyFactoryKey(testClass));
             return proxyFactory.newInstance(new InvocationHandler() {
@@ -198,6 +206,52 @@ public class QuarkusUnitTest
     }
 
     @Override
+    public void interceptBeforeAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+        runExtensionMethod(invocationContext);
+        invocation.proceed();
+    }
+
+    @Override
+    public void interceptBeforeEachMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+        runExtensionMethod(invocationContext);
+        invocation.proceed();
+    }
+
+    @Override
+    public void interceptAfterEachMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+        runExtensionMethod(invocationContext);
+        invocation.proceed();
+    }
+
+    @Override
+    public void interceptAfterAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+        runExtensionMethod(invocationContext);
+        invocation.proceed();
+    }
+
+    private void runExtensionMethod(ReflectiveInvocationContext<Method> invocationContext) {
+        Method newMethod = null;
+        Class<?> c = actualTestClass;
+        while (c != Object.class) {
+            try {
+                newMethod = c.getDeclaredMethod(invocationContext.getExecutable().getName(), invocationContext.getExecutable().getParameterTypes());
+                break;
+            } catch (NoSuchMethodException e) {
+                //ignore
+            }
+            c = c.getSuperclass();
+        }
+        if(newMethod == null) {
+            throw new RuntimeException("Could not find method " + invocationContext.getExecutable() + " on test class");
+        }
+        try {
+            newMethod.invoke(actualTestInstance, invocationContext.getArguments().toArray());
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void beforeAll(ExtensionContext extensionContext) throws Exception {
         originalClassLoader = Thread.currentThread().getContextClassLoader();
         timeoutTask = new TimerTask() {
@@ -242,6 +296,23 @@ public class QuarkusUnitTest
                     .setClassLoader(new DefineClassVisibleClassLoader(testClass.getClassLoader()))
                     .setSuperClass((Class<Object>) testClass));
             store.put(proxyFactoryKey(testClass), factory);
+
+            //verify that we can proxy the relevant methods
+            Class c = testClass;
+            while (c != Object.class) {
+                for (Method method : c.getDeclaredMethods()) {
+                    if (method.getAnnotation(Test.class) != null) {
+                        if (Modifier.isFinal(method.getModifiers())) {
+                            throw new RuntimeException("Test method " + method + " cannot be final");
+                        }
+                        if (!Modifier.isPublic(method.getModifiers()) && !Modifier.isProtected(method.getModifiers())) {
+                            throw new RuntimeException("Test method " + method + " must be public or protected");
+                        }
+                    }
+
+                }
+                c = c.getSuperclass();
+            }
         }
 
         try {
@@ -292,26 +363,24 @@ public class QuarkusUnitTest
                         .run(new String[0]);
                 //we restore the CL at the end of the test
                 Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
-                restAssuredURLManager = new RestAssuredURLManager(runningQuarkusApplication, useSecureConnection);
                 if (assertException != null) {
                     fail("The build was expected to fail");
                 }
                 started = true;
                 System.setProperty("test.url", TestHTTPResourceManager.getUri(runningQuarkusApplication));
-                Object actualTest;
                 try {
-                    Class<?> isolatedTestClass = Class.forName(testClass.getName(), true,
+                    actualTestClass = Class.forName(testClass.getName(), true,
                             Thread.currentThread().getContextClassLoader());
                     Class<?> cdi = Thread.currentThread().getContextClassLoader().loadClass("javax.enterprise.inject.spi.CDI");
                     Object instance = cdi.getMethod("current").invoke(null);
                     Method selectMethod = cdi.getMethod("select", Class.class, Annotation[].class);
-                    Object cdiInstance = selectMethod.invoke(instance, isolatedTestClass, new Annotation[0]);
-                    actualTest = selectMethod.getReturnType().getMethod("get").invoke(cdiInstance);
+                    Object cdiInstance = selectMethod.invoke(instance, actualTestClass, new Annotation[0]);
+                    actualTestInstance = selectMethod.getReturnType().getMethod("get").invoke(cdiInstance);
                 } catch (Exception e) {
                     throw new TestInstantiationException("Failed to create test instance", e);
                 }
 
-                extensionContext.getStore(ExtensionContext.Namespace.GLOBAL).put(testClass.getName(), actualTest);
+                extensionContext.getStore(ExtensionContext.Namespace.GLOBAL).put(testClass.getName(), actualTestInstance);
             } catch (Throwable e) {
                 started = false;
                 if (assertException != null) {
@@ -402,12 +471,20 @@ public class QuarkusUnitTest
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
-        restAssuredURLManager.clearURL();
+        if (runningQuarkusApplication != null) {
+            //this kinda sucks, but everything is isolated, so we need to hook into everything via reflection
+            runningQuarkusApplication.getClassLoader().loadClass(RestAssuredURLManager.class.getName())
+                    .getDeclaredMethod("clearURL")
+                    .invoke(null);
+        }
     }
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
-        restAssuredURLManager.setURL();
+        if (runningQuarkusApplication != null) {
+            runningQuarkusApplication.getClassLoader().loadClass(RestAssuredURLManager.class.getName())
+                    .getDeclaredMethod("setURL", boolean.class).invoke(null, useSecureConnection);
+        }
     }
 
     public Runnable getAfterUndeployListener() {

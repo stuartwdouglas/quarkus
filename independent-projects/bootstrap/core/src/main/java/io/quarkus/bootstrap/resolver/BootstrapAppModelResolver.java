@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.eclipse.aether.RepositoryException;
 import org.eclipse.aether.artifact.Artifact;
@@ -238,6 +239,7 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         for (ArtifactResult child : fullDeploymentDepsList) {
             fullDeploymentDeps.add(new AppDependency(toAppArtifact(child.getArtifact()), "compile", false));
         }
+
         return new AppModel(appArtifact, userDeps, deploymentDeps, fullDeploymentDeps);
     }
 

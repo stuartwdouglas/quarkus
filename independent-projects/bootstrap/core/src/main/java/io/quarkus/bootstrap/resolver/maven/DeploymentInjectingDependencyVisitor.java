@@ -40,6 +40,7 @@ public class DeploymentInjectingDependencyVisitor {
 
     private final MavenArtifactResolver resolver;
     private final List<Dependency> managedDeps;
+    private final List<Dependency> runtimeExtensionDeps = new ArrayList<>();
     private final List<RemoteRepository> mainRepos;
 
     boolean injectedDeps;
@@ -121,7 +122,12 @@ public class DeploymentInjectingDependencyVisitor {
         node.setData(QUARKUS_DEPLOYMENT_ARTIFACT, deploymentArtifact);
         runtimeNodes.add(node);
         managedDeps.add(new Dependency(node.getArtifact(), JavaScopes.COMPILE));
+        runtimeExtensionDeps.add(new Dependency(node.getArtifact(), JavaScopes.COMPILE));
         managedDeps.add(new Dependency(deploymentArtifact, JavaScopes.COMPILE));
+    }
+
+    public List<Dependency> getRuntimeExtensionDeps() {
+        return runtimeExtensionDeps;
     }
 
     private void replaceWith(DependencyNode originalNode, DependencyNode newNode) throws BootstrapDependencyProcessingException {

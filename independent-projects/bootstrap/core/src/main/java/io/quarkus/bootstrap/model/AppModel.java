@@ -11,6 +11,7 @@ import java.util.List;
 public class AppModel {
 
     private final AppArtifact appArtifact;
+
     /**
      * The deployment dependencies, less the runtime parts. This will likely go away
      */
@@ -72,4 +73,5 @@ public class AppModel {
     public List<AppDependency> getFullDeploymentDeps() {
         return fullDeploymentDeps;
     }
+
 }

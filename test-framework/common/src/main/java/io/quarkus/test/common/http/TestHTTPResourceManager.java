@@ -35,7 +35,7 @@ public class TestHTTPResourceManager {
         return application.getConfigValue("test.url.ssl", String.class).get();
     }
 
-    public static void inject(Object testCase, RunningQuarkusApplication application) {
+    public static void inject(Object testCase) {
         Map<Class<?>, TestHTTPResourceProvider<?>> providers = getProviders();
         Class<?> c = testCase.getClass();
         while (c != Object.class) {
@@ -51,15 +51,15 @@ public class TestHTTPResourceManager {
                     String val;
                     if (resource.ssl()) {
                         if (path.startsWith("/")) {
-                            val = getSslUri(application) + path;
+                            val = getSslUri() + path;
                         } else {
-                            val = getSslUri(application) + "/" + path;
+                            val = getSslUri() + "/" + path;
                         }
                     } else {
                         if (path.startsWith("/")) {
-                            val = getUri(application) + path;
+                            val = getUri() + path;
                         } else {
-                            val = getUri(application) + "/" + path;
+                            val = getUri() + "/" + path;
                         }
                     }
                     f.setAccessible(true);

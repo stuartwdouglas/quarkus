@@ -105,7 +105,7 @@ public class QuarkusDevModeTest
             throws TestInstantiationException {
         try {
             Object actualTestInstance = factoryContext.getTestClass().newInstance();
-            TestHTTPResourceManager.inject(actualTestInstance, null);
+            TestHTTPResourceManager.inject(actualTestInstance);
             return actualTestInstance;
         } catch (Exception e) {
             throw new TestInstantiationException("Unable to create test proxy", e);

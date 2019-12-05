@@ -45,6 +45,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
     private final ConcurrentMap<ClassPathElement, ProtectionDomain> protectionDomains = new ConcurrentHashMap<>();
     private final Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers;
     private final Set<String> bannedResources;
+    private final Set<String> parentFirstResources;
     private final ClassLoader parent;
     private final boolean parentFirst;
 
@@ -53,13 +54,14 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
             Map<String, ClassPathElement[]> loadableResources,
             Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers,
             Set<String> bannedResources,
-            ClassLoader parent,
+            Set<String> parentFirstResources, ClassLoader parent,
             boolean parentFirst) {
         this.name = name;
         this.elements = elements;
         this.loadableResources = loadableResources;
         this.bytecodeTransformers = bytecodeTransformers;
         this.bannedResources = bannedResources;
+        this.parentFirstResources = parentFirstResources;
         this.parent = parent;
         this.parentFirst = parentFirst;
     }
@@ -75,6 +77,10 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         return name;
     }
 
+    private boolean parentFirst(String name) {
+        return parentFirst || parentFirstResources.contains(name);
+    }
+
     @Override
     public Enumeration<URL> getResources(String nm) throws IOException {
         String name = sanitizeName(nm);
@@ -82,7 +88,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         //for single resources we still respect this
         boolean banned = bannedResources.contains(name);
         List<URL> resources = new ArrayList<>();
-
+        boolean parentFirst = parentFirst(nm);
         if (parentFirst && !banned) {
             Enumeration<URL> res = parent.getResources(nm);
             while (res.hasMoreElements()) {
@@ -116,6 +122,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         if (bannedResources.contains(name)) {
             return null;
         }
+        boolean parentFirst = parentFirst(nm);
         if (parentFirst) {
             URL res = parent.getResource(nm);
             if (res != null) {
@@ -145,6 +152,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         if (bannedResources.contains(name)) {
             return null;
         }
+        boolean parentFirst = parentFirst(nm);
         if (parentFirst) {
             InputStream res = parent.getResourceAsStream(name);
             if (res != null) {
@@ -176,6 +184,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
                 return c;
             }
             String resourceName = sanitizeName(name).replace(".", "/") + ".class";
+            boolean parentFirst = parentFirst(resourceName);
             if (bannedResources.contains(resourceName)) {
                 throw new ClassNotFoundException(name);
             }
@@ -267,6 +276,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         final ClassLoader parent;
         final List<ClassPathElement> elements = new ArrayList<>();
         final List<ClassPathElement> bannedElements = new ArrayList<>();
+        final List<ClassPathElement> parentFirstElements = new ArrayList<>();
         Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers = Collections.emptyMap();
         final boolean parentFirst;
 
@@ -289,6 +299,24 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
          */
         public Builder addElement(ClassPathElement element) {
             elements.add(element);
+            return this;
+        }
+
+        /**
+         * Adds an element that contains classes that will always be loaded in a parent first manner.
+         *
+         * Note that this does not mean that the parent will always have this class, it is possible that
+         * in some cases the class will end up being loaded by this loader, however an attempt will always
+         * be made to load these from the parent CL first
+         *
+         * Note that elements passed to this method will not be automatically closed, as
+         * references to this element are not retained after the class loader has been built.
+         *
+         * @param element The element to add
+         * @return This builder
+         */
+        public Builder addParentFirstElement(ClassPathElement element) {
+            parentFirstElements.add(element);
             return this;
         }
 
@@ -354,7 +382,12 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
             for (ClassPathElement i : bannedElements) {
                 banned.addAll(i.getProvidedResources());
             }
-            return new QuarkusClassLoader(name, new ArrayList<>(elements), finalElements, bytecodeTransformers, banned, parent,
+            Set<String> parentFirstResources = new HashSet<>();
+            for (ClassPathElement i : parentFirstElements) {
+                parentFirstResources.addAll(i.getProvidedResources());
+            }
+            return new QuarkusClassLoader(name, new ArrayList<>(elements), finalElements, bytecodeTransformers, banned,
+                    parentFirstResources, parent,
                     parentFirst);
         }
     }
