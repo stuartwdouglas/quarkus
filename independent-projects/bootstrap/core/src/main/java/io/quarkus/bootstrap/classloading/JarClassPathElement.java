@@ -115,4 +115,9 @@ public class JarClassPathElement implements ClassPathElement {
             inputStream.close();
         }
     }
+
+    @Override
+    public String toString() {
+        return jarFile.getName() + ": " + jarPath;
+    }
 }

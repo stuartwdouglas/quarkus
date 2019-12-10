@@ -3,7 +3,6 @@ package io.quarkus.dev;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.nio.file.Files;
@@ -27,6 +26,7 @@ import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.runner.bootstrap.AugmentAction;
 import io.quarkus.runner.bootstrap.BrokenMpDelegationClassLoader;
+import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
 import io.quarkus.runner.bootstrap.StartupAction;
 import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
@@ -41,7 +41,8 @@ public class DevModeMain implements Closeable {
 
     private final DevModeContext context;
 
-    private static volatile Closeable runner;
+    private final List<HotReplacementSetup> hotReplacementSetups = new ArrayList<>();
+    private static volatile RunningQuarkusApplication runner;
     static volatile Throwable deploymentProblem;
     static volatile Throwable compileProblem;
     static volatile RuntimeUpdatesProcessor runtimeUpdatesProcessor;
@@ -121,7 +122,7 @@ public class DevModeMain implements Closeable {
                     if (runner != null) {
                         try {
                             runner.close();
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
@@ -138,7 +139,7 @@ public class DevModeMain implements Closeable {
             //ok, we have resolved all the deps
             try {
                 StartupAction start = augmentAction.createInitialRuntimeApplication();
-                start.run();
+                runner = start.run();
             } catch (Throwable t) {
                 deploymentProblem = t;
                 if (context.isAbortOnFailedStart()) {
@@ -221,7 +222,31 @@ public class DevModeMain implements Closeable {
     public synchronized void restartApp(Set<String> changedResources) {
         stop();
         Timing.restart();
-        //doStart(true, changedResources);
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        try {
+
+            //ok, we have resolved all the deps
+            try {
+                StartupAction start = augmentAction.reloadExistingApplication(changedResources);
+                runner = start.run();
+            } catch (Throwable t) {
+                deploymentProblem = t;
+                if (context.isAbortOnFailedStart()) {
+                    log.error("Failed to start quarkus", t);
+                } else {
+                    //we need to set this here, while we still have the correct TCCL
+                    //this is so the config is still valid, and we can read HTTP config from application.properties
+                    log.error("Failed to start Quarkus", t);
+                    log.info("Attempting to start hot replacement endpoint to recover from previous Quarkus startup failure");
+                    if (runtimeUpdatesProcessor != null) {
+                        runtimeUpdatesProcessor.startupFailed();
+                    }
+                }
+
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
+        }
     }
 
     private static Path getClassInApplicationClassPaths(String name, List<Path> addAdditionalHotDeploymentPaths) {
@@ -256,6 +281,7 @@ public class DevModeMain implements Closeable {
 
             for (HotReplacementSetup service : ServiceLoader.load(HotReplacementSetup.class,
                     curatedApplication.getBaseRuntimeClassLoader())) {
+                hotReplacementSetups.add(service);
                 service.setupHotDeployment(processor);
                 processor.addHotReplacementSetup(service);
             }
@@ -270,16 +296,16 @@ public class DevModeMain implements Closeable {
             //            Thread.currentThread().setContextClassLoader(runtimeCl);
             try {
                 runner.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 Thread.currentThread().setContextClassLoader(old);
             }
         }
         QuarkusConfigFactory.setConfig(null);
+        BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
         final ConfigProviderResolver cpr = ConfigProviderResolver.instance();
         try {
-            BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
             cpr.releaseConfig(cpr.getConfig());
         } catch (Throwable ignored) {
             // just means no config was installed, which is fine
@@ -293,9 +319,9 @@ public class DevModeMain implements Closeable {
         try {
             stop();
         } finally {
-            //            for (HotReplacementSetup i : hotReplacement) {
-            //                i.close();
-            //            }
+            for (HotReplacementSetup i : hotReplacementSetups) {
+                i.close();
+            }
         }
     }
 }
