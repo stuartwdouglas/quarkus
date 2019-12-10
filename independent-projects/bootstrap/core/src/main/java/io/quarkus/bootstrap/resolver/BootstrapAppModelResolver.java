@@ -4,8 +4,11 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -154,12 +157,11 @@ public class BootstrapAppModelResolver implements AppModelResolver {
             managedDeps = managingDescr.getManagedDependencies();
             managedRepos = mvn.newResolutionRepositories(managingDescr.getRepositories());
         }
-
         List<String> excludedScopes = new ArrayList<>();
-        if(!test) {
+        if (!test) {
             excludedScopes.add("test");
         }
-        if(!devmode) {
+        if (!devmode) {
             excludedScopes.add("provided");
         }
         DependencyNode resolvedDeps = mvn.resolveManagedDependencies(toAetherArtifact(appArtifact),
@@ -235,15 +237,30 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         }
         //now we need to resolve just the augment artifacts, to create an isolated class loader that is just used for
         //augmentation. We do this by resolving all dependencies of the -deployment artifacts, which will include
-        //the runtime dependencies but not any runtime dependencies.
-        //TODO: do we need to align versions here? If we don't it means that augmentation can actually use a different
-        //version of artifacts to runtime, which could be useful in some situations, but could also be super confusing
+        //the runtime dependencies but not any user dependencies.
+
+        //there does not seem to be a reliable way to get maven to directly alight the dependency versions so we do it manually after resolution
+        //with the existing resolved versions taking precedence.
+
+        List<Dependency> allDepVersions = userDeps.stream()
+                .map((i) -> new Dependency(
+                        new DefaultArtifact(i.getArtifact().getGroupId(), i.getArtifact().getArtifactId(),
+                                i.getArtifact().getClassifier(), i.getArtifact().getClassifier(), i.getArtifact().getVersion()),
+                        i.getScope()))
+                .collect(Collectors.toList());
         List<ArtifactResult> fullDeploymentDepsList = mvn
-                .resolveManagedDependencies(deploymentDependencies, managedDeps, managedRepos, excludedScopes.toArray(new String[0]))
+                .resolveManagedDependencies(deploymentDependencies, allDepVersions, managedRepos)
                 .getArtifactResults();
+
+        Map<AppKey, String> versionMap = new HashMap<>();
+        for (AppDependency i : userDeps) {
+            versionMap.put(
+                    new AppKey(i.getArtifact().getGroupId(), i.getArtifact().getArtifactId(), i.getArtifact().getClassifier()),
+                    i.getArtifact().getVersion());
+        }
         List<AppDependency> fullDeploymentDeps = new ArrayList<>();
         for (ArtifactResult child : fullDeploymentDepsList) {
-            fullDeploymentDeps.add(new AppDependency(toAppArtifact(child.getArtifact()), "compile", false));
+            fullDeploymentDeps.add(new AppDependency(toAppArtifact(child.getArtifact(), versionMap), "compile", false));
         }
 
         return new AppModel(appArtifact, userDeps, deploymentDeps, fullDeploymentDeps);
@@ -372,6 +389,17 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         return appArtifact;
     }
 
+    private static AppArtifact toAppArtifact(Artifact artifact, Map<AppKey, String> versions) {
+        String newVersion = versions.get(new AppKey(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier()));
+        final AppArtifact appArtifact = new AppArtifact(artifact.getGroupId(), artifact.getArtifactId(),
+                artifact.getClassifier(), artifact.getExtension(), newVersion != null ? newVersion : artifact.getVersion());
+        final File file = artifact.getFile();
+        if (file != null) {
+            appArtifact.setPath(file.toPath());
+        }
+        return appArtifact;
+    }
+
     private static List<Dependency> toAetherDeps(List<AppDependency> directDeps) {
         if (directDeps.isEmpty()) {
             return Collections.emptyList();
@@ -382,4 +410,32 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         }
         return directMvnDeps;
     }
+
+    static final class AppKey {
+        final String groupId, artifactId, classifier;
+
+        private AppKey(String groupId, String artifactId, String classifier) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+            this.classifier = classifier;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            AppKey appKey = (AppKey) o;
+            return Objects.equals(groupId, appKey.groupId) &&
+                    Objects.equals(artifactId, appKey.artifactId) &&
+                    Objects.equals(classifier, appKey.classifier);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(groupId, artifactId, classifier);
+        }
+    }
+
 }

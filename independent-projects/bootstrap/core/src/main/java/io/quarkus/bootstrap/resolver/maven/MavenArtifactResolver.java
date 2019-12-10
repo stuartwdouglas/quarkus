@@ -312,7 +312,7 @@ public class MavenArtifactResolver {
         }
     }
 
-    public DependencyResult resolveManagedDependencies(List<Dependency> deps, List<Dependency> managedDeps, List<RemoteRepository> mainRepos, String... excludedScopes) throws AppModelResolverException {
+    public DependencyResult resolveManagedDependencies(List<Dependency> deps, List<Dependency> managedDeps, List<RemoteRepository> mainRepos) throws AppModelResolverException {
         try {
 
             final List<RemoteRepository> repos = aggregateRepositories(mainRepos, remoteRepos);

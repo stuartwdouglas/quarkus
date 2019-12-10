@@ -203,9 +203,4 @@ public class CuratedApplication {
         }
         return builder.build();
     }
-
-    private static final class AppKey {
-
-    }
-
 }
