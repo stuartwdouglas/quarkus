@@ -24,7 +24,9 @@ import org.jboss.logging.Logger;
 import io.quarkus.bootstrap.app.AdditionalDependency;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.runner.bootstrap.AugmentAction;
+import io.quarkus.runner.bootstrap.BrokenMpDelegationClassLoader;
 import io.quarkus.runner.bootstrap.StartupAction;
 import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
@@ -252,10 +254,11 @@ public class DevModeMain implements Closeable {
             }
             RuntimeUpdatesProcessor processor = new RuntimeUpdatesProcessor(context, compiler, this);
 
-            //            for (HotReplacementSetup service : hotReplacement) {
-            //                service.setupHotDeployment(processor);
-            //                processor.addHotReplacementSetup(service);
-            //            }
+            for (HotReplacementSetup service : ServiceLoader.load(HotReplacementSetup.class,
+                    curatedApplication.getBaseRuntimeClassLoader())) {
+                service.setupHotDeployment(processor);
+                processor.addHotReplacementSetup(service);
+            }
             return processor;
         }
         return null;
@@ -276,9 +279,12 @@ public class DevModeMain implements Closeable {
         QuarkusConfigFactory.setConfig(null);
         final ConfigProviderResolver cpr = ConfigProviderResolver.instance();
         try {
+            BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
             cpr.releaseConfig(cpr.getConfig());
-        } catch (IllegalStateException ignored) {
+        } catch (Throwable ignored) {
             // just means no config was installed, which is fine
+        } finally {
+            BrokenMpDelegationClassLoader.teardownBrokenClWorkaround();
         }
         DevModeMain.runner = null;
     }

@@ -64,7 +64,7 @@ public class QuarkusDevModeTest
         System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
     }
 
-    boolean started = false;
+    private boolean started = false;
 
     private DevModeMain devModeMain;
     private Path deploymentDir;

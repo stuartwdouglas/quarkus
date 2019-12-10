@@ -10,39 +10,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>quarkus-development-mode</artifactId>
-    <name>Quarkus - Development mode</name>
+    <artifactId>quarkus-development-mode-spi</artifactId>
+    <name>Quarkus - Development mode - SPI</name>
+    <description>SPI classes for Quarkus Development mode.</description>
 
     <dependencies>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-core-deployment</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-development-mode-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.logmanager</groupId>
-            <artifactId>jboss-logmanager-embedded</artifactId>
-        </dependency>
-
-        <!-- test -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

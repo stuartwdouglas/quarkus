@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.DirectoryClassPathElement;
@@ -28,6 +27,9 @@ import io.quarkus.bootstrap.resolver.AppModelResolver;
  *
  */
 public class CuratedApplication {
+
+    private static final String GROUP_ID = "io.quarkus";
+    private static final String DEVMODE_SPI_ID = "quarkus-development-mode-spi";
 
     /**
      * The class path elements for the various artifacts. These can be used in multiple class loaders
@@ -82,7 +84,8 @@ public class CuratedApplication {
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(cl);
-            Class<? extends BiConsumer<CuratedApplication, Map<String, Object>>> clazz = (Class<? extends BiConsumer<CuratedApplication, Map<String, Object>>>) cl.loadClass(consumerName);
+            Class<? extends BiConsumer<CuratedApplication, Map<String, Object>>> clazz = (Class<? extends BiConsumer<CuratedApplication, Map<String, Object>>>) cl
+                    .loadClass(consumerName);
             clazz.newInstance().accept(this, params);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -90,7 +93,6 @@ public class CuratedApplication {
             Thread.currentThread().setContextClassLoader(old);
         }
     }
-
 
     private synchronized ClassPathElement getElement(AppArtifact artifact) {
         if (!artifact.getType().equals("jar")) {
@@ -123,6 +125,12 @@ public class CuratedApplication {
             for (AppDependency i : appModel.getFullDeploymentDeps()) {
                 deploymentArtifacts.add(i.getArtifact());
                 ClassPathElement element = getElement(i.getArtifact());
+
+                if (i.getArtifact().getGroupId().equals(GROUP_ID) && i.getArtifact().getArtifactId().equals(DEVMODE_SPI_ID)) {
+                    //we always load this from the parent if it is availble, as this acts as a bridge between the running
+                    //app and the dev mode code
+                    builder.addParentFirstElement(element);
+                }
                 builder.addElement(element);
             }
             //now make sure we can't accidentally load other deps from this CL
@@ -161,14 +169,20 @@ public class CuratedApplication {
             builder.setResettableElement(new MemoryClassPathElement(Collections.emptyMap()));
 
             for (AppDependency dependency : appModel.getUserDependencies()) {
+
                 ClassPathElement element = getElement(dependency.getArtifact());
+                if (dependency.getArtifact().getGroupId().equals(GROUP_ID)
+                        && dependency.getArtifact().getArtifactId().equals(DEVMODE_SPI_ID)) {
+                    //we always load this from the parent if it is availble, as this acts as a bridge between the running
+                    //app and the dev mode code
+                    builder.addParentFirstElement(element);
+                }
                 builder.addElement(element);
             }
             baseRuntimeClassLoader = builder.build();
         }
         return baseRuntimeClassLoader;
     }
-
 
     public QuarkusClassLoader createDeploymentClassLoader() {
         //first run, we need to build all the class loaders

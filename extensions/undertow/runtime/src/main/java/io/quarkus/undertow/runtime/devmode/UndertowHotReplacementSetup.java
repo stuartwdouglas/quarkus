@@ -5,8 +5,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.quarkus.runtime.devmode.HotReplacementContext;
-import io.quarkus.runtime.devmode.HotReplacementSetup;
+import io.quarkus.dev.spi.HotReplacementContext;
+import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.undertow.runtime.UndertowDeploymentRecorder;
 
 public class UndertowHotReplacementSetup implements HotReplacementSetup {

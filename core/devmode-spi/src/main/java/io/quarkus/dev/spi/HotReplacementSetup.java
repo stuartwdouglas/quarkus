@@ -1,4 +1,4 @@
-package io.quarkus.runtime.devmode;
+package io.quarkus.dev.spi;
 
 /**
  * Service interface that is used to abstract away the details of how hot deployment is performed

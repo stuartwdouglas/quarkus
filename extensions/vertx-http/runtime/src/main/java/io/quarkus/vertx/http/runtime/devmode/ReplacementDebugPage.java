@@ -1,4 +1,4 @@
-package io.quarkus.runtime.devmode;
+package io.quarkus.vertx.http.runtime.devmode;
 
 import io.quarkus.runtime.TemplateHtmlBuilder;
 

@@ -1,8 +1,7 @@
 package io.quarkus.vertx.http.runtime.devmode;
 
-import io.quarkus.runtime.devmode.HotReplacementContext;
-import io.quarkus.runtime.devmode.HotReplacementSetup;
-import io.quarkus.runtime.devmode.ReplacementDebugPage;
+import io.quarkus.dev.spi.HotReplacementContext;
+import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.vertx.http.runtime.VertxHttpRecorder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

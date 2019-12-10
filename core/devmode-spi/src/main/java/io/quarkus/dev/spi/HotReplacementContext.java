@@ -1,4 +1,4 @@
-package io.quarkus.runtime.devmode;
+package io.quarkus.dev.spi;
 
 import java.nio.file.Path;
 import java.util.List;

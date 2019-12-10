@@ -27,9 +27,9 @@ import java.util.stream.Stream;
 
 import org.jboss.logging.Logger;
 
+import io.quarkus.dev.spi.HotReplacementContext;
+import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.runtime.Timing;
-import io.quarkus.runtime.devmode.HotReplacementContext;
-import io.quarkus.runtime.devmode.HotReplacementSetup;
 
 public class RuntimeUpdatesProcessor implements HotReplacementContext {
     private static final String CLASS_EXTENSION = ".class";
