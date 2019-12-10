@@ -155,9 +155,15 @@ public class BootstrapAppModelResolver implements AppModelResolver {
             managedRepos = mvn.newResolutionRepositories(managingDescr.getRepositories());
         }
 
-        String[] excludedScopes = devmode ? new String[] { "test" } : (test ? new String[] { "provided" } : new String[0]);
+        List<String> excludedScopes = new ArrayList<>();
+        if(!test) {
+            excludedScopes.add("test");
+        }
+        if(!devmode) {
+            excludedScopes.add("provided");
+        }
         DependencyNode resolvedDeps = mvn.resolveManagedDependencies(toAetherArtifact(appArtifact),
-                directMvnDeps, managedDeps, managedRepos, excludedScopes).getRoot();
+                directMvnDeps, managedDeps, managedRepos, excludedScopes.toArray(new String[0])).getRoot();
 
         final Set<AppArtifactKey> appDeps = new HashSet<>();
         final List<AppDependency> userDeps = new ArrayList<>();
@@ -233,7 +239,7 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         //TODO: do we need to align versions here? If we don't it means that augmentation can actually use a different
         //version of artifacts to runtime, which could be useful in some situations, but could also be super confusing
         List<ArtifactResult> fullDeploymentDepsList = mvn
-                .resolveManagedDependencies(deploymentDependencies, managedDeps, managedRepos, excludedScopes)
+                .resolveManagedDependencies(deploymentDependencies, managedDeps, managedRepos, excludedScopes.toArray(new String[0]))
                 .getArtifactResults();
         List<AppDependency> fullDeploymentDeps = new ArrayList<>();
         for (ArtifactResult child : fullDeploymentDepsList) {

@@ -286,6 +286,12 @@ public final class RunTimeConfigurationGenerator {
             // create <clinit>
             clinit = cc.getMethodCreator(MethodDescriptor.ofMethod(CONFIG_CLASS_NAME, "<clinit>", void.class));
             clinit.setModifiers(Opcodes.ACC_STATIC);
+
+            //HUCK HACK
+            //TODO: delete this
+            //see https://github.com/eclipse/microprofile-config/issues/390
+            clinit.invokeStaticMethod(
+                    MethodDescriptor.ofMethod(BrokenMpDelegationClassLoader.class, "setupBrokenClWorkaround", void.class));
             clinit.invokeStaticMethod(PM_SET_RUNTIME_DEFAULT_PROFILE, clinit.load(ProfileManager.getActiveProfile()));
             clinitNameBuilder = clinit.newInstance(SB_NEW);
             clinit.invokeVirtualMethod(SB_APPEND_STRING, clinitNameBuilder, clinit.load("quarkus"));
@@ -338,12 +344,6 @@ public final class RunTimeConfigurationGenerator {
 
         public void run() {
             // in clinit, load the build-time config
-
-            //HUCK HACK
-            //TODO: delete this
-            //see https://github.com/eclipse/microprofile-config/issues/390
-            clinit.invokeStaticMethod(
-                    MethodDescriptor.ofMethod(BrokenMpDelegationClassLoader.class, "setupBrokenClWorkaround", void.class));
             // make the build time config global until we read the run time config -
             // at run time (when we're ready) we update the factory and then release the build time config
             clinit.invokeStaticMethod(QCF_SET_CONFIG, clinitConfig);

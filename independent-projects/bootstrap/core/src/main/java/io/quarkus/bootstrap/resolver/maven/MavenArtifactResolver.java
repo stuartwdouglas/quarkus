@@ -339,7 +339,7 @@ public class MavenArtifactResolver {
         final ArtifactDescriptorResult descr = resolveDescriptor(artifact);
         Collection<String> excluded;
         if(excludedScopes.length == 0) {
-            excluded = Arrays.asList(new String[] {"test", "provided"});
+            excluded = Collections.emptyList();
         } else if (excludedScopes.length == 1) {
             excluded = Collections.singleton(excludedScopes[0]);
         } else {

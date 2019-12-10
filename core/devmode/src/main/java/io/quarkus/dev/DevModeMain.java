@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -21,6 +22,7 @@ import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.app.AdditionalDependency;
+import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.runner.bootstrap.AugmentAction;
 import io.quarkus.runner.bootstrap.StartupAction;
@@ -41,6 +43,7 @@ public class DevModeMain implements Closeable {
     static volatile Throwable deploymentProblem;
     static volatile Throwable compileProblem;
     static volatile RuntimeUpdatesProcessor runtimeUpdatesProcessor;
+    private static volatile CuratedApplication curatedApplication;
     private static volatile AugmentAction augmentAction;
 
     public DevModeMain(DevModeContext context) {
@@ -90,18 +93,18 @@ public class DevModeMain implements Closeable {
             Properties buildSystemProperties = new Properties();
             buildSystemProperties.putAll(context.getBuildSystemProperties());
             bootstrapBuilder.setBuildSystemProperties(buildSystemProperties);
-            //            augmentAction = bootstrapBuilder.build()
-            //                    .bootstrap();
-            //                    .curate();
+            curatedApplication = bootstrapBuilder.setTest(context.isTest()).build().bootstrap();
         } catch (Throwable t) {
             log.error("Quarkus dev mode failed to start in curation phase", t);
             System.exit(1);
         }
+        augmentAction = new AugmentAction(curatedApplication, Collections.emptyList());
         runtimeUpdatesProcessor = setupRuntimeCompilation(context);
         if (runtimeUpdatesProcessor != null) {
             runtimeUpdatesProcessor.checkForFileChange();
             runtimeUpdatesProcessor.checkForChangedClasses();
         }
+        firstStart();
 
         //        doStart(false, Collections.emptySet());
         if (deploymentProblem != null || compileProblem != null) {

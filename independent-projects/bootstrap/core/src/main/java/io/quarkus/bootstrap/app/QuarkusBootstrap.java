@@ -47,6 +47,7 @@ public class QuarkusBootstrap {
 
     private final Mode mode;
     private final boolean offline;
+    private final boolean test;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -56,6 +57,7 @@ public class QuarkusBootstrap {
         this.buildSystemProperties = builder.buildSystemProperties;
         this.mode = builder.mode;
         this.offline = builder.offline;
+        this.test = builder.test;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
@@ -65,9 +67,10 @@ public class QuarkusBootstrap {
                 .setOffline(offline)
                 .setAppClasses(getProjectRoot() != null ? getProjectRoot()
                         : getApplicationRoot());
-        if (mode == Mode.TEST) {
+        if (mode == Mode.TEST || test) {
             appModelFactory.setTest(true);
-        } else if (mode == Mode.DEV) {
+        }
+        if (mode == Mode.DEV) {
             appModelFactory.setDevMode(true);
         }
         AppModel model = appModelFactory
@@ -117,6 +120,7 @@ public class QuarkusBootstrap {
         private Properties buildSystemProperties;
         private Mode mode = Mode.PROD;
         private boolean offline;
+        private boolean test;
 
         public Builder(Path applicationRoot) {
             this.applicationRoot = applicationRoot;
@@ -143,6 +147,11 @@ public class QuarkusBootstrap {
 
         public Builder setOffline(boolean offline) {
             this.offline = offline;
+            return this;
+        }
+
+        public Builder setTest(boolean test) {
+            this.test = test;
             return this;
         }
 
