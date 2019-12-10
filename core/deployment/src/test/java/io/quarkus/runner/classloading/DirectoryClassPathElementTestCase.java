@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.bootstrap.classloading.ClassPathResource;
+import io.quarkus.bootstrap.classloading.DirectoryClassPathElement;
 import io.quarkus.deployment.util.FileUtil;
 
 public class DirectoryClassPathElementTestCase {

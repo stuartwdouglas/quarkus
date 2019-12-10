@@ -48,6 +48,8 @@ import org.junit.jupiter.api.extension.TestInstanceFactory;
 import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
 import org.junit.jupiter.api.extension.TestInstantiationException;
 
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildContext;
 import io.quarkus.builder.BuildException;
@@ -55,9 +57,8 @@ import io.quarkus.builder.BuildStep;
 import io.quarkus.builder.item.BuildItem;
 import io.quarkus.deployment.proxy.ProxyConfiguration;
 import io.quarkus.deployment.proxy.ProxyFactory;
-import io.quarkus.runner.bootstrap.QuarkusBootstrap;
+import io.quarkus.runner.bootstrap.AugmentAction;
 import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
-import io.quarkus.runtime.LaunchMode;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.PropertyTestUtil;
 import io.quarkus.test.common.RestAssuredURLManager;
@@ -357,14 +358,13 @@ public class QuarkusUnitTest
             final Path testLocation = PathTestHelper.getTestClassesLocation(testClass);
 
             try {
-                QuarkusBootstrap bootstrap = QuarkusBootstrap.builder(deploymentDir, LaunchMode.TEST)
+                CuratedApplication curatedApplication = QuarkusBootstrap.builder(deploymentDir)
+                        .setMode(QuarkusBootstrap.Mode.TEST)
                         .addExcludedPath(testLocation)
                         .setProjectRoot(testLocation)
-                        .addBuildChainCustomizers(customizers)
-                        .build();
+                        .build().bootstrap();
 
-                runningQuarkusApplication = bootstrap.bootstrap()
-                        .curate()
+                runningQuarkusApplication = new AugmentAction(curatedApplication, customizers)
                         .createInitialRuntimeApplication()
                         .run(new String[0]);
                 //we restore the CL at the end of the test

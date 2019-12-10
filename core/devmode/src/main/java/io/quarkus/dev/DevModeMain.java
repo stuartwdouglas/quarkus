@@ -6,13 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -23,14 +20,10 @@ import java.util.concurrent.locks.LockSupport;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.logging.Logger;
 
-import io.quarkus.deployment.builditem.LiveReloadBuildItem;
-import io.quarkus.deployment.devmode.HotReplacementSetup;
-import io.quarkus.runner.RuntimeRunner;
-import io.quarkus.runner.bootstrap.AdditionalDependency;
+import io.quarkus.bootstrap.app.AdditionalDependency;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.runner.bootstrap.AugmentAction;
-import io.quarkus.runner.bootstrap.QuarkusBootstrap;
 import io.quarkus.runner.bootstrap.StartupAction;
-import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
 
@@ -42,16 +35,12 @@ public class DevModeMain implements Closeable {
     public static final String DEV_MODE_CONTEXT = "META-INF/dev-mode-context.dat";
     private static final Logger log = Logger.getLogger(DevModeMain.class);
 
-    private static volatile ClassLoader currentAppClassLoader;
-    private static volatile URLClassLoader runtimeCl;
     private final DevModeContext context;
 
     private static volatile Closeable runner;
     static volatile Throwable deploymentProblem;
     static volatile Throwable compileProblem;
     static volatile RuntimeUpdatesProcessor runtimeUpdatesProcessor;
-    private List<HotReplacementSetup> hotReplacement = new ArrayList<>();
-
     private static volatile AugmentAction augmentAction;
 
     public DevModeMain(DevModeContext context) {
@@ -82,18 +71,13 @@ public class DevModeMain implements Closeable {
         }
 
         try {
-            final URL[] urls = new URL[context.getClassesRoots().size()];
-            for (int i = 0; i < context.getClassesRoots().size(); i++) {
-                urls[i] = context.getClassesRoots().get(i).toURI().toURL();
-            }
-            runtimeCl = new URLClassLoader(urls, ClassLoader.getSystemClassLoader());
 
-            QuarkusBootstrap.Builder bootstrapBuilder = QuarkusBootstrap.builder(context.getClassesRoots().get(0).toPath(),
-                    LaunchMode.DEVELOPMENT);
+            QuarkusBootstrap.Builder bootstrapBuilder = QuarkusBootstrap.builder(context.getClassesRoots().get(0).toPath())
+                    .setMode(QuarkusBootstrap.Mode.DEV);
             bootstrapBuilder.setProjectRoot(new File(".").toPath());
             for (int i = 1; i < context.getClassesRoots().size(); ++i) {
                 bootstrapBuilder.addAdditionalApplicationArchive(
-                        new AdditionalDependency(context.getClassesRoots().get(i).toPath(), true, false));
+                        new AdditionalDependency(context.getClassesRoots().get(i).toPath(), false, false));
             }
 
             for (DevModeContext.ModuleInfo i : context.getModules()) {
@@ -106,26 +90,20 @@ public class DevModeMain implements Closeable {
             Properties buildSystemProperties = new Properties();
             buildSystemProperties.putAll(context.getBuildSystemProperties());
             bootstrapBuilder.setBuildSystemProperties(buildSystemProperties);
-            augmentAction = bootstrapBuilder.build()
-                    .bootstrap()
-                    .curate();
+            //            augmentAction = bootstrapBuilder.build()
+            //                    .bootstrap();
+            //                    .curate();
         } catch (Throwable t) {
             log.error("Quarkus dev mode failed to start in curation phase", t);
             System.exit(1);
         }
-
-        for (HotReplacementSetup service : ServiceLoader.load(HotReplacementSetup.class)) {
-            hotReplacement.add(service);
-        }
-
         runtimeUpdatesProcessor = setupRuntimeCompilation(context);
         if (runtimeUpdatesProcessor != null) {
             runtimeUpdatesProcessor.checkForFileChange();
             runtimeUpdatesProcessor.checkForChangedClasses();
         }
-        //TODO: we can't handle an exception on startup with hot replacement, as Undertow might not have started
 
-        doStart(false, Collections.emptySet());
+        //        doStart(false, Collections.emptySet());
         if (deploymentProblem != null || compileProblem != null) {
             if (context.isAbortOnFailedStart()) {
                 throw new RuntimeException(deploymentProblem == null ? compileProblem : deploymentProblem);
@@ -138,13 +116,6 @@ public class DevModeMain implements Closeable {
                     if (runner != null) {
                         try {
                             runner.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (runtimeCl != null) {
-                        try {
-                            runtimeCl.close();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -183,59 +154,39 @@ public class DevModeMain implements Closeable {
         }
     }
 
-    private synchronized void doStart(boolean liveReload, Set<String> changedResources) {
+    private synchronized void doInitialStart(boolean liveReload, Set<String> changedResources) {
         try {
 
-            currentAppClassLoader = runtimeCl;
             ClassLoader old = Thread.currentThread().getContextClassLoader();
-            //we can potentially throw away this class loader, and reload the app
             try {
-                QuarkusBootstrap.Builder bootstrap = QuarkusBootstrap.builder(context.getClassesRoots().get(0).toPath(),
-                        LaunchMode.DEVELOPMENT);
+                QuarkusBootstrap.Builder bootstrap = QuarkusBootstrap.builder(context.getClassesRoots().get(0).toPath())
+                        .setMode(QuarkusBootstrap.Mode.DEV);
 
-                Thread.currentThread().setContextClassLoader(runtimeCl);
-                RuntimeRunner.Builder builder = RuntimeRunner.builder()
-                        .setLaunchMode(LaunchMode.DEVELOPMENT)
-                        .setLiveReloadState(new LiveReloadBuildItem(liveReload, changedResources, liveReloadContext))
-                        .setClassLoader(runtimeCl)
-                        // just use the first item in classesRoot which is where the actual class files are written
-                        .setTarget(context.getClassesRoots().get(0).toPath())
-                        .setTransformerCache(context.getCacheDir().toPath());
-                if (context.getFrameworkClassesDir() != null) {
-                    builder.setFrameworkClassesPath(context.getFrameworkClassesDir().toPath());
-                }
-
+                Properties buildSystemProperties = new Properties();
+                buildSystemProperties.putAll(context.getBuildSystemProperties());
+                bootstrap.setBuildSystemProperties(buildSystemProperties);
                 List<Path> addAdditionalHotDeploymentPaths = new ArrayList<>();
                 for (DevModeContext.ModuleInfo i : context.getModules()) {
                     if (i.getClassesPath() != null) {
                         Path classesPath = Paths.get(i.getClassesPath());
                         addAdditionalHotDeploymentPaths.add(classesPath);
-                        builder.addAdditionalHotDeploymentPath(classesPath);
+                        bootstrap.addAdditionalApplicationArchive(new AdditionalDependency(classesPath, true, false));
                     }
                 }
                 // Make it possible to identify wiring classes generated for classes from additional hot deployment paths
-                //builder.addChainCustomizer(new Consumer<BuildChainBuilder>() {
-                //    @Override
-                //    public void accept(BuildChainBuilder buildChainBuilder) {
-                //        buildChainBuilder.addBuildStep(new BuildStep() {
-                //            @Override
-                //            public void execute(BuildContext context) {
-                //                context.produce(new ApplicationClassPredicateBuildItem(n -> {
-                //                    return getClassInApplicationClassPaths(n, addAdditionalHotDeploymentPaths) != null;
-                //                }));
-                //            }
-                //        }).produces(ApplicationClassPredicateBuildItem.class).build();
-                //    }
-                //});
-
-                Properties buildSystemProperties = new Properties();
-                buildSystemProperties.putAll(context.getBuildSystemProperties());
-                builder.setBuildSystemProperties(buildSystemProperties);
-
-                RuntimeRunner runner = builder
-                        .build();
-                runner.run();
-                DevModeMain.runner = runner;
+                //                bootstrap.addBuildChainCustomizer(new Consumer<BuildChainBuilder>() {
+                //                    @Override
+                //                    public void accept(BuildChainBuilder buildChainBuilder) {
+                //                        buildChainBuilder.addBuildStep(new BuildStep() {
+                //                            @Override
+                //                            public void execute(BuildContext context) {
+                //                                context.produce(new ApplicationClassPredicateBuildItem(n -> {
+                //                                    return getClassInApplicationClassPaths(n, addAdditionalHotDeploymentPaths) != null;
+                //                                }));
+                //                            }
+                //                        }).produces(ApplicationClassPredicateBuildItem.class).build();
+                //                    }
+                //                });
                 deploymentProblem = null;
 
             } catch (Throwable t) {
@@ -247,6 +198,7 @@ public class DevModeMain implements Closeable {
                     //this is so the config is still valid, and we can read HTTP config from application.properties
                     log.error("Failed to start Quarkus", t);
                     log.info("Attempting to start hot replacement endpoint to recover from previous Quarkus startup failure");
+
                     if (runtimeUpdatesProcessor != null) {
                         runtimeUpdatesProcessor.startupFailed();
                     }
@@ -264,11 +216,7 @@ public class DevModeMain implements Closeable {
     public synchronized void restartApp(Set<String> changedResources) {
         stop();
         Timing.restart();
-        doStart(true, changedResources);
-    }
-
-    public static ClassLoader getCurrentAppClassLoader() {
-        return currentAppClassLoader;
+        //doStart(true, changedResources);
     }
 
     private static Path getClassInApplicationClassPaths(String name, List<Path> addAdditionalHotDeploymentPaths) {
@@ -301,10 +249,10 @@ public class DevModeMain implements Closeable {
             }
             RuntimeUpdatesProcessor processor = new RuntimeUpdatesProcessor(context, compiler, this);
 
-            for (HotReplacementSetup service : hotReplacement) {
-                service.setupHotDeployment(processor);
-                processor.addHotReplacementSetup(service);
-            }
+            //            for (HotReplacementSetup service : hotReplacement) {
+            //                service.setupHotDeployment(processor);
+            //                processor.addHotReplacementSetup(service);
+            //            }
             return processor;
         }
         return null;
@@ -313,7 +261,7 @@ public class DevModeMain implements Closeable {
     public void stop() {
         if (runner != null) {
             ClassLoader old = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(runtimeCl);
+            //            Thread.currentThread().setContextClassLoader(runtimeCl);
             try {
                 runner.close();
             } catch (IOException e) {
@@ -336,9 +284,9 @@ public class DevModeMain implements Closeable {
         try {
             stop();
         } finally {
-            for (HotReplacementSetup i : hotReplacement) {
-                i.close();
-            }
+            //            for (HotReplacementSetup i : hotReplacement) {
+            //                i.close();
+            //            }
         }
     }
 }

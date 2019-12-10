@@ -14,16 +14,17 @@ import java.util.function.BiFunction;
 import org.jboss.logging.Logger;
 import org.objectweb.asm.ClassVisitor;
 
-import io.quarkus.bootstrap.model.AppDependency;
+import io.quarkus.bootstrap.app.AdditionalDependency;
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.classloading.ClassPathElement;
+import io.quarkus.bootstrap.classloading.MemoryClassPathElement;
+import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.builder.BuildResult;
 import io.quarkus.deployment.builditem.ApplicationClassNameBuildItem;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
-import io.quarkus.runner.classloading.ClassPathElement;
-import io.quarkus.runner.classloading.MemoryClassPathElement;
-import io.quarkus.runner.classloading.QuarkusClassLoader;
 
 public class StartupAction {
 
@@ -31,12 +32,12 @@ public class StartupAction {
 
     static final String DEBUG_CLASSES_DIR = System.getProperty("quarkus.debug.generated-classes-dir");
 
-    private final QuarkusBootstrap quarkusBootstrap;
+    private final CuratedApplication curatedApplication;
     private final AugmentAction augmentAction;
     private final BuildResult buildResult;
 
-    public StartupAction(QuarkusBootstrap quarkusBootstrap, AugmentAction augmentAction, BuildResult buildResult) {
-        this.quarkusBootstrap = quarkusBootstrap;
+    public StartupAction(CuratedApplication curatedApplication, AugmentAction augmentAction, BuildResult buildResult) {
+        this.curatedApplication = curatedApplication;
         this.augmentAction = augmentAction;
         this.buildResult = buildResult;
     }
@@ -47,7 +48,8 @@ public class StartupAction {
     public RunningQuarkusApplication run(String... args) throws Exception {
         //first
         Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers = extractTransformers();
-        QuarkusClassLoader baseClassLoader = createBaseClassLoader(bytecodeTransformers);
+        QuarkusClassLoader baseClassLoader = curatedApplication.getBaseRuntimeClassLoader();
+        baseClassLoader.reset(extractGeneratedResources(false), bytecodeTransformers);
         QuarkusClassLoader runtimeClassLoader = createRuntimeClassLoader(baseClassLoader, bytecodeTransformers);
 
         //we have our class loaders
@@ -100,42 +102,15 @@ public class StartupAction {
         return bytecodeTransformers;
     }
 
-    private QuarkusClassLoader createBaseClassLoader(
-            Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers) {
-        ClassLoaderState state = quarkusBootstrap.getClassLoaderState();
-        if (state.getBaseRuntimeClassLoader() == null) {
-            QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Quarkus Base Runtime ClassLoader",
-                    ClassLoader.getSystemClassLoader(), false);
-            //additional user class path elements first
-            for (AdditionalDependency i : quarkusBootstrap.getAdditionalApplicationArchives()) {
-                if (!i.isHotReloadable()) {
-                    builder.addElement(ClassPathElement.fromPath(i.getArchivePath()));
-                }
-            }
-            //add the in-memory generated resources
-            //these are generally things like CDI proxies for classes that
-            //are not in the hot reloadable part of the application
-            builder.addElement(extractGeneratedResources(false));
-
-            for (AppDependency dependency : augmentAction.getAppModel().getUserDependencies()) {
-                ClassPathElement element = state.getElement(dependency.getArtifact());
-                builder.addElement(element);
-            }
-            builder.setBytecodeTransformers(bytecodeTransformers);
-            state.setBaseRuntimeClassLoader(builder.build());
-        }
-        return state.getBaseRuntimeClassLoader();
-    }
-
     private QuarkusClassLoader createRuntimeClassLoader(QuarkusClassLoader loader,
             Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers) {
         QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Quarkus Runtime ClassLoader",
                 loader, false);
 
-        builder.addElement(ClassPathElement.fromPath(quarkusBootstrap.getApplicationRoot()));
-        builder.addElement(extractGeneratedResources(true));
+        builder.addElement(ClassPathElement.fromPath(curatedApplication.getQuarkusBootstrap().getApplicationRoot()));
+        builder.addElement(new MemoryClassPathElement(extractGeneratedResources(true)));
 
-        for (AdditionalDependency i : quarkusBootstrap.getAdditionalApplicationArchives()) {
+        for (AdditionalDependency i : curatedApplication.getQuarkusBootstrap().getAdditionalApplicationArchives()) {
             if (i.isHotReloadable()) {
                 builder.addElement(ClassPathElement.fromPath(i.getArchivePath()));
             }
@@ -144,7 +119,7 @@ public class StartupAction {
         return builder.build();
     }
 
-    private ClassPathElement extractGeneratedResources(boolean applicationClasses) {
+    private Map<String, byte[]> extractGeneratedResources(boolean applicationClasses) {
         Map<String, byte[]> data = new HashMap<>();
         for (GeneratedClassBuildItem i : buildResult.consumeMulti(GeneratedClassBuildItem.class)) {
             if (i.isApplicationClass() == applicationClasses) {
@@ -172,7 +147,7 @@ public class StartupAction {
                 data.put(i.getName(), i.getClassData());
             }
         }
-        return new MemoryClassPathElement(data);
+        return data;
     }
 
 }
