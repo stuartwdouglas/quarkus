@@ -2,10 +2,12 @@ package io.quarkus.bootstrap.app;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
@@ -28,8 +30,15 @@ import io.quarkus.bootstrap.resolver.AppModelResolver;
  */
 public class CuratedApplication {
 
-    private static final String GROUP_ID = "io.quarkus";
-    private static final String DEVMODE_SPI_ID = "quarkus-development-mode-spi";
+    /**
+     * Artifacts that are always parent first.
+     *
+     * TODO: this kinda sucks, but there is not really any way to get around it. Some stuff just needs to be loaded by the
+     * system class loader. Maybe it should be packaged based?
+     */
+    private static final Set<ArtifactKey> ALWAYS_PARENT_FIRST = new HashSet<>(Arrays.asList(
+            new ArtifactKey("io.quarkus", "quarkus-development-mode-spi"),
+            new ArtifactKey("org.jboss.logmanager", "jboss-logmanager-embedded")));
 
     /**
      * The class path elements for the various artifacts. These can be used in multiple class loaders
@@ -126,25 +135,28 @@ public class CuratedApplication {
                 deploymentArtifacts.add(i.getArtifact());
                 ClassPathElement element = getElement(i.getArtifact());
 
-                if (i.getArtifact().getGroupId().equals(GROUP_ID) && i.getArtifact().getArtifactId().equals(DEVMODE_SPI_ID)) {
-                    //we always load this from the parent if it is availble, as this acts as a bridge between the running
-                    //app and the dev mode code
+                if (ALWAYS_PARENT_FIRST.contains(getKey(i))) {
+                    //we always load this from the parent if it is available
                     builder.addParentFirstElement(element);
                 }
                 builder.addElement(element);
             }
             //now make sure we can't accidentally load other deps from this CL
             //only extensions and their dependencies.
-            for (AppDependency userDep : appModel.getUserDependencies()) {
-                if (!deploymentArtifacts.contains(userDep.getArtifact())) {
-                    ClassPathElement element = getElement(userDep.getArtifact());
-                    builder.addBannedElement(element);
-                }
-            }
+//            for (AppDependency userDep : appModel.getUserDependencies()) {
+//                if (!deploymentArtifacts.contains(userDep.getArtifact())) {
+//                    ClassPathElement element = getElement(userDep.getArtifact());
+//                    builder.addBannedElement(element);
+//                }
+//            }
             augmentClassLoader = builder.build();
 
         }
         return augmentClassLoader;
+    }
+
+    private CuratedApplication.ArtifactKey getKey(AppDependency i) {
+        return new ArtifactKey(i.getArtifact().getGroupId(), i.getArtifact().getArtifactId());
     }
 
     /**
@@ -171,9 +183,8 @@ public class CuratedApplication {
             for (AppDependency dependency : appModel.getUserDependencies()) {
 
                 ClassPathElement element = getElement(dependency.getArtifact());
-                if (dependency.getArtifact().getGroupId().equals(GROUP_ID)
-                        && dependency.getArtifact().getArtifactId().equals(DEVMODE_SPI_ID)) {
-                    //we always load this from the parent if it is availble, as this acts as a bridge between the running
+                if (ALWAYS_PARENT_FIRST.contains(getKey(dependency))) {
+                    //we always load this from the parent if it is available, as this acts as a bridge between the running
                     //app and the dev mode code
                     builder.addParentFirstElement(element);
                 }
@@ -203,4 +214,30 @@ public class CuratedApplication {
         }
         return builder.build();
     }
+
+    static class ArtifactKey {
+        final String groupId, artifactId;
+
+        ArtifactKey(String groupId, String artifactId) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            ArtifactKey that = (ArtifactKey) o;
+            return Objects.equals(groupId, that.groupId) &&
+                    Objects.equals(artifactId, that.artifactId);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(groupId, artifactId);
+        }
+    }
+
 }

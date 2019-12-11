@@ -30,10 +30,6 @@ public class BuildDependencyGraphVisitor {
      * Nodes that are only present in the deployment class loader
      */
     private final List<DependencyNode> deploymentDepNodes = new ArrayList<>();
-    /**
-     * Nodes that are needed by runtime extensions (and hence deployments as well)
-     */
-    private final List<DependencyNode> deploymentRuntimeSharedNodes = new ArrayList<>();
     private final List<ArtifactRequest> requests = new ArrayList<>();
 
 

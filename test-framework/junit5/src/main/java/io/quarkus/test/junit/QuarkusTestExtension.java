@@ -81,7 +81,6 @@ public class QuarkusTestExtension
      * run we remove them if this file exists.
      */
     private static final String CREATED_FILES = "CREATED_FILES.txt";
-    private RestAssuredURLManager restAssuredURLManager = new RestAssuredURLManager(null, false);
 
     private ExtensionState doJavaStart(ExtensionContext context, TestResourceManager testResourceManager) {
 
@@ -341,7 +340,7 @@ public class QuarkusTestExtension
         if (!failedBoot) {
             boolean nativeImageTest = context.getRequiredTestClass().isAnnotationPresent(SubstrateTest.class)
                     || context.getRequiredTestClass().isAnnotationPresent(NativeImageTest.class);
-            restAssuredURLManager.clearURL();
+            RestAssuredURLManager.clearURL();
             TestScopeManager.tearDown(nativeImageTest);
         }
     }
@@ -351,7 +350,7 @@ public class QuarkusTestExtension
         if (!failedBoot) {
             boolean nativeImageTest = context.getRequiredTestClass().isAnnotationPresent(SubstrateTest.class)
                     || context.getRequiredTestClass().isAnnotationPresent(NativeImageTest.class);
-            restAssuredURLManager.setURL();
+            RestAssuredURLManager.setURL(false);
             TestScopeManager.setup(nativeImageTest);
         }
     }
@@ -416,7 +415,7 @@ public class QuarkusTestExtension
         if (testClass.getEnclosingClass() != null && !Modifier.isStatic(testClass.getModifiers())) {
             throw new IllegalStateException("Test class " + testClass + " cannot be a non-static inner class.");
         }
-        Object instance = TestInstantiator.instantiateTest(testClass);
+        Object instance = TestInstantiator.instantiateTest(testClass, null);
         TestHTTPResourceManager.inject(instance);
         TestInjectionManager.inject(instance);
         state.testResourceManager.inject(instance);

@@ -10,8 +10,8 @@ import java.util.Properties;
 
 import org.jboss.logging.Logger;
 
-import io.quarkus.runtime.devmode.HotReplacementContext;
-import io.quarkus.runtime.devmode.HotReplacementSetup;
+import io.quarkus.dev.spi.HotReplacementContext;
+import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.undertow.runtime.UndertowDeploymentRecorder;
 import io.undertow.Handlers;
 import io.undertow.predicate.Predicates;
