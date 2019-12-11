@@ -1,6 +1,6 @@
 package io.quarkus.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
@@ -98,8 +98,17 @@ public class QuarkusUnitTest
 
     public QuarkusUnitTest setExpectedException(Class<? extends Throwable> expectedException) {
         return assertException(t -> {
-            assertEquals(expectedException,
-                    t.getClass(), "Build failed with wrong exception");
+            Throwable i = t;
+            boolean found = false;
+            while (i != null) {
+                if (i.getClass().getName().equals(expectedException.getName())) {
+                    found = true;
+                    break;
+                }
+                i = i.getCause();
+            }
+
+            assertTrue(found, "Build failed with wrong exception");
         });
     }
 
@@ -393,14 +402,14 @@ public class QuarkusUnitTest
                     if (e instanceof RuntimeException) {
                         Throwable cause = e.getCause();
                         if (cause != null && cause instanceof BuildException) {
-                            assertException.accept(unwarpException(cause.getCause()));
+                            assertException.accept(unwrapException(cause.getCause()));
                         } else if (cause != null) {
-                            assertException.accept(unwarpException(cause));
+                            assertException.accept(unwrapException(cause));
                         } else {
-                            fail("Unable to unwrap the build exception from: " + e);
+                            assertException.accept(e);
                         }
                     } else {
-                        fail("Unable to unwrap the build exception from: " + e);
+                        assertException.accept(e);
                     }
                 } else {
                     throw e;
@@ -411,7 +420,7 @@ public class QuarkusUnitTest
         }
     }
 
-    private Throwable unwarpException(Throwable cause) {
+    private Throwable unwrapException(Throwable cause) {
         //TODO: huge hack
         try {
             Class<?> localVer = QuarkusUnitTest.class.getClassLoader().loadClass(cause.getClass().getName());
