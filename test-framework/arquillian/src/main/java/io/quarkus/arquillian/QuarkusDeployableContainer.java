@@ -41,9 +41,9 @@ import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildContext;
 import io.quarkus.builder.BuildStep;
 import io.quarkus.runner.bootstrap.AugmentAction;
-import io.quarkus.runner.bootstrap.BrokenMpDelegationClassLoader;
 import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
 import io.quarkus.runner.bootstrap.StartupAction;
+import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.TestInstantiator;
 

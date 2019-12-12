@@ -1,4 +1,4 @@
-package io.quarkus.runner.bootstrap;
+package io.quarkus.runtime.util;
 
 import java.io.IOException;
 import java.io.InputStream;
