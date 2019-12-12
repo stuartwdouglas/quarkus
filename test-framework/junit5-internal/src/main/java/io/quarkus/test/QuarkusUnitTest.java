@@ -108,7 +108,7 @@ public class QuarkusUnitTest
                 i = i.getCause();
             }
 
-            assertTrue(found, "Build failed with wrong exception");
+            assertTrue(found, "Build failed with wrong exception, expected " + expectedException + " but got " + t);
         });
     }
 

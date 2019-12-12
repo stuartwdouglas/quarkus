@@ -3,9 +3,9 @@ package io.quarkus.kafka.streams.runtime.devmode;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import io.quarkus.kafka.streams.runtime.HotReplacementInterceptor;
 import io.quarkus.runtime.devmode.HotReplacementContext;
 import io.quarkus.runtime.devmode.HotReplacementSetup;
-import io.quarkus.kafka.streams.runtime.HotReplacementInterceptor;
 
 public class KafkaStreamsHotReplacementSetup implements HotReplacementSetup {
 

@@ -110,13 +110,6 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         //for single resources we still respect this
         boolean banned = state.bannedResources.contains(name);
         List<URL> resources = new ArrayList<>();
-        boolean parentFirst = parentFirst(nm, state);
-        if (parentFirst && !banned) {
-            Enumeration<URL> res = parent.getResources(nm);
-            while (res.hasMoreElements()) {
-                resources.add(res.nextElement());
-            }
-        }
         //ClassPathElement[] providers = loadableResources.get(name);
         //if (providers != null) {
         //    for (ClassPathElement element : providers) {
@@ -129,7 +122,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
                 resources.add(res.getUrl());
             }
         }
-        if (!parentFirst && !banned) {
+        if (!banned) {
             Enumeration<URL> res = parent.getResources(nm);
             while (res.hasMoreElements()) {
                 resources.add(res.nextElement());
@@ -184,13 +177,6 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         if (state.bannedResources.contains(name)) {
             return null;
         }
-        boolean parentFirst = parentFirst(nm, state);
-        if (parentFirst) {
-            URL res = parent.getResource(nm);
-            if (res != null) {
-                return res;
-            }
-        }
         //        ClassPathElement[] providers = loadableResources.get(name);
         //        if (providers != null) {
         //            return providers[0].getResource(nm).getUrl();
@@ -202,10 +188,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
                 return res.getUrl();
             }
         }
-        if (!parentFirst) {
-            return parent.getResource(nm);
-        }
-        return null;
+        return parent.getResource(nm);
     }
 
     @Override
@@ -214,13 +197,6 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         ClassLoaderState state = getState();
         if (state.bannedResources.contains(name)) {
             return null;
-        }
-        boolean parentFirst = parentFirst(nm, state);
-        if (parentFirst) {
-            InputStream res = parent.getResourceAsStream(name);
-            if (res != null) {
-                return res;
-            }
         }
         //        ClassPathElement[] providers = loadableResources.get(name);
         //        if (providers != null) {
@@ -233,10 +209,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
                 return new ByteArrayInputStream(res.getData());
             }
         }
-        if (!parentFirst) {
-            return parent.getResourceAsStream(nm);
-        }
-        return null;
+        return parent.getResourceAsStream(nm);
     }
 
     @Override
