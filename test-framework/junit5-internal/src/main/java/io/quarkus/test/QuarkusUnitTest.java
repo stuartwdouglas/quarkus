@@ -180,7 +180,11 @@ public class QuarkusUnitTest
     private void exportArchive(Path deploymentDir, Class<?> testClass) {
         try {
             JavaArchive archive = getArchiveProducerOrDefault();
-            archive.addClass(testClass);
+            Class<?> c = testClass;
+            while (c != Object.class) {
+                archive.addClass(c);
+                c = c.getSuperclass();
+            }
             if (customApplicationProperties != null) {
                 archive.add(new PropertiesAsset(customApplicationProperties), "application.properties");
             }
@@ -261,6 +265,7 @@ public class QuarkusUnitTest
             throw new RuntimeException("Could not find method " + invocationContext.getExecutable() + " on test class");
         }
         try {
+            newMethod.setAccessible(true);
             newMethod.invoke(actualTestInstance, invocationContext.getArguments().toArray());
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);

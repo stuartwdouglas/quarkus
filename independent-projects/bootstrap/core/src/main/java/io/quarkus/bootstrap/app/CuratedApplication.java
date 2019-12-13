@@ -38,6 +38,7 @@ public class CuratedApplication {
      */
     private static final Set<ArtifactKey> ALWAYS_PARENT_FIRST = new HashSet<>(Arrays.asList(
             new ArtifactKey("io.quarkus", "quarkus-development-mode-spi"),
+            new ArtifactKey("io.sentry", "sentry"), //TODO: this is a temp hack, should not be merged
             new ArtifactKey("org.jboss.logmanager", "jboss-logmanager-embedded")));
 
     /**
@@ -134,11 +135,6 @@ public class CuratedApplication {
             for (AppDependency i : appModel.getFullDeploymentDeps()) {
                 deploymentArtifacts.add(i.getArtifact());
                 ClassPathElement element = getElement(i.getArtifact());
-
-                if (ALWAYS_PARENT_FIRST.contains(getKey(i))) {
-                    //we always load this from the parent if it is available
-                    builder.addParentFirstElement(element);
-                }
                 builder.addElement(element);
             }
             //now make sure we can't accidentally load other deps from this CL

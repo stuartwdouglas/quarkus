@@ -24,7 +24,7 @@ public class SentryLoggerCustomTest {
     }
 
     @AfterAll
-    static void reset() {
+    public static void reset() {
         resetFrameCache();
     }
 }
