@@ -59,6 +59,7 @@ import io.quarkus.deployment.proxy.ProxyConfiguration;
 import io.quarkus.deployment.proxy.ProxyFactory;
 import io.quarkus.runner.bootstrap.AugmentAction;
 import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
+import io.quarkus.test.common.DefineClassVisibleClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.PropertyTestUtil;
 import io.quarkus.test.common.RestAssuredURLManager;

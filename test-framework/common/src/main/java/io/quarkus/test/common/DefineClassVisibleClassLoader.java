@@ -1,4 +1,4 @@
-package io.quarkus.test;
+package io.quarkus.test.common;
 
 /**
  * A wrapper around ClassLoader whose only purpose is to expose defineClass
