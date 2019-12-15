@@ -70,7 +70,8 @@ public class QuarkusTestExtension
             QuarkusBootstrap.builder(appClassLocation);
 
             final ClassLoader testClassLoader = context.getRequiredTestClass().getClassLoader();
-            final QuarkusBootstrap.Builder runnerBuilder = QuarkusBootstrap.builder(appClassLocation);
+            final QuarkusBootstrap.Builder runnerBuilder = QuarkusBootstrap.builder(appClassLocation)
+                    .setMode(QuarkusBootstrap.Mode.TEST);
 
             final Path testClassLocation = getTestClassesLocation(context.getRequiredTestClass());
 
