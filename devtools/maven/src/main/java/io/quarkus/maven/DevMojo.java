@@ -490,7 +490,7 @@ public class DevMojo extends AbstractMojo {
             for (Map.Entry<Object, Object> e : System.getProperties().entrySet()) {
                 devModeContext.getSystemProperties().put(e.getKey().toString(), (String) e.getValue());
             }
-
+            devModeContext.setProjectDir(project.getFile().getParentFile());
             devModeContext.getBuildSystemProperties().putAll((Map) project.getProperties());
 
             //  this is a minor hack to allow ApplicationConfig to be populated with defaults

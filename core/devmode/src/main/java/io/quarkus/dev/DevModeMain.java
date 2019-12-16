@@ -79,7 +79,11 @@ public class DevModeMain implements Closeable {
 
             QuarkusBootstrap.Builder bootstrapBuilder = QuarkusBootstrap.builder(context.getClassesRoots().get(0).toPath())
                     .setMode(QuarkusBootstrap.Mode.DEV);
-            bootstrapBuilder.setProjectRoot(new File(".").toPath());
+            if (context.getProjectDir() != null) {
+                bootstrapBuilder.setProjectRoot(context.getProjectDir().toPath());
+            } else {
+                bootstrapBuilder.setProjectRoot(new File(".").toPath());
+            }
             for (int i = 1; i < context.getClassesRoots().size(); ++i) {
                 bootstrapBuilder.addAdditionalApplicationArchive(
                         new AdditionalDependency(context.getClassesRoots().get(i).toPath(), false, false));
