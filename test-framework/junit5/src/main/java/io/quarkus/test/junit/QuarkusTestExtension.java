@@ -58,7 +58,7 @@ public class QuarkusTestExtension
     private static Class<?> actualTestClass;
     private static Object actualTestInstance;
     private static ClassLoader originalCl;
-    private RunningQuarkusApplication runningQuarkusApplication;
+    private static RunningQuarkusApplication runningQuarkusApplication;
 
     private ExtensionState doJavaStart(ExtensionContext context, TestResourceManager testResourceManager) {
 
@@ -76,7 +76,7 @@ public class QuarkusTestExtension
             final Path testClassLocation = getTestClassesLocation(context.getRequiredTestClass());
 
             if (!appClassLocation.equals(testClassLocation)) {
-                runnerBuilder.addAdditionalApplicationArchive(new AdditionalDependency(testClassLocation, false, true));
+                runnerBuilder.addAdditionalApplicationArchive(new AdditionalDependency(testClassLocation, true, true));
             }
             CuratedApplication curatedApplication = runnerBuilder.setTest(true).build().bootstrap();
             AugmentAction augmentAction = new AugmentAction(curatedApplication,
@@ -106,6 +106,7 @@ public class QuarkusTestExtension
                         }
                     }));
             runningQuarkusApplication = augmentAction.createInitialRuntimeApplication().run();
+            Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
 
             System.setProperty("test.url", TestHTTPResourceManager.getUri(runningQuarkusApplication));
 
@@ -147,7 +148,8 @@ public class QuarkusTestExtension
         if (!failedBoot) {
             boolean nativeImageTest = context.getRequiredTestClass().isAnnotationPresent(SubstrateTest.class)
                     || isNativeTest(context);
-            RestAssuredURLManager.clearURL();
+            runningQuarkusApplication.getClassLoader().loadClass(RestAssuredURLManager.class.getName())
+                    .getDeclaredMethod("clearURL").invoke(null);
             TestScopeManager.tearDown(nativeImageTest);
         }
     }
@@ -164,7 +166,10 @@ public class QuarkusTestExtension
         if (!failedBoot) {
             boolean nativeImageTest = context.getRequiredTestClass().isAnnotationPresent(SubstrateTest.class)
                     || isNativeTest(context);
-            RestAssuredURLManager.setURL(false);
+            if (runningQuarkusApplication != null) {
+                runningQuarkusApplication.getClassLoader().loadClass(RestAssuredURLManager.class.getName())
+                        .getDeclaredMethod("setURL", boolean.class).invoke(null, false);
+            }
             TestScopeManager.setup(nativeImageTest);
         }
     }
@@ -221,6 +226,9 @@ public class QuarkusTestExtension
             Method selectMethod = cdi.getMethod("select", Class.class, Annotation[].class);
             Object cdiInstance = selectMethod.invoke(instance, actualTestClass, new Annotation[0]);
             actualTestInstance = selectMethod.getReturnType().getMethod("get").invoke(cdiInstance);
+
+            Class<?> resM = Thread.currentThread().getContextClassLoader().loadClass(TestHTTPResourceManager.class.getName());
+            resM.getDeclaredMethod("inject", Object.class).invoke(null, actualTestInstance);
         } catch (Exception e) {
             throw new TestInstantiationException("Failed to create test instance", e);
         }

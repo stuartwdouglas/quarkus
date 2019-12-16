@@ -16,7 +16,7 @@ import io.quarkus.it.arc.UnusedBean;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-class BeanOnlyInTestCase {
+public class BeanOnlyInTestCase {
 
     @Inject
     UnusedBean unusedBean;

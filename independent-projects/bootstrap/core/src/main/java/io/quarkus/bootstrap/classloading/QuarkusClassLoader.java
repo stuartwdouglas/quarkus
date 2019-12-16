@@ -61,7 +61,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
     private volatile MemoryClassPathElement resettableElement;
 
     private volatile Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers;
-
+    private volatile ClassLoader transformerClassLoader;
     private volatile ClassLoaderState state;
 
     private QuarkusClassLoader(Builder builder) {
@@ -73,6 +73,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         this.parent = builder.parent;
         this.parentFirst = builder.parentFirst;
         this.resettableElement = builder.resettableElement;
+        this.transformerClassLoader = builder.transformerClassLoader;
     }
 
     public static Builder builder(String name, ClassLoader parent, boolean parentFirst) {
@@ -91,10 +92,11 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
     }
 
     public void reset(Map<String, byte[]> resources,
-            Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers) {
+            Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers, ClassLoader transformerClassLoader) {
         if (resettableElement == null) {
             throw new IllegalStateException("Classloader is no resettable");
         }
+        this.transformerClassLoader = transformerClassLoader;
         synchronized (this) {
             resettableElement.reset(resources);
             this.bytecodeTransformers = bytecodeTransformers;
@@ -282,7 +284,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
 
             @Override
             protected ClassLoader getClassLoader() {
-                return Thread.currentThread().getContextClassLoader();
+                return transformerClassLoader;
             }
         };
         ClassVisitor visitor = writer;
@@ -323,6 +325,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers = Collections.emptyMap();
         final boolean parentFirst;
         MemoryClassPathElement resettableElement;
+        private volatile ClassLoader transformerClassLoader;
 
         public Builder(String name, ClassLoader parent, boolean parentFirst) {
             this.name = name;
@@ -413,6 +416,11 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
             } else {
                 this.bytecodeTransformers = bytecodeTransformers;
             }
+        }
+
+        public Builder setTransformerClassLoader(ClassLoader transformerClassLoader) {
+            this.transformerClassLoader = transformerClassLoader;
+            return this;
         }
 
         /**

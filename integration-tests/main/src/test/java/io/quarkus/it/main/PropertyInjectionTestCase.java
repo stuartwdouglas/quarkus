@@ -7,13 +7,13 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-class PropertyInjectionTestCase {
+public class PropertyInjectionTestCase {
 
     @ConfigProperty(name = "web-message")
     String message;
 
     @Test
-    void testConfigPropertyInjectedIntoTest() {
+    public void testConfigPropertyInjectedIntoTest() {
         Assertions.assertEquals("A message", message);
     }
 }

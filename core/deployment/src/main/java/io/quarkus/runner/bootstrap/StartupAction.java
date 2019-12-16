@@ -22,6 +22,7 @@ import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.builder.BuildResult;
 import io.quarkus.deployment.builditem.ApplicationClassNameBuildItem;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
+import io.quarkus.deployment.builditem.DeploymentClassLoaderBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
@@ -49,8 +50,10 @@ public class StartupAction {
         //first
         Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers = extractTransformers();
         QuarkusClassLoader baseClassLoader = curatedApplication.getBaseRuntimeClassLoader();
-        baseClassLoader.reset(extractGeneratedResources(false), bytecodeTransformers);
-        QuarkusClassLoader runtimeClassLoader = createRuntimeClassLoader(baseClassLoader, bytecodeTransformers);
+        ClassLoader transformerClassLoader = buildResult.consume(DeploymentClassLoaderBuildItem.class).getClassLoader();
+        baseClassLoader.reset(extractGeneratedResources(false), bytecodeTransformers, transformerClassLoader);
+        QuarkusClassLoader runtimeClassLoader = createRuntimeClassLoader(baseClassLoader, bytecodeTransformers,
+                transformerClassLoader);
 
         //we have our class loaders
         ClassLoader old = Thread.currentThread().getContextClassLoader();
@@ -103,10 +106,11 @@ public class StartupAction {
     }
 
     private QuarkusClassLoader createRuntimeClassLoader(QuarkusClassLoader loader,
-            Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers) {
+            Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers,
+            ClassLoader deploymentClassLoader) {
         QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Quarkus Runtime ClassLoader",
                 loader, false);
-
+        builder.setTransformerClassLoader(deploymentClassLoader);
         builder.addElement(ClassPathElement.fromPath(curatedApplication.getQuarkusBootstrap().getApplicationRoot()));
         builder.addElement(new MemoryClassPathElement(extractGeneratedResources(true)));
 

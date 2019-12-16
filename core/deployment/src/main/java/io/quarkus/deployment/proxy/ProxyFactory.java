@@ -39,6 +39,11 @@ public class ProxyFactory<T> {
 
         Class<T> superClass = configuration.getSuperClass() != null ? configuration.getSuperClass() : (Class<T>) Object.class;
         this.superClassName = superClass.getName();
+
+        if (!Modifier.isPublic(superClass.getModifiers())) {
+            throw new IllegalArgumentException(
+                    "A proxy cannot be created for class " + this.superClassName + " because the it is not public");
+        }
         if (!hasNoArgsConstructor(superClass)) {
             throw new IllegalArgumentException(
                     "A proxy cannot be created for class " + this.superClassName
@@ -47,10 +52,6 @@ public class ProxyFactory<T> {
         if (Modifier.isFinal(superClass.getModifiers())) {
             throw new IllegalArgumentException(
                     "A proxy cannot be created for class " + this.superClassName + " because it is a final class");
-        }
-        if (!Modifier.isPublic(superClass.getModifiers())) {
-            throw new IllegalArgumentException(
-                    "A proxy cannot be created for class " + this.superClassName + " because the it is not public");
         }
 
         Objects.requireNonNull(configuration.getClassLoader(), "classLoader must be set");

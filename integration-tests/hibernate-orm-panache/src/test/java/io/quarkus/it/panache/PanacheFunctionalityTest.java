@@ -3,6 +3,8 @@ package io.quarkus.it.panache;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import javax.enterprise.context.control.ActivateRequestContext;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -45,6 +47,7 @@ public class PanacheFunctionalityTest {
 
     @DisabledOnNativeImage
     @Test
+    @ActivateRequestContext
     public void testPanacheInTest() {
         Assertions.assertEquals(0, Person.count());
     }
