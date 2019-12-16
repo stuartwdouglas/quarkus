@@ -26,7 +26,6 @@ import io.quarkus.builder.item.BuildItem;
 import io.quarkus.deployment.builditem.AdditionalApplicationArchiveBuildItem;
 import io.quarkus.deployment.builditem.ArchiveRootBuildItem;
 import io.quarkus.deployment.builditem.DeploymentClassLoaderBuildItem;
-import io.quarkus.deployment.builditem.ExtensionClassLoaderBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
@@ -103,7 +102,6 @@ public class QuarkusAugmentor {
                     .addInitial(LaunchModeBuildItem.class)
                     .addInitial(LiveReloadBuildItem.class)
                     .addInitial(AdditionalApplicationArchiveBuildItem.class)
-                    .addInitial(ExtensionClassLoaderBuildItem.class)
                     .addInitial(BuildSystemTargetBuildItem.class)
                     .addInitial(CurateOutcomeBuildItem.class);
             for (Class<? extends BuildItem> i : finalResults) {
@@ -126,7 +124,6 @@ public class QuarkusAugmentor {
                     .produce(new ArchiveRootBuildItem(root, rootFs == null ? root : rootFs.getPath("/"), excludedFromIndexing))
                     .produce(new ShutdownContextBuildItem())
                     .produce(new LaunchModeBuildItem(launchMode))
-                    .produce(new ExtensionClassLoaderBuildItem(classLoader))
                     .produce(new BuildSystemTargetBuildItem(targetDir, baseName))
                     .produce(new DeploymentClassLoaderBuildItem(deploymentClassLoader))
                     .produce(new CurateOutcomeBuildItem(effectiveModel, resolver));

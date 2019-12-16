@@ -11,15 +11,21 @@ import io.quarkus.bootstrap.app.AdditionalDependency;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+import io.quarkus.builder.BuildChain;
 import io.quarkus.builder.BuildChainBuilder;
+import io.quarkus.builder.BuildExecutionBuilder;
 import io.quarkus.builder.BuildResult;
 import io.quarkus.builder.item.BuildItem;
+import io.quarkus.deployment.ExtensionLoader;
 import io.quarkus.deployment.QuarkusAugmentor;
 import io.quarkus.deployment.builditem.ApplicationClassNameBuildItem;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
+import io.quarkus.deployment.builditem.ConfigDescriptionBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
+import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
+import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
 import io.quarkus.deployment.pkg.builditem.JarBuildItem;
 import io.quarkus.deployment.pkg.builditem.NativeImageBuildItem;
@@ -76,6 +82,52 @@ public class AugmentAction {
         BuildResult result = run(false, changedResources, GeneratedClassBuildItem.class,
                 GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class);
         return new StartupAction(curatedApplication, this, result);
+    }
+
+    /**
+     * Runs a custom augmentation action, such as generating config.
+     *
+     * @param chainBuild A consumer that customises the build to select the output targets
+     * @param executionBuild A consumer that can see the initial build execution
+     * @return The build result
+     */
+    public BuildResult runCustomAction(Consumer<BuildChainBuilder> chainBuild, Consumer<BuildExecutionBuilder> executionBuild) {
+        ProfileManager.setLaunchMode(launchMode);
+        QuarkusClassLoader classLoader = curatedApplication.getAugmentClassLoader();
+
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(classLoader);
+
+            final BuildChainBuilder chainBuilder = BuildChain.builder();
+
+            ExtensionLoader.loadStepsFrom(classLoader).accept(chainBuilder);
+            chainBuilder.loadProviders(classLoader);
+
+            for (Consumer<BuildChainBuilder> c : chainCustomizers) {
+                c.accept(chainBuilder);
+            }
+            chainBuilder
+                    .addInitial(ShutdownContextBuildItem.class)
+                    .addInitial(LaunchModeBuildItem.class)
+                    .addInitial(LiveReloadBuildItem.class)
+                    .addFinal(ConfigDescriptionBuildItem.class);
+            chainBuild.accept(chainBuilder);
+
+            BuildChain chain = chainBuilder
+                    .build();
+            BuildExecutionBuilder execBuilder = chain.createExecutionBuilder("main")
+                    .produce(new LaunchModeBuildItem(launchMode))
+                    .produce(new ShutdownContextBuildItem())
+                    .produce(new LiveReloadBuildItem());
+            executionBuild.accept(execBuilder);
+            return execBuilder
+                    .execute();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to run task", e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
+        }
     }
 
     private BuildResult run(boolean firstRun, Set<String> changedResources, Class<? extends BuildItem>... finalOutputs) {

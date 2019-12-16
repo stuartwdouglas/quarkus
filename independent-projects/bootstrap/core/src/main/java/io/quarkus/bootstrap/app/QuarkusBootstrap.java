@@ -48,6 +48,7 @@ public class QuarkusBootstrap {
     private final Mode mode;
     private final boolean offline;
     private final boolean test;
+    private final boolean localProjectDiscovery;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -58,6 +59,7 @@ public class QuarkusBootstrap {
         this.mode = builder.mode;
         this.offline = builder.offline;
         this.test = builder.test;
+        this.localProjectDiscovery = builder.localProjectDiscovery;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
@@ -65,6 +67,7 @@ public class QuarkusBootstrap {
         //once we have this it is up to augment to set up the class loader to actually use them
         BootstrapAppModelFactory appModelFactory = BootstrapAppModelFactory.newInstance()
                 .setOffline(offline)
+                .setLocalProjectsDiscovery(localProjectDiscovery)
                 .setAppClasses(getProjectRoot() != null ? getProjectRoot()
                         : getApplicationRoot());
         if (mode == Mode.TEST || test) {
@@ -121,6 +124,7 @@ public class QuarkusBootstrap {
         private Mode mode = Mode.PROD;
         private boolean offline;
         private boolean test;
+        private boolean localProjectDiscovery;
 
         public Builder(Path applicationRoot) {
             this.applicationRoot = applicationRoot;
@@ -141,8 +145,9 @@ public class QuarkusBootstrap {
             return this;
         }
 
-        public void setBuildSystemProperties(Properties buildSystemProperties) {
+        public Builder setBuildSystemProperties(Properties buildSystemProperties) {
             this.buildSystemProperties = buildSystemProperties;
+            return this;
         }
 
         public Builder setOffline(boolean offline) {
@@ -157,6 +162,11 @@ public class QuarkusBootstrap {
 
         public Builder setMode(Mode mode) {
             this.mode = mode;
+            return this;
+        }
+
+        public Builder setLocalProjectDiscovery(boolean localProjectDiscovery) {
+            this.localProjectDiscovery = localProjectDiscovery;
             return this;
         }
 
