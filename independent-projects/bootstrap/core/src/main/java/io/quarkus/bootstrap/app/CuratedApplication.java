@@ -39,7 +39,8 @@ public class CuratedApplication {
     private static final Set<ArtifactKey> ALWAYS_PARENT_FIRST = new HashSet<>(Arrays.asList(
             new ArtifactKey("io.quarkus", "quarkus-development-mode-spi"),
             new ArtifactKey("io.sentry", "sentry"), //TODO: this is a temp hack, should not be merged
-            new ArtifactKey("org.jboss.logmanager", "jboss-logmanager-embedded")));
+            new ArtifactKey("org.jboss.logmanager", "jboss-logmanager-embedded"),
+            new ArtifactKey("org.jboss.logging", "jboss-logging")));
 
     /**
      * The class path elements for the various artifacts. These can be used in multiple class loaders
