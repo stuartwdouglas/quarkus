@@ -172,7 +172,7 @@ public class BuildMojo extends AbstractMojo {
             }
 
         } catch (Exception e) {
-            throw new MojoExecutionException("Failed to generate config file", e);
+            throw new MojoExecutionException("Failed to build quarkus application", e);
         } finally {
             if (clear) {
                 System.clearProperty(QUARKUS_PACKAGE_UBER_JAR);

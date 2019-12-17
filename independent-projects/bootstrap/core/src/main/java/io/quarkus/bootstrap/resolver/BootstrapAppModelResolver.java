@@ -252,11 +252,11 @@ public class BootstrapAppModelResolver implements AppModelResolver {
                 .resolveManagedDependencies(deploymentDependencies, allDepVersions, managedRepos)
                 .getArtifactResults();
 
-        Map<AppKey, String> versionMap = new HashMap<>();
+        Map<AppKey, AppArtifact> versionMap = new HashMap<>();
         for (AppDependency i : userDeps) {
             versionMap.put(
                     new AppKey(i.getArtifact().getGroupId(), i.getArtifact().getArtifactId(), i.getArtifact().getClassifier()),
-                    i.getArtifact().getVersion());
+                    i.getArtifact());
         }
         List<AppDependency> fullDeploymentDeps = new ArrayList<>();
         for (ArtifactResult child : fullDeploymentDepsList) {
@@ -389,13 +389,22 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         return appArtifact;
     }
 
-    private static AppArtifact toAppArtifact(Artifact artifact, Map<AppKey, String> versions) {
-        String newVersion = versions.get(new AppKey(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier()));
+    private static AppArtifact toAppArtifact(Artifact artifact, Map<AppKey, AppArtifact> versions) {
+        AppArtifact newVersion = versions
+                .get(new AppKey(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier()));
         final AppArtifact appArtifact = new AppArtifact(artifact.getGroupId(), artifact.getArtifactId(),
-                artifact.getClassifier(), artifact.getExtension(), newVersion != null ? newVersion : artifact.getVersion());
-        final File file = artifact.getFile();
-        if (file != null) {
-            appArtifact.setPath(file.toPath());
+                artifact.getClassifier(), artifact.getExtension(),
+                newVersion != null ? newVersion.getVersion() : artifact.getVersion());
+
+        if (newVersion != null) {
+            if (newVersion.getPath() != null) {
+                appArtifact.setPath(newVersion.getPath());
+            }
+        } else {
+            final File file = artifact.getFile();
+            if (file != null) {
+                appArtifact.setPath(file.toPath());
+            }
         }
         return appArtifact;
     }
@@ -437,5 +446,4 @@ public class BootstrapAppModelResolver implements AppModelResolver {
             return Objects.hash(groupId, artifactId, classifier);
         }
     }
-
 }
