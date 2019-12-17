@@ -152,8 +152,10 @@ public class BuildMojo extends AbstractMojo {
             realProperties.putIfAbsent("quarkus.application.version", project.getVersion());
             CuratedApplication curatedApplication = QuarkusBootstrap.builder(outputDirectory.toPath())
                     .setProjectRoot(project.getBasedir().toPath())
+                    .setBaseClassLoader(BuildMojo.class.getClassLoader())
                     .setBuildSystemProperties(realProperties)
                     .setBaseName(finalName)
+                    .setTargetDirectory(buildDir.toPath())
                     .build().bootstrap();
 
             AugmentAction action = new AugmentAction(curatedApplication);
@@ -177,4 +179,5 @@ public class BuildMojo extends AbstractMojo {
             }
         }
     }
+
 }

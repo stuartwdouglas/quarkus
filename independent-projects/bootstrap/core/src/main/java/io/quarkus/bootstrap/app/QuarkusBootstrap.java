@@ -45,11 +45,13 @@ public class QuarkusBootstrap {
 
     private final Properties buildSystemProperties;
     private final String baseName;
+    private final Path targetDirectory;
 
     private final Mode mode;
     private final boolean offline;
     private final boolean test;
     private final boolean localProjectDiscovery;
+    private final ClassLoader baseClassLoader;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -62,6 +64,8 @@ public class QuarkusBootstrap {
         this.test = builder.test;
         this.localProjectDiscovery = builder.localProjectDiscovery;
         this.baseName = builder.baseName;
+        this.baseClassLoader = builder.baseClassLoader;
+        this.targetDirectory = builder.targetDirectory;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
@@ -120,18 +124,28 @@ public class QuarkusBootstrap {
         return baseName;
     }
 
-    public static class Builder {
-        private final Path applicationRoot;
-        private String baseName;
-        private Path projectRoot;
+    public ClassLoader getBaseClassLoader() {
+        return baseClassLoader;
+    }
 
-        private final List<AdditionalDependency> additionalApplicationArchives = new ArrayList<>();
-        private final List<Path> excludeFromClassPath = new ArrayList<>();
-        private Properties buildSystemProperties;
-        private Mode mode = Mode.PROD;
-        private boolean offline;
-        private boolean test;
-        private boolean localProjectDiscovery;
+    public Path getTargetDirectory() {
+        return targetDirectory;
+    }
+
+    public static class Builder {
+        final Path applicationRoot;
+        String baseName;
+        Path projectRoot;
+        ClassLoader baseClassLoader = ClassLoader.getSystemClassLoader();
+
+        final List<AdditionalDependency> additionalApplicationArchives = new ArrayList<>();
+        final List<Path> excludeFromClassPath = new ArrayList<>();
+        Properties buildSystemProperties;
+        Mode mode = Mode.PROD;
+        boolean offline;
+        boolean test;
+        boolean localProjectDiscovery;
+        Path targetDirectory;
 
         public Builder(Path applicationRoot) {
             this.applicationRoot = applicationRoot;
@@ -179,6 +193,16 @@ public class QuarkusBootstrap {
 
         public Builder setBaseName(String baseName) {
             this.baseName = baseName;
+            return this;
+        }
+
+        public Builder setBaseClassLoader(ClassLoader baseClassLoader) {
+            this.baseClassLoader = baseClassLoader;
+            return this;
+        }
+
+        public Builder setTargetDirectory(Path targetDirectory) {
+            this.targetDirectory = targetDirectory;
             return this;
         }
 

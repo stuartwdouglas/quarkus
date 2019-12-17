@@ -135,48 +135,55 @@ public class AugmentAction {
     }
 
     private BuildResult runAugment(boolean firstRun, Set<String> changedResources, Class<? extends BuildItem>... finalOutputs) {
-        ProfileManager.setLaunchMode(launchMode);
-
-        QuarkusClassLoader classLoader = curatedApplication.getAugmentClassLoader();
-
-        QuarkusAugmentor.Builder builder = QuarkusAugmentor.builder()
-                .setRoot(quarkusBootstrap.getApplicationRoot())
-                .setClassLoader(classLoader)
-                .addFinal(ApplicationClassNameBuildItem.class)
-                .setDeploymentClassLoader(curatedApplication.createDeploymentClassLoader())
-                .setBuildSystemProperties(quarkusBootstrap.getBuildSystemProperties())
-                .setEffectiveModel(curatedApplication.getAppModel())
-                .setResolver(curatedApplication.getAppModelResolver());
-        if (quarkusBootstrap.getBaseName() != null) {
-            builder.setBaseName(quarkusBootstrap.getBaseName());
-        }
-
-        builder.setLaunchMode(launchMode);
-        if (firstRun) {
-            builder.setLiveReloadState(new LiveReloadBuildItem(false, Collections.emptySet(), reloadContext));
-        } else {
-            builder.setLiveReloadState(new LiveReloadBuildItem(true, changedResources, reloadContext));
-        }
-        for (AdditionalDependency i : quarkusBootstrap.getAdditionalApplicationArchives()) {
-            //this gets added to the class path either way
-            //but we only need to add it to the additional app archives
-            //if it is forced as an app archive
-            if (i.isForceApplicationArchive()) {
-                builder.addAdditionalApplicationArchive(i.getArchivePath());
-            }
-        }
-        builder.excludeFromIndexing(quarkusBootstrap.getExcludeFromClassPath());
-        for (Consumer<BuildChainBuilder> i : chainCustomizers) {
-            builder.addBuildChainCustomizer(i);
-        }
-        for (Class<? extends BuildItem> i : finalOutputs) {
-            builder.addFinal(i);
-        }
-
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
-            return builder.build().run();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().setContextClassLoader(curatedApplication.getAugmentClassLoader());
+            ProfileManager.setLaunchMode(launchMode);
+
+            QuarkusClassLoader classLoader = curatedApplication.getAugmentClassLoader();
+
+            QuarkusAugmentor.Builder builder = QuarkusAugmentor.builder()
+                    .setRoot(quarkusBootstrap.getApplicationRoot())
+                    .setClassLoader(classLoader)
+                    .addFinal(ApplicationClassNameBuildItem.class)
+                    .setTargetDir(quarkusBootstrap.getTargetDirectory())
+                    .setDeploymentClassLoader(curatedApplication.createDeploymentClassLoader())
+                    .setBuildSystemProperties(quarkusBootstrap.getBuildSystemProperties())
+                    .setEffectiveModel(curatedApplication.getAppModel())
+                    .setResolver(curatedApplication.getAppModelResolver());
+            if (quarkusBootstrap.getBaseName() != null) {
+                builder.setBaseName(quarkusBootstrap.getBaseName());
+            }
+
+            builder.setLaunchMode(launchMode);
+            if (firstRun) {
+                builder.setLiveReloadState(new LiveReloadBuildItem(false, Collections.emptySet(), reloadContext));
+            } else {
+                builder.setLiveReloadState(new LiveReloadBuildItem(true, changedResources, reloadContext));
+            }
+            for (AdditionalDependency i : quarkusBootstrap.getAdditionalApplicationArchives()) {
+                //this gets added to the class path either way
+                //but we only need to add it to the additional app archives
+                //if it is forced as an app archive
+                if (i.isForceApplicationArchive()) {
+                    builder.addAdditionalApplicationArchive(i.getArchivePath());
+                }
+            }
+            builder.excludeFromIndexing(quarkusBootstrap.getExcludeFromClassPath());
+            for (Consumer<BuildChainBuilder> i : chainCustomizers) {
+                builder.addBuildChainCustomizer(i);
+            }
+            for (Class<? extends BuildItem> i : finalOutputs) {
+                builder.addFinal(i);
+            }
+
+            try {
+                return builder.build().run();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
         }
     }
 }

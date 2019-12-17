@@ -128,7 +128,7 @@ public class CuratedApplication {
         if (augmentClassLoader == null) {
             //first run, we need to build all the class loaders
             QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Augmentation Class Loader",
-                    ClassLoader.getSystemClassLoader(), true);
+                    quarkusBootstrap.getBaseClassLoader(), true);
             //we want a class loader that can load the deployment artifacts and all their dependencies, but not
             //any of the runtime artifacts, or user classes
             //this will load any deployment artifacts from the parent CL if they are present
@@ -168,7 +168,7 @@ public class CuratedApplication {
     public synchronized QuarkusClassLoader getBaseRuntimeClassLoader() {
         if (baseRuntimeClassLoader == null) {
             QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Quarkus Base Runtime ClassLoader",
-                    ClassLoader.getSystemClassLoader(), false);
+                    quarkusBootstrap.getBaseClassLoader(), false);
             //additional user class path elements first
             for (AdditionalDependency i : quarkusBootstrap.getAdditionalApplicationArchives()) {
                 if (!i.isHotReloadable()) {

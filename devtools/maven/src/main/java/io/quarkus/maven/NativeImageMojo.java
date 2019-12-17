@@ -205,6 +205,8 @@ public class NativeImageMojo extends AbstractMojo {
                         .setProjectRoot(project.getBasedir().toPath())
                         .setBuildSystemProperties(realProperties)
                         .setBaseName(finalName)
+                        .setBaseClassLoader(BuildMojo.class.getClassLoader())
+                        .setTargetDirectory(buildDir.toPath())
                         .build().bootstrap();
 
                 AugmentAction action = new AugmentAction(curatedApplication);
