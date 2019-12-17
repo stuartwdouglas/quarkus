@@ -44,6 +44,7 @@ public class QuarkusBootstrap {
     private final List<Path> excludeFromClassPath;
 
     private final Properties buildSystemProperties;
+    private final String baseName;
 
     private final Mode mode;
     private final boolean offline;
@@ -60,6 +61,7 @@ public class QuarkusBootstrap {
         this.offline = builder.offline;
         this.test = builder.test;
         this.localProjectDiscovery = builder.localProjectDiscovery;
+        this.baseName = builder.baseName;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
@@ -114,8 +116,13 @@ public class QuarkusBootstrap {
         return new Builder(applicationRoot);
     }
 
+    public String getBaseName() {
+        return baseName;
+    }
+
     public static class Builder {
         private final Path applicationRoot;
+        private String baseName;
         private Path projectRoot;
 
         private final List<AdditionalDependency> additionalApplicationArchives = new ArrayList<>();
@@ -167,6 +174,11 @@ public class QuarkusBootstrap {
 
         public Builder setLocalProjectDiscovery(boolean localProjectDiscovery) {
             this.localProjectDiscovery = localProjectDiscovery;
+            return this;
+        }
+
+        public Builder setBaseName(String baseName) {
+            this.baseName = baseName;
             return this;
         }
 

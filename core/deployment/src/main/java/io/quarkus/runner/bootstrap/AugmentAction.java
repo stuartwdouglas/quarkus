@@ -49,6 +49,10 @@ public class AugmentAction {
      */
     private final Map<Class<?>, Object> reloadContext = new ConcurrentHashMap<>();
 
+    public AugmentAction(CuratedApplication curatedApplication) {
+        this(curatedApplication, Collections.emptyList());
+    }
+
     public AugmentAction(CuratedApplication curatedApplication, List<Consumer<BuildChainBuilder>> chainCustomizers) {
         this.quarkusBootstrap = curatedApplication.getQuarkusBootstrap();
         this.curatedApplication = curatedApplication;
@@ -61,7 +65,7 @@ public class AugmentAction {
         if (launchMode != LaunchMode.NORMAL) {
             throw new IllegalStateException("Can only create a production application when using NORMAL launch mode");
         }
-        BuildResult result = run(true, Collections.emptySet(), ArtifactResultBuildItem.class);
+        BuildResult result = runAugment(true, Collections.emptySet(), ArtifactResultBuildItem.class);
         return new AugmentResult(result.consumeMulti(ArtifactResultBuildItem.class), result.consumeOptional(JarBuildItem.class),
                 result.consumeOptional(NativeImageBuildItem.class));
     }
@@ -70,7 +74,7 @@ public class AugmentAction {
         if (launchMode == LaunchMode.NORMAL) {
             throw new IllegalStateException("Cannot launch a runtime application with NORMAL launch mode");
         }
-        BuildResult result = run(true, Collections.emptySet(), GeneratedClassBuildItem.class,
+        BuildResult result = runAugment(true, Collections.emptySet(), GeneratedClassBuildItem.class,
                 GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class);
         return new StartupAction(curatedApplication, this, result);
     }
@@ -79,7 +83,7 @@ public class AugmentAction {
         if (launchMode != LaunchMode.DEVELOPMENT) {
             throw new IllegalStateException("Only application with launch mode DEVELOPMENT can restart");
         }
-        BuildResult result = run(false, changedResources, GeneratedClassBuildItem.class,
+        BuildResult result = runAugment(false, changedResources, GeneratedClassBuildItem.class,
                 GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class);
         return new StartupAction(curatedApplication, this, result);
     }
@@ -130,7 +134,7 @@ public class AugmentAction {
         }
     }
 
-    private BuildResult run(boolean firstRun, Set<String> changedResources, Class<? extends BuildItem>... finalOutputs) {
+    private BuildResult runAugment(boolean firstRun, Set<String> changedResources, Class<? extends BuildItem>... finalOutputs) {
         ProfileManager.setLaunchMode(launchMode);
 
         QuarkusClassLoader classLoader = curatedApplication.getAugmentClassLoader();
@@ -143,6 +147,9 @@ public class AugmentAction {
                 .setBuildSystemProperties(quarkusBootstrap.getBuildSystemProperties())
                 .setEffectiveModel(curatedApplication.getAppModel())
                 .setResolver(curatedApplication.getAppModelResolver());
+        if (quarkusBootstrap.getBaseName() != null) {
+            builder.setBaseName(quarkusBootstrap.getBaseName());
+        }
 
         builder.setLaunchMode(launchMode);
         if (firstRun) {

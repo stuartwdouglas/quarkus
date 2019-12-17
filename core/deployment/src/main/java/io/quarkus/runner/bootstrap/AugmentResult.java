@@ -11,12 +11,12 @@ import io.quarkus.deployment.pkg.builditem.NativeImageBuildItem;
  */
 public class AugmentResult {
     private final List<ArtifactResultBuildItem> results;
-    private final JarBuildItem jarResult;
+    private final JarBuildItem jar;
     private final NativeImageBuildItem nativeResult;
 
-    public AugmentResult(List<ArtifactResultBuildItem> results, JarBuildItem jarResult, NativeImageBuildItem nativeResult) {
+    public AugmentResult(List<ArtifactResultBuildItem> results, JarBuildItem jar, NativeImageBuildItem nativeResult) {
         this.results = results;
-        this.jarResult = jarResult;
+        this.jar = jar;
         this.nativeResult = nativeResult;
     }
 
@@ -24,8 +24,8 @@ public class AugmentResult {
         return results;
     }
 
-    public JarBuildItem getJarResult() {
-        return jarResult;
+    public JarBuildItem getJar() {
+        return jar;
     }
 
     public NativeImageBuildItem getNativeResult() {
