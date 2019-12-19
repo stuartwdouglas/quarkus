@@ -102,7 +102,8 @@ public class DevModeMain implements Closeable {
             curatedApplication = bootstrapBuilder.setTest(context.isTest()).build().bootstrap();
         } catch (Throwable t) {
             log.error("Quarkus dev mode failed to start in curation phase", t);
-            System.exit(1);
+            throw new RuntimeException(t);
+            //System.exit(1);
         }
         augmentAction = new AugmentAction(curatedApplication, Collections.emptyList());
         runtimeUpdatesProcessor = setupRuntimeCompilation(context);

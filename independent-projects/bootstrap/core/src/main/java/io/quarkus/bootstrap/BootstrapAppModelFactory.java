@@ -6,10 +6,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.model.AppArtifact;
+import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.bootstrap.model.AppModel;
 import io.quarkus.bootstrap.resolver.AppModelResolverException;
 import io.quarkus.bootstrap.resolver.BootstrapAppModelResolver;
@@ -110,9 +115,10 @@ public class BootstrapAppModelFactory {
                         .setDevMode(devMode);
             }
 
-            final LocalProject localProject = localProjectsDiscovery || enableClasspathCache
-                    ? LocalProject.loadWorkspace(appClasses)
-                    : LocalProject.load(appClasses);
+//        final LocalProject localProject = localProjectsDiscovery || enableClasspathCache
+//                ? LocalProject.loadWorkspace(appClasses)
+//                : LocalProject.load(appClasses);
+            final LocalProject localProject = LocalProject.loadWorkspace(appClasses);
 
             //TODO: we need some way to cache this for performance reasons
             final MavenArtifactResolver.Builder mvn = MavenArtifactResolver.builder()
@@ -155,14 +161,15 @@ public class BootstrapAppModelFactory {
                 throw new BootstrapException("Failed to resolve deployment dependencies for " + appClasses, e);
             }
         }
-        final LocalProject localProject = localProjectsDiscovery || enableClasspathCache
-                ? LocalProject.loadWorkspace(appClasses)
-                : LocalProject.load(appClasses);
+//        final LocalProject localProject = localProjectsDiscovery || enableClasspathCache
+//                ? LocalProject.loadWorkspace(appClasses)
+//                : LocalProject.load(appClasses);
+        final LocalProject localProject = LocalProject.loadWorkspace(appClasses);
         try {
             //TODO: we need some way to cache this for performance reasons
             return getAppModelResolver()
                     .resolveModel(localProject.getAppArtifact());
-        } catch (AppModelResolverException e) {
+        } catch (Exception e) {
             throw new BootstrapException("Failed to create the application model for " + localProject.getAppArtifact(), e);
         }
     }

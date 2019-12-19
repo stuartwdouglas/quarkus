@@ -40,6 +40,7 @@ public class LocalProject {
     }
 
     public static LocalProject loadWorkspace(Path path, boolean required) throws BootstrapException {
+        path = path.toAbsolutePath().normalize();
         final Path currentProjectDir = locateCurrentProjectDir(path, required);
         final LocalWorkspace ws = new LocalWorkspace();
         final LocalProject project = load(ws, null, loadRootModel(currentProjectDir), currentProjectDir);

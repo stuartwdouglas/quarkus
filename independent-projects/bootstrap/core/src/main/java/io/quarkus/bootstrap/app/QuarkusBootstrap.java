@@ -57,7 +57,7 @@ public class QuarkusBootstrap {
         this.applicationRoot = builder.applicationRoot;
         this.additionalApplicationArchives = new ArrayList<>(builder.additionalApplicationArchives);
         this.excludeFromClassPath = new ArrayList<>(builder.excludeFromClassPath);
-        this.projectRoot = builder.projectRoot;
+        this.projectRoot = builder.projectRoot != null ? builder.projectRoot.normalize() : null;
         this.buildSystemProperties = builder.buildSystemProperties;
         this.mode = builder.mode;
         this.offline = builder.offline;
