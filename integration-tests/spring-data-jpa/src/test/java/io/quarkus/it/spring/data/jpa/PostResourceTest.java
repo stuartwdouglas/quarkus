@@ -14,7 +14,7 @@ import io.quarkus.test.junit.QuarkusTest;
 public class PostResourceTest {
 
     @Test
-    void testAll() {
+    public void testAll() {
         List<Post> posts = when().get("/post/all").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Post.class);
@@ -28,13 +28,13 @@ public class PostResourceTest {
     }
 
     @Test
-    void testByBypassTrue() {
+    public void testByBypassTrue() {
         when().get("/post/bypass/true").then()
                 .statusCode(204);
     }
 
     @Test
-    void testByPostedAtBefore() {
+    public void testByPostedAtBefore() {
         when().get("/post/postedBeforeNow").then()
                 .statusCode(200)
                 .body("size()", is(3));

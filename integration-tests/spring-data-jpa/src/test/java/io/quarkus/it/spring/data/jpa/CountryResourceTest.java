@@ -26,7 +26,7 @@ public class CountryResourceTest {
             Arrays.asList("Greece", "France", "Czechia"));
 
     @Test
-    void testAll() {
+    public void testAll() {
         List<Country> countries = when().get("/country/all").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Country.class);
@@ -37,7 +37,7 @@ public class CountryResourceTest {
     }
 
     @Test
-    void testPage() {
+    public void testPage() {
         when().get("/country/page/1/0").then()
                 .statusCode(200)
                 .body(is("false - true / 1"));
@@ -56,7 +56,7 @@ public class CountryResourceTest {
     }
 
     @Test
-    void testPageSorted() {
+    public void testPageSorted() {
         String response = when().get("/country/page-sorted/2/0").then()
                 .statusCode(200)
                 .extract().response().asString();
@@ -65,7 +65,7 @@ public class CountryResourceTest {
     }
 
     @Test
-    void testGetOne() {
+    public void testGetOne() {
         when().get("/country/getOne/1").then()
                 .statusCode(200)
                 .body(containsString("Greece"));
@@ -75,7 +75,7 @@ public class CountryResourceTest {
     }
 
     @Test
-    void testNewAndEditIso() {
+    public void testNewAndEditIso() {
         when().get("/country/all").then()
                 .statusCode(200)
                 .body(not(containsString("Germany")));

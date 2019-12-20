@@ -7,10 +7,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -134,7 +132,7 @@ public class QuarkusTestExtension
                     }
                 }
             }, "Quarkus Test Cleanup Shutdown task"));
-            return new ExtensionState(testResourceManager, shutdownTask, false);
+            return new ExtensionState(testResourceManager, shutdownTask);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -191,27 +189,7 @@ public class QuarkusTestExtension
                 throw new TestInstantiationException("Boot failed", e);
             }
         }
-        ExtensionContext root = extensionContext.getRoot();
-        ExtensionContext.Store store = root.getStore(ExtensionContext.Namespace.GLOBAL);
-        ExtensionState state = store.get(ExtensionState.class.getName(), ExtensionState.class);
-        if (state == null) {
-            PropertyTestUtil.setLogFileProperty();
-            TestResourceManager testResourceManager = new TestResourceManager(extensionContext.getRequiredTestClass());
-            try {
-                testResourceManager.start();
-                state = doJavaStart(extensionContext, testResourceManager);
-                store.put(ExtensionState.class.getName(), state);
-
-            } catch (Throwable e) {
-                try {
-                    testResourceManager.stop();
-                } catch (Exception ex) {
-                    e.addSuppressed(ex);
-                }
-                failedBoot = true;
-                throw e;
-            }
-        }
+        ensureStarted(extensionContext);
 
         // non-static inner classes are not supported
         Class<?> testClass = factoryContext.getTestClass();
@@ -268,6 +246,30 @@ public class QuarkusTestExtension
         }
     }
 
+    private void ensureStarted(ExtensionContext extensionContext) {
+        ExtensionContext root = extensionContext.getRoot();
+        ExtensionContext.Store store = root.getStore(ExtensionContext.Namespace.GLOBAL);
+        ExtensionState state = store.get(ExtensionState.class.getName(), ExtensionState.class);
+        if (state == null) {
+            PropertyTestUtil.setLogFileProperty();
+            TestResourceManager testResourceManager = new TestResourceManager(extensionContext.getRequiredTestClass());
+            try {
+                testResourceManager.start();
+                state = doJavaStart(extensionContext, testResourceManager);
+                store.put(ExtensionState.class.getName(), state);
+
+            } catch (Throwable e) {
+                try {
+                    testResourceManager.stop();
+                } catch (Exception ex) {
+                    e.addSuppressed(ex);
+                }
+                failedBoot = true;
+                throw e;
+            }
+        }
+    }
+
     private static ClassLoader setCCL(ClassLoader cl) {
         final Thread thread = Thread.currentThread();
         final ClassLoader original = thread.getContextClassLoader();
@@ -288,11 +290,12 @@ public class QuarkusTestExtension
     @Override
     public void interceptBeforeAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
             ExtensionContext extensionContext) throws Throwable {
+        ensureStarted(extensionContext);
         if (isNativeTest(extensionContext)) {
             invocation.proceed();
             return;
         }
-        runExtensionMethod(invocationContext);
+        runExtensionMethod(invocationContext, extensionContext);
         invocation.proceed();
     }
 
@@ -303,7 +306,7 @@ public class QuarkusTestExtension
             invocation.proceed();
             return;
         }
-        runExtensionMethod(invocationContext);
+        runExtensionMethod(invocationContext, extensionContext);
         invocation.proceed();
     }
 
@@ -314,7 +317,7 @@ public class QuarkusTestExtension
             invocation.proceed();
             return;
         }
-        runExtensionMethod(invocationContext);
+        runExtensionMethod(invocationContext, extensionContext);
         invocation.proceed();
     }
 
@@ -325,30 +328,33 @@ public class QuarkusTestExtension
             invocation.proceed();
             return;
         }
-        runExtensionMethod(invocationContext);
+        runExtensionMethod(invocationContext, extensionContext);
         invocation.proceed();
     }
 
-    private void runExtensionMethod(ReflectiveInvocationContext<Method> invocationContext) {
+    private void runExtensionMethod(ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) {
         Method newMethod = null;
-        Class<?> c = actualTestClass;
-        while (c != Object.class) {
-            try {
-                newMethod = c.getDeclaredMethod(invocationContext.getExecutable().getName(),
-                        invocationContext.getExecutable().getParameterTypes());
-                break;
-            } catch (NoSuchMethodException e) {
-                //ignore
-            }
-            c = c.getSuperclass();
-        }
-        if (newMethod == null) {
-            throw new RuntimeException("Could not find method " + invocationContext.getExecutable() + " on test class");
-        }
+
         try {
+            Class<?> c = Class.forName(extensionContext.getRequiredTestClass().getName(), true,
+                    Thread.currentThread().getContextClassLoader());
+            ;
+            while (c != Object.class) {
+                try {
+                    newMethod = c.getDeclaredMethod(invocationContext.getExecutable().getName(),
+                            invocationContext.getExecutable().getParameterTypes());
+                    break;
+                } catch (NoSuchMethodException e) {
+                    //ignore
+                }
+                c = c.getSuperclass();
+            }
+            if (newMethod == null) {
+                throw new RuntimeException("Could not find method " + invocationContext.getExecutable() + " on test class");
+            }
             newMethod.setAccessible(true);
             newMethod.invoke(actualTestInstance, invocationContext.getArguments().toArray());
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -358,7 +364,7 @@ public class QuarkusTestExtension
         private final TestResourceManager testResourceManager;
         private final Closeable resource;
 
-        ExtensionState(TestResourceManager testResourceManager, Closeable resource, boolean nativeImage) {
+        ExtensionState(TestResourceManager testResourceManager, Closeable resource) {
             this.testResourceManager = testResourceManager;
             this.resource = resource;
         }
@@ -372,23 +378,6 @@ public class QuarkusTestExtension
                 if (QuarkusTestExtension.this.originalCl != null) {
                     setCCL(QuarkusTestExtension.this.originalCl);
                 }
-            }
-        }
-    }
-
-    static class DeleteRunnable implements Runnable {
-        final Path path;
-
-        DeleteRunnable(Path path) {
-            this.path = path;
-        }
-
-        @Override
-        public void run() {
-            try {
-                Files.deleteIfExists(path);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
