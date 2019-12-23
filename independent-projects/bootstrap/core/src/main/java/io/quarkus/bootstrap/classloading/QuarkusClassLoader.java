@@ -214,6 +214,22 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
         return parent.getResourceAsStream(nm);
     }
 
+    /**
+     * This method is needed to make packages work correctly on JDK9+, as it will be called
+     * to load the package-info class.
+     * @param moduleName
+     * @param name
+     * @return
+     */
+    //@Override
+    protected Class<?> findClass(String moduleName, String name) {
+        try {
+            return loadClass(name, false);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         ClassLoaderState state = getState();
