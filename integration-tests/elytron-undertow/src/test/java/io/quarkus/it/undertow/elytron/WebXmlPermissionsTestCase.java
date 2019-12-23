@@ -9,10 +9,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
 @QuarkusTest
-class WebXmlPermissionsTestCase {
+public class WebXmlPermissionsTestCase {
 
     @Test
-    void testPost() {
+    public void testPost() {
         // This is a regression test in that we had a problem where the Vert.x request was not paused
         // before the authentication filters ran and the post message was thrown away by Vert.x because
         // RESTEasy hadn't registered its request handlers yet.
@@ -28,7 +28,7 @@ class WebXmlPermissionsTestCase {
     }
 
     @Test
-    void testOpenApiNoPermissions() {
+    public void testOpenApiNoPermissions() {
         given()
                 .when()
                 .get("/foo/openapi")
@@ -37,7 +37,7 @@ class WebXmlPermissionsTestCase {
     }
 
     @Test
-    void testOpenApiWithWrongAuth() {
+    public void testOpenApiWithWrongAuth() {
         given()
                 .header("Authorization", "Basic am9objpqb2hu")
                 .when()
@@ -47,7 +47,7 @@ class WebXmlPermissionsTestCase {
     }
 
     @Test
-    void testOpenApiWithAuth() {
+    public void testOpenApiWithAuth() {
         given()
                 .auth()
                 .basic("mary", "mary")
@@ -58,7 +58,7 @@ class WebXmlPermissionsTestCase {
     }
 
     @Test
-    void testSecuredServletWithWrongAuth() {
+    public void testSecuredServletWithWrongAuth() {
         given()
                 .header("Authorization", "Basic am9objpqb2hu")
                 .when()
@@ -68,7 +68,7 @@ class WebXmlPermissionsTestCase {
     }
 
     @Test
-    void testSecuredServletWithNoAuth() {
+    public void testSecuredServletWithNoAuth() {
         given()
                 .when()
                 .get("/foo/secure/a")
@@ -77,7 +77,7 @@ class WebXmlPermissionsTestCase {
     }
 
     @Test
-    void testSecuredServletWithAuth() {
+    public void testSecuredServletWithAuth() {
         given()
                 .auth()
                 .basic("mary", "mary")
