@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-class GreetingResourceTest {
+public class GreetingResourceTest {
 
     @Test
-    void testEndpoint() {
+    public void testEndpoint() {
         given()
                 .when().get("/greeting")
                 .then()

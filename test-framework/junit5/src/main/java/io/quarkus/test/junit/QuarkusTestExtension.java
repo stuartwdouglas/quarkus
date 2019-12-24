@@ -7,6 +7,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
@@ -16,6 +17,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -49,7 +51,8 @@ import io.quarkus.test.common.http.TestHTTPResourceManager;
 
 //todo: share common core with QuarkusUnitTest
 public class QuarkusTestExtension
-        implements BeforeEachCallback, AfterEachCallback, TestInstanceFactory, BeforeAllCallback, InvocationInterceptor {
+        implements BeforeEachCallback, AfterEachCallback, TestInstanceFactory, BeforeAllCallback, InvocationInterceptor,
+        AfterAllCallback {
 
     private static boolean failedBoot;
 
@@ -189,7 +192,7 @@ public class QuarkusTestExtension
                 throw new TestInstantiationException("Boot failed", e);
             }
         }
-        ensureStarted(extensionContext);
+        ExtensionState state = ensureStarted(extensionContext);
 
         // non-static inner classes are not supported
         Class<?> testClass = factoryContext.getTestClass();
@@ -199,6 +202,9 @@ public class QuarkusTestExtension
         try {
             actualTestClass = Class.forName(testClass.getName(), true,
                     Thread.currentThread().getContextClassLoader());
+
+            invokeQuarkusMethod(QuarkusBeforeAll.class, actualTestClass);
+
             Class<?> cdi = Thread.currentThread().getContextClassLoader().loadClass("javax.enterprise.inject.spi.CDI");
             Object instance = cdi.getMethod("current").invoke(null);
             Method selectMethod = cdi.getMethod("select", Class.class, Annotation[].class);
@@ -207,6 +213,7 @@ public class QuarkusTestExtension
 
             Class<?> resM = Thread.currentThread().getContextClassLoader().loadClass(TestHTTPResourceManager.class.getName());
             resM.getDeclaredMethod("inject", Object.class).invoke(null, actualTestInstance);
+            state.testResourceManager.inject(actualTestInstance);
         } catch (Exception e) {
             throw new TestInstantiationException("Failed to create test instance", e);
         }
@@ -246,7 +253,7 @@ public class QuarkusTestExtension
         }
     }
 
-    private void ensureStarted(ExtensionContext extensionContext) {
+    private ExtensionState ensureStarted(ExtensionContext extensionContext) {
         ExtensionContext root = extensionContext.getRoot();
         ExtensionContext.Store store = root.getStore(ExtensionContext.Namespace.GLOBAL);
         ExtensionState state = store.get(ExtensionState.class.getName(), ExtensionState.class);
@@ -268,6 +275,7 @@ public class QuarkusTestExtension
                 throw e;
             }
         }
+        return state;
     }
 
     private static ClassLoader setCCL(ClassLoader cl) {
@@ -280,10 +288,36 @@ public class QuarkusTestExtension
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         if (isNativeTest(context)) {
+            invokeQuarkusMethod(QuarkusBeforeAll.class, context.getRequiredTestClass());
             return;
         }
+        ensureStarted(context);
         if (failedBoot) {
             throw new TestAbortedException("Not running test as boot failed");
+        }
+    }
+
+    private void invokeQuarkusMethod(Class<? extends Annotation> annotation, Class<?> testClass) {
+        Class c = testClass;
+        while (c != Object.class && c != null) {
+            for (Method m : c.getDeclaredMethods()) {
+                boolean invoke = false;
+                for (Annotation i : m.getAnnotations()) {
+                    if (i.annotationType().getName().equals(annotation.getName())) {
+                        invoke = true;
+                        break;
+                    }
+                }
+                if (invoke) {
+                    m.setAccessible(true);
+                    try {
+                        m.invoke(null);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            c = c.getSuperclass();
         }
     }
 
@@ -306,7 +340,9 @@ public class QuarkusTestExtension
             invocation.proceed();
             return;
         }
-        runExtensionMethod(invocationContext, extensionContext);
+        if (!Modifier.isPublic(invocationContext.getExecutable().getModifiers())) {
+            throw new RuntimeException("BeforeEach method must be public " + invocationContext.getExecutable());
+        }
         invocation.proceed();
     }
 
@@ -317,7 +353,9 @@ public class QuarkusTestExtension
             invocation.proceed();
             return;
         }
-        runExtensionMethod(invocationContext, extensionContext);
+        if (!Modifier.isPublic(invocationContext.getExecutable().getModifiers())) {
+            throw new RuntimeException("AfterEach method must be public " + invocationContext.getExecutable());
+        }
         invocation.proceed();
     }
 
@@ -357,6 +395,11 @@ public class QuarkusTestExtension
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) throws Exception {
+        invokeQuarkusMethod(QuarkusAfterAll.class, actualTestClass);
     }
 
     class ExtensionState implements ExtensionContext.Store.CloseableResource {

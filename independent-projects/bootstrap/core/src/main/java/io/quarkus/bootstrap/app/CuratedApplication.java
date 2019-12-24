@@ -40,7 +40,10 @@ public class CuratedApplication {
             new ArtifactKey("io.quarkus", "quarkus-development-mode-spi"),
             new ArtifactKey("io.sentry", "sentry"), //TODO: this is a temp hack, should not be merged
             new ArtifactKey("org.jboss.logmanager", "jboss-logmanager-embedded"),
-            new ArtifactKey("org.jboss.logging", "jboss-logging")));
+            new ArtifactKey("org.jboss.logging", "jboss-logging"),
+            new ArtifactKey("io.fabric8", "kubernetes-server-mock"),
+            new ArtifactKey("io.fabric8", "mockwebserver"),
+            new ArtifactKey("io.quarkus", "quarkus-test-kubernetes-client")));
 
     /**
      * The class path elements for the various artifacts. These can be used in multiple class loaders
@@ -138,6 +141,12 @@ public class CuratedApplication {
                 ClassPathElement element = getElement(i.getArtifact());
                 builder.addElement(element);
             }
+            //now all runtime deps, these will only be used if they are not in the parent
+            for (AppDependency userDep : appModel.getUserDependencies()) {
+                if(!deploymentArtifacts.contains(userDep.getArtifact())) {
+                    builder.addElement(getElement(userDep.getArtifact()));
+                }
+            }
             //now make sure we can't accidentally load other deps from this CL
             //only extensions and their dependencies.
 //            for (AppDependency userDep : appModel.getUserDependencies()) {
@@ -204,10 +213,6 @@ public class CuratedApplication {
             if (!i.isHotReloadable()) {
                 builder.addElement(ClassPathElement.fromPath(i.getArchivePath()));
             }
-        }
-        //now all runtime deps, these will only be used if they are not in the parent
-        for (AppDependency userDep : appModel.getUserDependencies()) {
-            builder.addElement(getElement(userDep.getArtifact()));
         }
         return builder.build();
     }
