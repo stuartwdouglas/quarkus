@@ -70,6 +70,7 @@ public class BootstrapAppModelFactory {
     private VersionUpdateNumber versionUpdateNumber;
     private VersionUpdate versionUpdate;
     private DependenciesOrigin dependenciesOrigin;
+    private AppArtifact appArtifact;
 
     private BootstrapAppModelFactory() {
     }
@@ -126,6 +127,11 @@ public class BootstrapAppModelFactory {
 
     public BootstrapAppModelFactory setDependenciesOrigin(DependenciesOrigin dependenciesOrigin) {
         this.dependenciesOrigin = dependenciesOrigin;
+        return this;
+    }
+
+    public BootstrapAppModelFactory setAppArtifact(AppArtifact appArtifact) {
+        this.appArtifact = appArtifact;
         return this;
     }
 
@@ -204,9 +210,11 @@ public class BootstrapAppModelFactory {
         boolean loadedFromState = false;
         AppModelResolver modelResolver = getAppModelResolver();
         final AppModel initialDepsList;
-        AppArtifact appArtifact;
+        AppArtifact appArtifact = this.appArtifact;
         try {
-            appArtifact = ModelUtils.resolveAppArtifact(appArtifactPath);
+            if (appArtifact == null) {
+                appArtifact = ModelUtils.resolveAppArtifact(appArtifactPath);
+            }
             Path appJar;
             try {
                 appJar = modelResolver.resolve(appArtifact);

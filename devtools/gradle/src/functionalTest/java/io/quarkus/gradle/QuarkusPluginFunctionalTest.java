@@ -3,6 +3,7 @@ package io.quarkus.gradle;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class QuarkusPluginFunctionalTest {
         BuildResult build = GradleRunner.create()
                 .forwardOutput()
                 .withPluginClasspath()
-                .withArguments(arguments("build"))
+                .withArguments(arguments("build","--stacktrace"))
                 .withProjectDir(projectRoot)
                 .build();
 
@@ -63,9 +64,9 @@ public class QuarkusPluginFunctionalTest {
         assertThat(build.task(":buildNative")).isNull();
     }
 
-    private List<String> arguments(String argument) {
+    private List<String> arguments(String... argument) {
         List<String> arguments = new ArrayList<>();
-        arguments.add(argument);
+        arguments.addAll(Arrays.asList(argument));
         String mavenRepoLocal = System.getProperty("maven.repo.local", System.getenv("MAVEN_LOCAL_REPO"));
         if (mavenRepoLocal != null) {
             arguments.add("-Dmaven.repo.local=" + mavenRepoLocal);

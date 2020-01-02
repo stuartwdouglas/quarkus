@@ -64,6 +64,7 @@ public class QuarkusBootstrap {
     private final VersionUpdateNumber versionUpdateNumber;
     private final VersionUpdate versionUpdate;
     private final DependenciesOrigin dependenciesOrigin;
+    private final AppArtifact appArtifact;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -82,6 +83,7 @@ public class QuarkusBootstrap {
         this.versionUpdate = builder.versionUpdate;
         this.versionUpdateNumber = builder.versionUpdateNumber;
         this.dependenciesOrigin = builder.dependenciesOrigin;
+        this.appArtifact = builder.appArtifact;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
@@ -102,6 +104,7 @@ public class QuarkusBootstrap {
                 .setVersionUpdateNumber(versionUpdateNumber)
                 .setDependenciesOrigin(dependenciesOrigin)
                 .setLocalProjectsDiscovery(localProjectDiscovery)
+                .setAppArtifact(appArtifact)
                 .setAppClasses(getProjectRoot() != null ? getProjectRoot()
                         : getApplicationRoot());
         if (mode == Mode.TEST || test) {
@@ -177,6 +180,7 @@ public class QuarkusBootstrap {
         VersionUpdateNumber versionUpdateNumber = VersionUpdateNumber.MICRO;
         VersionUpdate versionUpdate = VersionUpdate.NONE;
         DependenciesOrigin dependenciesOrigin;
+        AppArtifact appArtifact;
 
         public Builder(Path applicationRoot) {
             this.applicationRoot = applicationRoot;
@@ -254,6 +258,11 @@ public class QuarkusBootstrap {
 
         public Builder setDependenciesOrigin(DependenciesOrigin dependenciesOrigin) {
             this.dependenciesOrigin = dependenciesOrigin;
+            return this;
+        }
+
+        public Builder setAppArtifact(AppArtifact appArtifact) {
+            this.appArtifact = appArtifact;
             return this;
         }
 

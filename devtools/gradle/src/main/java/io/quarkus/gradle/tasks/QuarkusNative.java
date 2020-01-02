@@ -17,12 +17,13 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
 
+import io.quarkus.bootstrap.BootstrapException;
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.model.AppArtifact;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
 import io.quarkus.bootstrap.resolver.AppModelResolverException;
-import io.quarkus.creator.AppCreatorException;
-import io.quarkus.creator.CuratedApplicationCreator;
-import io.quarkus.creator.phase.augment.AugmentTask;
+import io.quarkus.runner.bootstrap.AugmentAction;
 
 public class QuarkusNative extends QuarkusTask {
 
@@ -344,29 +345,32 @@ public class QuarkusNative extends QuarkusTask {
         }
         final Properties realProperties = getBuildSystemProperties(appArtifact);
 
-        try (CuratedApplicationCreator appCreationContext = CuratedApplicationCreator.builder()
-                .setWorkDir(getProject().getBuildDir().toPath())
-                .setModelResolver(modelResolver)
-                .setBaseName(extension().finalName())
-                .setAppArtifact(appArtifact).build()) {
+        System.setProperty("quarkus.package.type", "native");
+        try {
+            CuratedApplication appCreationContext = QuarkusBootstrap.builder(appArtifact.getPath())
+                    .setAppModelResolver(modelResolver)
+                    .setBaseClassLoader(getClass().getClassLoader())
+                    .setTargetDirectory(getProject().getBuildDir().toPath())
+                    .setBaseName(extension().finalName())
+                    .setBuildSystemProperties(realProperties)
+                    //.setConfigDir(extension().outputConfigDirectory().toPath())
+                    //.setTargetDirectory(extension().outputDirectory().toPath())
+                    .build().bootstrap();
 
-            AugmentTask task = AugmentTask.builder().setBuildSystemProperties(realProperties)
-                    .setConfigCustomizer(createCustomConfig())
-                    .setAppClassesDir(extension().outputDirectory().toPath())
-                    .setConfigDir(extension().outputConfigDirectory().toPath()).build();
-            appCreationContext.runTask(task);
-        } catch (AppCreatorException e) {
-            throw new GradleException("Failed to generate a native image", e);
+            AugmentAction action = new AugmentAction(appCreationContext);
+            action.createProductionApplication();
+
+        } catch (BootstrapException e) {
+            throw new GradleException("Failed to build a runnable JAR", e);
+        } finally {
+            System.clearProperty("quarkus.package.type");
         }
-
     }
 
-    private Consumer<ConfigBuilder> createCustomConfig() {
+    private Consumer<ConfigBuilder> createCustomConfig() { //TODO: wire this up again
         return new Consumer<ConfigBuilder>() {
             @Override
             public void accept(ConfigBuilder configBuilder) {
-                InMemoryConfigSource type = new InMemoryConfigSource(Integer.MAX_VALUE, "Native Image Type")
-                        .add("quarkus.package.type", "native");
 
                 InMemoryConfigSource configs = new InMemoryConfigSource(0, "Native Image Maven Settings");
 
@@ -425,7 +429,7 @@ public class QuarkusNative extends QuarkusTask {
 
                 configs.add("quarkus.native.report-exception-stack-traces", reportExceptionStackTraces);
 
-                configBuilder.withSources(type, configs);
+                configBuilder.withSources(configs);
             }
         };
 

@@ -12,9 +12,7 @@ import io.quarkus.bootstrap.BootstrapException;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.model.AppArtifact;
-import io.quarkus.bootstrap.model.AppModel;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
-import io.quarkus.bootstrap.resolver.AppModelResolverException;
 import io.quarkus.runner.bootstrap.GenerateConfigTask;
 
 public class QuarkusGenerateConfig extends QuarkusTask {
@@ -41,13 +39,7 @@ public class QuarkusGenerateConfig extends QuarkusTask {
         getLogger().lifecycle("generating example config");
 
         final AppArtifact appArtifact = extension().getAppArtifact();
-        final AppModel appModel;
         final AppModelResolver modelResolver = extension().resolveAppModel();
-        try {
-            appModel = modelResolver.resolveModel(appArtifact);
-        } catch (AppModelResolverException e) {
-            throw new GradleException("Failed to resolve application model " + appArtifact + " dependencies", e);
-        }
         if (extension().resourcesDir().isEmpty()) {
             throw new GradleException("No resources directory, cannot create application.properties");
         }
@@ -59,10 +51,11 @@ public class QuarkusGenerateConfig extends QuarkusTask {
         }
         try {
             CuratedApplication bootstrap = QuarkusBootstrap.builder(getProject().getBuildDir().toPath())
-                    .setMode(QuarkusBootstrap.Mode.PROD).set
-                            .setBuildSystemProperties(getBuildSystemProperties(appArtifact))
-                            .build()
-                            .bootstrap();
+                    .setMode(QuarkusBootstrap.Mode.PROD)
+                    .setAppModelResolver(modelResolver)
+                    .setBuildSystemProperties(getBuildSystemProperties(appArtifact))
+                    .build()
+                    .bootstrap();
             GenerateConfigTask ct = new GenerateConfigTask(new File(target, name).toPath());
             ct.run(bootstrap);
             getLogger().lifecycle("Generated config file " + name);
