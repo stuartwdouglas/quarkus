@@ -8,13 +8,14 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
 
+import io.quarkus.bootstrap.BootstrapException;
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.model.AppArtifact;
 import io.quarkus.bootstrap.model.AppModel;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
 import io.quarkus.bootstrap.resolver.AppModelResolverException;
-import io.quarkus.creator.AppCreatorException;
-import io.quarkus.creator.CuratedApplicationCreator;
-import io.quarkus.creator.phase.generateconfig.GenerateConfigTask;
+import io.quarkus.runner.bootstrap.GenerateConfigTask;
 
 public class QuarkusGenerateConfig extends QuarkusTask {
 
@@ -56,14 +57,17 @@ public class QuarkusGenerateConfig extends QuarkusTask {
         if (name == null || name.isEmpty()) {
             name = "application.properties.example";
         }
-
-        try (CuratedApplicationCreator appCreationContext = CuratedApplicationCreator.builder()
-                .setWorkDir(getProject().getBuildDir().toPath())
-                .build()) {
-            appCreationContext.runTask(new GenerateConfigTask(new File(target, name).toPath()));
+        try {
+            CuratedApplication bootstrap = QuarkusBootstrap.builder(getProject().getBuildDir().toPath())
+                    .setMode(QuarkusBootstrap.Mode.PROD).set
+                            .setBuildSystemProperties(getBuildSystemProperties(appArtifact))
+                            .build()
+                            .bootstrap();
+            GenerateConfigTask ct = new GenerateConfigTask(new File(target, name).toPath());
+            ct.run(bootstrap);
             getLogger().lifecycle("Generated config file " + name);
-        } catch (AppCreatorException e) {
-            throw new GradleException("Failed to generate config file", e);
+        } catch (BootstrapException e) {
+            throw new RuntimeException(e);
         }
     }
 }

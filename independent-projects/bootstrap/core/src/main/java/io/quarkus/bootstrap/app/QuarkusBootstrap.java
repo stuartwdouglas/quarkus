@@ -8,7 +8,13 @@ import java.util.Properties;
 
 import io.quarkus.bootstrap.BootstrapAppModelFactory;
 import io.quarkus.bootstrap.BootstrapException;
+import io.quarkus.bootstrap.model.AppArtifact;
+import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.bootstrap.model.AppModel;
+import io.quarkus.bootstrap.resolver.AppModelResolver;
+import io.quarkus.bootstrap.resolver.update.DependenciesOrigin;
+import io.quarkus.bootstrap.resolver.update.VersionUpdate;
+import io.quarkus.bootstrap.resolver.update.VersionUpdateNumber;
 
 /**
  * The entry point for starting/building a Quarkus application. This class sets up the base class loading
@@ -51,7 +57,13 @@ public class QuarkusBootstrap {
     private final boolean offline;
     private final boolean test;
     private final boolean localProjectDiscovery;
+
     private final ClassLoader baseClassLoader;
+    private final AppModelResolver appModelResolver;
+
+    private final VersionUpdateNumber versionUpdateNumber;
+    private final VersionUpdate versionUpdate;
+    private final DependenciesOrigin dependenciesOrigin;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -66,13 +78,29 @@ public class QuarkusBootstrap {
         this.baseName = builder.baseName;
         this.baseClassLoader = builder.baseClassLoader;
         this.targetDirectory = builder.targetDirectory;
+        this.appModelResolver = builder.appModelResolver;
+        this.versionUpdate = builder.versionUpdate;
+        this.versionUpdateNumber = builder.versionUpdateNumber;
+        this.dependenciesOrigin = builder.dependenciesOrigin;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
-        //this is super simple, all we want to do is resolve all our dependencies
+        //all we want to do is resolve all our dependencies
         //once we have this it is up to augment to set up the class loader to actually use them
+
+        //first we check for updates
+        if(mode != Mode.PROD) {
+            if(versionUpdate != VersionUpdate.NONE) {
+                throw new BootstrapException("updates are only supported for PROD mode for existing files, not for dev or test");
+            }
+        }
+
         BootstrapAppModelFactory appModelFactory = BootstrapAppModelFactory.newInstance()
                 .setOffline(offline)
+                .setBootstrapAppModelResolver(appModelResolver)
+                .setVersionUpdate(versionUpdate)
+                .setVersionUpdateNumber(versionUpdateNumber)
+                .setDependenciesOrigin(dependenciesOrigin)
                 .setLocalProjectsDiscovery(localProjectDiscovery)
                 .setAppClasses(getProjectRoot() != null ? getProjectRoot()
                         : getApplicationRoot());
@@ -82,7 +110,7 @@ public class QuarkusBootstrap {
         if (mode == Mode.DEV) {
             appModelFactory.setDevMode(true);
         }
-        AppModel model = appModelFactory
+        CurationResult model = appModelFactory
                 .resolveAppModel();
         return new CuratedApplication(this, model, appModelFactory.getAppModelResolver());
 
@@ -137,7 +165,6 @@ public class QuarkusBootstrap {
         String baseName;
         Path projectRoot;
         ClassLoader baseClassLoader = ClassLoader.getSystemClassLoader();
-
         final List<AdditionalDependency> additionalApplicationArchives = new ArrayList<>();
         final List<Path> excludeFromClassPath = new ArrayList<>();
         Properties buildSystemProperties;
@@ -146,6 +173,10 @@ public class QuarkusBootstrap {
         boolean test;
         boolean localProjectDiscovery;
         Path targetDirectory;
+        AppModelResolver appModelResolver;
+        VersionUpdateNumber versionUpdateNumber = VersionUpdateNumber.MICRO;
+        VersionUpdate versionUpdate = VersionUpdate.NONE;
+        DependenciesOrigin dependenciesOrigin;
 
         public Builder(Path applicationRoot) {
             this.applicationRoot = applicationRoot;
@@ -206,10 +237,29 @@ public class QuarkusBootstrap {
             return this;
         }
 
+        public Builder setAppModelResolver(AppModelResolver appModelResolver) {
+            this.appModelResolver = appModelResolver;
+            return this;
+        }
+
+        public Builder setVersionUpdateNumber(VersionUpdateNumber versionUpdateNumber) {
+            this.versionUpdateNumber = versionUpdateNumber;
+            return this;
+        }
+
+        public Builder setVersionUpdate(VersionUpdate versionUpdate) {
+            this.versionUpdate = versionUpdate;
+            return this;
+        }
+
+        public Builder setDependenciesOrigin(DependenciesOrigin dependenciesOrigin) {
+            this.dependenciesOrigin = dependenciesOrigin;
+            return this;
+        }
+
         public QuarkusBootstrap build() {
             return new QuarkusBootstrap(this);
         }
-
     }
 
     public enum Mode {

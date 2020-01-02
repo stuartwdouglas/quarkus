@@ -143,6 +143,7 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         return resolveManagedModel(appArtifact, directDeps, null);
     }
 
+    @Override
     public AppModel resolveManagedModel(AppArtifact appArtifact, List<AppDependency> directDeps, AppArtifact managingProject)
             throws AppModelResolverException {
         return doResolveModel(appArtifact, toAetherDeps(directDeps), managingProject);

@@ -342,17 +342,7 @@ public class QuarkusNative extends QuarkusTask {
         } catch (AppModelResolverException e) {
             throw new GradleException("Failed to resolve application model " + appArtifact + " dependencies", e);
         }
-        final Map<String, ?> properties = getProject().getProperties();
-        final Properties realProperties = new Properties();
-        for (Map.Entry<String, ?> entry : properties.entrySet()) {
-            final String key = entry.getKey();
-            final Object value = entry.getValue();
-            if (key != null && value instanceof String && key.startsWith("quarkus.")) {
-                realProperties.setProperty(key, (String) value);
-            }
-        }
-        realProperties.putIfAbsent("quarkus.application.name", appArtifact.getArtifactId());
-        realProperties.putIfAbsent("quarkus.application.version", appArtifact.getVersion());
+        final Properties realProperties = getBuildSystemProperties(appArtifact);
 
         try (CuratedApplicationCreator appCreationContext = CuratedApplicationCreator.builder()
                 .setWorkDir(getProject().getBuildDir().toPath())

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -64,12 +65,14 @@ public class CuratedApplication {
     private volatile QuarkusClassLoader baseRuntimeClassLoader;
 
     private final QuarkusBootstrap quarkusBootstrap;
+    private final CurationResult curationResult;
     final AppModel appModel;
     final AppModelResolver appModelResolver;
 
-    CuratedApplication(QuarkusBootstrap quarkusBootstrap, AppModel appModel, AppModelResolver appModelResolver) {
+    CuratedApplication(QuarkusBootstrap quarkusBootstrap, CurationResult curationResult, AppModelResolver appModelResolver) {
         this.quarkusBootstrap = quarkusBootstrap;
-        this.appModel = appModel;
+        this.curationResult = curationResult;
+        this.appModel = curationResult.getAppModel();
         this.appModelResolver = appModelResolver;
     }
 
@@ -85,12 +88,24 @@ public class CuratedApplication {
         return quarkusBootstrap;
     }
 
+    public boolean hasUpdatedDeps() {
+        return curationResult.hasUpdatedDeps();
+    }
+
+    public List<AppDependency> getUpdatedDeps() {
+        return curationResult.getUpdatedDependencies();
+    }
+
     public void runInAugmentClassLoader(String consumerName, Map<String, Object> params) {
         runInCl(consumerName, params, getAugmentClassLoader());
     }
 
     public void runInBaseRuntimeClassLoader(String consumerName, Map<String, Object> params) {
         runInCl(consumerName, params, getBaseRuntimeClassLoader());
+    }
+
+    public CurationResult getCurationResult() {
+        return curationResult;
     }
 
     @SuppressWarnings("unchecked")
@@ -143,18 +158,18 @@ public class CuratedApplication {
             }
             //now all runtime deps, these will only be used if they are not in the parent
             for (AppDependency userDep : appModel.getUserDependencies()) {
-                if(!deploymentArtifacts.contains(userDep.getArtifact())) {
+                if (!deploymentArtifacts.contains(userDep.getArtifact())) {
                     builder.addElement(getElement(userDep.getArtifact()));
                 }
             }
             //now make sure we can't accidentally load other deps from this CL
             //only extensions and their dependencies.
-//            for (AppDependency userDep : appModel.getUserDependencies()) {
-//                if (!deploymentArtifacts.contains(userDep.getArtifact())) {
-//                    ClassPathElement element = getElement(userDep.getArtifact());
-//                    builder.addBannedElement(element);
-//                }
-//            }
+            //            for (AppDependency userDep : appModel.getUserDependencies()) {
+            //                if (!deploymentArtifacts.contains(userDep.getArtifact())) {
+            //                    ClassPathElement element = getElement(userDep.getArtifact());
+            //                    builder.addBannedElement(element);
+            //                }
+            //            }
             augmentClassLoader = builder.build();
 
         }

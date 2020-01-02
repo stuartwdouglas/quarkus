@@ -33,7 +33,7 @@ public class AppModel {
     private List<AppDependency> allDeps;
 
     public AppModel(AppArtifact appArtifact, List<AppDependency> runtimeDeps, List<AppDependency> deploymentDeps,
-                    List<AppDependency> fullDeploymentDeps) {
+            List<AppDependency> fullDeploymentDeps) {
         this.appArtifact = appArtifact;
         this.runtimeDeps = runtimeDeps;
         this.deploymentDeps = deploymentDeps;
@@ -73,5 +73,4 @@ public class AppModel {
     public List<AppDependency> getFullDeploymentDeps() {
         return fullDeploymentDeps;
     }
-
 }

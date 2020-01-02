@@ -2,7 +2,6 @@ package io.quarkus.gradle.tasks;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.gradle.api.GradleException;
@@ -62,17 +61,7 @@ public class QuarkusBuild extends QuarkusTask {
         } catch (AppModelResolverException e) {
             throw new GradleException("Failed to resolve application model " + appArtifact + " dependencies", e);
         }
-        final Map<String, ?> properties = getProject().getProperties();
-        final Properties realProperties = new Properties();
-        for (Map.Entry<String, ?> entry : properties.entrySet()) {
-            final String key = entry.getKey();
-            final Object value = entry.getValue();
-            if (key != null && value instanceof String && key.startsWith("quarkus.")) {
-                realProperties.setProperty(key, (String) value);
-            }
-        }
-        realProperties.putIfAbsent("quarkus.application.name", appArtifact.getArtifactId());
-        realProperties.putIfAbsent("quarkus.application.version", appArtifact.getVersion());
+        final Properties realProperties = getBuildSystemProperties(appArtifact);
 
         boolean clear = false;
         if (uberJar && System.getProperty("quarkus.package.uber-jar") == null) {
@@ -98,4 +87,5 @@ public class QuarkusBuild extends QuarkusTask {
             }
         }
     }
+
 }
