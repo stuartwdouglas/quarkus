@@ -214,6 +214,7 @@ public class DevModeMain implements Closeable {
     public synchronized void restartApp(Set<String> changedResources) {
         stop();
         Timing.restart();
+        deploymentProblem = null;
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
 

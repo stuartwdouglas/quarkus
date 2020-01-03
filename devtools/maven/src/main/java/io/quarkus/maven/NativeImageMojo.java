@@ -54,7 +54,7 @@ public class NativeImageMojo extends AbstractMojo {
     /**
      * The directory for compiled classes.
      */
-    @Parameter(readonly = true, required = true, defaultValue = "${project.build.directory}")
+    @Parameter(readonly = true, required = true, defaultValue = "${project.build.outputDirectory}")
     private File outputDirectory;
 
     @Parameter
@@ -223,7 +223,7 @@ public class NativeImageMojo extends AbstractMojo {
             }
 
         } catch (Exception e) {
-            throw new MojoExecutionException("Failed to generate config file", e);
+            throw new MojoExecutionException("Failed to generate native image", e);
         }
 
     }
