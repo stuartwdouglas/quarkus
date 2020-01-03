@@ -154,7 +154,10 @@ public class DevModeMain implements Closeable {
                     log.error("Failed to start Quarkus", t);
                     log.info("Attempting to start hot replacement endpoint to recover from previous Quarkus startup failure");
                     if (runtimeUpdatesProcessor != null) {
+                        Thread.currentThread().setContextClassLoader(curatedApplication.getAugmentClassLoader());
+                        BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
                         runtimeUpdatesProcessor.startupFailed();
+                        BrokenMpDelegationClassLoader.teardownBrokenClWorkaround();
                     }
                 }
 

@@ -38,7 +38,6 @@ public class AppModel {
         this.runtimeDeps = runtimeDeps;
         this.deploymentDeps = deploymentDeps;
         this.fullDeploymentDeps = fullDeploymentDeps;
-        System.err.println(this);
     }
 
     @Deprecated

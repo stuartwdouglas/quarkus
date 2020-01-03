@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -39,6 +40,7 @@ import io.quarkus.deployment.builditem.TestAnnotationBuildItem;
 import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
 import io.quarkus.deployment.proxy.ProxyConfiguration;
 import io.quarkus.deployment.proxy.ProxyFactory;
+import io.quarkus.gizmo.ClassOutput;
 import io.quarkus.runner.bootstrap.AugmentAction;
 import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
 import io.quarkus.test.common.DefineClassVisibleClassLoader;
@@ -60,6 +62,8 @@ public class QuarkusTestExtension
     private static Object actualTestInstance;
     private static ClassLoader originalCl;
     private static RunningQuarkusApplication runningQuarkusApplication;
+    private static Path testClassLocation;
+    private static boolean allowPackagePrivateMethods;
 
     private ExtensionState doJavaStart(ExtensionContext context, TestResourceManager testResourceManager) {
 
@@ -74,7 +78,8 @@ public class QuarkusTestExtension
             final QuarkusBootstrap.Builder runnerBuilder = QuarkusBootstrap.builder(appClassLocation)
                     .setMode(QuarkusBootstrap.Mode.TEST);
 
-            final Path testClassLocation = getTestClassesLocation(context.getRequiredTestClass());
+            testClassLocation = getTestClassesLocation(context.getRequiredTestClass());
+            allowPackagePrivateMethods = Files.isDirectory(testClassLocation);
 
             if (!appClassLocation.equals(testClassLocation)) {
                 runnerBuilder.addAdditionalApplicationArchive(new AdditionalDependency(testClassLocation, true, true));
@@ -217,11 +222,39 @@ public class QuarkusTestExtension
         } catch (Exception e) {
             throw new TestInstantiationException("Failed to create test instance", e);
         }
-        ProxyFactory<?> factory = new ProxyFactory<>(new ProxyConfiguration<>()
+        ProxyConfiguration<Object> proxyConfig = new ProxyConfiguration<>()
                 .setAnchorClass(testClass)
                 .setProxyNameSuffix("$$QuarkusUnitTestProxy")
-                .setClassLoader(new DefineClassVisibleClassLoader(testClass.getClassLoader()))
-                .setSuperClass((Class<Object>) testClass));
+                .setSuperClass((Class<Object>) testClass);
+        if (allowPackagePrivateMethods) {
+            //if possible we create a physical proxy class on the disk
+            //this enables us to proxy non public classes and package private methods
+            proxyConfig.setClassOutput(new ClassOutput() {
+                @Override
+                public void write(String s, byte[] bytes) {
+                    Path path = testClassLocation.resolve(s.replace(".", "/") + ".class");
+
+                    extensionContext.getStore(ExtensionContext.Namespace.GLOBAL).put("class-proxy." + s,
+                            new ExtensionContext.Store.CloseableResource() {
+
+                                @Override
+                                public void close() throws Throwable {
+                                    Files.deleteIfExists(path);
+                                }
+                            });
+                    try {
+                        Files.write(path, bytes);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }).setAllowPackagePrivate(true)
+                    .setClassLoader(testClass.getClassLoader());
+        } else {
+            proxyConfig.setClassLoader(new DefineClassVisibleClassLoader(testClass.getClassLoader()));
+
+        }
+        ProxyFactory<?> factory = new ProxyFactory<>(proxyConfig);
 
         //verify that we can proxy the relevant methods
         Class c = testClass;
@@ -231,8 +264,10 @@ public class QuarkusTestExtension
                     if (Modifier.isFinal(method.getModifiers())) {
                         throw new RuntimeException("Test method " + method + " cannot be final");
                     }
-                    if (!Modifier.isPublic(method.getModifiers()) && !Modifier.isProtected(method.getModifiers())) {
-                        throw new RuntimeException("Test method " + method + " must be public or protected");
+                    if (!allowPackagePrivateMethods) {
+                        if (!Modifier.isPublic(method.getModifiers()) && !Modifier.isProtected(method.getModifiers())) {
+                            throw new RuntimeException("Test method " + method + " must be public or protected");
+                        }
                     }
                 }
 
@@ -244,7 +279,9 @@ public class QuarkusTestExtension
             return factory.newInstance(new InvocationHandler() {
                 @Override
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    Method realMethod = actualTestInstance.getClass().getMethod(method.getName(), method.getParameterTypes());
+                    Method realMethod = actualTestInstance.getClass().getDeclaredMethod(method.getName(),
+                            method.getParameterTypes());
+                    realMethod.setAccessible(true);
                     return realMethod.invoke(actualTestInstance, args);
                 }
             });
