@@ -186,7 +186,7 @@ public class DeploymentInjectingDependencyVisitor {
         return toArtifact(str, 0);
     }
 
-    private static Artifact toArtifact(String str, int offset) {
+    public static Artifact toArtifact(String str, int offset) {
         String groupId = null;
         String artifactId = null;
         String classifier = "";

@@ -165,11 +165,19 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         if (!devmode) {
             excludedScopes.add("provided");
         }
-        DependencyNode resolvedDeps = mvn.resolveManagedDependencies(toAetherArtifact(appArtifact),
-                directMvnDeps, managedDeps, managedRepos, excludedScopes.toArray(new String[0])).getRoot();
 
         final Set<AppArtifactKey> appDeps = new HashSet<>();
         final List<AppDependency> userDeps = new ArrayList<>();
+        DependencyNode resolvedDeps;
+        if (appArtifact != null) {
+            resolvedDeps = mvn.resolveManagedDependencies(toAetherArtifact(appArtifact),
+                    directMvnDeps, managedDeps, managedRepos, excludedScopes.toArray(new String[0])).getRoot();
+        } else {
+            //if there is no main artifact we assume we already have all the deps we need
+            //we just turn them into a DependencyNode
+            resolvedDeps = mvn.toDependencyTree(directMvnDeps, managedRepos).getRoot();
+        }
+
         final TreeDependencyVisitor visitor = new TreeDependencyVisitor(new DependencyVisitor() {
             @Override
             public boolean visitEnter(DependencyNode node) {
@@ -190,10 +198,15 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         for (DependencyNode child : resolvedDeps.getChildren()) {
             child.accept(visitor);
         }
-
+        List<RemoteRepository> repos;
+        if (appArtifact != null) {
+            repos = mvn.aggregateRepositories(managedRepos,
+                    mvn.newResolutionRepositories(mvn.resolveDescriptor(toAetherArtifact(appArtifact)).getRepositories()));
+        } else {
+            repos = managedRepos;
+        }
         final DeploymentInjectingDependencyVisitor deploymentInjector = new DeploymentInjectingDependencyVisitor(mvn,
-                managedDeps, mvn.aggregateRepositories(managedRepos,
-                        mvn.newResolutionRepositories(mvn.resolveDescriptor(toAetherArtifact(appArtifact)).getRepositories())));
+                managedDeps, repos);
         try {
             deploymentInjector.injectDeploymentDependencies(resolvedDeps);
         } catch (BootstrapDependencyProcessingException e) {
@@ -376,8 +389,12 @@ public class BootstrapAppModelResolver implements AppModelResolver {
     }
 
     private static Artifact toAetherArtifact(AppArtifact artifact) {
-        return new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(),
+        Artifact defaultArtifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(),
                 artifact.getType(), artifact.getVersion());
+        if(artifact.getPath() != null) {
+            defaultArtifact = defaultArtifact.setFile(artifact.getPath().toFile());
+        }
+        return defaultArtifact;
     }
 
     private static AppArtifact toAppArtifact(Artifact artifact) {

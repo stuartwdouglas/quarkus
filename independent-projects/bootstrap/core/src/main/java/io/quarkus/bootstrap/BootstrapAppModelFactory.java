@@ -1,16 +1,26 @@
 package io.quarkus.bootstrap;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
 
 import org.apache.maven.model.Dependency;
@@ -164,11 +174,13 @@ public class BootstrapAppModelFactory {
             //        final LocalProject localProject = localProjectsDiscovery || enableClasspathCache
             //                ? LocalProject.loadWorkspace(appClasses)
             //                : LocalProject.load(appClasses);
-            final LocalProject localProject = LocalProject.loadWorkspace(appClasses);
+            final LocalProject localProject = LocalProject.loadWorkspace(appClasses, false);
 
             //TODO: we need some way to cache this for performance reasons
-            final MavenArtifactResolver.Builder mvn = MavenArtifactResolver.builder()
-                    .setWorkspace(localProject.getWorkspace());
+            final MavenArtifactResolver.Builder mvn = MavenArtifactResolver.builder();
+            if (localProject != null) {
+                mvn.setWorkspace(localProject.getWorkspace());
+            }
             if (offline != null) {
                 mvn.setOffline(offline);
             }
@@ -191,13 +203,71 @@ public class BootstrapAppModelFactory {
         //        final LocalProject localProject = localProjectsDiscovery || enableClasspathCache
         //                ? LocalProject.loadWorkspace(appClasses)
         //                : LocalProject.load(appClasses);
-        final LocalProject localProject = LocalProject.loadWorkspace(appClasses);
+        final LocalProject localProject = LocalProject.loadWorkspace(appClasses, false);
+        if (localProject == null) {
+            log.warn("Unable to locate maven project, falling back to classpath discovery");
+            return doClasspathDiscovery();
+        }
         try {
             //TODO: we need some way to cache this for performance reasons
             return new CurationResult(getAppModelResolver()
                     .resolveModel(localProject.getAppArtifact()));
         } catch (Exception e) {
             throw new BootstrapException("Failed to create the application model for " + localProject.getAppArtifact(), e);
+        }
+    }
+
+    /**
+     * If no maven project is around do discovery based on the class path.
+     *
+     * This is used to run gradle tests, and allows them to run from both the IDE
+     * and the gradle test task
+     *
+     */
+    private CurationResult doClasspathDiscovery() {
+        try {
+            AppModelResolver resolver = getAppModelResolver();
+
+            Set<URL> urls = new HashSet<>();
+            //this is pretty yuck, but under JDK11 the URLClassLoader trick does not work
+            Enumeration<URL> manifests = Thread.currentThread().getContextClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (manifests.hasMoreElements()) {
+                URL url = manifests.nextElement();
+                if (url.getProtocol().equals("jar")) {
+                    String path = url.getPath();
+                    if (path.startsWith("file:")) {
+                        path = path.substring(5, path.lastIndexOf('!'));
+                        urls.add(new File(URLDecoder.decode(path, StandardCharsets.UTF_8.name())).toURI().toURL());
+                    }
+                }
+            }
+            List<AppDependency> artifacts = new ArrayList<>();
+            for (URL jarUrl : urls) {
+                try (JarInputStream file = new JarInputStream(jarUrl.openConnection().getInputStream())) {
+                    JarEntry entry = file.getNextJarEntry();
+                    while (entry != null) {
+                        if (entry.getName().endsWith("/pom.properties") && entry.getName().startsWith("META-INF/maven")) {
+                            Properties p = new Properties();
+                            p.load(file);
+                            AppArtifact artifact = new AppArtifact(p.getProperty("groupId"),
+                                    p.getProperty("artifactId"),
+                                    p.getProperty("classifier"),
+                                    "jar",
+                                    p.getProperty("version"));
+                            artifact.setPath(Paths.get(jarUrl.toURI()));
+                            artifacts.add(
+                                    new AppDependency(artifact, "compile"));
+                        }
+                        entry = file.getNextJarEntry();
+                    }
+                }
+            }
+
+            //we now have our deployment time artifacts, lets resolve all their deps
+            AppModel model = resolver.resolveManagedModel(appArtifact, artifacts, null);
+            return new CurationResult(model);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -341,7 +411,8 @@ public class BootstrapAppModelFactory {
 
         if (availableUpdates != null) {
             try {
-                return new CurationResult(modelResolver.resolveModel(appArtifact, availableUpdates), availableUpdates, loadedFromState, appArtifact, stateArtifact);
+                return new CurationResult(modelResolver.resolveModel(appArtifact, availableUpdates), availableUpdates,
+                        loadedFromState, appArtifact, stateArtifact);
             } catch (AppModelResolverException e) {
                 throw new RuntimeException(e);
             }
