@@ -1,14 +1,18 @@
 package io.quarkus.runtime.configuration;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -61,12 +65,20 @@ public class ConfigInstantiator {
                 return;
             }
             for (Field field : cls.getDeclaredFields()) {
+                if (Modifier.isFinal(field.getModifiers())) {
+                    continue;
+                }
+                field.setAccessible(true);
                 ConfigItem configItem = field.getDeclaredAnnotation(ConfigItem.class);
                 final Class<?> fieldClass = field.getType();
                 if (configItem == null || fieldClass.isAnnotationPresent(ConfigGroup.class)) {
-                    Object newInstance = fieldClass.getConstructor().newInstance();
+                    Constructor<?> constructor = fieldClass.getConstructor();
+                    constructor.setAccessible(true);
+                    Object newInstance = constructor.newInstance();
                     field.set(o, newInstance);
                     handleObject(prefix + "." + dashify(field.getName()), newInstance, config);
+                } else if (fieldClass == Map.class) { //TODO: FIXME, this cannot handle Map yet
+                    field.set(o, new HashMap<>());
                 } else {
                     String name = configItem.name();
                     if (name.equals(ConfigItem.HYPHENATED_ELEMENT_NAME)) {
@@ -92,7 +104,9 @@ public class ConfigInstantiator {
         // hopefully this is enough
         final SmallRyeConfig config = (SmallRyeConfig) ConfigProvider.getConfig();
         Class<?> rawType = rawTypeOf(type);
-        if (rawType == Optional.class) {
+        if (Enum.class.isAssignableFrom(rawType)) {
+            return new HyphenateEnumConverter(rawType);
+        } else if (rawType == Optional.class) {
             return Converters.newOptionalConverter(getConverterFor(typeOfParameter(type, 0)));
         } else if (rawType == List.class) {
             return Converters.newCollectionConverter(getConverterFor(typeOfParameter(type, 0)), ArrayList::new);

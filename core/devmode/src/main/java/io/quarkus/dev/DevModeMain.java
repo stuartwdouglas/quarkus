@@ -28,6 +28,8 @@ import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
 import io.quarkus.runner.bootstrap.StartupAction;
 import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
+import io.quarkus.runtime.logging.InitialConfigurator;
+import io.quarkus.runtime.logging.LoggingSetupRecorder;
 import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 
 /**
@@ -154,10 +156,20 @@ public class DevModeMain implements Closeable {
                     log.error("Failed to start Quarkus", t);
                     log.info("Attempting to start hot replacement endpoint to recover from previous Quarkus startup failure");
                     if (runtimeUpdatesProcessor != null) {
-                        Thread.currentThread().setContextClassLoader(curatedApplication.getAugmentClassLoader());
-                        BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
-                        runtimeUpdatesProcessor.startupFailed();
-                        BrokenMpDelegationClassLoader.teardownBrokenClWorkaround();
+                        Thread.currentThread().setContextClassLoader(curatedApplication.getBaseRuntimeClassLoader());
+                        try {
+                            BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
+                            if (!InitialConfigurator.DELAYED_HANDLER.isActivated()) {
+                                Class<?> cl = Thread.currentThread().getContextClassLoader()
+                                        .loadClass(LoggingSetupRecorder.class.getName());
+                                cl.getMethod("handleFailedStart").invoke(null);
+                            }
+                            runtimeUpdatesProcessor.startupFailed();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        } finally {
+                            BrokenMpDelegationClassLoader.teardownBrokenClWorkaround();
+                        }
                     }
                 }
 

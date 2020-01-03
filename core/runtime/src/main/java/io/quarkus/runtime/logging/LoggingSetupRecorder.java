@@ -6,6 +6,7 @@ import static org.wildfly.common.os.Process.getProcessName;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,6 +34,7 @@ import org.jboss.logmanager.handlers.SyslogHandler;
 
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.runtime.configuration.ConfigInstantiator;
 
 /**
  *
@@ -63,6 +65,14 @@ public class LoggingSetupRecorder {
             && "xterm".equals(System.getenv("TERM"));
 
     public LoggingSetupRecorder() {
+    }
+
+    @SuppressWarnings("unsed") //called via reflection, as it is in an isolated CL
+    public static void handleFailedStart() {
+        LogConfig config = new LogConfig();
+        ConfigInstantiator.handleObject(config);
+        new LoggingSetupRecorder().initializeLogging(config, Collections.emptyList(),
+                Collections.emptyList());
     }
 
     public void initializeLogging(LogConfig config, final List<RuntimeValue<Optional<Handler>>> additionalHandlers,
