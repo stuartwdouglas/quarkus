@@ -11,10 +11,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.test.junit.QuarkusAfterAll;
+import io.quarkus.test.junit.QuarkusBeforeAll;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import io.vertx.core.Vertx;
@@ -33,12 +33,12 @@ class VertxGraphqlTest {
         return ConfigProvider.getConfig().getOptionalValue("quarkus.http.test-port", Integer.class).orElse(8081);
     }
 
-    @BeforeAll
+    @QuarkusBeforeAll
     public static void initializeVertx() {
         vertx = Vertx.vertx();
     }
 
-    @AfterAll
+    @QuarkusAfterAll
     public static void closeVertx() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         vertx.close((h) -> latch.countDown());
