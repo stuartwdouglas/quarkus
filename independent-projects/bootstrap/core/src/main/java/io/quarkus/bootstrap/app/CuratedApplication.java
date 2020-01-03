@@ -194,14 +194,20 @@ public class CuratedApplication {
             QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Quarkus Base Runtime ClassLoader",
                     quarkusBootstrap.getBaseClassLoader(), false);
             //additional user class path elements first
+            Set<Path> hotReloadPaths = new HashSet<>();
             for (AdditionalDependency i : quarkusBootstrap.getAdditionalApplicationArchives()) {
                 if (!i.isHotReloadable()) {
                     builder.addElement(ClassPathElement.fromPath(i.getArchivePath()));
+                } else {
+                    hotReloadPaths.add(i.getArchivePath());
                 }
             }
             builder.setResettableElement(new MemoryClassPathElement(Collections.emptyMap()));
 
             for (AppDependency dependency : appModel.getUserDependencies()) {
+                if(hotReloadPaths.contains(dependency.getArtifact().getPath())) {
+                    continue;
+                }
 
                 ClassPathElement element = getElement(dependency.getArtifact());
                 if (ALWAYS_PARENT_FIRST.contains(getKey(dependency))) {

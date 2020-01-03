@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.logging.Logger;
@@ -22,6 +25,10 @@ import org.jboss.logging.Logger;
 import io.quarkus.bootstrap.app.AdditionalDependency;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.builder.BuildChainBuilder;
+import io.quarkus.builder.BuildContext;
+import io.quarkus.builder.BuildStep;
+import io.quarkus.deployment.builditem.ApplicationClassPredicateBuildItem;
 import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.runner.bootstrap.AugmentAction;
 import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
@@ -107,7 +114,32 @@ public class DevModeMain implements Closeable {
             throw new RuntimeException(t);
             //System.exit(1);
         }
-        augmentAction = new AugmentAction(curatedApplication, Collections.emptyList());
+        augmentAction = new AugmentAction(curatedApplication, Collections.singletonList(new Consumer<BuildChainBuilder>() {
+            @Override
+            public void accept(BuildChainBuilder buildChainBuilder) {
+                buildChainBuilder.addBuildStep(new BuildStep() {
+                    @Override
+                    public void execute(BuildContext context) {
+                        //we need to make sure all hot reloadable classes are application classes
+                        context.produce(new ApplicationClassPredicateBuildItem(new Predicate<String>() {
+                            @Override
+                            public boolean test(String s) {
+                                for (AdditionalDependency i : curatedApplication.getQuarkusBootstrap()
+                                        .getAdditionalApplicationArchives()) {
+                                    if (i.isHotReloadable()) {
+                                        Path p = i.getArchivePath().resolve(s.replace(".", "/") + ".class");
+                                        if (Files.exists(p)) {
+                                            return true;
+                                        }
+                                    }
+                                }
+                                return false;
+                            }
+                        }));
+                    }
+                }).produces(ApplicationClassPredicateBuildItem.class).build();
+            }
+        }));
         runtimeUpdatesProcessor = setupRuntimeCompilation(context);
         if (runtimeUpdatesProcessor != null) {
             runtimeUpdatesProcessor.checkForFileChange();
