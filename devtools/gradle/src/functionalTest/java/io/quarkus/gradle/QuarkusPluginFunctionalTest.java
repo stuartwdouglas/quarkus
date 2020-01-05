@@ -4,20 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -31,9 +29,8 @@ public class QuarkusPluginFunctionalTest {
     private File projectRoot;
 
     @BeforeEach
-    void setUp() throws IOException {
-        //TODO: don;t allow this into a commit
-        this.projectRoot = Files.createDirectory(Paths.get("/tmp/" + UUID.randomUUID().toString())).toFile();
+    void setUp(@TempDir File projectRoot) {
+        this.projectRoot = projectRoot;
     }
 
     @Test

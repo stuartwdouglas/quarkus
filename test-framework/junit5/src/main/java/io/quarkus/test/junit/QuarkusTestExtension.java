@@ -279,10 +279,18 @@ public class QuarkusTestExtension
             return factory.newInstance(new InvocationHandler() {
                 @Override
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    Method realMethod = actualTestInstance.getClass().getDeclaredMethod(method.getName(),
-                            method.getParameterTypes());
-                    realMethod.setAccessible(true);
-                    return realMethod.invoke(actualTestInstance, args);
+                    Class<?> c = actualTestInstance.getClass();
+                    while (c != Object.class) {
+                        try {
+                            Method realMethod = c.getDeclaredMethod(method.getName(),
+                                    method.getParameterTypes());
+                            realMethod.setAccessible(true);
+                            return realMethod.invoke(actualTestInstance, args);
+                        } catch (NoSuchMethodException e) {
+                            c = c.getSuperclass();
+                        }
+                    }
+                    throw new RuntimeException("Unable to find method " + method + " on " + actualTestInstance.getClass());
                 }
             });
         } catch (IllegalAccessException | InstantiationException e) {
