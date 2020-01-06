@@ -151,6 +151,7 @@ public class BootstrapAppModelResolver implements AppModelResolver {
 
     private AppModel doResolveModel(AppArtifact appArtifact, List<Dependency> directMvnDeps, AppArtifact managingProject)
             throws AppModelResolverException {
+        AppModel.Builder appBuilder = new AppModel.Builder();
         List<Dependency> managedDeps = Collections.emptyList();
         List<RemoteRepository> managedRepos = Collections.emptyList();
         if (managingProject != null) {
@@ -206,7 +207,7 @@ public class BootstrapAppModelResolver implements AppModelResolver {
             repos = managedRepos;
         }
         final DeploymentInjectingDependencyVisitor deploymentInjector = new DeploymentInjectingDependencyVisitor(mvn,
-                managedDeps, repos);
+                managedDeps, repos, appBuilder);
         try {
             deploymentInjector.injectDeploymentDependencies(resolvedDeps);
         } catch (BootstrapDependencyProcessingException e) {
@@ -276,8 +277,12 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         for (ArtifactResult child : fullDeploymentDepsList) {
             fullDeploymentDeps.add(new AppDependency(toAppArtifact(child.getArtifact(), versionMap), "compile", false));
         }
-
-        return new AppModel(appArtifact, userDeps, deploymentDeps, fullDeploymentDeps);
+        return appBuilder
+                .addDeploymentDeps(deploymentDeps)
+                .setAppArtifact(appArtifact)
+                .addFullDeploymentDeps(fullDeploymentDeps)
+                .addRuntimeDeps(userDeps)
+                .build();
     }
 
     @Override
@@ -389,9 +394,10 @@ public class BootstrapAppModelResolver implements AppModelResolver {
     }
 
     private static Artifact toAetherArtifact(AppArtifact artifact) {
-        Artifact defaultArtifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(),
+        Artifact defaultArtifact = new DefaultArtifact(artifact.getGroupId(), artifact.getArtifactId(),
+                artifact.getClassifier(),
                 artifact.getType(), artifact.getVersion());
-        if(artifact.getPath() != null) {
+        if (artifact.getPath() != null) {
             defaultArtifact = defaultArtifact.setFile(artifact.getPath().toFile());
         }
         return defaultArtifact;

@@ -19,6 +19,7 @@ import org.eclipse.aether.util.artifact.JavaScopes;
 import org.jboss.logging.Logger;
 import io.quarkus.bootstrap.BootstrapConstants;
 import io.quarkus.bootstrap.BootstrapDependencyProcessingException;
+import io.quarkus.bootstrap.model.AppModel;
 import io.quarkus.bootstrap.resolver.AppModelResolverException;
 import io.quarkus.bootstrap.util.ZipUtils;
 
@@ -46,11 +47,13 @@ public class DeploymentInjectingDependencyVisitor {
     boolean injectedDeps;
 
     private List<DependencyNode> runtimeNodes = new ArrayList<>();
+    private final AppModel.Builder appBuilder;
 
-    public DeploymentInjectingDependencyVisitor(MavenArtifactResolver resolver, List<Dependency> managedDeps, List<RemoteRepository> mainRepos) {
+    public DeploymentInjectingDependencyVisitor(MavenArtifactResolver resolver, List<Dependency> managedDeps, List<RemoteRepository> mainRepos, AppModel.Builder appBuilder) {
         this.resolver = resolver;
         this.managedDeps = managedDeps.isEmpty() ? new ArrayList<>() : managedDeps;
         this.mainRepos = mainRepos;
+        this.appBuilder = appBuilder;
     }
 
     public boolean isInjectedDeps() {
@@ -112,6 +115,7 @@ public class DeploymentInjectingDependencyVisitor {
             return;
         }
         final String value = rtProps.getProperty(BootstrapConstants.PROP_DEPLOYMENT_ARTIFACT);
+        appBuilder.handleExtensionProperties(rtProps);
         if(value == null) {
             return;
         }

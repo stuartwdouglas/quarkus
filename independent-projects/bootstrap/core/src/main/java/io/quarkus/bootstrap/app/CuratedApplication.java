@@ -3,13 +3,11 @@ package io.quarkus.bootstrap.app;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
@@ -19,6 +17,7 @@ import io.quarkus.bootstrap.classloading.JarClassPathElement;
 import io.quarkus.bootstrap.classloading.MemoryClassPathElement;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.bootstrap.model.AppArtifact;
+import io.quarkus.bootstrap.model.AppArtifactKey;
 import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.bootstrap.model.AppModel;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
@@ -31,25 +30,6 @@ import io.quarkus.bootstrap.resolver.AppModelResolver;
  *
  */
 public class CuratedApplication implements Serializable {
-
-    /**
-     * Artifacts that are always parent first.
-     *
-     * TODO: this kinda sucks, but there is not really any way to get around it. Some stuff just needs to be loaded by the
-     * system class loader. Maybe it should be packaged based?
-     */
-    private static final Set<ArtifactKey> ALWAYS_PARENT_FIRST = new HashSet<>(Arrays.asList(
-            new ArtifactKey("io.quarkus", "quarkus-bootstrap-core"),
-            new ArtifactKey("io.quarkus", "quarkus-development-mode-spi"),
-            new ArtifactKey("io.sentry", "sentry"), //TODO: this is a temp hack, should not be merged
-            new ArtifactKey("org.jboss.logmanager", "jboss-logmanager-embedded"),
-            new ArtifactKey("org.jboss.logging", "jboss-logging"),
-            new ArtifactKey("io.fabric8", "kubernetes-server-mock"),
-            new ArtifactKey("io.fabric8", "mockwebserver"),
-            new ArtifactKey("io.quarkus", "quarkus-test-kubernetes-client")));
-
-    private static final Set<ArtifactKey> ALWAYS_EXCLUDE =  new HashSet<>(Arrays.asList(
-            new ArtifactKey("io.smallrye", "smallrye-config"))); //the old version, gradle sometimes ignores the exclusions
 
     /**
      * The class path elements for the various artifacts. These can be used in multiple class loaders
@@ -157,15 +137,11 @@ public class CuratedApplication implements Serializable {
             //this will load any deployment artifacts from the parent CL if they are present
             Set<AppArtifact> deploymentArtifacts = new HashSet<>();
             for (AppDependency i : appModel.getFullDeploymentDeps()) {
-                ArtifactKey key = getKey(i);
-                if(ALWAYS_EXCLUDE.contains(key)) {
-                    continue;
-                }
-
+                AppArtifactKey key = getKey(i);
                 deploymentArtifacts.add(i.getArtifact());
                 ClassPathElement element = getElement(i.getArtifact());
                 builder.addElement(element);
-                if (ALWAYS_PARENT_FIRST.contains(key)) {
+                if (appModel.getParentFirstArtifacts().contains(key)) {
                     //we always load this from the parent if it is available, as this acts as a bridge between the running
                     //app and the dev mode code
                     builder.addParentFirstElement(element);
@@ -191,8 +167,9 @@ public class CuratedApplication implements Serializable {
         return augmentClassLoader;
     }
 
-    private CuratedApplication.ArtifactKey getKey(AppDependency i) {
-        return new ArtifactKey(i.getArtifact().getGroupId(), i.getArtifact().getArtifactId());
+    private AppArtifactKey getKey(AppDependency i) {
+        return new AppArtifactKey(i.getArtifact().getGroupId(), i.getArtifact().getArtifactId(),
+                i.getArtifact().getClassifier(), i.getArtifact().getType());
     }
 
     /**
@@ -220,16 +197,13 @@ public class CuratedApplication implements Serializable {
             builder.setResettableElement(new MemoryClassPathElement(Collections.emptyMap()));
 
             for (AppDependency dependency : appModel.getUserDependencies()) {
-                if(hotReloadPaths.contains(dependency.getArtifact().getPath())) {
+                if (hotReloadPaths.contains(dependency.getArtifact().getPath())) {
                     continue;
                 }
-                ArtifactKey key = getKey(dependency);
-                if(ALWAYS_EXCLUDE.contains(key)) {
-                    continue;
-                }
+                AppArtifactKey key = getKey(dependency);
 
                 ClassPathElement element = getElement(dependency.getArtifact());
-                if (ALWAYS_PARENT_FIRST.contains(key)) {
+                if (appModel.getParentFirstArtifacts().contains(key)) {
                     //we always load this from the parent if it is available, as this acts as a bridge between the running
                     //app and the dev mode code
                     builder.addParentFirstElement(element);
@@ -256,30 +230,4 @@ public class CuratedApplication implements Serializable {
         }
         return builder.build();
     }
-
-    static class ArtifactKey {
-        final String groupId, artifactId;
-
-        ArtifactKey(String groupId, String artifactId) {
-            this.groupId = groupId;
-            this.artifactId = artifactId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            ArtifactKey that = (ArtifactKey) o;
-            return Objects.equals(groupId, that.groupId) &&
-                    Objects.equals(artifactId, that.artifactId);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(groupId, artifactId);
-        }
-    }
-
 }

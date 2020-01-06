@@ -563,13 +563,13 @@ public class DevMojo extends AbstractMojo {
                         .build())
                                 .setDevMode(true)
                                 .resolveModel(localProject.getAppArtifact());
-                if (appModel.getAllDependencies().isEmpty()) {
+                if (appModel.getFullDeploymentDeps().isEmpty()) {
                     throw new RuntimeException("Unable to resolve application dependencies");
                 }
             } catch (Exception e) {
                 throw new MojoExecutionException("Failed to resolve Quarkus application model", e);
             }
-            for (AppDependency appDep : appModel.getAllDependencies()) {
+            for (AppDependency appDep : appModel.getFullDeploymentDeps()) {
                 addToClassPaths(classPathManifest, devModeContext, appDep.getArtifact().getPath().toFile());
             }
 

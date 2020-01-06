@@ -13,25 +13,27 @@ public class AppArtifactKey {
 
     protected static String[] split(String str, String[] parts, int fromIndex) {
         int i = str.lastIndexOf(':', fromIndex - 1);
-        if(i <= 0) {
-            throw new IllegalArgumentException("GroupId and artifactId separating ':' is abscent or not in the right place in '" + str.substring(0, fromIndex) + "'");
+        if (i <= 0) {
+            throw new IllegalArgumentException("GroupId and artifactId separating ':' is abscent or not in the right place in '"
+                    + str.substring(0, fromIndex) + "'");
         }
         parts[3] = str.substring(i + 1, fromIndex);
         fromIndex = i;
         i = str.lastIndexOf(':', fromIndex - 1);
-        if(i < 0) {
+        if (i < 0) {
             parts[0] = str.substring(0, fromIndex);
-            if((parts[1] = parts[3]).isEmpty()) {
+            if ((parts[1] = parts[3]).isEmpty()) {
                 throw new IllegalArgumentException("ArtifactId is empty in `" + str + "`");
             }
             parts[2] = "";
             parts[3] = null;
             return parts;
         }
-        if(i == 0) {
-            throw new IllegalArgumentException("One of groupId or artifactId is missing from '" + str.substring(0, fromIndex) + "'");
+        if (i == 0) {
+            throw new IllegalArgumentException(
+                    "One of groupId or artifactId is missing from '" + str.substring(0, fromIndex) + "'");
         }
-        if(i == fromIndex - 1) {
+        if (i == fromIndex - 1) {
             parts[2] = "";
         } else {
             parts[2] = str.substring(i + 1, fromIndex);
@@ -39,22 +41,23 @@ public class AppArtifactKey {
 
         fromIndex = i;
         i = str.lastIndexOf(':', fromIndex - 1);
-        if(i < 0) {
+        if (i < 0) {
             parts[0] = str.substring(0, fromIndex);
-            if((parts[1] = parts[2]).isEmpty()) {
+            if ((parts[1] = parts[2]).isEmpty()) {
                 throw new IllegalArgumentException("ArtifactId is empty in `" + str + "`");
             }
             parts[2] = parts[3];
             parts[3] = null;
             return parts;
         }
-        if(i == 0 || i == fromIndex - 1) {
-            throw new IllegalArgumentException("One of groupId or artifactId is missing from '" + str.substring(0, fromIndex) + "'");
+        if (i == 0 || i == fromIndex - 1) {
+            throw new IllegalArgumentException(
+                    "One of groupId or artifactId is missing from '" + str.substring(0, fromIndex) + "'");
         }
 
         parts[0] = str.substring(0, i);
         parts[1] = str.substring(i + 1, fromIndex);
-        if(parts[3].isEmpty()) {
+        if (parts[3].isEmpty()) {
             parts[3] = null;
         }
         return parts;
@@ -68,8 +71,16 @@ public class AppArtifactKey {
     protected AppArtifactKey(String[] parts) {
         this.groupId = parts[0];
         this.artifactId = parts[1];
-        this.classifier = parts[2];
-        this.type = parts[3];
+        if (parts.length == 2) {
+            this.classifier = "";
+        } else {
+            this.classifier = parts[2];
+        }
+        if (parts.length <= 3) {
+            this.type = "jar";
+        } else {
+            this.type = parts[3];
+        }
     }
 
     public AppArtifactKey(String groupId, String artifactId) {
@@ -98,7 +109,6 @@ public class AppArtifactKey {
     public String getClassifier() {
         return classifier;
     }
-
 
     public String getType() {
         return type;
@@ -151,12 +161,12 @@ public class AppArtifactKey {
     public String toString() {
         final StringBuilder buf = new StringBuilder();
         buf.append(groupId).append(':').append(artifactId);
-        if(!classifier.isEmpty()) {
+        if (!classifier.isEmpty()) {
             buf.append(':').append(classifier);
-        } else if(type != null) {
+        } else if (type != null) {
             buf.append(':');
         }
-        if(type != null) {
+        if (type != null) {
             buf.append(':').append(type);
         }
         return buf.toString();
