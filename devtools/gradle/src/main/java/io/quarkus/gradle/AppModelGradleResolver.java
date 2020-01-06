@@ -118,6 +118,7 @@ public class AppModelGradleResolver implements AppModelResolver {
 
     @Override
     public AppModel resolveModel(AppArtifact appArtifact) throws AppModelResolverException {
+        AppModel.Builder appBuilder = new AppModel.Builder();
         if (appModel != null && appModel.getAppArtifact().equals(appArtifact)) {
             return appModel;
         }
@@ -141,10 +142,10 @@ public class AppModelGradleResolver implements AppModelResolver {
 
             final Dependency dep;
             if (f.isDirectory()) {
-                dep = processQuarkusDir(a, f.toPath().resolve(BootstrapConstants.META_INF));
+                dep = processQuarkusDir(a, f.toPath().resolve(BootstrapConstants.META_INF), appBuilder);
             } else {
                 try (FileSystem artifactFs = FileSystems.newFileSystem(f.toPath(), null)) {
-                    dep = processQuarkusDir(a, artifactFs.getPath(BootstrapConstants.META_INF));
+                    dep = processQuarkusDir(a, artifactFs.getPath(BootstrapConstants.META_INF), appBuilder);
                 } catch (IOException e) {
                     throw new GradleException("Failed to process " + f, e);
                 }
@@ -194,7 +195,11 @@ public class AppModelGradleResolver implements AppModelResolver {
                 }
             }
         }
-        return this.appModel = new AppModel(appArtifact, userDeps, deploymentDeps, fullDeploymentDeps);
+        appBuilder.addRuntimeDeps(userDeps)
+                .addFullDeploymentDeps(fullDeploymentDeps)
+                .addDeploymentDeps(deploymentDeps)
+                .setAppArtifact(appArtifact);
+        return this.appModel = appBuilder.build();
     }
 
     private AppDependency alignVersion(AppDependency dependency, Map<AppKey, AppDependency> versionMap) {
@@ -229,7 +234,7 @@ public class AppModelGradleResolver implements AppModelResolver {
         return new AppDependency(appArtifact, "runtime");
     }
 
-    private Dependency processQuarkusDir(ResolvedArtifact a, Path quarkusDir) {
+    private Dependency processQuarkusDir(ResolvedArtifact a, Path quarkusDir, AppModel.Builder appBuilder) {
         if (!Files.exists(quarkusDir)) {
             return null;
         }
@@ -241,6 +246,7 @@ public class AppModelGradleResolver implements AppModelResolver {
         if (extProps == null) {
             return null;
         }
+        appBuilder.handleExtensionProperties(extProps);
         String value = extProps.getProperty(BootstrapConstants.PROP_DEPLOYMENT_ARTIFACT);
         final String[] split = value.split(":");
 
