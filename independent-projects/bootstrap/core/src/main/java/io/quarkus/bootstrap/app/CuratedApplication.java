@@ -1,5 +1,6 @@
 package io.quarkus.bootstrap.app;
 
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -29,7 +30,7 @@ import io.quarkus.bootstrap.resolver.AppModelResolver;
  *
  *
  */
-public class CuratedApplication {
+public class CuratedApplication implements Serializable {
 
     /**
      * Artifacts that are always parent first.
@@ -38,6 +39,7 @@ public class CuratedApplication {
      * system class loader. Maybe it should be packaged based?
      */
     private static final Set<ArtifactKey> ALWAYS_PARENT_FIRST = new HashSet<>(Arrays.asList(
+            new ArtifactKey("io.quarkus", "quarkus-bootstrap-core"),
             new ArtifactKey("io.quarkus", "quarkus-development-mode-spi"),
             new ArtifactKey("io.sentry", "sentry"), //TODO: this is a temp hack, should not be merged
             new ArtifactKey("org.jboss.logmanager", "jboss-logmanager-embedded"),
@@ -45,6 +47,9 @@ public class CuratedApplication {
             new ArtifactKey("io.fabric8", "kubernetes-server-mock"),
             new ArtifactKey("io.fabric8", "mockwebserver"),
             new ArtifactKey("io.quarkus", "quarkus-test-kubernetes-client")));
+
+    private static final Set<ArtifactKey> ALWAYS_EXCLUDE =  new HashSet<>(Arrays.asList(
+            new ArtifactKey("io.smallrye", "smallrye-config"))); //the old version, gradle sometimes ignores the exclusions
 
     /**
      * The class path elements for the various artifacts. These can be used in multiple class loaders
@@ -146,15 +151,25 @@ public class CuratedApplication {
         if (augmentClassLoader == null) {
             //first run, we need to build all the class loaders
             QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Augmentation Class Loader",
-                    quarkusBootstrap.getBaseClassLoader(), true);
+                    quarkusBootstrap.getBaseClassLoader(), !quarkusBootstrap.isIsolateDeployment());
             //we want a class loader that can load the deployment artifacts and all their dependencies, but not
             //any of the runtime artifacts, or user classes
             //this will load any deployment artifacts from the parent CL if they are present
             Set<AppArtifact> deploymentArtifacts = new HashSet<>();
             for (AppDependency i : appModel.getFullDeploymentDeps()) {
+                ArtifactKey key = getKey(i);
+                if(ALWAYS_EXCLUDE.contains(key)) {
+                    continue;
+                }
+
                 deploymentArtifacts.add(i.getArtifact());
                 ClassPathElement element = getElement(i.getArtifact());
                 builder.addElement(element);
+                if (ALWAYS_PARENT_FIRST.contains(key)) {
+                    //we always load this from the parent if it is available, as this acts as a bridge between the running
+                    //app and the dev mode code
+                    builder.addParentFirstElement(element);
+                }
             }
             //now all runtime deps, these will only be used if they are not in the parent
             for (AppDependency userDep : appModel.getUserDependencies()) {
@@ -208,9 +223,13 @@ public class CuratedApplication {
                 if(hotReloadPaths.contains(dependency.getArtifact().getPath())) {
                     continue;
                 }
+                ArtifactKey key = getKey(dependency);
+                if(ALWAYS_EXCLUDE.contains(key)) {
+                    continue;
+                }
 
                 ClassPathElement element = getElement(dependency.getArtifact());
-                if (ALWAYS_PARENT_FIRST.contains(getKey(dependency))) {
+                if (ALWAYS_PARENT_FIRST.contains(key)) {
                     //we always load this from the parent if it is available, as this acts as a bridge between the running
                     //app and the dev mode code
                     builder.addParentFirstElement(element);

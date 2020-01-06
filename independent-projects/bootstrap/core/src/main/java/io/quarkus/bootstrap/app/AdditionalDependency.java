@@ -1,5 +1,6 @@
 package io.quarkus.bootstrap.app;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 
 /**
@@ -11,7 +12,7 @@ import java.nio.file.Path;
  * For production applications this should not be needed as the full set of
  * dependencies should already be available.
  */
-public class AdditionalDependency {
+public class AdditionalDependency implements Serializable {
 
     /**
      * The path to the application archive

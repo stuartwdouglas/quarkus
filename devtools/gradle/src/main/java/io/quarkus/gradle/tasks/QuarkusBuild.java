@@ -1,6 +1,7 @@
 package io.quarkus.gradle.tasks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -77,12 +78,12 @@ public class QuarkusBuild extends QuarkusTask {
                     .setBaseName(extension().finalName())
                     .setBuildSystemProperties(realProperties)
                     .setAppArtifact(appArtifact)
+                    .setIsolateDeployment(true)
                     //.setConfigDir(extension().outputConfigDirectory().toPath())
                     //.setTargetDirectory(extension().outputDirectory().toPath())
                     .build().bootstrap();
 
-            AugmentAction action = new AugmentAction(appCreationContext);
-            action.createProductionApplication();
+            appCreationContext.runInAugmentClassLoader(AugmentAction.BuildTask.class.getName(), Collections.emptyMap());
 
         } catch (BootstrapException e) {
             throw new GradleException("Failed to build a runnable JAR", e);

@@ -1,5 +1,6 @@
 package io.quarkus.bootstrap.app;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +23,7 @@ import io.quarkus.bootstrap.resolver.update.VersionUpdateNumber;
  * to allow for customisation of the boot process.
  *
  */
-public class QuarkusBootstrap {
+public class QuarkusBootstrap implements Serializable {
 
     /**
      * The root of the application, where the application classes live.
@@ -65,6 +66,7 @@ public class QuarkusBootstrap {
     private final VersionUpdate versionUpdate;
     private final DependenciesOrigin dependenciesOrigin;
     private final AppArtifact appArtifact;
+    private final boolean isolateDeployment;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -84,6 +86,7 @@ public class QuarkusBootstrap {
         this.versionUpdateNumber = builder.versionUpdateNumber;
         this.dependenciesOrigin = builder.dependenciesOrigin;
         this.appArtifact = builder.appArtifact;
+        this.isolateDeployment = builder.isolateDeployment;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
@@ -163,6 +166,10 @@ public class QuarkusBootstrap {
         return targetDirectory;
     }
 
+    public boolean isIsolateDeployment() {
+        return isolateDeployment;
+    }
+
     public static class Builder {
         final Path applicationRoot;
         String baseName;
@@ -181,6 +188,7 @@ public class QuarkusBootstrap {
         VersionUpdate versionUpdate = VersionUpdate.NONE;
         DependenciesOrigin dependenciesOrigin;
         AppArtifact appArtifact;
+        boolean isolateDeployment;
 
         public Builder(Path applicationRoot) {
             this.applicationRoot = applicationRoot;
@@ -263,6 +271,22 @@ public class QuarkusBootstrap {
 
         public Builder setAppArtifact(AppArtifact appArtifact) {
             this.appArtifact = appArtifact;
+            return this;
+        }
+
+        /**
+         * If the deployment should use an isolated (aka parent last) classloader.
+         *
+         * For tests this is generally false, as we want to share the base class path so that the
+         * test extension code can integrate with the deployment.
+         *
+         * TODO: should this always be true?
+         *
+         * @param isolateDeployment
+         * @return
+         */
+        public Builder setIsolateDeployment(boolean isolateDeployment) {
+            this.isolateDeployment = isolateDeployment;
             return this;
         }
 

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.quarkus.bootstrap.app.AdditionalDependency;
@@ -185,6 +186,18 @@ public class AugmentAction {
             }
         } finally {
             Thread.currentThread().setContextClassLoader(old);
+        }
+    }
+
+    /**
+     * A task that can be used in isolated enviorments to do a build
+     */
+    public static class BuildTask implements BiConsumer<CuratedApplication, Map<String, Object>> {
+
+        @Override
+        public void accept(CuratedApplication application, Map<String, Object> stringObjectMap) {
+            AugmentAction action = new AugmentAction(application);
+            action.createProductionApplication();
         }
     }
 }
