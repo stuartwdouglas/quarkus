@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class GeneratedClassesTest {
+class GeneratedClassesTest {
 
     @Test
-    public void testGeneratedContextResolver() {
+    void testGeneratedContextResolver() {
         assertNotNull(generatedContextResolver());
     }
 

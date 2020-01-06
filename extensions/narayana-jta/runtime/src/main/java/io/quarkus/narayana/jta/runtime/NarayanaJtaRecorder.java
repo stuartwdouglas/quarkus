@@ -24,7 +24,13 @@ public class NarayanaJtaRecorder {
 
     private static final Logger log = Logger.getLogger(NarayanaJtaRecorder.class);
 
-    //see https://github.com/eclipse/microprofile-reactive-streams-operators/pull/130
+    /**
+     * see https://github.com/eclipse/microprofile-reactive-streams-operators/pull/130
+     *
+     * Transactions has a dependency on reactive streams operators (but not on the corresponding quarkus extension)
+     *
+     * We need to do this hack to force it to initialize correctly
+     */
     public void fixReactiveStreamsOperatorsClassLoading() {
         BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
         try {

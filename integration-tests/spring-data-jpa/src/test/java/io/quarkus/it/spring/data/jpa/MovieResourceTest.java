@@ -23,7 +23,7 @@ public class MovieResourceTest {
             Arrays.asList("Godzilla: King of the Monsters", "Avengers: Endgame", "Interstellar", "Aladdin"));
 
     @Test
-    public void testAll() {
+    void testAll() {
         List<Movie> movies = when().get("/movie/all").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Movie.class);
@@ -34,14 +34,14 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testFindFirstByOrderByDurationDesc() {
+    void testFindFirstByOrderByDurationDesc() {
         when().get("/movie/first/orderByDuration").then()
                 .statusCode(200)
                 .body(containsString("Avengers: Endgame"));
     }
 
     @Test
-    public void testFindByRating() {
+    void testFindByRating() {
         when().get("/movie/rating/Dummy").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -55,7 +55,7 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testFindByTitle() {
+    void testFindByTitle() {
         when().get("/movie/title/Dummy").then()
                 .statusCode(204);
 
@@ -65,7 +65,7 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testWithRatingAndDurationLargerThan() {
+    void testWithRatingAndDurationLargerThan() {
         when().get("/movie/rating/Dummy/durationLargerThan/0").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -83,7 +83,7 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testFetchOnlySomeFieldsWithTitleLike() {
+    void testFetchOnlySomeFieldsWithTitleLike() {
         when().get("/movie/title/like/Dummy").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -97,7 +97,7 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testDeleteByRating() {
+    void testDeleteByRating() {
         when().get("/movie/all").then()
                 .statusCode(200)
                 .body(containsString("Die Hard"))
@@ -114,7 +114,7 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testDeleteByTitleLike() {
+    void testDeleteByTitleLike() {
         when().get("/movie/all").then()
                 .statusCode(200)
                 .body(containsString("Dunkirk"));
@@ -130,7 +130,7 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testChangeRatingToNewName() {
+    void testChangeRatingToNewName() {
         when().get("/movie/change/rating/PG/NEWRATING").then()
                 .statusCode(200)
                 .body(is("1"));
@@ -141,7 +141,7 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testSetRatingToNullForTitle() {
+    void testSetRatingToNullForTitle() {
         when().get("/movie/rating/G").then()
                 .statusCode(200)
                 .body("size()", is(1));
@@ -155,7 +155,7 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testOrderByTitleLength() {
+    void testOrderByTitleLength() {
         when().get("/movie/title/titleLengthOrder/page/1/0").then()
                 .statusCode(200)
                 .body(is("true / 1"));
@@ -170,7 +170,7 @@ public class MovieResourceTest {
     }
 
     @Test
-    public void testCustomFind() {
+    void testCustomFind() {
         when().get("/movie/customFind/page/1/0").then()
                 .statusCode(200)
                 .body(is("true / 1"));

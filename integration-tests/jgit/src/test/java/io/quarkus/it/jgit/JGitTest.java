@@ -17,18 +17,18 @@ public class JGitTest {
             .fromBundle("booster-catalog", "repos/booster-catalog.bundle").usingAnyFreePort().create();
 
     @BeforeEach
-    public void startGitServer() throws Exception {
+    void startGitServer() throws Exception {
         gitServer.start();
     }
 
     @Test
-    public void shouldClone() {
+    void shouldClone() {
         String url = String.format("http://localhost:%s/booster-catalog", gitServer.getPort());
         given().queryParam("url", url).get("/jgit/clone").then().body(is("master"));
     }
 
     @AfterEach
-    public void stopGitServer() throws Exception {
+    void stopGitServer() throws Exception {
         gitServer.stop();
     }
 

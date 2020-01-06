@@ -13,7 +13,7 @@ import io.quarkus.test.junit.QuarkusTest;
 public class BookResourceTest {
 
     @Test
-    public void testAll() {
+    void testAll() {
         when().get("/book/all").then()
                 .statusCode(200)
                 .body(containsString("Sapiens"))
@@ -25,7 +25,7 @@ public class BookResourceTest {
     }
 
     @Test
-    public void testExistsById() {
+    void testExistsById() {
         when().get("/book/exists/bid/1").then()
                 .statusCode(200)
                 .body(is("true"));
@@ -36,7 +36,7 @@ public class BookResourceTest {
     }
 
     @Test
-    public void testExistsByPublicationBetween() {
+    void testExistsByPublicationBetween() {
         when().get("/book/exists/publicationBetween/2000/2010").then()
                 .statusCode(200)
                 .body(is("false"));
@@ -51,7 +51,7 @@ public class BookResourceTest {
     }
 
     @Test
-    public void testNew() {
+    void testNew() {
         when().get("/book/all").then()
                 .statusCode(200)
                 .body(not(containsString("Upheaval")));
@@ -67,14 +67,14 @@ public class BookResourceTest {
     }
 
     @Test
-    public void testByName() {
+    void testByName() {
         when().get("/book/name/Sapiens").then()
                 .statusCode(200)
                 .body(containsString("Sapiens"));
     }
 
     @Test
-    public void testByYear() {
+    void testByYear() {
         when().get("/book/year/2012").then()
                 .statusCode(200)
                 .body(containsString("Sleepwalkers"));
@@ -83,7 +83,7 @@ public class BookResourceTest {
     }
 
     @Test
-    public void testByNameNotFound() {
+    void testByNameNotFound() {
         when().get("/book/name/DoesNotExist").then()
                 .statusCode(200)
                 .body("size()", is(0));

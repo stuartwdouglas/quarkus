@@ -23,7 +23,7 @@ public class CatResourceTest {
             Arrays.asList("Scottish Fold", "Persian", "Turkish Angora", "British Shorthair"));
 
     @Test
-    public void testAll() {
+    void testAll() {
         List<Cat> cats = when().get("/cat/all").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Cat.class);
@@ -34,7 +34,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testByBreed() {
+    void testByBreed() {
         when().get("/cat/breed/Dummy").then()
                 .statusCode(204);
 
@@ -45,7 +45,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testByOptionalByColor() {
+    void testByOptionalByColor() {
         when().get("/cat/color/Dummy").then()
                 .statusCode(200)
                 .body(is("null"));
@@ -61,7 +61,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testByColorAndBreedAllIgnoreCase() {
+    void testByColorAndBreedAllIgnoreCase() {
         when().get("/cat/by/color/Dummy/breed/Persian").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -73,7 +73,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testByColorIgnoreCaseAndBreed() {
+    void testByColorIgnoreCaseAndBreed() {
         when().get("/cat/by/color/Dummy/breed/Persian").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -89,7 +89,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testByColorIsNotNullOrderByIdDesc() {
+    void testByColorIsNotNullOrderByIdDesc() {
         List<Cat> cats = when().get("/cat/color/notNull").then()
                 .extract().body().jsonPath().getList(".", Cat.class);
 
@@ -99,7 +99,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testByColorOrBreed() {
+    void testByColorOrBreed() {
         when().get("/cat/byOr/color/Dummy/breed/Dummy").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -117,7 +117,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testByBreedContaining() {
+    void testByBreedContaining() {
         when().get("/cat/by/breed/containing/ummy").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -131,7 +131,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testFindByColorStartingWithOrBreedEndingWith() {
+    void testFindByColorStartingWithOrBreedEndingWith() {
         when().get("/cat/by/color/startsWith/Dummy/breed/endsWith/Dummy").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -155,7 +155,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testCountByColor() {
+    void testCountByColor() {
         when().get("/cat/count/by/color/Dummy").then()
                 .statusCode(200)
                 .body(is("0"));
@@ -170,7 +170,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testExistsByColorStartsWith() {
+    void testExistsByColorStartsWith() {
         when().get("/cat/exists/by/colorStartsWith/Dum").then()
                 .statusCode(200)
                 .body(is("false"));
@@ -181,7 +181,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testDeleteByColor() {
+    void testDeleteByColor() {
         when().get("/cat/all").then()
                 .statusCode(200)
                 .body(containsString("Bombay Cat"));
@@ -196,7 +196,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testFindCatsByBreedIn() {
+    void testFindCatsByBreedIn() {
         when().get("/cat/findCatsByBreedIsIn").then()
                 .statusCode(200)
                 .body("size()", is(2))
@@ -205,7 +205,7 @@ public class CatResourceTest {
     }
 
     @Test
-    public void testByDistinctiveFalse() {
+    void testByDistinctiveFalse() {
         when().get("/cat/by/distinctive/false").then()
                 .statusCode(200)
                 .body(containsString("British Shorthair"))

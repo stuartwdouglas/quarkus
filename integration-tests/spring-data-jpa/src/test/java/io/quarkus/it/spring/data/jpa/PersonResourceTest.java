@@ -24,7 +24,7 @@ public class PersonResourceTest {
             Arrays.asList("Bob", "Florence", "DeMar", null));
 
     @Test
-    public void testFindAll() {
+    void testFindAll() {
         when().get("/person/all").then()
                 .statusCode(200)
                 .body(containsString("DeMar"))
@@ -33,7 +33,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testCount() {
+    void testCount() {
         String count = when().get("/person/count").then()
                 .statusCode(200)
                 .extract().body().asString();
@@ -42,7 +42,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindById() {
+    void testFindById() {
         when().get("/person/id/1").then()
                 .statusCode(200)
                 .body(containsString("Bob"));
@@ -53,7 +53,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testExistsById() {
+    void testExistsById() {
         when().get("/person/exists/id/1").then()
                 .statusCode(200)
                 .body(is("true"));
@@ -64,7 +64,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindByName() {
+    void testFindByName() {
         when().get("/person/name/Dummy").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -75,7 +75,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindByNamePageSorted() {
+    void testFindByNamePageSorted() {
         String response = when().get("/person/name-pageable/DeMar").then()
                 .statusCode(200)
                 .extract().response().asString();
@@ -84,7 +84,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindBySortedByJoinedDesc() {
+    void testFindBySortedByJoinedDesc() {
         List<Person> people = when().get("/person/name/DeMar/order/joined").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Person.class);
@@ -94,7 +94,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testPageHandlingFindByNameSortedByJoined() {
+    void testPageHandlingFindByNameSortedByJoined() {
         when().get("/person/name/joinedOrder/Dummy/page/10/0").then()
                 .statusCode(200)
                 .body(is("false - false / 0"));
@@ -109,7 +109,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindBySortedByAgeDesc() {
+    void testFindBySortedByAgeDesc() {
         List<Person> people = when().get("/person/name/ageOrder/DeMar/page/5/0").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Person.class);
@@ -137,7 +137,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindByNameOrderByAge() {
+    void testFindByNameOrderByAge() {
         when().get("/person/name/ageOrder/Dummy").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -152,7 +152,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindByAgeBetweenAndNameIsNotNull() {
+    void testFindByAgeBetweenAndNameIsNotNull() {
         List<Person> people = when().get("/person/age/between/20/41").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Person.class);
@@ -164,7 +164,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindByAgeGreaterThanEqualOrderByAgeAsc() {
+    void testFindByAgeGreaterThanEqualOrderByAgeAsc() {
         when().get("/person/age/greaterEqual/55").then()
                 .statusCode(200)
                 .body("size()", is(1))
@@ -172,7 +172,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testJoinedAfter() {
+    void testJoinedAfter() {
         when().get("/person/joined/afterDaysAgo/0").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -186,7 +186,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testActiveTrueOrderByAgeDesc() {
+    void testActiveTrueOrderByAgeDesc() {
         List<Person> people = when().get("/person/active").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Person.class);
@@ -198,7 +198,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testCountByActiveNot() {
+    void testCountByActiveNot() {
         // find all non active people
         String count = when().get("/person/count/activeNot/true").then()
                 .statusCode(200)
@@ -208,7 +208,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindTop3ByActive() {
+    void testFindTop3ByActive() {
         List<Person> people = when().get("/person/active/top3").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Person.class);
@@ -220,7 +220,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testFindPeopleByAddressZipCode() {
+    void testFindPeopleByAddressZipCode() {
         when().get("/person/addressZipCode/00000").then()
                 .statusCode(200)
                 .body("size()", is(0));
@@ -233,7 +233,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testNewPerson() {
+    void testNewPerson() {
         Person person = when().get("/person/new/user").then()
                 .statusCode(200)
                 .extract().body().as(Person.class);
@@ -254,7 +254,7 @@ public class PersonResourceTest {
     }
 
     @Test
-    public void testNewPeople() {
+    void testNewPeople() {
         List<Person> people = when().get("/person/new/newUser/times/10").then()
                 .statusCode(200)
                 .extract().body().jsonPath().getList(".", Person.class);

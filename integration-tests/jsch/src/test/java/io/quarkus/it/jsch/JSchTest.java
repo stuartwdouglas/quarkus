@@ -37,7 +37,7 @@ public class JSchTest {
     }
 
     @Test
-    public void shouldConnect() {
+    void shouldConnect() {
         given().queryParam("host", sshd.getHost())
                 .queryParam("port", sshd.getPort())
                 .get("/jsch")
@@ -47,7 +47,7 @@ public class JSchTest {
     }
 
     @AfterEach
-    public void stopServer() throws Exception {
+    void stopServer() throws Exception {
         if (sshd != null) {
             sshd.stop(true);
         }

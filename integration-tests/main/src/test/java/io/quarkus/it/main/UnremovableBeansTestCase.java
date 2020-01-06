@@ -10,20 +10,20 @@ import io.quarkus.it.arc.UnusedUnremovableBean;
 import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
-public class UnremovableBeansTestCase {
+class UnremovableBeansTestCase {
 
     @Test
-    public void unusedBeanMarkedAsUnremoveableShouldBeAccessible() {
+    void unusedBeanMarkedAsUnremoveableShouldBeAccessible() {
         Assertions.assertNotNull(Arc.container().instance(UnusedUnremovableBean.class).get());
     }
 
     @Test
-    public void unusedBeanWhoseProducerMarkedAsUnemoveableShouldBeAccessible() {
+    void unusedBeanWhoseProducerMarkedAsUnemoveableShouldBeAccessible() {
         Assertions.assertNotNull(Arc.container().instance(ProducerOfUnusedUnremovableBean.Bean.class).get());
     }
 
     @Test
-    public void unusedBeanNotMarkedAsUnremoveableShouldBeAccessible() {
+    void unusedBeanNotMarkedAsUnremoveableShouldBeAccessible() {
         Assertions.assertNull(Arc.container().instance(UnusedRemovableBean.class).get());
     }
 }

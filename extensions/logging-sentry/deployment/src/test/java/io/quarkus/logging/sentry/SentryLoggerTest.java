@@ -26,12 +26,12 @@ public class SentryLoggerTest {
             .withConfigurationResource("application-sentry-logger-default.properties");
 
     @Test
-    public void sentryLoggerDefaultTest() {
+    void sentryLoggerDefaultTest() {
         assertThat(getSentryHandler().getLevel()).isEqualTo(org.jboss.logmanager.Level.WARN);
         assertThat(FrameCache.shouldCacheThrowable(new IllegalStateException("Test frame"), 1)).isFalse();
     }
 
-    public static SentryHandler getSentryHandler() {
+    static SentryHandler getSentryHandler() {
         LogManager logManager = LogManager.getLogManager();
         assertThat(logManager).isInstanceOf(org.jboss.logmanager.LogManager.class);
 

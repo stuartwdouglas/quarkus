@@ -28,7 +28,7 @@ public class PanacheFunctionalityTest {
      * see https://github.com/quarkusio/quarkus/issues/1724
      */
     @SuppressWarnings("unused")
-    //Person p = new Person();
+    Person p = new Person();
 
     @Test
     public void testPanacheFunctionality() throws Exception {

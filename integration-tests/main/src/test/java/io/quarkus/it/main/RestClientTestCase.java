@@ -43,21 +43,21 @@ public class RestClientTestCase {
     }
 
     @Test
-    public void testMicroprofileClientData() {
+    void testMicroprofileClientData() {
         JsonPath jsonPath = RestAssured.when().get("/client/manual/jackson").thenReturn().jsonPath();
         Assertions.assertEquals(jsonPath.getString("name"), "Stuart");
         Assertions.assertEquals(jsonPath.getString("value"), "A Value");
     }
 
     @Test
-    public void testMicroprofileClientDataCdi() {
+    void testMicroprofileClientDataCdi() {
         JsonPath jsonPath = RestAssured.when().get("/client/cdi/jackson").thenReturn().jsonPath();
         Assertions.assertEquals(jsonPath.getString("name"), "Stuart");
         Assertions.assertEquals(jsonPath.getString("value"), "A Value");
     }
 
     @Test
-    public void testMicroprofileAsyncRestClient() {
+    void testMicroprofileAsyncRestClient() {
         RestAssured.when().get("/client/async/cdi").then().body(is("TEST"));
         JsonPath jsonPath = RestAssured.when().get("/client/async/cdi/jackson").thenReturn().jsonPath();
         Assertions.assertEquals(jsonPath.getString("name"), "Stuart");
@@ -65,7 +65,7 @@ public class RestClientTestCase {
     }
 
     @Test
-    public void testMicroprofileClientComplex() {
+    void testMicroprofileClientComplex() {
         JsonPath jsonPath = RestAssured.when().get("/client/manual/complex").thenReturn().jsonPath();
         List<Map<String, String>> components = jsonPath.getList("$");
         Assertions.assertEquals(components.size(), 1);
@@ -74,7 +74,7 @@ public class RestClientTestCase {
     }
 
     @Test
-    public void testMicroprofileClientComplexCdi() {
+    void testMicroprofileClientComplexCdi() {
         JsonPath jsonPath = RestAssured.when().get("/client/cdi/complex").thenReturn().jsonPath();
         List<Map<String, String>> components = jsonPath.getList("$");
         Assertions.assertEquals(components.size(), 1);
@@ -83,7 +83,7 @@ public class RestClientTestCase {
     }
 
     @Test
-    public void testMicroprofileCdiClientHeaderPassing() {
+    void testMicroprofileCdiClientHeaderPassing() {
         String headerValue = "some-not-at-all-random-header-value";
         RestAssured
                 .given().header(HEADER_NAME, headerValue)
@@ -93,7 +93,7 @@ public class RestClientTestCase {
     }
 
     @Test
-    public void testMicroprofileClientHeaderPassing() {
+    void testMicroprofileClientHeaderPassing() {
         String headerValue = "some-not-at-all-random-header-value";
         RestAssured
                 .given().header(HEADER_NAME, headerValue)
@@ -103,7 +103,7 @@ public class RestClientTestCase {
     }
 
     @Test
-    public void testMicroprofileRestClientDefaultScope() {
+    void testMicroprofileRestClientDefaultScope() {
         String responseWithSingletonScope = RestAssured
                 .given()
                 .when().get("/client/cdi/mp-rest-default-scope")

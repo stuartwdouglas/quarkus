@@ -9,10 +9,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 
 @QuarkusTest
-public class WebXmlPermissionsTestCase {
+class WebXmlPermissionsTestCase {
 
     @Test
-    public void testPost() {
+    void testPost() {
         // This is a regression test in that we had a problem where the Vert.x request was not paused
         // before the authentication filters ran and the post message was thrown away by Vert.x because
         // RESTEasy hadn't registered its request handlers yet.
@@ -28,7 +28,7 @@ public class WebXmlPermissionsTestCase {
     }
 
     @Test
-    public void testOpenApiNoPermissions() {
+    void testOpenApiNoPermissions() {
         given()
                 .when()
                 .get("/foo/openapi")
@@ -37,7 +37,7 @@ public class WebXmlPermissionsTestCase {
     }
 
     @Test
-    public void testOpenApiWithWrongAuth() {
+    void testOpenApiWithWrongAuth() {
         given()
                 .header("Authorization", "Basic am9objpqb2hu")
                 .when()
@@ -47,7 +47,7 @@ public class WebXmlPermissionsTestCase {
     }
 
     @Test
-    public void testOpenApiWithAuth() {
+    void testOpenApiWithAuth() {
         given()
                 .auth()
                 .basic("mary", "mary")
@@ -58,7 +58,7 @@ public class WebXmlPermissionsTestCase {
     }
 
     @Test
-    public void testSecuredServletWithWrongAuth() {
+    void testSecuredServletWithWrongAuth() {
         given()
                 .header("Authorization", "Basic am9objpqb2hu")
                 .when()
@@ -68,7 +68,7 @@ public class WebXmlPermissionsTestCase {
     }
 
     @Test
-    public void testSecuredServletWithNoAuth() {
+    void testSecuredServletWithNoAuth() {
         given()
                 .when()
                 .get("/foo/secure/a")
@@ -77,7 +77,7 @@ public class WebXmlPermissionsTestCase {
     }
 
     @Test
-    public void testSecuredServletWithAuth() {
+    void testSecuredServletWithAuth() {
         given()
                 .auth()
                 .basic("mary", "mary")
