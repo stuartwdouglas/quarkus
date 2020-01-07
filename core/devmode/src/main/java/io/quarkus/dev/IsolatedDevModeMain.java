@@ -182,6 +182,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     //the main entry point, but loaded inside the augmentation class loader
     @Override
     public void accept(CuratedApplication o, Map<String, Object> o2) {
+        Timing.staticInitStarted();
         try {
             curatedApplication = o;
 

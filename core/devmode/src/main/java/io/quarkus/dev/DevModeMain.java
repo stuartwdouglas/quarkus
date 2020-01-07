@@ -20,7 +20,6 @@ import org.jboss.logging.Logger;
 import io.quarkus.bootstrap.app.AdditionalDependency;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
-import io.quarkus.runtime.Timing;
 
 /**
  * The main entry point for the dev mojo execution
@@ -40,7 +39,6 @@ public class DevModeMain implements Closeable {
     }
 
     public static void main(String... args) throws Exception {
-        Timing.staticInitStarted();
 
         try (InputStream devModeCp = DevModeMain.class.getClassLoader().getResourceAsStream(DEV_MODE_CONTEXT)) {
             DevModeContext context = (DevModeContext) new ObjectInputStream(new DataInputStream(devModeCp)).readObject();
@@ -79,7 +77,8 @@ public class DevModeMain implements Closeable {
             }
             QuarkusBootstrap.Builder bootstrapBuilder = QuarkusBootstrap.builder(context.getClassesRoots().get(0).toPath())
                     .setIsolateDeployment(true)
-                    .addAdditionalApplicationArchive(new AdditionalDependency(path, false, false))
+                    .setLocalProjectDiscovery(context.isLocalProjectDiscovery())
+                    .addAdditionalDeploymentArchive(path)
                     .setMode(QuarkusBootstrap.Mode.DEV);
             if (context.getProjectDir() != null) {
                 bootstrapBuilder.setProjectRoot(context.getProjectDir().toPath());

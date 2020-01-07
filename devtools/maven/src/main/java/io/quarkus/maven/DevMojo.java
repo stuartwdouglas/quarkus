@@ -53,13 +53,10 @@ import org.eclipse.aether.repository.WorkspaceReader;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyResult;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
-import io.quarkus.bootstrap.model.AppDependency;
-import io.quarkus.bootstrap.model.AppModel;
-import io.quarkus.bootstrap.resolver.BootstrapAppModelResolver;
 import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
-import io.quarkus.bootstrap.resolver.maven.MavenRepoInitializer;
 import io.quarkus.bootstrap.resolver.maven.workspace.LocalProject;
 import io.quarkus.dev.DevModeContext;
 import io.quarkus.dev.DevModeMain;
@@ -236,9 +233,9 @@ public class DevMojo extends AbstractMojo {
     public void execute() throws MojoFailureException, MojoExecutionException {
 
         mavenVersionEnforcer.ensureMavenVersion(getLog(), session);
-        boolean found = MojoUtils.checkProjectForMavenBuildPlugin(project);
+        Plugin pluginDef = MojoUtils.checkProjectForMavenBuildPlugin(project);
 
-        if (!found) {
+        if (pluginDef == null) {
             getLog().warn("The quarkus-maven-plugin build goal was not configured for this project, " +
                     "skipping quarkus:dev as this is assumed to be a support library. If you want to run quarkus dev" +
                     " on this project make sure the quarkus-maven-plugin is configured with a build goal.");
@@ -319,7 +316,7 @@ public class DevMojo extends AbstractMojo {
                 args.add("-Xverify:none");
             }
 
-            DevModeRunner runner = new DevModeRunner(args);
+            DevModeRunner runner = new DevModeRunner(args, pluginDef);
 
             runner.prepare();
             runner.run();
@@ -344,7 +341,7 @@ public class DevMojo extends AbstractMojo {
                         }
                     }
                     if (changed) {
-                        DevModeRunner newRunner = new DevModeRunner(args);
+                        DevModeRunner newRunner = new DevModeRunner(args, pluginDef);
                         try {
                             newRunner.prepare();
                         } catch (Exception e) {
@@ -441,9 +438,11 @@ public class DevMojo extends AbstractMojo {
         private final List<String> args;
         private Process process;
         private Set<Path> pomFiles = new HashSet<>();
+        private final Plugin pluginDef;
 
-        DevModeRunner(List<String> args) {
+        DevModeRunner(List<String> args, Plugin pluginDef) {
             this.args = new ArrayList<>(args);
+            this.pluginDef = pluginDef;
         }
 
         /**
@@ -529,48 +528,22 @@ public class DevMojo extends AbstractMojo {
 
             setKotlinSpecificFlags(devModeContext);
 
-            final AppModel appModel;
-            try {
-                RepositorySystem repoSystem = DevMojo.this.repoSystem;
-                final LocalProject localProject;
-                if (noDeps) {
-                    localProject = LocalProject.load(outputDirectory.toPath());
-                    addProject(devModeContext, localProject);
-                    pomFiles.add(localProject.getDir().resolve("pom.xml"));
-                } else {
-                    localProject = LocalProject.loadWorkspace(outputDirectory.toPath());
-                    for (LocalProject project : localProject.getSelfWithLocalDeps()) {
-                        if (project.getClassesDir() != null) {
-                            //if this project also contains Quarkus extensions we do no want to include these in the discovery
-                            //a bit of an edge case, but if you try and include a sample project with your extension you will
-                            //run into problems without this
-                            if (Files.exists(project.getClassesDir().resolve("META-INF/quarkus-extension.properties")) ||
-                                    Files.exists(project.getClassesDir().resolve("META-INF/quarkus-build-steps.list"))) {
-                                continue;
-                            }
-                        }
-                        addProject(devModeContext, project);
-                        pomFiles.add(project.getDir().resolve("pom.xml"));
-                    }
-                    repoSystem = MavenRepoInitializer.getRepositorySystem(repoSession.isOffline(), localProject.getWorkspace());
-                }
+            DefaultArtifact bootstrap = new DefaultArtifact("io.quarkus", "quarkus-development-mode", "jar",
+                    pluginDef.getVersion());
+            MavenArtifactResolver mavenArtifactResolver = MavenArtifactResolver.builder()
+                    .setRepositorySystem(repoSystem)
+                    .setRepositorySystemSession(repoSession)
+                    .setRemoteRepositories(repos)
+                    .build();
+            DependencyResult cpRes = mavenArtifactResolver.resolveManagedDependencies(
+                    bootstrap,
+                    Collections.emptyList(), Collections.emptyList());
 
-                appModel = new BootstrapAppModelResolver(MavenArtifactResolver.builder()
-                        .setRepositorySystem(repoSystem)
-                        .setRepositorySystemSession(repoSession)
-                        .setRemoteRepositories(repos)
-                        .setWorkspace(localProject.getWorkspace())
-                        .build())
-                                .setDevMode(true)
-                                .resolveModel(localProject.getAppArtifact());
-                if (appModel.getFullDeploymentDeps().isEmpty()) {
-                    throw new RuntimeException("Unable to resolve application dependencies");
-                }
-            } catch (Exception e) {
-                throw new MojoExecutionException("Failed to resolve Quarkus application model", e);
-            }
-            for (AppDependency appDep : appModel.getFullDeploymentDeps()) {
-                addToClassPaths(classPathManifest, devModeContext, appDep.getArtifact().getPath().toFile());
+            addToClassPaths(classPathManifest, devModeContext,
+                    mavenArtifactResolver.resolve(bootstrap).getArtifact().getFile());
+
+            for (ArtifactResult appDep : cpRes.getArtifactResults()) {
+                addToClassPaths(classPathManifest, devModeContext, appDep.getArtifact().getFile());
             }
 
             args.add("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");

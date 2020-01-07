@@ -6,6 +6,7 @@ import static io.quarkus.test.common.PathTestHelper.getTestClassesLocation;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -72,7 +73,8 @@ public class QuarkusTestExtension
 
             Path appClassLocation = getAppClassLocation(context.getRequiredTestClass());
 
-            QuarkusBootstrap.builder(appClassLocation);
+            System.err
+                    .println("INIT TIME " + (System.currentTimeMillis() - ManagementFactory.getRuntimeMXBean().getStartTime()));
 
             final ClassLoader testClassLoader = context.getRequiredTestClass().getClassLoader();
             final QuarkusBootstrap.Builder runnerBuilder = QuarkusBootstrap.builder(appClassLocation)
@@ -85,6 +87,8 @@ public class QuarkusTestExtension
                 runnerBuilder.addAdditionalApplicationArchive(new AdditionalDependency(testClassLocation, true, true));
             }
             CuratedApplication curatedApplication = runnerBuilder.setTest(true).build().bootstrap();
+            System.err.println(
+                    "CURATE TIME " + (System.currentTimeMillis() - ManagementFactory.getRuntimeMXBean().getStartTime()));
             AugmentAction augmentAction = new AugmentAction(curatedApplication,
                     Collections.singletonList(new Consumer<BuildChainBuilder>() {
                         @Override
@@ -112,6 +116,10 @@ public class QuarkusTestExtension
                         }
                     }));
             runningQuarkusApplication = augmentAction.createInitialRuntimeApplication().run();
+
+            System.err.println(
+                    "REAL START TIME " + (System.currentTimeMillis() - ManagementFactory.getRuntimeMXBean().getStartTime()));
+
             Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
 
             System.setProperty("test.url", TestHTTPResourceManager.getUri(runningQuarkusApplication));
@@ -385,8 +393,10 @@ public class QuarkusTestExtension
             invocation.proceed();
             return;
         }
-        if (!Modifier.isPublic(invocationContext.getExecutable().getModifiers())) {
-            throw new RuntimeException("BeforeEach method must be public " + invocationContext.getExecutable());
+        if (!allowPackagePrivateMethods) {
+            if (!Modifier.isPublic(invocationContext.getExecutable().getModifiers())) {
+                throw new RuntimeException("BeforeEach method must be public " + invocationContext.getExecutable());
+            }
         }
         invocation.proceed();
     }
@@ -398,8 +408,11 @@ public class QuarkusTestExtension
             invocation.proceed();
             return;
         }
-        if (!Modifier.isPublic(invocationContext.getExecutable().getModifiers())) {
-            throw new RuntimeException("AfterEach method must be public " + invocationContext.getExecutable());
+
+        if (!allowPackagePrivateMethods) {
+            if (!Modifier.isPublic(invocationContext.getExecutable().getModifiers())) {
+                throw new RuntimeException("AfterEach method must be public " + invocationContext.getExecutable());
+            }
         }
         invocation.proceed();
     }

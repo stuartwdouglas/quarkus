@@ -341,7 +341,17 @@ public class MavenArtifactResolver {
         try {
             final List<RemoteRepository> repos = aggregateRepositories(mainRepos, remoteRepos);
             return repoSystem.resolveDependencies(repoSession,
-                    new DependencyRequest().setCollectRequest(new CollectRequest(deps, managedDeps, repos)));
+                    new DependencyRequest().setCollectRequest(new CollectRequest(deps, managedDeps, repos)).setFilter(new DependencyFilter() {
+                        @Override
+                        public boolean accept(DependencyNode node, List<DependencyNode> parents) {
+                            if(node.getArtifact() != null) {
+                                if(node.getArtifact().getGroupId().equals("io.quarkus") && node.getArtifact().getArtifactId().equals("quarkus-bootstrap-core")) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                    }));
         } catch (DependencyResolutionException e) {
             throw new AppModelResolverException("Failed to resolve dependencies for " + deps, e);
         }

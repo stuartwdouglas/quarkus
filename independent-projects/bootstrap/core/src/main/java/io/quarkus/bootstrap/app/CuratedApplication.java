@@ -147,10 +147,15 @@ public class CuratedApplication implements Serializable {
                     builder.addParentFirstElement(element);
                 }
             }
-            //now all runtime deps, these will only be used if they are not in the parent
             for (AppDependency userDep : appModel.getUserDependencies()) {
                 if (!deploymentArtifacts.contains(userDep.getArtifact())) {
-                    builder.addElement(getElement(userDep.getArtifact()));
+                    AppArtifactKey key = getKey(userDep);
+                    ClassPathElement element = getElement(userDep.getArtifact());
+                    if (appModel.getParentFirstArtifacts().contains(key)) {
+                        //this mostly happens when building quarkus itself
+                        builder.addParentFirstElement(element);
+                    }
+                    builder.addElement(element);
                 }
             }
 
