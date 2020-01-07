@@ -112,6 +112,7 @@
                     </parentFirstArtifacts>
                     <excludedArtifacts>
                         <excludedArtifact>io.smallrye:smallrye-config</excludedArtifact>
+                        <excludedArtifact>javax.enterprise:cdi-api</excludedArtifact>
                     </excludedArtifacts>
                 </configuration>
             </plugin>
