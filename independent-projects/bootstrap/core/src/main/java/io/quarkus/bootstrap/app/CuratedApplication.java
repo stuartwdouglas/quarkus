@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import org.jboss.logging.Logger;
+
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.DirectoryClassPathElement;
 import io.quarkus.bootstrap.classloading.JarClassPathElement;

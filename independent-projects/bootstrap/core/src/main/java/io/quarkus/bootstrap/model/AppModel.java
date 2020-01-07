@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.jboss.logging.Logger;
+
 import io.quarkus.bootstrap.BootstrapConstants;
 
 /**
@@ -17,6 +19,8 @@ import io.quarkus.bootstrap.BootstrapConstants;
  * @author Alexey Loubyansky
  */
 public class AppModel implements Serializable {
+
+    private static final Logger log = Logger.getLogger(AppModel.class);
 
     private final AppArtifact appArtifact;
 
@@ -169,7 +173,7 @@ public class AppModel implements Serializable {
          *
          * @param props The quarkus-extension.properties file
          */
-        public void handleExtensionProperties(Properties props) {
+        public void handleExtensionProperties(Properties props, String extension) {
             String parentFirst = props.getProperty(BootstrapConstants.PARENT_FIRST_ARTIFACTS);
             if (parentFirst != null) {
                 String[] artifacts = parentFirst.split(",");
@@ -182,6 +186,7 @@ public class AppModel implements Serializable {
                 String[] artifacts = excluded.split(",");
                 for (String artifact : artifacts) {
                     excludedArtifacts.add(new AppArtifactKey(artifact.split(":")));
+                    log.debugf("Extension %s is excluding %s", extension, artifact);
                 }
             }
         }

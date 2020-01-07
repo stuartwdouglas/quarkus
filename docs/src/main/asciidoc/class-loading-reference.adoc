@@ -21,3 +21,42 @@ uses the class loading architecture outlined here.
 
 == Bootstrapping Quarkus
 
+All Quarkus applications are created by the QuarkusBootstrap class in the `independent-projects/bootstrap` module. This
+class is used to resolve all the relevant dependencies (both deployment and runtime) that are needed for the Quarkus
+application. The end result of this process is a `CuratedApplication`, which contains all the class loading information
+for the application.
+
+
+== Isolated Class Loaders
+
+The runtime class loader is always isolated. This means that it will have it's own copies of almost every class from the
+resolved dependency list. The exception to this are:
+
+- JDK classes
+- Classes from artifacts that extensions have marked as parent first (more on this later).
+
+=== Banned Dependencies
+
+There are some dependencies that we can be sure we do not want. This generally happens when a dependency has had a name
+change (e.g. smallrye-config changing groups from `org.smallrye` to `org.smallrye.config`, the `javax` -> `jakarta` rename).
+This can cause problems, as if these artifacts end up in the dependency tree out of date classes can be loaded that are
+not compatible with Quarkus. To deal with this this extensions can specify artifacts that should never be loaded. This is
+done by modifying the `quarkus-bootstrap-maven-plugin` config in the pom (which generates the `quarkus-extension.properties`
+file). Simply add an `excludedArtifacts` section as shown below:
+
+[source,xml]
+----
+<plugin>
+    <groupId>io.quarkus</groupId>
+    <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
+    <configuration>
+        <excludedArtifacts>
+            <excludedArtifact>io.smallrye:smallrye-config</excludedArtifact>
+            <excludedArtifact>javax.enterprise:cdi-api</excludedArtifact>
+        </excludedArtifacts>
+    </configuration>
+</plugin>
+----
+
+This should only be done if the extension depends on a never version of these artifacts. If the extension does not bring
+in a replacement artifact as a dependency then classes the application needs might end up missing.

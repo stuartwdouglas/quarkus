@@ -246,7 +246,7 @@ public class AppModelGradleResolver implements AppModelResolver {
         if (extProps == null) {
             return null;
         }
-        appBuilder.handleExtensionProperties(extProps);
+        appBuilder.handleExtensionProperties(extProps, a.toString());
         String value = extProps.getProperty(BootstrapConstants.PROP_DEPLOYMENT_ARTIFACT);
         final String[] split = value.split(":");
 

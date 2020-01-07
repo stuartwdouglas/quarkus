@@ -115,7 +115,7 @@ public class DeploymentInjectingDependencyVisitor {
             return;
         }
         final String value = rtProps.getProperty(BootstrapConstants.PROP_DEPLOYMENT_ARTIFACT);
-        appBuilder.handleExtensionProperties(rtProps);
+        appBuilder.handleExtensionProperties(rtProps, node.getArtifact().toString());
         if(value == null) {
             return;
         }

@@ -190,8 +190,9 @@ public class AugmentAction {
     }
 
     /**
-     * A task that can be used in isolated enviorments to do a build
+     * A task that can be used in isolated environments to do a build
      */
+    @SuppressWarnings("unused")
     public static class BuildTask implements BiConsumer<CuratedApplication, Map<String, Object>> {
 
         @Override

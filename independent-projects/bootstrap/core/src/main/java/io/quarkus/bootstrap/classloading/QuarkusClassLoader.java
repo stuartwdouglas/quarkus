@@ -369,6 +369,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
          * @return This builder
          */
         public Builder addElement(ClassPathElement element) {
+            log.debugf("Adding elements %s to QuarkusClassLoader %s", element, name);
             elements.add(element);
             return this;
         }
@@ -404,6 +405,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
          * @return This builder
          */
         public Builder addParentFirstElement(ClassPathElement element) {
+            log.debugf("Adding parent first element %s to QuarkusClassLoader %s", element, name);
             parentFirstElements.add(element);
             return this;
         }
