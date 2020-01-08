@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
-import org.jboss.logging.Logger;
-
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.DirectoryClassPathElement;
 import io.quarkus.bootstrap.classloading.JarClassPathElement;
@@ -32,6 +30,8 @@ import io.quarkus.bootstrap.resolver.AppModelResolver;
  *
  */
 public class CuratedApplication implements Serializable {
+
+    private static final String AUGMENTOR = "io.quarkus.runner.bootstrap.AugmentActionImpl";
 
     /**
      * The class path elements for the various artifacts. These can be used in multiple class loaders
@@ -91,6 +91,15 @@ public class CuratedApplication implements Serializable {
 
     public CurationResult getCurationResult() {
         return curationResult;
+    }
+
+    public AugmentAction createAugmentor() {
+        try {
+            Class<?> augmentor = getAugmentClassLoader().loadClass(AUGMENTOR);
+            return (AugmentAction) augmentor.getConstructor(CuratedApplication.class).newInstance(this);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SuppressWarnings("unchecked")

@@ -15,7 +15,10 @@ import org.jboss.logging.Logger;
 import org.objectweb.asm.ClassVisitor;
 
 import io.quarkus.bootstrap.app.AdditionalDependency;
+import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.RunningQuarkusApplication;
+import io.quarkus.bootstrap.app.StartupAction;
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.MemoryClassPathElement;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
@@ -27,9 +30,9 @@ import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
 
-public class StartupAction {
+public class StartupActionImpl implements StartupAction {
 
-    private static final Logger log = Logger.getLogger(StartupAction.class);
+    private static final Logger log = Logger.getLogger(StartupActionImpl.class);
 
     static final String DEBUG_CLASSES_DIR = System.getProperty("quarkus.debug.generated-classes-dir");
 
@@ -37,7 +40,7 @@ public class StartupAction {
     private final AugmentAction augmentAction;
     private final BuildResult buildResult;
 
-    public StartupAction(CuratedApplication curatedApplication, AugmentAction augmentAction, BuildResult buildResult) {
+    public StartupActionImpl(CuratedApplication curatedApplication, AugmentAction augmentAction, BuildResult buildResult) {
         this.curatedApplication = curatedApplication;
         this.augmentAction = augmentAction;
         this.buildResult = buildResult;
@@ -80,7 +83,7 @@ public class StartupAction {
             Method start = appClass.getMethod("start", String[].class);
             Object application = appClass.newInstance();
             start.invoke(application, (Object) args);
-            return new RunningQuarkusApplication((Closeable) application, runtimeClassLoader);
+            return new RunningQuarkusApplicationImpl((Closeable) application, runtimeClassLoader);
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

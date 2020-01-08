@@ -50,6 +50,7 @@ import org.junit.jupiter.api.extension.TestInstantiationException;
 
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.bootstrap.app.RunningQuarkusApplication;
 import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildContext;
 import io.quarkus.builder.BuildException;
@@ -57,8 +58,7 @@ import io.quarkus.builder.BuildStep;
 import io.quarkus.builder.item.BuildItem;
 import io.quarkus.deployment.proxy.ProxyConfiguration;
 import io.quarkus.deployment.proxy.ProxyFactory;
-import io.quarkus.runner.bootstrap.AugmentAction;
-import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
+import io.quarkus.runner.bootstrap.AugmentActionImpl;
 import io.quarkus.test.common.DefineClassVisibleClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.PropertyTestUtil;
@@ -381,7 +381,7 @@ public class QuarkusUnitTest
                         .setProjectRoot(testLocation)
                         .build().bootstrap();
 
-                runningQuarkusApplication = new AugmentAction(curatedApplication, customizers)
+                runningQuarkusApplication = new AugmentActionImpl(curatedApplication, customizers)
                         .createInitialRuntimeApplication()
                         .run(new String[0]);
                 //we restore the CL at the end of the test

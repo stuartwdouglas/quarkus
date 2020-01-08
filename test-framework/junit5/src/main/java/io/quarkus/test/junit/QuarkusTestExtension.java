@@ -32,8 +32,10 @@ import org.junit.jupiter.api.extension.TestInstantiationException;
 import org.opentest4j.TestAbortedException;
 
 import io.quarkus.bootstrap.app.AdditionalDependency;
+import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.bootstrap.app.RunningQuarkusApplication;
 import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildContext;
 import io.quarkus.builder.BuildStep;
@@ -42,8 +44,7 @@ import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
 import io.quarkus.deployment.proxy.ProxyConfiguration;
 import io.quarkus.deployment.proxy.ProxyFactory;
 import io.quarkus.gizmo.ClassOutput;
-import io.quarkus.runner.bootstrap.AugmentAction;
-import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
+import io.quarkus.runner.bootstrap.AugmentActionImpl;
 import io.quarkus.test.common.DefineClassVisibleClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.PropertyTestUtil;
@@ -89,7 +90,7 @@ public class QuarkusTestExtension
             CuratedApplication curatedApplication = runnerBuilder.setTest(true).build().bootstrap();
             System.err.println(
                     "CURATE TIME " + (System.currentTimeMillis() - ManagementFactory.getRuntimeMXBean().getStartTime()));
-            AugmentAction augmentAction = new AugmentAction(curatedApplication,
+            AugmentAction augmentAction = new AugmentActionImpl(curatedApplication,
                     Collections.singletonList(new Consumer<BuildChainBuilder>() {
                         @Override
                         public void accept(BuildChainBuilder buildChainBuilder) {

@@ -18,10 +18,10 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
+import io.quarkus.bootstrap.app.AugmentAction;
+import io.quarkus.bootstrap.app.AugmentResult;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
-import io.quarkus.runner.bootstrap.AugmentAction;
-import io.quarkus.runner.bootstrap.AugmentResult;
 
 /**
  * Build the application.
@@ -158,7 +158,7 @@ public class BuildMojo extends AbstractMojo {
                     .setTargetDirectory(buildDir.toPath())
                     .build().bootstrap();
 
-            AugmentAction action = new AugmentAction(curatedApplication);
+            AugmentAction action = curatedApplication.createAugmentor();
             AugmentResult result = action.createProductionApplication();
 
             Artifact original = project.getArtifact();

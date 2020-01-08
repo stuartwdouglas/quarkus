@@ -7,8 +7,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import io.quarkus.bootstrap.app.AdditionalDependency;
+import io.quarkus.bootstrap.app.ArtifactResult;
+import io.quarkus.bootstrap.app.AugmentAction;
+import io.quarkus.bootstrap.app.AugmentResult;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
@@ -37,7 +41,7 @@ import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 /**
  * The augmentation task that produces the application.
  */
-public class AugmentAction {
+public class AugmentActionImpl implements AugmentAction {
 
     private final QuarkusBootstrap quarkusBootstrap;
     private final CuratedApplication curatedApplication;
@@ -51,11 +55,11 @@ public class AugmentAction {
      */
     private final Map<Class<?>, Object> reloadContext = new ConcurrentHashMap<>();
 
-    public AugmentAction(CuratedApplication curatedApplication) {
+    public AugmentActionImpl(CuratedApplication curatedApplication) {
         this(curatedApplication, Collections.emptyList());
     }
 
-    public AugmentAction(CuratedApplication curatedApplication, List<Consumer<BuildChainBuilder>> chainCustomizers) {
+    public AugmentActionImpl(CuratedApplication curatedApplication, List<Consumer<BuildChainBuilder>> chainCustomizers) {
         this.quarkusBootstrap = curatedApplication.getQuarkusBootstrap();
         this.curatedApplication = curatedApplication;
         this.chainCustomizers = chainCustomizers;
@@ -63,31 +67,38 @@ public class AugmentAction {
                 : quarkusBootstrap.getMode() == QuarkusBootstrap.Mode.TEST ? LaunchMode.TEST : LaunchMode.DEVELOPMENT;
     }
 
+    @Override
     public AugmentResult createProductionApplication() {
         if (launchMode != LaunchMode.NORMAL) {
             throw new IllegalStateException("Can only create a production application when using NORMAL launch mode");
         }
         BuildResult result = runAugment(true, Collections.emptySet(), ArtifactResultBuildItem.class);
-        return new AugmentResult(result.consumeMulti(ArtifactResultBuildItem.class), result.consumeOptional(JarBuildItem.class),
-                result.consumeOptional(NativeImageBuildItem.class));
+        JarBuildItem jarBuildItem = result.consumeOptional(JarBuildItem.class);
+        NativeImageBuildItem nativeImageBuildItem = result.consumeOptional(NativeImageBuildItem.class);
+        return new AugmentResult(result.consumeMulti(ArtifactResultBuildItem.class).stream()
+                .map(a -> new ArtifactResult(a.getPath(), a.getType(), a.getAdditionalPaths())).collect(Collectors.toList()),
+                jarBuildItem != null ? jarBuildItem.toJarResult() : null,
+                nativeImageBuildItem != null ? nativeImageBuildItem.getPath() : null);
     }
 
-    public StartupAction createInitialRuntimeApplication() {
+    @Override
+    public StartupActionImpl createInitialRuntimeApplication() {
         if (launchMode == LaunchMode.NORMAL) {
             throw new IllegalStateException("Cannot launch a runtime application with NORMAL launch mode");
         }
         BuildResult result = runAugment(true, Collections.emptySet(), GeneratedClassBuildItem.class,
                 GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class);
-        return new StartupAction(curatedApplication, this, result);
+        return new StartupActionImpl(curatedApplication, this, result);
     }
 
-    public StartupAction reloadExistingApplication(Set<String> changedResources) {
+    @Override
+    public StartupActionImpl reloadExistingApplication(Set<String> changedResources) {
         if (launchMode != LaunchMode.DEVELOPMENT) {
             throw new IllegalStateException("Only application with launch mode DEVELOPMENT can restart");
         }
         BuildResult result = runAugment(false, changedResources, GeneratedClassBuildItem.class,
                 GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class);
-        return new StartupAction(curatedApplication, this, result);
+        return new StartupActionImpl(curatedApplication, this, result);
     }
 
     /**
@@ -197,7 +208,7 @@ public class AugmentAction {
 
         @Override
         public void accept(CuratedApplication application, Map<String, Object> stringObjectMap) {
-            AugmentAction action = new AugmentAction(application);
+            AugmentAction action = new AugmentActionImpl(application);
             action.createProductionApplication();
         }
     }

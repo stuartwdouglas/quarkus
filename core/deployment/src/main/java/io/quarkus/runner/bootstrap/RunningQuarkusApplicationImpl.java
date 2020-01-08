@@ -6,18 +6,20 @@ import java.util.Optional;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
+import io.quarkus.bootstrap.app.RunningQuarkusApplication;
 import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 
-public class RunningQuarkusApplication implements AutoCloseable {
+public class RunningQuarkusApplicationImpl implements RunningQuarkusApplication {
 
     private final Closeable closeTask;
     private final ClassLoader classLoader;
 
-    public RunningQuarkusApplication(Closeable closeTask, ClassLoader classLoader) {
+    public RunningQuarkusApplicationImpl(Closeable closeTask, ClassLoader classLoader) {
         this.closeTask = closeTask;
         this.classLoader = classLoader;
     }
 
+    @Override
     public ClassLoader getClassLoader() {
         return classLoader;
     }
@@ -27,6 +29,7 @@ public class RunningQuarkusApplication implements AutoCloseable {
         closeTask.close();
     }
 
+    @Override
     public <T> Optional<T> getConfigValue(String key, Class<T> type) {
         //the config is in an isolated CL
         //we need to extract it via reflection

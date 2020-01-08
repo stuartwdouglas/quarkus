@@ -18,12 +18,12 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
+import io.quarkus.bootstrap.app.AugmentAction;
+import io.quarkus.bootstrap.app.AugmentResult;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.resolver.TsArtifact;
 import io.quarkus.bootstrap.resolver.update.CreatorOutcomeTestBase;
-import io.quarkus.runner.bootstrap.AugmentAction;
-import io.quarkus.runner.bootstrap.AugmentResult;
 
 public abstract class ExecutableOutputOutcomeTestBase extends CreatorOutcomeTestBase {
 
@@ -39,7 +39,7 @@ public abstract class ExecutableOutputOutcomeTestBase extends CreatorOutcomeTest
     @Override
     protected void testCreator(QuarkusBootstrap creator) throws Exception {
         CuratedApplication curated = creator.bootstrap();
-        AugmentAction action = new AugmentAction(curated);
+        AugmentAction action = curated.createAugmentor();
         AugmentResult outcome = action.createProductionApplication();
 
         final Path libDir = outcome.getJar().getLibraryDir();

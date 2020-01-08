@@ -23,7 +23,6 @@ import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.model.AppArtifact;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
 import io.quarkus.bootstrap.resolver.AppModelResolverException;
-import io.quarkus.runner.bootstrap.AugmentAction;
 
 public class QuarkusNative extends QuarkusTask {
 
@@ -358,9 +357,7 @@ public class QuarkusNative extends QuarkusTask {
                     //.setConfigDir(extension().outputConfigDirectory().toPath())
                     //.setTargetDirectory(extension().outputDirectory().toPath())
                     .build().bootstrap();
-
-            AugmentAction action = new AugmentAction(appCreationContext);
-            action.createProductionApplication();
+            appCreationContext.createAugmentor().createProductionApplication();
 
         } catch (BootstrapException e) {
             throw new GradleException("Failed to build a runnable JAR", e);

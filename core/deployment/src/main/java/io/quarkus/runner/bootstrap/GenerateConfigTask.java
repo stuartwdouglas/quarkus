@@ -39,7 +39,7 @@ public class GenerateConfigTask {
         //first lets look for some config, as it is not on the current class path
         //and we need to load it to run the build process
         try {
-            AugmentAction augmentAction = new AugmentAction(application, Collections.emptyList());
+            AugmentActionImpl augmentAction = new AugmentActionImpl(application, Collections.emptyList());
             BuildResult buildResult = augmentAction.runCustomAction(new Consumer<BuildChainBuilder>() {
                 @Override
                 public void accept(BuildChainBuilder chainBuilder) {

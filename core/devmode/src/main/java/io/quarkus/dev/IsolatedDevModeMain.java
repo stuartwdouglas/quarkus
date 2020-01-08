@@ -21,15 +21,16 @@ import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.app.AdditionalDependency;
+import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.RunningQuarkusApplication;
+import io.quarkus.bootstrap.app.StartupAction;
 import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildContext;
 import io.quarkus.builder.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationClassPredicateBuildItem;
 import io.quarkus.dev.spi.HotReplacementSetup;
-import io.quarkus.runner.bootstrap.AugmentAction;
-import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
-import io.quarkus.runner.bootstrap.StartupAction;
+import io.quarkus.runner.bootstrap.AugmentActionImpl;
 import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
 import io.quarkus.runtime.logging.InitialConfigurator;
@@ -198,32 +199,33 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 context = (DevModeContext) new ObjectInputStream(new ByteArrayInputStream(out.toByteArray())).readObject();
             }
 
-            augmentAction = new AugmentAction(curatedApplication, Collections.singletonList(new Consumer<BuildChainBuilder>() {
-                @Override
-                public void accept(BuildChainBuilder buildChainBuilder) {
-                    buildChainBuilder.addBuildStep(new BuildStep() {
+            augmentAction = new AugmentActionImpl(curatedApplication,
+                    Collections.singletonList(new Consumer<BuildChainBuilder>() {
                         @Override
-                        public void execute(BuildContext context) {
-                            //we need to make sure all hot reloadable classes are application classes
-                            context.produce(new ApplicationClassPredicateBuildItem(new Predicate<String>() {
+                        public void accept(BuildChainBuilder buildChainBuilder) {
+                            buildChainBuilder.addBuildStep(new BuildStep() {
                                 @Override
-                                public boolean test(String s) {
-                                    for (AdditionalDependency i : curatedApplication.getQuarkusBootstrap()
-                                            .getAdditionalApplicationArchives()) {
-                                        if (i.isHotReloadable()) {
-                                            Path p = i.getArchivePath().resolve(s.replace(".", "/") + ".class");
-                                            if (Files.exists(p)) {
-                                                return true;
+                                public void execute(BuildContext context) {
+                                    //we need to make sure all hot reloadable classes are application classes
+                                    context.produce(new ApplicationClassPredicateBuildItem(new Predicate<String>() {
+                                        @Override
+                                        public boolean test(String s) {
+                                            for (AdditionalDependency i : curatedApplication.getQuarkusBootstrap()
+                                                    .getAdditionalApplicationArchives()) {
+                                                if (i.isHotReloadable()) {
+                                                    Path p = i.getArchivePath().resolve(s.replace(".", "/") + ".class");
+                                                    if (Files.exists(p)) {
+                                                        return true;
+                                                    }
+                                                }
                                             }
+                                            return false;
                                         }
-                                    }
-                                    return false;
+                                    }));
                                 }
-                            }));
+                            }).produces(ApplicationClassPredicateBuildItem.class).build();
                         }
-                    }).produces(ApplicationClassPredicateBuildItem.class).build();
-                }
-            }));
+                    }));
             runtimeUpdatesProcessor = setupRuntimeCompilation(context);
             if (runtimeUpdatesProcessor != null) {
                 runtimeUpdatesProcessor.checkForFileChange();

@@ -35,14 +35,15 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.bootstrap.app.AdditionalDependency;
+import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.bootstrap.app.RunningQuarkusApplication;
+import io.quarkus.bootstrap.app.StartupAction;
 import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildContext;
 import io.quarkus.builder.BuildStep;
-import io.quarkus.runner.bootstrap.AugmentAction;
-import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
-import io.quarkus.runner.bootstrap.StartupAction;
+import io.quarkus.runner.bootstrap.AugmentActionImpl;
 import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.TestInstantiator;
@@ -170,7 +171,7 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
             bootstrapBuilder.setProjectRoot(PathTestHelper.getTestClassesLocation(testJavaClass));
 
             CuratedApplication curatedApplication = bootstrapBuilder.build().bootstrap();
-            AugmentAction augmentAction = new AugmentAction(curatedApplication, customizers);
+            AugmentAction augmentAction = new AugmentActionImpl(curatedApplication, customizers);
             StartupAction app = augmentAction.createInitialRuntimeApplication();
             RunningQuarkusApplication runningQuarkusApplication = app.run();
             appClassloader.set(runningQuarkusApplication.getClassLoader());

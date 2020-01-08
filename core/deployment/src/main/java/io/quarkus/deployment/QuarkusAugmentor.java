@@ -13,7 +13,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.jboss.logging.Logger;
 
@@ -35,6 +34,7 @@ import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.pkg.builditem.BuildSystemTargetBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.runtime.LaunchMode;
+import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 
 public class QuarkusAugmentor {
 

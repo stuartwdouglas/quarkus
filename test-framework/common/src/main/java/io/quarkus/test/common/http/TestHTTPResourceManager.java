@@ -10,7 +10,7 @@ import java.util.ServiceLoader;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
-import io.quarkus.runner.bootstrap.RunningQuarkusApplication;
+import io.quarkus.bootstrap.app.RunningQuarkusApplication;
 
 public class TestHTTPResourceManager {
 

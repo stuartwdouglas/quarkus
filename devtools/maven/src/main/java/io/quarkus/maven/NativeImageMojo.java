@@ -25,10 +25,10 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
+import io.quarkus.bootstrap.app.AugmentAction;
+import io.quarkus.bootstrap.app.AugmentResult;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
-import io.quarkus.runner.bootstrap.AugmentAction;
-import io.quarkus.runner.bootstrap.AugmentResult;
 
 /**
  * Legacy mojo for backwards compatibility reasons. This should not be used in new projects
@@ -209,7 +209,7 @@ public class NativeImageMojo extends AbstractMojo {
                         .setTargetDirectory(buildDir.toPath())
                         .build().bootstrap();
 
-                AugmentAction action = new AugmentAction(curatedApplication);
+                AugmentAction action = curatedApplication.createAugmentor();
                 AugmentResult result = action.createProductionApplication();
                 //TODO: config voerrides
 
