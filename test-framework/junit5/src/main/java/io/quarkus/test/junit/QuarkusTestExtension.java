@@ -7,6 +7,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -172,8 +173,10 @@ public class QuarkusTestExtension
             throws TestInstantiationException {
         if (isNativeTest(extensionContext)) {
             try {
-                return extensionContext.getRequiredTestClass().newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+                Constructor<?> constructor = extensionContext.getRequiredTestClass().getConstructor();
+                constructor.setAccessible(true);
+                return constructor.newInstance();
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 throw new TestInstantiationException("Failed to create test", e);
             }
         }
