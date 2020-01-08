@@ -13,6 +13,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.jboss.logging.Logger;
 
@@ -79,7 +80,7 @@ public class QuarkusAugmentor {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         FileSystem rootFs = null;
         try {
-            Thread.currentThread().setContextClassLoader(deploymentClassLoader);
+            Thread.currentThread().setContextClassLoader(new BrokenMpDelegationClassLoader(deploymentClassLoader));
 
             final BuildChainBuilder chainBuilder = BuildChain.builder();
 
