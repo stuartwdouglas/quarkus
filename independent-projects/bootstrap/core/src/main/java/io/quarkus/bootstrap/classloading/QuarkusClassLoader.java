@@ -260,14 +260,17 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
             ClassPathElement[] resource = state.loadableResources.get(resourceName);
             if (resource != null) {
                 ClassPathElement classPathElement = resource[0];
-                byte[] data = classPathElement.getResource(resourceName).getData();
-                List<BiFunction<String, ClassVisitor, ClassVisitor>> transformers = bytecodeTransformers.get(name);
-                if (transformers != null) {
-                    data = handleTransform(name, data, transformers);
+                ClassPathResource classPathElementResource = classPathElement.getResource(resourceName);
+                if(classPathElementResource != null) { //can happen if the class loader was closed
+                    byte[] data = classPathElementResource.getData();
+                    List<BiFunction<String, ClassVisitor, ClassVisitor>> transformers = bytecodeTransformers.get(name);
+                    if (transformers != null) {
+                        data = handleTransform(name, data, transformers);
+                    }
+                    definePackage(name);
+                    return defineClass(name, data, 0, data.length,
+                            protectionDomains.computeIfAbsent(classPathElement, (ce) -> ce.getProtectionDomain(this)));
                 }
-                definePackage(name);
-                return defineClass(name, data, 0, data.length,
-                        protectionDomains.computeIfAbsent(classPathElement, (ce) -> ce.getProtectionDomain(this)));
             }
 
             if (!parentFirst) {

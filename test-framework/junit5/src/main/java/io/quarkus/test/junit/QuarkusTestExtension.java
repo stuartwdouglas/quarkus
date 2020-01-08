@@ -14,8 +14,11 @@ import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
@@ -44,7 +47,6 @@ import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
 import io.quarkus.deployment.proxy.ProxyConfiguration;
 import io.quarkus.deployment.proxy.ProxyFactory;
 import io.quarkus.gizmo.ClassOutput;
-import io.quarkus.runner.bootstrap.AugmentActionImpl;
 import io.quarkus.test.common.DefineClassVisibleClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.PropertyTestUtil;
@@ -77,8 +79,8 @@ public class QuarkusTestExtension
             System.err
                     .println("INIT TIME " + (System.currentTimeMillis() - ManagementFactory.getRuntimeMXBean().getStartTime()));
 
-            final ClassLoader testClassLoader = context.getRequiredTestClass().getClassLoader();
             final QuarkusBootstrap.Builder runnerBuilder = QuarkusBootstrap.builder(appClassLocation)
+                    .setIsolateDeployment(true)
                     .setMode(QuarkusBootstrap.Mode.TEST);
 
             testClassLocation = getTestClassesLocation(context.getRequiredTestClass());
@@ -90,32 +92,8 @@ public class QuarkusTestExtension
             CuratedApplication curatedApplication = runnerBuilder.setTest(true).build().bootstrap();
             System.err.println(
                     "CURATE TIME " + (System.currentTimeMillis() - ManagementFactory.getRuntimeMXBean().getStartTime()));
-            AugmentAction augmentAction = new AugmentActionImpl(curatedApplication,
-                    Collections.singletonList(new Consumer<BuildChainBuilder>() {
-                        @Override
-                        public void accept(BuildChainBuilder buildChainBuilder) {
-                            buildChainBuilder.addBuildStep(new BuildStep() {
-                                @Override
-                                public void execute(BuildContext context) {
-                                    context.produce(new TestClassPredicateBuildItem(new Predicate<String>() {
-                                        @Override
-                                        public boolean test(String className) {
-                                            return PathTestHelper.isTestClass(className, testClassLoader);
-                                        }
-                                    }));
-                                }
-                            }).produces(TestClassPredicateBuildItem.class)
-                                    .build();
-
-                            buildChainBuilder.addBuildStep(new BuildStep() {
-                                @Override
-                                public void execute(BuildContext context) {
-                                    context.produce(new TestAnnotationBuildItem(QuarkusTest.class.getName()));
-                                }
-                            }).produces(TestAnnotationBuildItem.class)
-                                    .build();
-                        }
-                    }));
+            AugmentAction augmentAction = curatedApplication.createAugmentor(TestBuildChainFunction.class.getName(),
+                    Collections.emptyMap());
             runningQuarkusApplication = augmentAction.createInitialRuntimeApplication().run();
 
             System.err.println(
@@ -481,6 +459,39 @@ public class QuarkusTestExtension
                     setCCL(QuarkusTestExtension.this.originalCl);
                 }
             }
+        }
+    }
+
+    public static class TestBuildChainFunction implements Function<Map<String, Object>, List<Consumer<BuildChainBuilder>>> {
+
+        @Override
+        public List<Consumer<BuildChainBuilder>> apply(Map<String, Object> stringObjectMap) {
+            return Collections.singletonList(new Consumer<BuildChainBuilder>() {
+                @Override
+                public void accept(BuildChainBuilder buildChainBuilder) {
+                    buildChainBuilder.addBuildStep(new BuildStep() {
+                        @Override
+                        public void execute(BuildContext context) {
+                            context.produce(new TestClassPredicateBuildItem(new Predicate<String>() {
+                                @Override
+                                public boolean test(String className) {
+                                    return PathTestHelper.isTestClass(className,
+                                            Thread.currentThread().getContextClassLoader());
+                                }
+                            }));
+                        }
+                    }).produces(TestClassPredicateBuildItem.class)
+                            .build();
+
+                    buildChainBuilder.addBuildStep(new BuildStep() {
+                        @Override
+                        public void execute(BuildContext context) {
+                            context.produce(new TestAnnotationBuildItem(QuarkusTest.class.getName()));
+                        }
+                    }).produces(TestAnnotationBuildItem.class)
+                            .build();
+                }
+            });
         }
     }
 }

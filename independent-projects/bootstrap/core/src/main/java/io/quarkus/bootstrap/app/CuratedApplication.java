@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.DirectoryClassPathElement;
@@ -97,6 +98,24 @@ public class CuratedApplication implements Serializable {
         try {
             Class<?> augmentor = getAugmentClassLoader().loadClass(AUGMENTOR);
             return (AugmentAction) augmentor.getConstructor(CuratedApplication.class).newInstance(this);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * This creates an augmentor, but uses the supplied class name to customise the build chain.
+     *
+     * The class name that is passed in must be the name of an implementation of
+     * {@code Function<Map<String, Object>, List<Consumer<BuildChainBuilder>>>}
+     * which is used to generate a list of build chain customisers to control the build.
+     */
+    public AugmentAction createAugmentor(String functionName, Map<String, Object> props) {
+        try {
+            Class<?> augmentor = getAugmentClassLoader().loadClass(AUGMENTOR);
+            Function<Object, List<?>> function = (Function<Object, List<?>>) getAugmentClassLoader().loadClass(functionName).newInstance();
+            List<?> res = function.apply(props);
+            return (AugmentAction) augmentor.getConstructor(CuratedApplication.class, List.class).newInstance(this, res);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
