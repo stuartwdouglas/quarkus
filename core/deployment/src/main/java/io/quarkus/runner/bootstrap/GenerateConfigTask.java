@@ -81,6 +81,7 @@ public class GenerateConfigTask {
                 sb.append("\n");
             }
 
+            Files.createDirectories(configFile.getParent());
             Files.write(configFile, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
 
         } catch (Exception e) {
