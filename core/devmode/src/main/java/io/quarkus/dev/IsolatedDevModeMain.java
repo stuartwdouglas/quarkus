@@ -116,7 +116,8 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
         }
     }
 
-    private RuntimeUpdatesProcessor setupRuntimeCompilation(DevModeContext context) throws Exception {
+    private RuntimeUpdatesProcessor setupRuntimeCompilation(DevModeContext context, CuratedApplication application)
+            throws Exception {
         if (!context.getModules().isEmpty()) {
             ServiceLoader<CompilationProvider> serviceLoader = ServiceLoader.load(CompilationProvider.class);
             List<CompilationProvider> compilationProviders = new ArrayList<>();
@@ -126,7 +127,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
             }
             ClassLoaderCompiler compiler;
             try {
-                compiler = new ClassLoaderCompiler(Thread.currentThread().getContextClassLoader(),
+                compiler = new ClassLoaderCompiler(Thread.currentThread().getContextClassLoader(), curatedApplication,
                         compilationProviders, context);
             } catch (Exception e) {
                 log.error("Failed to create compiler, runtime compilation will be unavailable", e);
@@ -226,7 +227,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                             }).produces(ApplicationClassPredicateBuildItem.class).build();
                         }
                     }));
-            runtimeUpdatesProcessor = setupRuntimeCompilation(context);
+            runtimeUpdatesProcessor = setupRuntimeCompilation(context, o);
             if (runtimeUpdatesProcessor != null) {
                 runtimeUpdatesProcessor.checkForFileChange();
                 runtimeUpdatesProcessor.checkForChangedClasses();
