@@ -3,6 +3,7 @@ package io.quarkus.runner.bootstrap;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
@@ -82,7 +83,8 @@ public class GenerateConfigTask {
             }
 
             Files.createDirectories(configFile.getParent());
-            Files.write(configFile, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+            Files.write(configFile, sb.toString().getBytes(StandardCharsets.UTF_8),
+                    Files.exists(configFile) ? new OpenOption[] { StandardOpenOption.APPEND } : new OpenOption[] {});
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate config file", e);
