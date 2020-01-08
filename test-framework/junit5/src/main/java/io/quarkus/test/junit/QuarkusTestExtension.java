@@ -48,6 +48,7 @@ import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
 import io.quarkus.deployment.proxy.ProxyConfiguration;
 import io.quarkus.deployment.proxy.ProxyFactory;
 import io.quarkus.gizmo.ClassOutput;
+import io.quarkus.runtime.Timing;
 import io.quarkus.test.common.DefineClassVisibleClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.PropertyTestUtil;
@@ -91,6 +92,7 @@ public class QuarkusTestExtension
                 runnerBuilder.addAdditionalApplicationArchive(new AdditionalDependency(testClassLocation, true, true));
             }
             CuratedApplication curatedApplication = runnerBuilder.setTest(true).build().bootstrap();
+            Timing.staticInitStarted(curatedApplication.getBaseRuntimeClassLoader());
             System.err.println(
                     "CURATE TIME " + (System.currentTimeMillis() - ManagementFactory.getRuntimeMXBean().getStartTime()));
             AugmentAction augmentAction = curatedApplication.createAugmentor(TestBuildChainFunction.class.getName(),
@@ -359,11 +361,11 @@ public class QuarkusTestExtension
     @Override
     public void interceptBeforeAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
             ExtensionContext extensionContext) throws Throwable {
-        ensureStarted(extensionContext);
         if (isNativeTest(extensionContext)) {
             invocation.proceed();
             return;
         }
+        ensureStarted(extensionContext);
         runExtensionMethod(invocationContext, extensionContext);
         invocation.proceed();
     }

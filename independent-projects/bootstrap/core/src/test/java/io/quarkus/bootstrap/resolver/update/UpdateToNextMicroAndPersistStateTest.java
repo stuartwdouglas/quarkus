@@ -71,7 +71,7 @@ public class UpdateToNextMicroAndPersistStateTest extends CreatorOutcomeTestBase
                 new AppDependency(TsArtifact.jar("ext2-deployment", "1.0.0").toAppArtifact(), "compile")
         }), effectiveModel.getDeploymentDependencies());
 
-        outcome.getCurationResult().persist(outcome.getAppModelResolver());
+        outcome.getCurationResult().persist(outcome.getQuarkusBootstrap().getAppModelResolver());
 
         if (++buildNo <= EXPECTED_UPDATES.length) {
             rebuild();

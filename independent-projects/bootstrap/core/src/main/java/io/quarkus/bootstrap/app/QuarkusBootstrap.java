@@ -130,6 +130,10 @@ public class QuarkusBootstrap implements Serializable {
 
     }
 
+    public AppModelResolver getAppModelResolver() {
+        return appModelResolver;
+    }
+
     public Path getApplicationRoot() {
         return applicationRoot;
     }

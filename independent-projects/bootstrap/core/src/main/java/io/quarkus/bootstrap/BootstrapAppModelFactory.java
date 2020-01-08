@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
@@ -213,7 +214,6 @@ public class BootstrapAppModelFactory {
         }
         try {
             Path cachedCpPath = null;
-            AppModelResolver appModelResolver = getAppModelResolver();
             if (enableClasspathCache) {
                 cachedCpPath = resolveCachedCpPath(localProject);
                 if (Files.exists(cachedCpPath)) {
@@ -221,7 +221,7 @@ public class BootstrapAppModelFactory {
                         if (reader.readInt() == CP_CACHE_FORMAT_ID) {
                             if (reader.readInt() == localProject.getWorkspace().getId()) {
                                 ObjectInputStream in = new ObjectInputStream(reader);
-                                return new CurationResult((AppModel) in.readObject(), appModelResolver);
+                                return new CurationResult((AppModel) in.readObject(), () -> getAppModelResolver());
                             } else {
                                 debug("Cached deployment classpath has expired for %s", localProject.getAppArtifact());
                             }
@@ -236,8 +236,9 @@ public class BootstrapAppModelFactory {
                 }
             }
 
+            AppModelResolver appModelResolver = getAppModelResolver();
             CurationResult curationResult = new CurationResult(appModelResolver
-                    .resolveModel(localProject.getAppArtifact()), appModelResolver);
+                    .resolveModel(localProject.getAppArtifact()), new FixedSuppler<>(appModelResolver));
             if (cachedCpPath != null) {
                 Files.createDirectories(cachedCpPath.getParent());
                 try (DataOutputStream out = new DataOutputStream(Files.newOutputStream(cachedCpPath))) {
@@ -303,7 +304,7 @@ public class BootstrapAppModelFactory {
 
             //we now have our deployment time artifacts, lets resolve all their deps
             AppModel model = resolver.resolveManagedModel(appArtifact, artifacts, null);
-            return new CurationResult(model, resolver);
+            return new CurationResult(model, new FixedSuppler<>(resolver));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -392,7 +393,8 @@ public class BootstrapAppModelFactory {
         }
 
         if (versionUpdate == VersionUpdate.NONE) {
-            return new CurationResult(initialDepsList, modelResolver, Collections.emptyList(), loadedFromState, appArtifact,
+            return new CurationResult(initialDepsList, new FixedSuppler<>(modelResolver), Collections.emptyList(),
+                    loadedFromState, appArtifact,
                     stateArtifact);
         }
 
@@ -447,7 +449,8 @@ public class BootstrapAppModelFactory {
 
         if (availableUpdates != null) {
             try {
-                return new CurationResult(modelResolver.resolveModel(appArtifact, availableUpdates), modelResolver,
+                return new CurationResult(modelResolver.resolveModel(appArtifact, availableUpdates),
+                        new FixedSuppler<>(modelResolver),
                         availableUpdates,
                         loadedFromState, appArtifact, stateArtifact);
             } catch (AppModelResolverException e) {
@@ -455,7 +458,8 @@ public class BootstrapAppModelFactory {
             }
         } else {
             log.info("- no updates available");
-            return new CurationResult(initialDepsList, modelResolver, Collections.emptyList(), loadedFromState, appArtifact,
+            return new CurationResult(initialDepsList, new FixedSuppler<>(modelResolver), Collections.emptyList(),
+                    loadedFromState, appArtifact,
                     stateArtifact);
         }
     }
@@ -475,6 +479,19 @@ public class BootstrapAppModelFactory {
     private static void debug(String msg, Object... args) {
         if (log.isDebugEnabled()) {
             log.debug(String.format(msg, args));
+        }
+    }
+
+    private static class FixedSuppler<T> implements Supplier<T> {
+        final T val;
+
+        private FixedSuppler(T val) {
+            this.val = val;
+        }
+
+        @Override
+        public T get() {
+            return val;
         }
     }
 }

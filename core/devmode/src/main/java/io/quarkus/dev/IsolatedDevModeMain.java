@@ -97,7 +97,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
 
     public synchronized void restartApp(Set<String> changedResources) {
         stop();
-        Timing.restart();
+        Timing.restart(curatedApplication.getAugmentClassLoader());
         deploymentProblem = null;
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
@@ -184,7 +184,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     //the main entry point, but loaded inside the augmentation class loader
     @Override
     public void accept(CuratedApplication o, Map<String, Object> o2) {
-        Timing.staticInitStarted();
+        Timing.staticInitStarted(o.getBaseRuntimeClassLoader());
         try {
             curatedApplication = o;
 

@@ -66,10 +66,6 @@ public class CuratedApplication implements Serializable {
         return appModel;
     }
 
-    public AppModelResolver getAppModelResolver() {
-        return curationResult.getAppModelResolver();
-    }
-
     public QuarkusBootstrap getQuarkusBootstrap() {
         return quarkusBootstrap;
     }

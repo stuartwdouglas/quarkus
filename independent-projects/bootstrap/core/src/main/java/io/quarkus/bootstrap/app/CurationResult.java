@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Exclusion;
@@ -24,18 +25,18 @@ public class CurationResult {
     private static final Logger log = Logger.getLogger(CurationResult.class);
 
     private final AppModel appModel;
-    private final AppModelResolver appModelResolver;
+    private final Supplier<AppModelResolver> appModelResolver;
     private final List<AppDependency> updatedDependencies;
     private final boolean fromState;
     private final AppArtifact appArtifact;
     private final AppArtifact stateArtifact;
     private boolean persisted;
 
-    public CurationResult(AppModel appModel, AppModelResolver appModelResolver) {
+    public CurationResult(AppModel appModel, Supplier<AppModelResolver> appModelResolver) {
         this(appModel, appModelResolver, Collections.emptyList(), false, null, null);
     }
 
-    public CurationResult(AppModel appModel, AppModelResolver appModelResolver, List<AppDependency> updatedDependencies, boolean fromState,
+    public CurationResult(AppModel appModel, Supplier<AppModelResolver> appModelResolver, List<AppDependency> updatedDependencies, boolean fromState,
                           AppArtifact appArtifact, AppArtifact stateArtifact) {
         this.appModel = appModel;
         this.appModelResolver = appModelResolver;
@@ -66,7 +67,7 @@ public class CurationResult {
     }
 
     public AppModelResolver getAppModelResolver() {
-        return appModelResolver;
+        return appModelResolver.get();
     }
 
     public void persist(AppModelResolver resolver) {

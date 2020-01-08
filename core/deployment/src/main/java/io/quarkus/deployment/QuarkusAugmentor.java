@@ -17,7 +17,6 @@ import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.model.AppModel;
-import io.quarkus.bootstrap.resolver.AppModelResolver;
 import io.quarkus.builder.BuildChain;
 import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildExecutionBuilder;
@@ -52,7 +51,6 @@ public class QuarkusAugmentor {
     private final Properties buildSystemProperties;
     private final Path targetDir;
     private final AppModel effectiveModel;
-    private final AppModelResolver resolver;
     private final String baseName;
     private final Consumer<ConfigBuilder> configCustomizer;
 
@@ -68,7 +66,6 @@ public class QuarkusAugmentor {
         this.buildSystemProperties = builder.buildSystemProperties;
         this.targetDir = builder.targetDir;
         this.effectiveModel = builder.effectiveModel;
-        this.resolver = builder.resolver;
         this.baseName = builder.baseName;
         this.configCustomizer = builder.configCustomizer;
         this.deploymentClassLoader = builder.deploymentClassLoader;
@@ -127,7 +124,7 @@ public class QuarkusAugmentor {
                     .produce(new LaunchModeBuildItem(launchMode))
                     .produce(new BuildSystemTargetBuildItem(targetDir, baseName))
                     .produce(new DeploymentClassLoaderBuildItem(deploymentClassLoader))
-                    .produce(new CurateOutcomeBuildItem(effectiveModel, resolver));
+                    .produce(new CurateOutcomeBuildItem(effectiveModel));
             for (Path i : additionalApplicationArchives) {
                 execBuilder.produce(new AdditionalApplicationArchiveBuildItem(i));
             }
@@ -170,7 +167,6 @@ public class QuarkusAugmentor {
         Properties buildSystemProperties;
 
         AppModel effectiveModel;
-        AppModelResolver resolver;
         String baseName = "quarkus-application";
         Consumer<ConfigBuilder> configCustomizer;
         ClassLoader deploymentClassLoader;
@@ -264,11 +260,6 @@ public class QuarkusAugmentor {
 
         public Builder setEffectiveModel(AppModel effectiveModel) {
             this.effectiveModel = effectiveModel;
-            return this;
-        }
-
-        public Builder setResolver(AppModelResolver resolver) {
-            this.resolver = resolver;
             return this;
         }
 
