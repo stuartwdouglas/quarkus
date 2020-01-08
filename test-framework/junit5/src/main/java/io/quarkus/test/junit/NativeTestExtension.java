@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.platform.commons.JUnitException;
 
 import io.quarkus.test.common.NativeImageLauncher;
@@ -15,9 +16,10 @@ import io.quarkus.test.common.PropertyTestUtil;
 import io.quarkus.test.common.RestAssuredURLManager;
 import io.quarkus.test.common.TestResourceManager;
 import io.quarkus.test.common.TestScopeManager;
+import io.quarkus.test.common.http.TestHTTPResourceManager;
 
 public class NativeTestExtension
-        implements BeforeEachCallback, AfterEachCallback, BeforeAllCallback {
+        implements BeforeEachCallback, AfterEachCallback, BeforeAllCallback, TestInstancePostProcessor {
 
     private static boolean failedBoot;
 
@@ -67,6 +69,15 @@ public class NativeTestExtension
                 throw new JUnitException("Quarkus native image start failed, original cause: " + e);
             }
         }
+    }
+
+    @Override
+    public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {
+        TestHTTPResourceManager.inject(testInstance);
+        ExtensionContext root = context.getRoot();
+        ExtensionContext.Store store = root.getStore(ExtensionContext.Namespace.GLOBAL);
+        ExtensionState state = store.get(ExtensionState.class.getName(), ExtensionState.class);
+        state.testResourceManager.inject(testInstance);
     }
 
     public class ExtensionState implements ExtensionContext.Store.CloseableResource {

@@ -154,6 +154,7 @@ public class BuildMojo extends AbstractMojo {
                     .setProjectRoot(project.getBasedir().toPath())
                     .setBaseClassLoader(BuildMojo.class.getClassLoader())
                     .setBuildSystemProperties(realProperties)
+                    .setLocalProjectDiscovery(false)
                     .setBaseName(finalName)
                     .setTargetDirectory(buildDir.toPath())
                     .build().bootstrap();

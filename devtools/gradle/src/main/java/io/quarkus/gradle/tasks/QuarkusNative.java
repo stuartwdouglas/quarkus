@@ -355,6 +355,7 @@ public class QuarkusNative extends QuarkusTask {
                     .setBaseClassLoader(getClass().getClassLoader())
                     .setTargetDirectory(getProject().getBuildDir().toPath())
                     .setBaseName(extension().finalName())
+                    .setLocalProjectDiscovery(false)
                     .setBuildSystemProperties(realProperties)
                     .setIsolateDeployment(true)
                     //.setConfigDir(extension().outputConfigDirectory().toPath())

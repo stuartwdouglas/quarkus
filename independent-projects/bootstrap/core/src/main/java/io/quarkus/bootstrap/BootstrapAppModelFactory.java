@@ -175,10 +175,9 @@ public class BootstrapAppModelFactory {
                         .setDevMode(devMode);
             }
 
-            //        final LocalProject localProject = localProjectsDiscovery || enableClasspathCache
-            //                ? LocalProject.loadWorkspace(appClasses)
-            //                : LocalProject.load(appClasses);
-            final LocalProject localProject = LocalProject.loadWorkspace(appClasses, false);
+            final LocalProject localProject = localProjectsDiscovery || enableClasspathCache
+                    ? LocalProject.loadWorkspace(appClasses, false)
+                    : LocalProject.load(appClasses, false);
 
             //TODO: we need some way to cache this for performance reasons
             final MavenArtifactResolver.Builder mvn = MavenArtifactResolver.builder();

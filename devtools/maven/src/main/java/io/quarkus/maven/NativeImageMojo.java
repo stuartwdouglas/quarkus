@@ -1,5 +1,7 @@
 package io.quarkus.maven;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -202,6 +204,7 @@ public class NativeImageMojo extends AbstractMojo {
                         .setProjectRoot(project.getBasedir().toPath())
                         .setBuildSystemProperties(realProperties)
                         .setBaseName(finalName)
+                        .setLocalProjectDiscovery(false)
                         .setBaseClassLoader(BuildMojo.class.getClassLoader())
                         .setTargetDirectory(buildDir.toPath())
                         .build().bootstrap();
@@ -232,7 +235,11 @@ public class NativeImageMojo extends AbstractMojo {
             configs.put("quarkus.native.add-all-charsets", addAllCharsets.toString());
         }
         if (additionalBuildArgs != null && !additionalBuildArgs.isEmpty()) {
-            configs.put("quarkus.native.additional-build-args", String.join(" ", additionalBuildArgs));
+            configs.put("quarkus.native.additional-build-args",
+                    additionalBuildArgs.stream()
+                            .map(val -> val.replace("\\", "\\\\"))
+                            .map(val -> val.replace(",", "\\,"))
+                            .collect(joining(",")));
         }
         if (autoServiceLoaderRegistration != null) {
             configs.put("quarkus.native.auto-service-loader-registration", autoServiceLoaderRegistration.toString());

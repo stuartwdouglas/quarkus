@@ -80,6 +80,7 @@ public class QuarkusBeforeAfterLifecycle {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         Class<?> callbacksClass = cl.loadClass(junitOrTestNgCallbackClass);
         Method declaredMethod = callbacksClass.getDeclaredMethod(methodName);
+        declaredMethod.setAccessible(true);
         declaredMethod.invoke(null);
     }
 

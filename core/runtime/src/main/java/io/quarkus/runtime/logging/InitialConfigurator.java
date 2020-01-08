@@ -31,7 +31,7 @@ public final class InitialConfigurator implements EmbeddedConfigurator {
                 handler = (DelayedHandler) root.getDeclaredField("DELAYED_HANDLER").get(null);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            //ignore, happens on native image build
         }
         DELAYED_HANDLER = handler;
     }

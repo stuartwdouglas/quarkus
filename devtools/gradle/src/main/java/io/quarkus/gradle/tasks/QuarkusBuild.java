@@ -76,6 +76,7 @@ public class QuarkusBuild extends QuarkusTask {
                     .setBaseName(extension().finalName())
                     .setBuildSystemProperties(realProperties)
                     .setAppArtifact(appArtifact)
+                    .setLocalProjectDiscovery(false)
                     .setIsolateDeployment(true)
                     //.setConfigDir(extension().outputConfigDirectory().toPath())
                     //.setTargetDirectory(extension().outputDirectory().toPath())
