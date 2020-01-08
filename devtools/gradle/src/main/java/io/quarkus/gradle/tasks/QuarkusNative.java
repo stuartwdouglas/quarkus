@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Consumer;
 
-import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.gradle.api.GradleException;
 import org.gradle.api.tasks.Input;
@@ -345,7 +343,12 @@ public class QuarkusNative extends QuarkusTask {
         }
         final Properties realProperties = getBuildSystemProperties(appArtifact);
 
-        System.setProperty("quarkus.package.type", "native");
+        Map<String, String> config = createCustomConfig();
+        Map<String, String> old = new HashMap<>();
+        for (Map.Entry<String, String> e : config.entrySet()) {
+            old.put(e.getKey(), System.getProperty(e.getKey()));
+            System.setProperty(e.getKey(), e.getValue());
+        }
         try {
             CuratedApplication appCreationContext = QuarkusBootstrap.builder(appArtifact.getPath())
                     .setAppModelResolver(modelResolver)
@@ -362,75 +365,76 @@ public class QuarkusNative extends QuarkusTask {
         } catch (BootstrapException e) {
             throw new GradleException("Failed to build a runnable JAR", e);
         } finally {
-            System.clearProperty("quarkus.package.type");
+            for (Map.Entry<String, String> e : old.entrySet()) {
+                if (e.getValue() == null) {
+                    System.clearProperty(e.getKey());
+                } else {
+                    System.setProperty(e.getKey(), e.getValue());
+                }
+            }
         }
     }
 
-    private Consumer<ConfigBuilder> createCustomConfig() { //TODO: wire this up again
-        return new Consumer<ConfigBuilder>() {
-            @Override
-            public void accept(ConfigBuilder configBuilder) {
+    private Map<String, String> createCustomConfig() {
+        Map<String, String> configs = new HashMap<>();
+        configs.put("quarkus.package.type", "native");
 
-                InMemoryConfigSource configs = new InMemoryConfigSource(0, "Native Image Maven Settings");
+        configs.put("quarkus.native.add-all-charsets", Boolean.toString(addAllCharsets));
 
-                configs.add("quarkus.native.add-all-charsets", addAllCharsets);
+        if (additionalBuildArgs != null && !additionalBuildArgs.isEmpty()) {
+            configs.put("quarkus.native.additional-build-args",
+                    additionalBuildArgs.stream()
+                            .map(val -> val.replace("\\", "\\\\"))
+                            .map(val -> val.replace(",", "\\,"))
+                            .collect(joining(",")));
+        }
+        configs.put("quarkus.native.auto-service-loader-registration", Boolean.toString(autoServiceLoaderRegistration));
 
-                if (additionalBuildArgs != null && !additionalBuildArgs.isEmpty()) {
-                    configs.add("quarkus.native.additional-build-args",
-                            additionalBuildArgs.stream()
-                                    .map(val -> val.replace("\\", "\\\\"))
-                                    .map(val -> val.replace(",", "\\,"))
-                                    .collect(joining(",")));
+        configs.put("quarkus.native.cleanup-server", Boolean.toString(cleanupServer));
+        configs.put("quarkus.native.debug-build-process", Boolean.toString(debugBuildProcess));
+
+        configs.put("quarkus.native.debug-symbols", Boolean.toString(debugSymbols));
+        configs.put("quarkus.native.enable-reports", Boolean.toString(enableReports));
+        if (containerRuntime != null && !containerRuntime.trim().isEmpty()) {
+            configs.put("quarkus.native.container-runtime", containerRuntime);
+        } else if (dockerBuild != null && !dockerBuild.trim().isEmpty()) {
+            if (!dockerBuild.isEmpty() && !dockerBuild.toLowerCase().equals("false")) {
+                if (dockerBuild.toLowerCase().equals("true")) {
+                    configs.put("quarkus.native.container-runtime", "docker");
+                } else {
+                    configs.put("quarkus.native.container-runtime", dockerBuild);
                 }
-                configs.add("quarkus.native.auto-service-loader-registration", autoServiceLoaderRegistration);
-
-                configs.add("quarkus.native.cleanup-server", cleanupServer);
-                configs.add("quarkus.native.debug-build-process", debugBuildProcess);
-
-                configs.add("quarkus.native.debug-symbols", debugSymbols);
-                configs.add("quarkus.native.enable-reports", enableReports);
-                if (containerRuntime != null && !containerRuntime.trim().isEmpty()) {
-                    configs.add("quarkus.native.container-runtime", containerRuntime);
-                } else if (dockerBuild != null && !dockerBuild.trim().isEmpty()) {
-                    if (!dockerBuild.isEmpty() && !dockerBuild.toLowerCase().equals("false")) {
-                        if (dockerBuild.toLowerCase().equals("true")) {
-                            configs.add("quarkus.native.container-runtime", "docker");
-                        } else {
-                            configs.add("quarkus.native.container-runtime", dockerBuild);
-                        }
-                    }
-                }
-                if (containerRuntimeOptions != null && !containerRuntimeOptions.trim().isEmpty()) {
-                    configs.add("quarkus.native.container-runtime-options", containerRuntimeOptions);
-                }
-                configs.add("quarkus.native.dump-proxies", dumpProxies);
-                configs.add("quarkus.native.enable-all-security-services", enableAllSecurityServices);
-                configs.add("quarkus.native.enable-fallback-images", enableFallbackImages);
-                configs.add("quarkus.native.enable-https-url-handler", enableHttpsUrlHandler);
-
-                configs.add("quarkus.native.enable-http-url-handler", enableHttpUrlHandler);
-                configs.add("quarkus.native.enable-isolates", enableIsolates);
-                configs.add("quarkus.native.enable-jni", enableJni);
-
-                configs.add("quarkus.native.enable-server", enableServer);
-
-                configs.add("quarkus.native.enable-vm-inspection", enableVMInspection);
-
-                configs.add("quarkus.native.full-stack-traces", fullStackTraces);
-
-                if (graalvmHome != null && !graalvmHome.trim().isEmpty()) {
-                    configs.add("quarkus.native.graalvm-home", graalvmHome);
-                }
-                if (nativeImageXmx != null && !nativeImageXmx.trim().isEmpty()) {
-                    configs.add("quarkus.native.native-image-xmx", nativeImageXmx);
-                }
-                configs.add("quarkus.native.report-errors-at-runtime", reportErrorsAtRuntime);
-
-                configs.add("quarkus.native.report-exception-stack-traces", reportExceptionStackTraces);
-
-                configBuilder.withSources(configs);
             }
-        };
+        }
+        if (containerRuntimeOptions != null && !containerRuntimeOptions.trim().isEmpty()) {
+            configs.put("quarkus.native.container-runtime-options", containerRuntimeOptions);
+        }
+        configs.put("quarkus.native.dump-proxies", Boolean.toString(dumpProxies));
+        configs.put("quarkus.native.enable-all-security-services", Boolean.toString(enableAllSecurityServices));
+        configs.put("quarkus.native.enable-fallback-images", Boolean.toString(enableFallbackImages));
+        configs.put("quarkus.native.enable-https-url-handler", Boolean.toString(enableHttpsUrlHandler));
+
+        configs.put("quarkus.native.enable-http-url-handler", Boolean.toString(enableHttpUrlHandler));
+        configs.put("quarkus.native.enable-isolates", Boolean.toString(enableIsolates));
+        configs.put("quarkus.native.enable-jni", Boolean.toString(enableJni));
+
+        configs.put("quarkus.native.enable-server", Boolean.toString(enableServer));
+
+        configs.put("quarkus.native.enable-vm-inspection", Boolean.toString(enableVMInspection));
+
+        configs.put("quarkus.native.full-stack-traces", Boolean.toString(fullStackTraces));
+
+        if (graalvmHome != null && !graalvmHome.trim().isEmpty()) {
+            configs.put("quarkus.native.graalvm-home", graalvmHome);
+        }
+        if (nativeImageXmx != null && !nativeImageXmx.trim().isEmpty()) {
+            configs.put("quarkus.native.native-image-xmx", nativeImageXmx);
+        }
+        configs.put("quarkus.native.report-errors-at-runtime", Boolean.toString(reportErrorsAtRuntime));
+
+        configs.put("quarkus.native.report-exception-stack-traces", Boolean.toString(reportExceptionStackTraces));
+
+        return configs;
 
     }
 

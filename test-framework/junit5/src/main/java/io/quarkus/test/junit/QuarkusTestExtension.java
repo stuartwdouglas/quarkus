@@ -173,7 +173,7 @@ public class QuarkusTestExtension
             throws TestInstantiationException {
         if (isNativeTest(extensionContext)) {
             try {
-                Constructor<?> constructor = extensionContext.getRequiredTestClass().getConstructor();
+                Constructor<?> constructor = extensionContext.getRequiredTestClass().getDeclaredConstructor();
                 constructor.setAccessible(true);
                 return constructor.newInstance();
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {

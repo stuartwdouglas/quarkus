@@ -1,14 +1,10 @@
 package io.quarkus.maven;
 
-import static java.util.stream.Collectors.joining;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.function.Consumer;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -22,8 +18,6 @@ import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.microprofile.config.spi.ConfigBuilder;
-import org.eclipse.microprofile.config.spi.ConfigSource;
 
 import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.AugmentResult;
@@ -197,9 +191,12 @@ public class NativeImageMojo extends AbstractMojo {
             realProperties.putIfAbsent("quarkus.application.name", project.getArtifactId());
             realProperties.putIfAbsent("quarkus.application.version", project.getVersion());
 
-            Consumer<ConfigBuilder> config = createCustomConfig();
-            String old = System.getProperty(QUARKUS_PACKAGE_TYPE);
-            System.setProperty(QUARKUS_PACKAGE_TYPE, "native");
+            Map<String, String> config = createCustomConfig();
+            Map<String, String> old = new HashMap<>();
+            for (Map.Entry<String, String> e : config.entrySet()) {
+                old.put(e.getKey(), System.getProperty(e.getKey()));
+                System.setProperty(e.getKey(), e.getValue());
+            }
             try {
                 CuratedApplication curatedApplication = QuarkusBootstrap.builder(outputDirectory.toPath())
                         .setProjectRoot(project.getBasedir().toPath())
@@ -211,14 +208,14 @@ public class NativeImageMojo extends AbstractMojo {
 
                 AugmentAction action = curatedApplication.createAugmentor();
                 AugmentResult result = action.createProductionApplication();
-                //TODO: config voerrides
-
             } finally {
 
-                if (old == null) {
-                    System.clearProperty(QUARKUS_PACKAGE_TYPE);
-                } else {
-                    System.setProperty(QUARKUS_PACKAGE_TYPE, old);
+                for (Map.Entry<String, String> e : old.entrySet()) {
+                    if (e.getValue() == null) {
+                        System.clearProperty(e.getKey());
+                    } else {
+                        System.setProperty(e.getKey(), e.getValue());
+                    }
                 }
             }
 
@@ -228,159 +225,100 @@ public class NativeImageMojo extends AbstractMojo {
 
     }
 
-    //TODO: this needs to be changed to system props.
-    private Consumer<ConfigBuilder> createCustomConfig() {
-        return new Consumer<ConfigBuilder>() {
-            @Override
-            public void accept(ConfigBuilder configBuilder) {
-                InMemoryConfigSource type = new InMemoryConfigSource(Integer.MAX_VALUE, "Native Image Type")
-                        .add("quarkus.package.type", "native");
-                configBuilder.withSources(type);
-
-                InMemoryConfigSource configs = new InMemoryConfigSource(0, "Native Image Maven Settings");
-                if (addAllCharsets != null) {
-                    configs.add("quarkus.native.add-all-charsets", addAllCharsets.toString());
+    private Map<String, String> createCustomConfig() {
+        Map<String, String> configs = new HashMap<>();
+        configs.put("quarkus.package.type", "native");
+        if (addAllCharsets != null) {
+            configs.put("quarkus.native.add-all-charsets", addAllCharsets.toString());
+        }
+        if (additionalBuildArgs != null && !additionalBuildArgs.isEmpty()) {
+            configs.put("quarkus.native.additional-build-args", String.join(" ", additionalBuildArgs));
+        }
+        if (autoServiceLoaderRegistration != null) {
+            configs.put("quarkus.native.auto-service-loader-registration", autoServiceLoaderRegistration.toString());
+        }
+        if (cleanupServer != null) {
+            configs.put("quarkus.native.cleanup-server", cleanupServer.toString());
+        }
+        if (debugBuildProcess != null) {
+            configs.put("quarkus.native.debug-build-process", debugBuildProcess.toString());
+        }
+        if (debugSymbols != null) {
+            configs.put("quarkus.native.debug-symbols", debugSymbols.toString());
+        }
+        if (disableReports != null) {
+            configs.put("quarkus.native.enable-reports", Boolean.toString(!disableReports));
+        }
+        if (enableReports != null) {
+            configs.put("quarkus.native.enable-reports", enableReports.toString());
+        }
+        if (containerRuntime != null && !containerRuntime.trim().isEmpty()) {
+            configs.put("quarkus.native.container-runtime", containerRuntime);
+        } else if (dockerBuild != null && !dockerBuild.trim().isEmpty()) {
+            if (!dockerBuild.toLowerCase().equals("false")) {
+                if (dockerBuild.toLowerCase().equals("true")) {
+                    configs.put("quarkus.native.container-runtime", "docker");
+                } else {
+                    configs.put("quarkus.native.container-runtime", dockerBuild);
                 }
-                if (additionalBuildArgs != null && !additionalBuildArgs.isEmpty()) {
-                    configs.add("quarkus.native.additional-build-args", additionalBuildArgs);
-                }
-                if (autoServiceLoaderRegistration != null) {
-                    configs.add("quarkus.native.auto-service-loader-registration", autoServiceLoaderRegistration.toString());
-                }
-                if (cleanupServer != null) {
-                    configs.add("quarkus.native.cleanup-server", cleanupServer.toString());
-                }
-                if (debugBuildProcess != null) {
-                    configs.add("quarkus.native.debug-build-process", debugBuildProcess.toString());
-                }
-                if (debugSymbols != null) {
-                    configs.add("quarkus.native.debug-symbols", debugSymbols.toString());
-                }
-                if (disableReports != null) {
-                    configs.add("quarkus.native.enable-reports", Boolean.toString(!disableReports));
-                }
-                if (enableReports != null) {
-                    configs.add("quarkus.native.enable-reports", enableReports.toString());
-                }
-                if (containerRuntime != null && !containerRuntime.trim().isEmpty()) {
-                    configs.add("quarkus.native.container-runtime", containerRuntime);
-                } else if (dockerBuild != null && !dockerBuild.trim().isEmpty()) {
-                    if (!dockerBuild.toLowerCase().equals("false")) {
-                        if (dockerBuild.toLowerCase().equals("true")) {
-                            configs.add("quarkus.native.container-runtime", "docker");
-                        } else {
-                            configs.add("quarkus.native.container-runtime", dockerBuild);
-                        }
-                    }
-                }
-                if (containerRuntimeOptions != null && !containerRuntimeOptions.trim().isEmpty()) {
-                    configs.add("quarkus.native.container-runtime-options", containerRuntimeOptions);
-                }
-                if (dumpProxies != null) {
-                    configs.add("quarkus.native.dump-proxies", dumpProxies.toString());
-                }
-                if (enableAllSecurityServices != null) {
-                    configs.add("quarkus.native.enable-all-security-services", enableAllSecurityServices.toString());
-                }
-                if (enableFallbackImages != null) {
-                    configs.add("quarkus.native.enable-fallback-images", enableFallbackImages.toString());
-                }
-                if (enableHttpsUrlHandler != null) {
-                    configs.add("quarkus.native.enable-https-url-handler", enableHttpsUrlHandler.toString());
-                }
-                if (enableHttpUrlHandler != null) {
-                    configs.add("quarkus.native.enable-http-url-handler", enableHttpUrlHandler.toString());
-                }
-                if (enableIsolates != null) {
-                    configs.add("quarkus.native.enable-isolates", enableIsolates.toString());
-                }
-                if (enableJni != null) {
-                    configs.add("quarkus.native.enable-jni", enableJni.toString());
-                }
-
-                if (enableServer != null) {
-                    configs.add("quarkus.native.enable-server", enableServer.toString());
-                }
-
-                if (enableVMInspection != null) {
-                    configs.add("quarkus.native.enable-vm-inspection", enableVMInspection.toString());
-                }
-                if (fullStackTraces != null) {
-                    configs.add("quarkus.native.full-stack-traces", fullStackTraces.toString());
-                }
-                if (graalvmHome != null && !graalvmHome.trim().isEmpty()) {
-                    configs.add("quarkus.native.graalvm-home", graalvmHome);
-                }
-                if (javaHome != null && !javaHome.toString().isEmpty()) {
-                    configs.add("quarkus.native.java-home", javaHome.toString());
-                }
-                if (nativeImageXmx != null && !nativeImageXmx.trim().isEmpty()) {
-                    configs.add("quarkus.native.native-image-xmx", nativeImageXmx);
-                }
-                if (reportErrorsAtRuntime != null) {
-                    configs.add("quarkus.native.report-errors-at-runtime", reportErrorsAtRuntime.toString());
-                }
-                if (reportExceptionStackTraces != null) {
-                    configs.add("quarkus.native.report-exception-stack-traces", reportExceptionStackTraces.toString());
-                }
-                if (publishDebugBuildProcessPort) {
-                    configs.add("quarkus.native.publish-debug-build-process-port",
-                            Boolean.toString(publishDebugBuildProcessPort));
-                }
-                configBuilder.withSources(configs);
-
             }
-        };
+        }
+        if (containerRuntimeOptions != null && !containerRuntimeOptions.trim().isEmpty()) {
+            configs.put("quarkus.native.container-runtime-options", containerRuntimeOptions);
+        }
+        if (dumpProxies != null) {
+            configs.put("quarkus.native.dump-proxies", dumpProxies.toString());
+        }
+        if (enableAllSecurityServices != null) {
+            configs.put("quarkus.native.enable-all-security-services", enableAllSecurityServices.toString());
+        }
+        if (enableFallbackImages != null) {
+            configs.put("quarkus.native.enable-fallback-images", enableFallbackImages.toString());
+        }
+        if (enableHttpsUrlHandler != null) {
+            configs.put("quarkus.native.enable-https-url-handler", enableHttpsUrlHandler.toString());
+        }
+        if (enableHttpUrlHandler != null) {
+            configs.put("quarkus.native.enable-http-url-handler", enableHttpUrlHandler.toString());
+        }
+        if (enableIsolates != null) {
+            configs.put("quarkus.native.enable-isolates", enableIsolates.toString());
+        }
+        if (enableJni != null) {
+            configs.put("quarkus.native.enable-jni", enableJni.toString());
+        }
+
+        if (enableServer != null) {
+            configs.put("quarkus.native.enable-server", enableServer.toString());
+        }
+
+        if (enableVMInspection != null) {
+            configs.put("quarkus.native.enable-vm-inspection", enableVMInspection.toString());
+        }
+        if (fullStackTraces != null) {
+            configs.put("quarkus.native.full-stack-traces", fullStackTraces.toString());
+        }
+        if (graalvmHome != null && !graalvmHome.trim().isEmpty()) {
+            configs.put("quarkus.native.graalvm-home", graalvmHome);
+        }
+        if (javaHome != null && !javaHome.toString().isEmpty()) {
+            configs.put("quarkus.native.java-home", javaHome.toString());
+        }
+        if (nativeImageXmx != null && !nativeImageXmx.trim().isEmpty()) {
+            configs.put("quarkus.native.native-image-xmx", nativeImageXmx);
+        }
+        if (reportErrorsAtRuntime != null) {
+            configs.put("quarkus.native.report-errors-at-runtime", reportErrorsAtRuntime.toString());
+        }
+        if (reportExceptionStackTraces != null) {
+            configs.put("quarkus.native.report-exception-stack-traces", reportExceptionStackTraces.toString());
+        }
+        if (publishDebugBuildProcessPort) {
+            configs.put("quarkus.native.publish-debug-build-process-port",
+                    Boolean.toString(publishDebugBuildProcessPort));
+        }
+        return configs;
 
     }
 
-    private static final class InMemoryConfigSource implements ConfigSource {
-
-        private final Map<String, String> values = new HashMap<>();
-        private final int ordinal;
-        private final String name;
-
-        private InMemoryConfigSource(int ordinal, String name) {
-            this.ordinal = ordinal;
-            this.name = name;
-        }
-
-        public InMemoryConfigSource add(String key, String value) {
-            values.put(key, value);
-            return this;
-        }
-
-        public InMemoryConfigSource add(String key, List<String> value) {
-            values.put(key, value.stream()
-                    .map(val -> val.replace("\\", "\\\\"))
-                    .map(val -> val.replace(",", "\\,"))
-                    .collect(joining(",")));
-            return this;
-        }
-
-        @Override
-        public Map<String, String> getProperties() {
-            return values;
-        }
-
-        @Override
-        public Set<String> getPropertyNames() {
-            return values.keySet();
-        }
-
-        @Override
-        public int getOrdinal() {
-            return ordinal;
-        }
-
-        @Override
-        public String getValue(String propertyName) {
-            return values.get(propertyName);
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-    }
 }
