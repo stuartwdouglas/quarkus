@@ -57,6 +57,7 @@ import org.eclipse.aether.resolution.DependencyResult;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
 import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
+import io.quarkus.bootstrap.resolver.maven.MavenRepoInitializer;
 import io.quarkus.bootstrap.resolver.maven.workspace.LocalProject;
 import io.quarkus.dev.DevModeContext;
 import io.quarkus.dev.DevModeMain;
@@ -527,7 +528,29 @@ public class DevMojo extends AbstractMojo {
             }
 
             setKotlinSpecificFlags(devModeContext);
-
+            RepositorySystem repoSystem = DevMojo.this.repoSystem;
+            final LocalProject localProject;
+            if (noDeps) {
+                localProject = LocalProject.load(outputDirectory.toPath());
+                addProject(devModeContext, localProject);
+                pomFiles.add(localProject.getDir().resolve("pom.xml"));
+            } else {
+                localProject = LocalProject.loadWorkspace(outputDirectory.toPath());
+                for (LocalProject project : localProject.getSelfWithLocalDeps()) {
+                    if (project.getClassesDir() != null) {
+                        //if this project also contains Quarkus extensions we do no want to include these in the discovery
+                        //a bit of an edge case, but if you try and include a sample project with your extension you will
+                        //run into problems without this
+                        if (Files.exists(project.getClassesDir().resolve("META-INF/quarkus-extension.properties")) ||
+                                Files.exists(project.getClassesDir().resolve("META-INF/quarkus-build-steps.list"))) {
+                            continue;
+                        }
+                    }
+                    addProject(devModeContext, project);
+                    pomFiles.add(project.getDir().resolve("pom.xml"));
+                }
+                repoSystem = MavenRepoInitializer.getRepositorySystem(repoSession.isOffline(), localProject.getWorkspace());
+            }
             DefaultArtifact bootstrap = new DefaultArtifact("io.quarkus", "quarkus-development-mode", "jar",
                     pluginDef.getVersion());
             MavenArtifactResolver mavenArtifactResolver = MavenArtifactResolver.builder()
