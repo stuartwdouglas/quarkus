@@ -257,7 +257,7 @@ public class CuratedApplication implements Serializable {
     public QuarkusClassLoader createDeploymentClassLoader() {
         //first run, we need to build all the class loaders
         QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Deployment Class Loader",
-                augmentClassLoader, true)
+                augmentClassLoader, false)
                 .setAggregateParentResources(true);
         //add the application root
         builder.addElement(ClassPathElement.fromPath(quarkusBootstrap.getApplicationRoot()));

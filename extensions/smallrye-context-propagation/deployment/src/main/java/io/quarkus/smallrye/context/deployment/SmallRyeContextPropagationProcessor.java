@@ -33,7 +33,7 @@ class SmallRyeContextPropagationProcessor {
                 .produce(AdditionalBeanBuildItem.unremovableOf(SmallRyeContextPropagationProvider.class));
     }
 
-    @BuildStep
+    @BuildStep(loadsApplicationClasses = true)
     @Record(ExecutionTime.STATIC_INIT)
     void buildStatic(SmallRyeContextPropagationRecorder recorder)
             throws ClassNotFoundException, IOException {
