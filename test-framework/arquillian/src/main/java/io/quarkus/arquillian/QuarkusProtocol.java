@@ -58,6 +58,9 @@ class QuarkusProtocol implements Protocol<QuarkusProtocolConfiguration> {
         @Inject
         Instance<TestResult> testResult;
 
+        @Inject
+        Instance<ClassLoader> classLoaderInstance;
+
         @Override
         public TestResult invoke(TestMethodExecutor testMethodExecutor) {
 
@@ -65,26 +68,33 @@ class QuarkusProtocol implements Protocol<QuarkusProtocolConfiguration> {
 
                 @Override
                 public void invoke(Object... parameters) throws Throwable {
-                    Object actualTestInstance = QuarkusDeployableContainer.testInstance;
-                    Method actualMethod = null;
+                    ClassLoader loader = Thread.currentThread().getContextClassLoader();
                     try {
-                        actualMethod = actualTestInstance.getClass().getMethod(getMethod().getName(),
-                                convertToTCCL(getMethod().getParameterTypes()));
-                    } catch (NoSuchMethodException e) {
-                        // the method should still be present, just not public, let's try declared methods
-                        actualMethod = actualTestInstance.getClass().getDeclaredMethod(getMethod().getName(),
-                                convertToTCCL(getMethod().getParameterTypes()));
-                        actualMethod.setAccessible(true);
-                    }
-                    try {
-                        actualMethod.invoke(actualTestInstance, parameters);
-                    } catch (InvocationTargetException e) {
-                        Throwable cause = e.getCause();
-                        if (cause != null) {
-                            throw cause;
-                        } else {
-                            throw e;
+                        Thread.currentThread().setContextClassLoader(classLoaderInstance.get());
+
+                        Object actualTestInstance = QuarkusDeployableContainer.testInstance;
+                        Method actualMethod = null;
+                        try {
+                            actualMethod = actualTestInstance.getClass().getMethod(getMethod().getName(),
+                                    convertToTCCL(getMethod().getParameterTypes()));
+                        } catch (NoSuchMethodException e) {
+                            // the method should still be present, just not public, let's try declared methods
+                            actualMethod = actualTestInstance.getClass().getDeclaredMethod(getMethod().getName(),
+                                    convertToTCCL(getMethod().getParameterTypes()));
+                            actualMethod.setAccessible(true);
                         }
+                        try {
+                            actualMethod.invoke(actualTestInstance, parameters);
+                        } catch (InvocationTargetException e) {
+                            Throwable cause = e.getCause();
+                            if (cause != null) {
+                                throw cause;
+                            } else {
+                                throw e;
+                            }
+                        }
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(loader);
                     }
                 }
 

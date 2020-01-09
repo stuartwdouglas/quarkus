@@ -51,6 +51,7 @@ import io.quarkus.runner.bootstrap.AugmentActionImpl;
 import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.TestInstantiator;
+import io.quarkus.test.common.http.TestHTTPResourceManager;
 
 public class QuarkusDeployableContainer implements DeployableContainer<QuarkusConfiguration> {
 
@@ -198,6 +199,8 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
             }
             throw new DeploymentException("Unable to start the runtime runner", nt);
 
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
         }
 
         ProtocolMetaData metadata = new ProtocolMetaData();
@@ -205,10 +208,10 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
         try {
             BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
             //TODO: fix this
-            //String testUri = TestHTTPResourceManager.getUri();
+            String testUri = TestHTTPResourceManager.getUri(runningApp.get());
 
-            System.setProperty("test.url", "http://localhost:8080");
-            URI uri = URI.create("http://localhost:8080");
+            System.setProperty("test.url", testUri);
+            URI uri = URI.create(testUri);
             HTTPContext httpContext = new HTTPContext(uri.getHost(), uri.getPort());
             // This is to work around https://github.com/arquillian/arquillian-core/issues/216
             httpContext.add(new Servlet("dummy", "/"));
