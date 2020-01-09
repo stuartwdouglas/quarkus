@@ -79,9 +79,9 @@ public class QuarkusBeforeAfterLifecycle {
             NoSuchMethodException, SecurityException, ClassNotFoundException {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         Class<?> callbacksClass = cl.loadClass(junitOrTestNgCallbackClass);
-        Method declaredMethod = callbacksClass.getDeclaredMethod(methodName);
+        Method declaredMethod = callbacksClass.getDeclaredMethod(methodName, Object.class);
         declaredMethod.setAccessible(true);
-        declaredMethod.invoke(null);
+        declaredMethod.invoke(null, QuarkusDeployableContainer.testInstance);
     }
 
 }

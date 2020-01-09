@@ -287,8 +287,8 @@ public final class RunTimeConfigurationGenerator {
             clinit = cc.getMethodCreator(MethodDescriptor.ofMethod(CONFIG_CLASS_NAME, "<clinit>", void.class));
             clinit.setModifiers(Opcodes.ACC_STATIC);
 
-            //HUCK HACK
-            //TODO: delete this
+            //HUGE HACK
+            //TODO: delete this once the class loading issues are fixed
             //see https://github.com/eclipse/microprofile-config/issues/390
             clinit.invokeStaticMethod(
                     MethodDescriptor.ofMethod(BrokenMpDelegationClassLoader.class, "setupBrokenClWorkaround", void.class));

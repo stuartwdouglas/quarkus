@@ -1,6 +1,10 @@
 package io.quarkus.arquillian;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
@@ -162,13 +166,14 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
                             .build();
                 }
             });
-
+            Path testLocation = PathTestHelper.getTestClassesLocation(testJavaClass);
             QuarkusBootstrap.Builder bootstrapBuilder = QuarkusBootstrap.builder(appLocation)
+                    .setIsolateDeployment(false)
                     .setMode(QuarkusBootstrap.Mode.TEST);
             for (Path i : libraries) {
                 bootstrapBuilder.addAdditionalApplicationArchive(new AdditionalDependency(i, false, true));
             }
-            bootstrapBuilder.setProjectRoot(PathTestHelper.getTestClassesLocation(testJavaClass));
+            //bootstrapBuilder.setProjectRoot(PathTestHelper.getTestClassesLocation(testJavaClass));
 
             CuratedApplication curatedApplication = bootstrapBuilder.build().bootstrap();
             AugmentAction augmentAction = new AugmentActionImpl(curatedApplication, customizers);
@@ -181,7 +186,18 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
             testInstance = TestInstantiator.instantiateTest(testJavaClass, runningQuarkusApplication.getClassLoader());
 
         } catch (Throwable t) {
-            throw new DeploymentException("Unable to start the runtime runner", t);
+            //clone the exception into the correct class loader
+            Throwable nt;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            try (ObjectOutputStream a = new ObjectOutputStream(out)) {
+                a.writeObject(t);
+                a.close();
+                nt = (Throwable) new ObjectInputStream(new ByteArrayInputStream(out.toByteArray())).readObject();
+            } catch (Exception e) {
+                throw new DeploymentException("Unable to start the runtime runner", t);
+            }
+            throw new DeploymentException("Unable to start the runtime runner", nt);
+
         }
 
         ProtocolMetaData metadata = new ProtocolMetaData();

@@ -18,8 +18,8 @@ import org.junit.Before;
  */
 class QuarkusJunitCallbacks {
 
-    static void invokeJunitBefores() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Object testInstance = QuarkusDeployableContainer.testInstance;
+    static void invokeJunitBefores(Object testInstance)
+            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         // if there is no managed deployment, then we have no test instance because it hasn't been deployed yet
         if (testInstance != null) {
             List<Method> befores = new ArrayList<>();
@@ -30,8 +30,8 @@ class QuarkusJunitCallbacks {
         }
     }
 
-    static void invokeJunitAfters() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Object testInstance = QuarkusDeployableContainer.testInstance;
+    static void invokeJunitAfters(Object testInstance)
+            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (testInstance != null) {
             List<Method> afters = new ArrayList<>();
             collectCallbacks(testInstance.getClass(), afters, After.class);
