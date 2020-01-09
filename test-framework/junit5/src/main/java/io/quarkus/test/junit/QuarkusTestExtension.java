@@ -85,6 +85,7 @@ public class QuarkusTestExtension
                     .setIsolateDeployment(true)
                     .setMode(QuarkusBootstrap.Mode.TEST);
 
+            originalCl = Thread.currentThread().getContextClassLoader();
             testClassLocation = getTestClassesLocation(context.getRequiredTestClass());
             allowPackagePrivateMethods = Files.isDirectory(testClassLocation);
 
@@ -457,13 +458,13 @@ public class QuarkusTestExtension
 
         @Override
         public void close() throws Throwable {
-            testResourceManager.stop();
             try {
                 resource.close();
             } finally {
                 if (QuarkusTestExtension.this.originalCl != null) {
                     setCCL(QuarkusTestExtension.this.originalCl);
                 }
+                testResourceManager.stop();
             }
         }
     }
