@@ -100,7 +100,7 @@ ClassLoader, and it is recreated when the application is restarted.
 
 == Isolated ClassLoaders
 
-The runtime ClassLoader is always isolated. This means that it will have it's own copies of almost every class from the
+The runtime ClassLoader is always isolated. This means that it will have its own copies of almost every class from the
 resolved dependency list. The exception to this are:
 
 - JDK classes
