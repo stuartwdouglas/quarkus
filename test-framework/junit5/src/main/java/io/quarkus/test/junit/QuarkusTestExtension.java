@@ -151,7 +151,8 @@ public class QuarkusTestExtension
     }
 
     private boolean isNativeTest(ExtensionContext context) {
-        return context.getRequiredTestClass().isAnnotationPresent(NativeImageTest.class);
+        return context.getRequiredTestClass().isAnnotationPresent(NativeImageTest.class)
+                | context.getRequiredTestClass().isAnnotationPresent(SubstrateTest.class);
     }
 
     @Override
