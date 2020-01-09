@@ -79,7 +79,7 @@ Base Runtime ClassLoader::
 
 This loads all the runtime extension dependencies, as well as other user dependencies. It does not load the
 application root or any hot deployed code. This ClassLoader is persistent, even if the application restarts it will remain
-(which is why it cannot load application classes that may be hot deployed). It's parent is the base ClassLoader.
+(which is why it cannot load application classes that may be hot deployed). Its parent is the base ClassLoader.
 
 This loads code that is not hot-reloadable, but it does support transformation (although once the class is loaded this
 transformation is no longer possible). This means that only transformers registered in the first application start
