@@ -60,7 +60,7 @@ Augment ClassLoader::
 
 This loads all the `-deployment` artifacts and their dependencies, as well as other user dependencies. It does not load the
 application root or any hot deployed code. This ClassLoader is persistent, even if the application restarts it will remain
-(which is why it cannot load application classes that may be hot deployed). It's parent is the base ClassLoader, and it is
+(which is why it cannot load application classes that may be hot deployed). Its parent is the base ClassLoader, and it is
 transformer safe.
 
 At present this can be configured to delegate to the Base ClassLoader, however the plan is for this option to go away and
