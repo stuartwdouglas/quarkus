@@ -22,6 +22,7 @@ import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.AugmentResult;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
 
 /**
  * Build the application.
@@ -150,8 +151,16 @@ public class BuildMojo extends AbstractMojo {
             }
             realProperties.putIfAbsent("quarkus.application.name", project.getArtifactId());
             realProperties.putIfAbsent("quarkus.application.version", project.getVersion());
+
+            MavenArtifactResolver resolver = MavenArtifactResolver.builder()
+                    .setRepositorySystem(repoSystem)
+                    .setRepositorySystemSession(repoSession)
+                    .setRemoteRepositories(repos)
+                    .build();
+
             CuratedApplication curatedApplication = QuarkusBootstrap.builder(outputDirectory.toPath())
                     .setProjectRoot(project.getBasedir().toPath())
+                    .setMavenArtifactResolver(resolver)
                     .setBaseClassLoader(BuildMojo.class.getClassLoader())
                     .setBuildSystemProperties(realProperties)
                     .setLocalProjectDiscovery(false)

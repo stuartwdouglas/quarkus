@@ -85,6 +85,7 @@ public class BootstrapAppModelFactory {
     private VersionUpdate versionUpdate;
     private DependenciesOrigin dependenciesOrigin;
     private AppArtifact appArtifact;
+    private MavenArtifactResolver mavenArtifactResolver;
 
     private BootstrapAppModelFactory() {
     }
@@ -158,17 +159,22 @@ public class BootstrapAppModelFactory {
                 throw new IllegalArgumentException("Application classes path has not been set");
             }
             if (!Files.isDirectory(appClasses)) {
-                final MavenArtifactResolver.Builder mvnBuilder = MavenArtifactResolver.builder();
-                if (offline != null) {
-                    mvnBuilder.setOffline(offline);
+                final MavenArtifactResolver mvn;
+                if (mavenArtifactResolver == null) {
+                    final MavenArtifactResolver.Builder mvnBuilder = MavenArtifactResolver.builder();
+                    if (offline != null) {
+                        mvnBuilder.setOffline(offline);
+                    }
+                    final LocalProject localProject = localProjectsDiscovery
+                            ? LocalProject.loadWorkspace(Paths.get("").normalize().toAbsolutePath(), false)
+                            : null;
+                    if (localProject != null) {
+                        mvnBuilder.setWorkspace(localProject.getWorkspace());
+                    }
+                    mvn = mvnBuilder.build();
+                } else {
+                    mvn = mavenArtifactResolver;
                 }
-                final LocalProject localProject = localProjectsDiscovery
-                        ? LocalProject.loadWorkspace(Paths.get("").normalize().toAbsolutePath(), false)
-                        : null;
-                if (localProject != null) {
-                    mvnBuilder.setWorkspace(localProject.getWorkspace());
-                }
-                final MavenArtifactResolver mvn = mvnBuilder.build();
 
                 return bootstrapAppModelResolver = new BootstrapAppModelResolver(mvn)
                         .setTest(test)
@@ -179,15 +185,20 @@ public class BootstrapAppModelFactory {
                     ? LocalProject.loadWorkspace(appClasses, false)
                     : LocalProject.load(appClasses, false);
 
-            //TODO: we need some way to cache this for performance reasons
-            final MavenArtifactResolver.Builder mvn = MavenArtifactResolver.builder();
-            if (localProject != null) {
-                mvn.setWorkspace(localProject.getWorkspace());
+            final MavenArtifactResolver mvn;
+            if(mavenArtifactResolver == null) {
+                final MavenArtifactResolver.Builder builder = MavenArtifactResolver.builder();
+                if (localProject != null) {
+                    builder.setWorkspace(localProject.getWorkspace());
+                }
+                if (offline != null) {
+                    builder.setOffline(offline);
+                }
+                mvn = builder.build();
+            } else {
+                mvn = mavenArtifactResolver;
             }
-            if (offline != null) {
-                mvn.setOffline(offline);
-            }
-            return bootstrapAppModelResolver = new BootstrapAppModelResolver(mvn.build())
+            return bootstrapAppModelResolver = new BootstrapAppModelResolver(mvn)
                     .setTest(test)
                     .setDevMode(devMode);
         } catch (Exception e) {
@@ -479,6 +490,11 @@ public class BootstrapAppModelFactory {
         if (log.isDebugEnabled()) {
             log.debug(String.format(msg, args));
         }
+    }
+
+    public BootstrapAppModelFactory setMavenArtifactResolver(MavenArtifactResolver mavenArtifactResolver) {
+        this.mavenArtifactResolver = mavenArtifactResolver;
+        return this;
     }
 
     private static class FixedSuppler<T> implements Supplier<T> {

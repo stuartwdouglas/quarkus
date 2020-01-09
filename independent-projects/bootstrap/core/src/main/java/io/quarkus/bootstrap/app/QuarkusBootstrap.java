@@ -13,6 +13,7 @@ import io.quarkus.bootstrap.model.AppArtifact;
 import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.bootstrap.model.AppModel;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
+import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
 import io.quarkus.bootstrap.resolver.update.DependenciesOrigin;
 import io.quarkus.bootstrap.resolver.update.VersionUpdate;
 import io.quarkus.bootstrap.resolver.update.VersionUpdateNumber;
@@ -72,6 +73,7 @@ public class QuarkusBootstrap implements Serializable {
     private final DependenciesOrigin dependenciesOrigin;
     private final AppArtifact appArtifact;
     private final boolean isolateDeployment;
+    private final MavenArtifactResolver mavenArtifactResolver;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -93,6 +95,7 @@ public class QuarkusBootstrap implements Serializable {
         this.appArtifact = builder.appArtifact;
         this.isolateDeployment = builder.isolateDeployment;
         this.additionalDeploymentArchives = builder.additionalDeploymentArchives;
+        this.mavenArtifactResolver = builder.mavenArtifactResolver;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
@@ -108,6 +111,7 @@ public class QuarkusBootstrap implements Serializable {
 
         BootstrapAppModelFactory appModelFactory = BootstrapAppModelFactory.newInstance()
                 .setOffline(offline)
+                .setMavenArtifactResolver(mavenArtifactResolver)
                 .setBootstrapAppModelResolver(appModelResolver)
                 .setVersionUpdate(versionUpdate)
                 .setVersionUpdateNumber(versionUpdateNumber)
@@ -206,6 +210,7 @@ public class QuarkusBootstrap implements Serializable {
         DependenciesOrigin dependenciesOrigin;
         AppArtifact appArtifact;
         boolean isolateDeployment;
+        MavenArtifactResolver mavenArtifactResolver;
 
         public Builder(Path applicationRoot) {
             this.applicationRoot = applicationRoot;
@@ -308,6 +313,11 @@ public class QuarkusBootstrap implements Serializable {
          */
         public Builder setIsolateDeployment(boolean isolateDeployment) {
             this.isolateDeployment = isolateDeployment;
+            return this;
+        }
+
+        public Builder setMavenArtifactResolver(MavenArtifactResolver mavenArtifactResolver) {
+            this.mavenArtifactResolver = mavenArtifactResolver;
             return this;
         }
 
