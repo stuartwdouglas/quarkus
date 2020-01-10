@@ -1,6 +1,6 @@
 package io.quarkus.arquillian;
 
-import static io.quarkus.arquillian.QuarkusProtocol.convertToTCCL;
+import static io.quarkus.arquillian.QuarkusProtocol.convertToCL;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.BeanManager;
 
+import org.jboss.arquillian.container.spi.context.annotation.DeploymentScoped;
 import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.spi.TestEnricher;
@@ -27,6 +28,10 @@ public class InjectionEnricher implements TestEnricher {
     @Inject
     @TestScoped
     private InstanceProducer<CreationalContext<?>> creationalContextProducer;
+
+    @Inject
+    @DeploymentScoped
+    private InstanceProducer<ClassLoader> appClassloader;
 
     public BeanManager getBeanManager() {
         return Arc.container().beanManager();
@@ -74,9 +79,9 @@ public class InjectionEnricher implements TestEnricher {
             }
             try {
                 // obtain the same method definition but from the TCCL
-                method = Thread.currentThread().getContextClassLoader()
+                method = appClassloader.get()
                         .loadClass(method.getDeclaringClass().getName())
-                        .getMethod(method.getName(), convertToTCCL(method.getParameterTypes()));
+                        .getMethod(method.getName(), convertToCL(method.getParameterTypes(), appClassloader.get()));
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }

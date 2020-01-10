@@ -180,7 +180,7 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
             AugmentAction augmentAction = new AugmentActionImpl(curatedApplication, customizers);
             StartupAction app = augmentAction.createInitialRuntimeApplication();
             RunningQuarkusApplication runningQuarkusApplication = app.run();
-            appClassloader.set(runningQuarkusApplication.getClassLoader());
+            appClassloader.set(new BrokenMpDelegationClassLoader(runningQuarkusApplication.getClassLoader()));
             runningApp.set(runningQuarkusApplication);
             Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
             // Instantiate the real test instance

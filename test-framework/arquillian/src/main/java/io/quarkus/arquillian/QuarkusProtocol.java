@@ -124,11 +124,14 @@ class QuarkusProtocol implements Protocol<QuarkusProtocolConfiguration> {
      * so to be able to invoke the method we find the same method using TCCL
      */
     static Class<?>[] convertToTCCL(Class<?>[] classes) throws ClassNotFoundException {
+        return convertToCL(classes, Thread.currentThread().getContextClassLoader());
+    }
+
+    static Class<?>[] convertToCL(Class<?>[] classes, ClassLoader classLoader) throws ClassNotFoundException {
         Class<?>[] result = new Class<?>[classes.length];
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         for (int i = 0; i < classes.length; i++) {
-            if (classes[i].getClassLoader() != tccl) {
-                result[i] = tccl.loadClass(classes[i].getName());
+            if (classes[i].getClassLoader() != classLoader) {
+                result[i] = classLoader.loadClass(classes[i].getName());
             } else {
                 result[i] = classes[i];
             }
