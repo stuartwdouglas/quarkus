@@ -379,23 +379,25 @@ public class JarResultBuildStep {
             throws IOException {
         // this will contain all the resources in both maven and gradle cases - the latter is true because we copy them in AugmentTask
         Path classesLocation = applicationArchivesBuildItem.getRootArchive().getArchiveLocation();
-        Files.find(classesLocation, 1, new BiPredicate<Path, BasicFileAttributes>() {
+        try (Stream<Path> stream = Files.find(classesLocation, 1, new BiPredicate<Path, BasicFileAttributes>() {
             @Override
             public boolean test(Path path, BasicFileAttributes basicFileAttributes) {
                 return basicFileAttributes.isRegularFile() && path.toString().endsWith(".json");
             }
-        }).forEach(new Consumer<Path>() {
-            @Override
-            public void accept(Path jsonPath) {
-                try {
-                    Files.copy(jsonPath, thinJarDirectory.resolve(jsonPath.getFileName()));
-                } catch (IOException e) {
-                    throw new UncheckedIOException(
-                            "Unable to copy json config file from " + jsonPath + " to " + thinJarDirectory,
-                            e);
+        })) {
+            stream.forEach(new Consumer<Path>() {
+                @Override
+                public void accept(Path jsonPath) {
+                    try {
+                        Files.copy(jsonPath, thinJarDirectory.resolve(jsonPath.getFileName()));
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(
+                                "Unable to copy json config file from " + jsonPath + " to " + thinJarDirectory,
+                                e);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void doThinJarGeneration(CurateOutcomeBuildItem curateOutcomeBuildItem,
