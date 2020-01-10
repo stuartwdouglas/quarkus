@@ -33,7 +33,6 @@ import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.pkg.builditem.BuildSystemTargetBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.runtime.LaunchMode;
-import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 
 public class QuarkusAugmentor {
 
@@ -77,7 +76,7 @@ public class QuarkusAugmentor {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         FileSystem rootFs = null;
         try {
-            Thread.currentThread().setContextClassLoader(new BrokenMpDelegationClassLoader(deploymentClassLoader));
+            Thread.currentThread().setContextClassLoader(deploymentClassLoader);
 
             final BuildChainBuilder chainBuilder = BuildChain.builder();
 

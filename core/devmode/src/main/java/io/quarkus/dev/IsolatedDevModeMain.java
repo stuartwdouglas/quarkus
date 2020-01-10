@@ -35,7 +35,6 @@ import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
 import io.quarkus.runtime.logging.InitialConfigurator;
 import io.quarkus.runtime.logging.LoggingSetupRecorder;
-import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 
 public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<String, Object>>, Closeable {
 
@@ -73,7 +72,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                         Thread.currentThread().setContextClassLoader(curatedApplication.getBaseRuntimeClassLoader());
 
                         try {
-                            BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
                             if (!InitialConfigurator.DELAYED_HANDLER.isActivated()) {
                                 Class<?> cl = Thread.currentThread().getContextClassLoader()
                                         .loadClass(LoggingSetupRecorder.class.getName());
@@ -83,8 +81,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                         } catch (Exception e) {
                             t.addSuppressed(new RuntimeException("Failed to recover after failed start", e));
                             throw new RuntimeException(t);
-                        } finally {
-                            BrokenMpDelegationClassLoader.teardownBrokenClWorkaround();
                         }
                     }
                 }
@@ -159,14 +155,11 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
             }
         }
         QuarkusConfigFactory.setConfig(null);
-        BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
         final ConfigProviderResolver cpr = ConfigProviderResolver.instance();
         try {
             cpr.releaseConfig(cpr.getConfig());
         } catch (Throwable ignored) {
             // just means no config was installed, which is fine
-        } finally {
-            BrokenMpDelegationClassLoader.teardownBrokenClWorkaround();
         }
         runner = null;
     }

@@ -36,7 +36,6 @@ import io.quarkus.deployment.pkg.builditem.JarBuildItem;
 import io.quarkus.deployment.pkg.builditem.NativeImageBuildItem;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.configuration.ProfileManager;
-import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 
 /**
  * The augmentation task that produces the application.
@@ -118,7 +117,7 @@ public class AugmentActionImpl implements AugmentAction {
 
             final BuildChainBuilder chainBuilder = BuildChain.builder();
 
-            ExtensionLoader.loadStepsFrom(new BrokenMpDelegationClassLoader(classLoader)).accept(chainBuilder);
+            ExtensionLoader.loadStepsFrom(classLoader).accept(chainBuilder);
             chainBuilder.loadProviders(classLoader);
 
             for (Consumer<BuildChainBuilder> c : chainCustomizers) {

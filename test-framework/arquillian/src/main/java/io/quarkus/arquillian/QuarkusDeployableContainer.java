@@ -48,7 +48,6 @@ import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildContext;
 import io.quarkus.builder.BuildStep;
 import io.quarkus.runner.bootstrap.AugmentActionImpl;
-import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.TestInstantiator;
 import io.quarkus.test.common.http.TestHTTPResourceManager;
@@ -180,7 +179,7 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
             AugmentAction augmentAction = new AugmentActionImpl(curatedApplication, customizers);
             StartupAction app = augmentAction.createInitialRuntimeApplication();
             RunningQuarkusApplication runningQuarkusApplication = app.run();
-            appClassloader.set(new BrokenMpDelegationClassLoader(runningQuarkusApplication.getClassLoader()));
+            appClassloader.set(runningQuarkusApplication.getClassLoader());
             runningApp.set(runningQuarkusApplication);
             Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
             // Instantiate the real test instance
@@ -205,20 +204,15 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
 
         ProtocolMetaData metadata = new ProtocolMetaData();
 
-        try {
-            BrokenMpDelegationClassLoader.setupBrokenClWorkaround();
-            //TODO: fix this
-            String testUri = TestHTTPResourceManager.getUri(runningApp.get());
+        //TODO: fix this
+        String testUri = TestHTTPResourceManager.getUri(runningApp.get());
 
-            System.setProperty("test.url", testUri);
-            URI uri = URI.create(testUri);
-            HTTPContext httpContext = new HTTPContext(uri.getHost(), uri.getPort());
-            // This is to work around https://github.com/arquillian/arquillian-core/issues/216
-            httpContext.add(new Servlet("dummy", "/"));
-            metadata.addContext(httpContext);
-        } finally {
-            BrokenMpDelegationClassLoader.teardownBrokenClWorkaround();
-        }
+        System.setProperty("test.url", testUri);
+        URI uri = URI.create(testUri);
+        HTTPContext httpContext = new HTTPContext(uri.getHost(), uri.getPort());
+        // This is to work around https://github.com/arquillian/arquillian-core/issues/216
+        httpContext.add(new Servlet("dummy", "/"));
+        metadata.addContext(httpContext);
         return metadata;
     }
 

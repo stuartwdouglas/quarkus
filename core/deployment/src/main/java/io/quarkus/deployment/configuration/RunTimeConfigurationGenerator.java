@@ -62,7 +62,6 @@ import io.quarkus.runtime.configuration.HyphenateEnumConverter;
 import io.quarkus.runtime.configuration.NameIterator;
 import io.quarkus.runtime.configuration.ProfileManager;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
-import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 import io.smallrye.config.Converters;
 import io.smallrye.config.PropertiesConfigSource;
 import io.smallrye.config.SmallRyeConfig;
@@ -287,11 +286,6 @@ public final class RunTimeConfigurationGenerator {
             clinit = cc.getMethodCreator(MethodDescriptor.ofMethod(CONFIG_CLASS_NAME, "<clinit>", void.class));
             clinit.setModifiers(Opcodes.ACC_STATIC);
 
-            //HUGE HACK
-            //TODO: delete this once the class loading issues are fixed
-            //see https://github.com/eclipse/microprofile-config/issues/390
-            clinit.invokeStaticMethod(
-                    MethodDescriptor.ofMethod(BrokenMpDelegationClassLoader.class, "setupBrokenClWorkaround", void.class));
             clinit.invokeStaticMethod(PM_SET_RUNTIME_DEFAULT_PROFILE, clinit.load(ProfileManager.getActiveProfile()));
             clinitNameBuilder = clinit.newInstance(SB_NEW);
             clinit.invokeVirtualMethod(SB_APPEND_STRING, clinitNameBuilder, clinit.load("quarkus"));
@@ -603,12 +597,6 @@ public final class RunTimeConfigurationGenerator {
 
             readConfig.returnValue(null);
             readConfig.close();
-
-            //HUCK HACK
-            //TODO: delete this
-            //see https://github.com/eclipse/microprofile-config/issues/390
-            clinit.invokeStaticMethod(
-                    MethodDescriptor.ofMethod(BrokenMpDelegationClassLoader.class, "teardownBrokenClWorkaround", void.class));
 
             clinit.returnValue(null);
             clinit.close();

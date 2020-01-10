@@ -7,7 +7,6 @@ import java.util.Optional;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import io.quarkus.bootstrap.app.RunningQuarkusApplication;
-import io.quarkus.runtime.util.BrokenMpDelegationClassLoader;
 
 public class RunningQuarkusApplicationImpl implements RunningQuarkusApplication {
 
@@ -38,9 +37,8 @@ public class RunningQuarkusApplicationImpl implements RunningQuarkusApplication 
         try {
             Class<?> configProviderClass = classLoader.loadClass(ConfigProvider.class.getName());
             Method getConfig = configProviderClass.getMethod("getConfig", ClassLoader.class);
-            BrokenMpDelegationClassLoader cl = new BrokenMpDelegationClassLoader(classLoader);
-            Thread.currentThread().setContextClassLoader(cl);
-            Object config = getConfig.invoke(null, cl);
+            Thread.currentThread().setContextClassLoader(classLoader);
+            Object config = getConfig.invoke(null, classLoader);
             return (Optional<T>) getConfig.getReturnType().getMethod("getOptionalValue", String.class, Class.class)
                     .invoke(config, key, type);
         } catch (Exception e) {
