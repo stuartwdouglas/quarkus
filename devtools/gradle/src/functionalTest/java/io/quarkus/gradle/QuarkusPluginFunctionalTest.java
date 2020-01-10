@@ -50,7 +50,7 @@ public class QuarkusPluginFunctionalTest {
 
     @ParameterizedTest(name = "Build {0} project")
     @EnumSource(SourceType.class)
-    public void canBuild(SourceType sourceType) throws IOException {
+    public void canBuild(SourceType sourceType) throws IOException, InterruptedException {
         createProject(sourceType);
 
         BuildResult build = GradleRunner.create()
