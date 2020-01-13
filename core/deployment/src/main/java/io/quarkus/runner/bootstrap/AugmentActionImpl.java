@@ -74,6 +74,7 @@ public class AugmentActionImpl implements AugmentAction {
         BuildResult result = runAugment(true, Collections.emptySet(), ArtifactResultBuildItem.class);
         JarBuildItem jarBuildItem = result.consumeOptional(JarBuildItem.class);
         NativeImageBuildItem nativeImageBuildItem = result.consumeOptional(NativeImageBuildItem.class);
+        curatedApplication.close();
         return new AugmentResult(result.consumeMulti(ArtifactResultBuildItem.class).stream()
                 .map(a -> new ArtifactResult(a.getPath(), a.getType(), a.getAdditionalPaths())).collect(Collectors.toList()),
                 jarBuildItem != null ? jarBuildItem.toJarResult() : null,

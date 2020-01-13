@@ -68,19 +68,18 @@ public class QuarkusBuild extends QuarkusTask {
             System.setProperty("quarkus.package.uber-jar", "true");
             clear = true;
         }
-        try {
-            CuratedApplication appCreationContext = QuarkusBootstrap.builder(appArtifact.getPath())
-                    .setBaseClassLoader(getClass().getClassLoader())
-                    .setAppModelResolver(modelResolver)
-                    .setTargetDirectory(getProject().getBuildDir().toPath())
-                    .setBaseName(extension().finalName())
-                    .setBuildSystemProperties(realProperties)
-                    .setAppArtifact(appArtifact)
-                    .setLocalProjectDiscovery(false)
-                    .setIsolateDeployment(true)
-                    //.setConfigDir(extension().outputConfigDirectory().toPath())
-                    //.setTargetDirectory(extension().outputDirectory().toPath())
-                    .build().bootstrap();
+        try (CuratedApplication appCreationContext = QuarkusBootstrap.builder(appArtifact.getPath())
+                .setBaseClassLoader(getClass().getClassLoader())
+                .setAppModelResolver(modelResolver)
+                .setTargetDirectory(getProject().getBuildDir().toPath())
+                .setBaseName(extension().finalName())
+                .setBuildSystemProperties(realProperties)
+                .setAppArtifact(appArtifact)
+                .setLocalProjectDiscovery(false)
+                .setIsolateDeployment(true)
+                //.setConfigDir(extension().outputConfigDirectory().toPath())
+                //.setTargetDirectory(extension().outputDirectory().toPath())
+                .build().bootstrap()) {
 
             appCreationContext.createAugmentor().createProductionApplication();
 

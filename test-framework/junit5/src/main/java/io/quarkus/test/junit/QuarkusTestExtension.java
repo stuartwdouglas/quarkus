@@ -128,6 +128,8 @@ public class QuarkusTestExtension
                         shutdownTask.close();
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } finally {
+                        curatedApplication.close();
                     }
                 }
             }, "Quarkus Test Cleanup Shutdown task"));

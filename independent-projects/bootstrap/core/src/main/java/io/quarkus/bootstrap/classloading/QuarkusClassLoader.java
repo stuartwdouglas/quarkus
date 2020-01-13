@@ -333,7 +333,7 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         for (ClassPathElement element : elements) {
             try (ClassPathElement ignored = element) {
 

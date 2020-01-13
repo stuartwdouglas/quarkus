@@ -268,7 +268,7 @@ public class CuratedApplication implements Serializable, Closeable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         if(augmentClassLoader != null) {
             augmentClassLoader.close();
         }

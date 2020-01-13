@@ -88,6 +88,7 @@ public class QuarkusUnitTest
     private static final Timer timeoutTimer = new Timer("Test thread dump timer");
     private volatile TimerTask timeoutTask;
     private Properties customApplicationProperties;
+    private CuratedApplication curatedApplication;
     private RunningQuarkusApplication runningQuarkusApplication;
     private ClassLoader originalClassLoader;
 
@@ -374,7 +375,7 @@ public class QuarkusUnitTest
             final Path testLocation = PathTestHelper.getTestClassesLocation(testClass);
 
             try {
-                CuratedApplication curatedApplication = QuarkusBootstrap.builder(deploymentDir)
+                curatedApplication = QuarkusBootstrap.builder(deploymentDir)
                         .setMode(QuarkusBootstrap.Mode.TEST)
                         .addExcludedPath(testLocation)
                         .setProjectRoot(testLocation)
@@ -450,6 +451,7 @@ public class QuarkusUnitTest
             if (afterUndeployListener != null) {
                 afterUndeployListener.run();
             }
+            curatedApplication.close();
         } finally {
             Thread.currentThread().setContextClassLoader(originalClassLoader);
             timeoutTask.cancel();
