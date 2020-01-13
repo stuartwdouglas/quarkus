@@ -94,7 +94,7 @@ version used at deployment time might want to include ByteBuddy, while the versi
 
 Runtime Class Loader::
 
-This ClassLoader is used to load the application classes and other hot deployable resources. It's parent it the base runtime
+This ClassLoader is used to load the application classes and other hot deployable resources. Its parent is the base runtime
 ClassLoader, and it is recreated when the application is restarted.
 
 
