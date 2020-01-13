@@ -159,5 +159,5 @@ file). Simply add an `excludedArtifacts` section as shown below:
 </plugin>
 ----
 
-This should only be done if the extension depends on a never version of these artifacts. If the extension does not bring
+This should only be done if the extension depends on a newer version of these artifacts. If the extension does not bring
 in a replacement artifact as a dependency then classes the application needs might end up missing.
