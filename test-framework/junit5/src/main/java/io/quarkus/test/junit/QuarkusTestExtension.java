@@ -204,11 +204,7 @@ public class QuarkusTestExtension
 
             invokeQuarkusMethod(QuarkusBeforeAll.class, actualTestClass);
 
-            Class<?> cdi = Thread.currentThread().getContextClassLoader().loadClass("javax.enterprise.inject.spi.CDI");
-            Object instance = cdi.getMethod("current").invoke(null);
-            Method selectMethod = cdi.getMethod("select", Class.class, Annotation[].class);
-            Object cdiInstance = selectMethod.invoke(instance, actualTestClass, new Annotation[0]);
-            actualTestInstance = selectMethod.getReturnType().getMethod("get").invoke(cdiInstance);
+            runningQuarkusApplication.instance(actualTestClass);
 
             Class<?> resM = Thread.currentThread().getContextClassLoader().loadClass(TestHTTPResourceManager.class.getName());
             resM.getDeclaredMethod("inject", Object.class).invoke(null, actualTestInstance);

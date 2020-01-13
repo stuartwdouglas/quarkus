@@ -3,6 +3,7 @@ package io.quarkus.runner.bootstrap;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -83,7 +84,17 @@ public class StartupActionImpl implements StartupAction {
             Method start = appClass.getMethod("start", String[].class);
             Object application = appClass.newInstance();
             start.invoke(application, (Object) args);
-            return new RunningQuarkusApplicationImpl((Closeable) application, runtimeClassLoader);
+            Closeable closeTask = (Closeable) application;
+            return new RunningQuarkusApplicationImpl(new Closeable() {
+                @Override
+                public void close() throws IOException {
+                    try {
+                        closeTask.close();
+                    } finally {
+                        runtimeClassLoader.close();
+                    }
+                }
+            }, runtimeClassLoader);
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof Exception) {
                 throw (Exception) e.getCause();

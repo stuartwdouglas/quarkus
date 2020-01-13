@@ -1,5 +1,7 @@
 package io.quarkus.bootstrap.app;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +32,7 @@ import io.quarkus.bootstrap.resolver.AppModelResolver;
  *
  *
  */
-public class CuratedApplication implements Serializable {
+public class CuratedApplication implements Serializable, Closeable {
 
     private static final String AUGMENTOR = "io.quarkus.runner.bootstrap.AugmentActionImpl";
 
@@ -263,5 +265,15 @@ public class CuratedApplication implements Serializable {
             builder.addElement(ClassPathElement.fromPath(i.getArchivePath()));
         }
         return builder.build();
+    }
+
+    @Override
+    public void close() throws IOException {
+        if(augmentClassLoader != null) {
+            augmentClassLoader.close();
+        }
+        if(baseRuntimeClassLoader != null) {
+            baseRuntimeClassLoader.close();
+        }
     }
 }

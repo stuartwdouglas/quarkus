@@ -202,8 +202,8 @@ class JaxbProcessor {
                 .forEach(this::addResource);
 
         for (JaxbFileRootBuildItem i : fileRoots) {
-            try(Stream<Path> stream = iterateResources(i.getFileRoot())) {
-                    stream.filter(p -> p.getFileName().toString().equals("jaxb.index"))
+            try (Stream<Path> stream = iterateResources(i.getFileRoot())) {
+                stream.filter(p -> p.getFileName().toString().equals("jaxb.index"))
                         .forEach(this::handleJaxbFile);
             }
         }

@@ -5,6 +5,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
@@ -74,6 +76,8 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
     static Object testInstance;
     static ClassLoader old;
 
+    private QuarkusConfiguration configuration;
+
     @Override
     public Class<QuarkusConfiguration> getConfigurationClass() {
         return QuarkusConfiguration.class;
@@ -81,7 +85,7 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
 
     @Override
     public void setup(QuarkusConfiguration configuration) {
-        // No-op
+        this.configuration = configuration;
     }
 
     @SuppressWarnings("rawtypes")
@@ -93,6 +97,9 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
         }
         Class testJavaClass = testClass.get().getJavaClass();
 
+        //some TCK tests embed random libraries such as old versions of Jackson databind
+        //this breaks quarkus, so we just skip them
+        boolean skipLibraries = Boolean.getBoolean("io.quarkus.arquillian.skip-libraries");
         try {
             // Export the test archive
             Path tmpLocation = Files.createTempDirectory("quarkus-arquillian-test");
@@ -106,8 +113,10 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
                 // Quarkus does not support the WAR layout and so adapt the layout (similarly to quarkus-war-launcher)
                 appLocation = tmpLocation.resolve("app").toAbsolutePath();
                 //WEB-INF/lib -> lib/
-                if (Files.exists(tmpLocation.resolve("WEB-INF/lib"))) {
-                    Files.move(tmpLocation.resolve("WEB-INF/lib"), tmpLocation.resolve("lib"));
+                if (!skipLibraries) {
+                    if (Files.exists(tmpLocation.resolve("WEB-INF/lib"))) {
+                        Files.move(tmpLocation.resolve("WEB-INF/lib"), tmpLocation.resolve("lib"));
+                    }
                 }
                 //WEB-INF/classes -> archive/
                 if (Files.exists(tmpLocation.resolve("WEB-INF/classes"))) {
@@ -184,6 +193,30 @@ public class QuarkusDeployableContainer implements DeployableContainer<QuarkusCo
             Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
             // Instantiate the real test instance
             testInstance = TestInstantiator.instantiateTest(testJavaClass, runningQuarkusApplication.getClassLoader());
+
+            //so this is pretty bogus, but some of the TCK tests set static's in their @Deployment methods
+            //we can probably challenge them, but for now we just copy the field values over
+            //its pretty bogus
+            if (Boolean.getBoolean("io.quarkus.arquillian.copy-fields")) {
+                Class<?> dest = testInstance.getClass();
+                Class<?> source = testClass.get().getJavaClass();
+                while (source != Object.class) {
+                    for (Field f : source.getDeclaredFields()) {
+                        try {
+                            if (Modifier.isStatic(f.getModifiers()) && !Modifier.isFinal(f.getModifiers())) {
+                                Field df = dest.getDeclaredField(f.getName());
+                                df.setAccessible(true);
+                                f.setAccessible(true);
+                                df.set(null, f.get(null));
+                            }
+                        } catch (Exception e) {
+                            LOGGER.error("Failed to copy static field", e);
+                        }
+                    }
+                    source = source.getSuperclass();
+                    dest = dest.getSuperclass();
+                }
+            }
 
         } catch (Throwable t) {
             //clone the exception into the correct class loader

@@ -8,7 +8,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -394,11 +393,7 @@ public class QuarkusUnitTest
                 try {
                     actualTestClass = Class.forName(testClass.getName(), true,
                             Thread.currentThread().getContextClassLoader());
-                    Class<?> cdi = Thread.currentThread().getContextClassLoader().loadClass("javax.enterprise.inject.spi.CDI");
-                    Object instance = cdi.getMethod("current").invoke(null);
-                    Method selectMethod = cdi.getMethod("select", Class.class, Annotation[].class);
-                    Object cdiInstance = selectMethod.invoke(instance, actualTestClass, new Annotation[0]);
-                    actualTestInstance = selectMethod.getReturnType().getMethod("get").invoke(cdiInstance);
+                    actualTestInstance = runningQuarkusApplication.instance(actualTestClass);
                 } catch (Exception e) {
                     throw new TestInstantiationException("Failed to create test instance", e);
                 }

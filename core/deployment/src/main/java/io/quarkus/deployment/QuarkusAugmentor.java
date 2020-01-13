@@ -1,5 +1,6 @@
 package io.quarkus.deployment;
 
+import java.io.Closeable;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -143,6 +144,9 @@ public class QuarkusAugmentor {
                     rootFs.close();
                 } catch (Exception e) {
                 }
+            }
+            if(deploymentClassLoader instanceof Closeable) {
+                ((Closeable) deploymentClassLoader).close();
             }
             Thread.currentThread().setContextClassLoader(originalClassLoader);
         }

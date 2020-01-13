@@ -1,6 +1,7 @@
 package io.quarkus.runner.bootstrap;
 
 import java.io.Closeable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -45,6 +46,21 @@ public class RunningQuarkusApplicationImpl implements RunningQuarkusApplication 
             throw new RuntimeException(e);
         } finally {
             Thread.currentThread().setContextClassLoader(old);
+        }
+    }
+
+    @Override
+    public Object instance(Class<?> clazz, Annotation... qualifiers) {
+        try {
+            Class<?> actualClass = Class.forName(clazz.getName(), true,
+                    classLoader);
+            Class<?> cdi = classLoader.loadClass("javax.enterprise.inject.spi.CDI");
+            Object instance = cdi.getMethod("current").invoke(null);
+            Method selectMethod = cdi.getMethod("select", Class.class, Annotation[].class);
+            Object cdiInstance = selectMethod.invoke(instance, actualClass, qualifiers);
+            return selectMethod.getReturnType().getMethod("get").invoke(cdiInstance);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
