@@ -145,7 +145,7 @@ public class QuarkusAugmentor {
                 } catch (Exception e) {
                 }
             }
-            if(deploymentClassLoader instanceof Closeable) {
+            if (deploymentClassLoader instanceof Closeable) {
                 ((Closeable) deploymentClassLoader).close();
             }
             Thread.currentThread().setContextClassLoader(originalClassLoader);

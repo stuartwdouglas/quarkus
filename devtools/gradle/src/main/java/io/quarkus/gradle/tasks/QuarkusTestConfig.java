@@ -20,7 +20,7 @@ public class QuarkusTestConfig extends QuarkusTask {
         final QuarkusPluginExtension quarkusExt = extension();
         try {
             final List<AppDependency> deploymentDeps = quarkusExt.resolveAppModel().resolveModel(quarkusExt.getAppArtifact())
-                    .getDeploymentDependencies();
+                    .getFullDeploymentDeps();
             final StringBuilder buf = new StringBuilder();
             for (AppDependency dep : deploymentDeps) {
                 buf.append(dep.getArtifact().getPath().toUri().toURL().toExternalForm());
