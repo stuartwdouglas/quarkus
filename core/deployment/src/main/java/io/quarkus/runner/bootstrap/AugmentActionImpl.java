@@ -68,17 +68,21 @@ public class AugmentActionImpl implements AugmentAction {
 
     @Override
     public AugmentResult createProductionApplication() {
-        if (launchMode != LaunchMode.NORMAL) {
-            throw new IllegalStateException("Can only create a production application when using NORMAL launch mode");
+        try {
+            if (launchMode != LaunchMode.NORMAL) {
+                throw new IllegalStateException("Can only create a production application when using NORMAL launch mode");
+            }
+            BuildResult result = runAugment(true, Collections.emptySet(), ArtifactResultBuildItem.class);
+            JarBuildItem jarBuildItem = result.consumeOptional(JarBuildItem.class);
+            NativeImageBuildItem nativeImageBuildItem = result.consumeOptional(NativeImageBuildItem.class);
+            return new AugmentResult(result.consumeMulti(ArtifactResultBuildItem.class).stream()
+                    .map(a -> new ArtifactResult(a.getPath(), a.getType(), a.getAdditionalPaths()))
+                    .collect(Collectors.toList()),
+                    jarBuildItem != null ? jarBuildItem.toJarResult() : null,
+                    nativeImageBuildItem != null ? nativeImageBuildItem.getPath() : null);
+        } finally {
+            curatedApplication.close();
         }
-        BuildResult result = runAugment(true, Collections.emptySet(), ArtifactResultBuildItem.class);
-        JarBuildItem jarBuildItem = result.consumeOptional(JarBuildItem.class);
-        NativeImageBuildItem nativeImageBuildItem = result.consumeOptional(NativeImageBuildItem.class);
-        curatedApplication.close();
-        return new AugmentResult(result.consumeMulti(ArtifactResultBuildItem.class).stream()
-                .map(a -> new ArtifactResult(a.getPath(), a.getType(), a.getAdditionalPaths())).collect(Collectors.toList()),
-                jarBuildItem != null ? jarBuildItem.toJarResult() : null,
-                nativeImageBuildItem != null ? nativeImageBuildItem.getPath() : null);
     }
 
     @Override
@@ -88,7 +92,7 @@ public class AugmentActionImpl implements AugmentAction {
         }
         BuildResult result = runAugment(true, Collections.emptySet(), GeneratedClassBuildItem.class,
                 GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class);
-        return new StartupActionImpl(curatedApplication, this, result);
+        return new StartupActionImpl(curatedApplication, result);
     }
 
     @Override
@@ -98,7 +102,7 @@ public class AugmentActionImpl implements AugmentAction {
         }
         BuildResult result = runAugment(false, changedResources, GeneratedClassBuildItem.class,
                 GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class);
-        return new StartupActionImpl(curatedApplication, this, result);
+        return new StartupActionImpl(curatedApplication, result);
     }
 
     /**

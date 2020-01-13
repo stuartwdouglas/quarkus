@@ -528,7 +528,6 @@ public class DevMojo extends AbstractMojo {
             }
 
             setKotlinSpecificFlags(devModeContext);
-            RepositorySystem repoSystem = DevMojo.this.repoSystem;
             final LocalProject localProject;
             if (noDeps) {
                 localProject = LocalProject.load(outputDirectory.toPath());
@@ -558,7 +557,7 @@ public class DevMojo extends AbstractMojo {
                     .setRepositorySystemSession(repoSession)
                     .setRemoteRepositories(repos)
                     .build();
-            DependencyResult cpRes = mavenArtifactResolver.resolveManagedDependencies(
+            DependencyResult cpRes = mavenArtifactResolver.resolveDependencies(
                     bootstrap,
                     Collections.emptyList(), Collections.emptyList());
 

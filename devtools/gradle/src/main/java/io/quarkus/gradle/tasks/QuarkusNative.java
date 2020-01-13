@@ -349,18 +349,17 @@ public class QuarkusNative extends QuarkusTask {
             old.put(e.getKey(), System.getProperty(e.getKey()));
             System.setProperty(e.getKey(), e.getValue());
         }
-        try {
-            CuratedApplication appCreationContext = QuarkusBootstrap.builder(appArtifact.getPath())
-                    .setAppModelResolver(modelResolver)
-                    .setBaseClassLoader(getClass().getClassLoader())
-                    .setTargetDirectory(getProject().getBuildDir().toPath())
-                    .setBaseName(extension().finalName())
-                    .setLocalProjectDiscovery(false)
-                    .setBuildSystemProperties(realProperties)
-                    .setIsolateDeployment(true)
-                    //.setConfigDir(extension().outputConfigDirectory().toPath())
-                    //.setTargetDirectory(extension().outputDirectory().toPath())
-                    .build().bootstrap();
+        try (CuratedApplication appCreationContext = QuarkusBootstrap.builder(appArtifact.getPath())
+                .setAppModelResolver(modelResolver)
+                .setBaseClassLoader(getClass().getClassLoader())
+                .setTargetDirectory(getProject().getBuildDir().toPath())
+                .setBaseName(extension().finalName())
+                .setLocalProjectDiscovery(false)
+                .setBuildSystemProperties(realProperties)
+                .setIsolateDeployment(true)
+                //.setConfigDir(extension().outputConfigDirectory().toPath())
+                //.setTargetDirectory(extension().outputDirectory().toPath())
+                .build().bootstrap()) {
             appCreationContext.createAugmentor().createProductionApplication();
 
         } catch (BootstrapException e) {

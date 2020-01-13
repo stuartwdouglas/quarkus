@@ -25,6 +25,7 @@ import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.AugmentResult;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
 
 /**
  * Legacy mojo for backwards compatibility reasons. This should not be used in new projects
@@ -199,15 +200,22 @@ public class NativeImageMojo extends AbstractMojo {
                 old.put(e.getKey(), System.getProperty(e.getKey()));
                 System.setProperty(e.getKey(), e.getValue());
             }
-            try {
-                CuratedApplication curatedApplication = QuarkusBootstrap.builder(outputDirectory.toPath())
-                        .setProjectRoot(project.getBasedir().toPath())
-                        .setBuildSystemProperties(realProperties)
-                        .setBaseName(finalName)
-                        .setLocalProjectDiscovery(false)
-                        .setBaseClassLoader(BuildMojo.class.getClassLoader())
-                        .setTargetDirectory(buildDir.toPath())
-                        .build().bootstrap();
+
+            MavenArtifactResolver resolver = MavenArtifactResolver.builder()
+                    .setRepositorySystem(repoSystem)
+                    .setRepositorySystemSession(repoSession)
+                    .setRemoteRepositories(repos)
+                    .build();
+
+            try (CuratedApplication curatedApplication = QuarkusBootstrap.builder(outputDirectory.toPath())
+                    .setProjectRoot(project.getBasedir().toPath())
+                    .setBuildSystemProperties(realProperties)
+                    .setBaseName(finalName)
+                    .setMavenArtifactResolver(resolver)
+                    .setLocalProjectDiscovery(false)
+                    .setBaseClassLoader(BuildMojo.class.getClassLoader())
+                    .setTargetDirectory(buildDir.toPath())
+                    .build().bootstrap()) {
 
                 AugmentAction action = curatedApplication.createAugmentor();
                 AugmentResult result = action.createProductionApplication();

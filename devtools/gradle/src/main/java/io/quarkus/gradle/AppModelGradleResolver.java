@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -35,6 +34,7 @@ import org.gradle.jvm.tasks.Jar;
 
 import io.quarkus.bootstrap.BootstrapConstants;
 import io.quarkus.bootstrap.model.AppArtifact;
+import io.quarkus.bootstrap.model.AppArtifactKey;
 import io.quarkus.bootstrap.model.AppDependency;
 import io.quarkus.bootstrap.model.AppModel;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
@@ -125,7 +125,7 @@ public class AppModelGradleResolver implements AppModelResolver {
         final Configuration compileCp = project.getConfigurations().getByName(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME);
         final List<Dependency> extensionDeps = new ArrayList<>();
         final List<AppDependency> userDeps = new ArrayList<>();
-        Map<AppKey, AppDependency> versionMap = new HashMap<>();
+        Map<AppArtifactKey, AppDependency> versionMap = new HashMap<>();
         Map<ModuleIdentifier, ModuleVersionIdentifier> userModules = new HashMap<>();
         for (ResolvedArtifact a : compileCp.getResolvedConfiguration().getResolvedArtifacts()) {
             final File f = a.getFile();
@@ -137,7 +137,7 @@ public class AppModelGradleResolver implements AppModelResolver {
             userModules.put(getModuleId(a), a.getModuleVersion().getId());
             AppDependency dependency = toAppDependency(a);
             userDeps.add(dependency);
-            versionMap.put(new AppKey(dependency.getArtifact().getGroupId(), dependency.getArtifact().getArtifactId(),
+            versionMap.put(new AppArtifactKey(dependency.getArtifact().getGroupId(), dependency.getArtifact().getArtifactId(),
                     dependency.getArtifact().getClassifier()), dependency);
 
             final Dependency dep;
@@ -202,8 +202,9 @@ public class AppModelGradleResolver implements AppModelResolver {
         return this.appModel = appBuilder.build();
     }
 
-    private AppDependency alignVersion(AppDependency dependency, Map<AppKey, AppDependency> versionMap) {
-        AppKey appKey = new AppKey(dependency.getArtifact().getGroupId(), dependency.getArtifact().getArtifactId(),
+    private AppDependency alignVersion(AppDependency dependency, Map<AppArtifactKey, AppDependency> versionMap) {
+        AppArtifactKey appKey = new AppArtifactKey(dependency.getArtifact().getGroupId(),
+                dependency.getArtifact().getArtifactId(),
                 dependency.getArtifact().getClassifier());
         if (versionMap.containsKey(appKey)) {
             return versionMap.get(appKey);
@@ -266,32 +267,5 @@ public class AppModelGradleResolver implements AppModelResolver {
             throw new GradleException("Failed to load extension description " + path, e);
         }
         return rtProps;
-    }
-
-    static final class AppKey {
-        final String groupId, artifactId, classifier;
-
-        private AppKey(String groupId, String artifactId, String classifier) {
-            this.groupId = groupId;
-            this.artifactId = artifactId;
-            this.classifier = classifier;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            AppKey appKey = (AppKey) o;
-            return Objects.equals(groupId, appKey.groupId) &&
-                    Objects.equals(artifactId, appKey.artifactId) &&
-                    Objects.equals(classifier, appKey.classifier);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(groupId, artifactId, classifier);
-        }
     }
 }

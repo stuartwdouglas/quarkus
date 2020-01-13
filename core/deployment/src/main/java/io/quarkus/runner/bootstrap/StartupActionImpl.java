@@ -16,8 +16,8 @@ import org.jboss.logging.Logger;
 import org.objectweb.asm.ClassVisitor;
 
 import io.quarkus.bootstrap.app.AdditionalDependency;
-import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.app.RunningQuarkusApplication;
 import io.quarkus.bootstrap.app.StartupAction;
 import io.quarkus.bootstrap.classloading.ClassPathElement;
@@ -38,12 +38,10 @@ public class StartupActionImpl implements StartupAction {
     static final String DEBUG_CLASSES_DIR = System.getProperty("quarkus.debug.generated-classes-dir");
 
     private final CuratedApplication curatedApplication;
-    private final AugmentAction augmentAction;
     private final BuildResult buildResult;
 
-    public StartupActionImpl(CuratedApplication curatedApplication, AugmentAction augmentAction, BuildResult buildResult) {
+    public StartupActionImpl(CuratedApplication curatedApplication, BuildResult buildResult) {
         this.curatedApplication = curatedApplication;
-        this.augmentAction = augmentAction;
         this.buildResult = buildResult;
     }
 
@@ -89,9 +87,17 @@ public class StartupActionImpl implements StartupAction {
                 @Override
                 public void close() throws IOException {
                     try {
-                        closeTask.close();
+                        try {
+                            closeTask.close();
+                        } finally {
+                            runtimeClassLoader.close();
+                        }
                     } finally {
-                        runtimeClassLoader.close();
+                        if (curatedApplication.getQuarkusBootstrap().getMode() == QuarkusBootstrap.Mode.TEST) {
+                            //for tests we just always shut down the curated application, as it is only used once
+                            //dev mode might be about to restart, so we leave it
+                            curatedApplication.close();
+                        }
                     }
                 }
             }, runtimeClassLoader);

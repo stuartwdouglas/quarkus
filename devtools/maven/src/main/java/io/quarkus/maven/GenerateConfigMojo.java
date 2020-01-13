@@ -94,12 +94,12 @@ public class GenerateConfigMojo extends AbstractMojo {
         if (project.getResources().isEmpty()) {
             throw new MojoExecutionException("No resources directory, cannot create application.properties");
         }
-        try {
-            CuratedApplication curatedApplication = QuarkusBootstrap.builder(Paths.get(project.getBuild().getOutputDirectory()))
-                    .setProjectRoot(project.getBasedir().toPath())
-                    .setBaseClassLoader(getClass().getClassLoader())
-                    .setBuildSystemProperties(project.getProperties())
-                    .build().bootstrap();
+        try (CuratedApplication curatedApplication = QuarkusBootstrap
+                .builder(Paths.get(project.getBuild().getOutputDirectory()))
+                .setProjectRoot(project.getBasedir().toPath())
+                .setBaseClassLoader(getClass().getClassLoader())
+                .setBuildSystemProperties(project.getProperties())
+                .build().bootstrap()) {
 
             Resource res = project.getResources().get(0);
             File target = new File(res.getDirectory());

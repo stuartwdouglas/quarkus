@@ -38,7 +38,6 @@ import io.quarkus.runtime.logging.LoggingSetupRecorder;
 
 public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<String, Object>>, Closeable {
 
-    public static final String DEV_MODE_CONTEXT = "META-INF/dev-mode-context.dat";
     private static final Logger log = Logger.getLogger(DevModeMain.class);
 
     private DevModeContext context;
@@ -168,8 +167,12 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
         try {
             stop();
         } finally {
-            for (HotReplacementSetup i : hotReplacementSetups) {
-                i.close();
+            try {
+                for (HotReplacementSetup i : hotReplacementSetups) {
+                    i.close();
+                }
+            } finally {
+                curatedApplication.close();
             }
         }
     }

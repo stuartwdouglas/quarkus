@@ -49,13 +49,12 @@ public class QuarkusGenerateConfig extends QuarkusTask {
         if (name == null || name.isEmpty()) {
             name = "application.properties.example";
         }
-        try {
-            CuratedApplication bootstrap = QuarkusBootstrap.builder(getProject().getBuildDir().toPath())
-                    .setMode(QuarkusBootstrap.Mode.PROD)
-                    .setAppModelResolver(modelResolver)
-                    .setBuildSystemProperties(getBuildSystemProperties(appArtifact))
-                    .build()
-                    .bootstrap();
+        try (CuratedApplication bootstrap = QuarkusBootstrap.builder(getProject().getBuildDir().toPath())
+                .setMode(QuarkusBootstrap.Mode.PROD)
+                .setAppModelResolver(modelResolver)
+                .setBuildSystemProperties(getBuildSystemProperties(appArtifact))
+                .build()
+                .bootstrap()) {
             GenerateConfigTask ct = new GenerateConfigTask(new File(target, name).toPath());
             ct.run(bootstrap);
             getLogger().lifecycle("Generated config file " + name);

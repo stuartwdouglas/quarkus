@@ -205,8 +205,7 @@ public class CuratedApplication implements Serializable, Closeable {
     }
 
     private AppArtifactKey getKey(AppDependency i) {
-        return new AppArtifactKey(i.getArtifact().getGroupId(), i.getArtifact().getArtifactId(),
-                i.getArtifact().getClassifier(), i.getArtifact().getType());
+        return i.getArtifact().getKey();
     }
 
     /**
