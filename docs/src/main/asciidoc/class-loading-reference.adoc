@@ -116,7 +116,7 @@ this, however there are a few cases where this is necessary:
 - Quarkus bootstrap itself
 
 If this is required it can be configured in the `quarkus-bootstrap-maven-plugin`. Note that if you
-mark a dependency as parent first then all of it's dependencies must also be parent first,
+mark a dependency as parent first then all of its dependencies must also be parent first,
 or a `LinkageError` can occur.
 
 [source,xml]
