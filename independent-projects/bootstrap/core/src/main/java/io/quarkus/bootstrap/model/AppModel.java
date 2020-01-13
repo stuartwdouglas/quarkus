@@ -41,6 +41,11 @@ public class AppModel implements Serializable {
 
     private final Set<AppArtifactKey> parentFirstArtifacts;
 
+    /**
+     * A list of all dependencies, generated from deploymentDeps + runtimeDeps. This will likely go away.
+     */
+    private List<AppDependency> allDeps;
+
     private AppModel(AppArtifact appArtifact, List<AppDependency> runtimeDeps, List<AppDependency> deploymentDeps,
             List<AppDependency> fullDeploymentDeps, Set<AppArtifactKey> parentFirstArtifacts) {
         this.appArtifact = appArtifact;
@@ -48,6 +53,16 @@ public class AppModel implements Serializable {
         this.deploymentDeps = deploymentDeps;
         this.fullDeploymentDeps = fullDeploymentDeps;
         this.parentFirstArtifacts = parentFirstArtifacts;
+    }
+
+    @Deprecated
+    public List<AppDependency> getAllDependencies() {
+        if (allDeps == null) {
+            allDeps = new ArrayList<>(runtimeDeps.size() + deploymentDeps.size());
+            allDeps.addAll(runtimeDeps);
+            allDeps.addAll(deploymentDeps);
+        }
+        return allDeps;
     }
 
     public AppArtifact getAppArtifact() {
