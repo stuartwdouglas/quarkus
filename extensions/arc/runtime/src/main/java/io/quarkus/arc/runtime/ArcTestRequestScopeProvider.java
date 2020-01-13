@@ -1,10 +1,10 @@
-package io.quarkus.arc.deployment;
+package io.quarkus.arc.runtime;
 
 import org.jboss.logging.Logger;
 
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.ArcContainer;
-import io.quarkus.deployment.test.TestScopeSetup;
+import io.quarkus.runtime.test.TestScopeSetup;
 
 public class ArcTestRequestScopeProvider implements TestScopeSetup {
 

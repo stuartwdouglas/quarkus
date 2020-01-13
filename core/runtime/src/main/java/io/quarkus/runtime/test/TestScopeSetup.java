@@ -1,4 +1,4 @@
-package io.quarkus.deployment.test;
+package io.quarkus.runtime.test;
 
 public interface TestScopeSetup {
 

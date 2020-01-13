@@ -147,7 +147,8 @@ public class QuarkusTestExtension
                     || isNativeTest(context);
             runningQuarkusApplication.getClassLoader().loadClass(RestAssuredURLManager.class.getName())
                     .getDeclaredMethod("clearURL").invoke(null);
-            TestScopeManager.tearDown(nativeImageTest);
+            runningQuarkusApplication.getClassLoader().loadClass(TestScopeManager.class.getName())
+                    .getDeclaredMethod("tearDown", boolean.class).invoke(null, nativeImageTest);
         }
     }
 
@@ -167,8 +168,9 @@ public class QuarkusTestExtension
             if (runningQuarkusApplication != null) {
                 runningQuarkusApplication.getClassLoader().loadClass(RestAssuredURLManager.class.getName())
                         .getDeclaredMethod("setURL", boolean.class).invoke(null, false);
+                runningQuarkusApplication.getClassLoader().loadClass(TestScopeManager.class.getName())
+                        .getDeclaredMethod("setup", boolean.class).invoke(null, nativeImageTest);
             }
-            TestScopeManager.setup(nativeImageTest);
         }
     }
 
@@ -204,7 +206,7 @@ public class QuarkusTestExtension
 
             invokeQuarkusMethod(QuarkusBeforeAll.class, actualTestClass);
 
-            runningQuarkusApplication.instance(actualTestClass);
+            actualTestInstance = runningQuarkusApplication.instance(actualTestClass);
 
             Class<?> resM = Thread.currentThread().getContextClassLoader().loadClass(TestHTTPResourceManager.class.getName());
             resM.getDeclaredMethod("inject", Object.class).invoke(null, actualTestInstance);
