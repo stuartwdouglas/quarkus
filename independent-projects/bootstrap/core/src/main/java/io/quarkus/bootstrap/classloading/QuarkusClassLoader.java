@@ -335,6 +335,9 @@ public class QuarkusClassLoader extends ClassLoader implements Closeable {
     @Override
     public void close() {
         for (ClassPathElement element : elements) {
+            //note that this is a 'soft' close
+            //all resources are closed, however the CL can still be used
+            //but after close no resources will be held past the scope of an operation
             try (ClassPathElement ignored = element) {
 
             } catch (Exception e) {
