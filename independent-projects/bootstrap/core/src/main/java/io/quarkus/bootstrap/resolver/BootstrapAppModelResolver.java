@@ -250,33 +250,8 @@ public class BootstrapAppModelResolver implements AppModelResolver {
                 }
             }
         }
-        //now we need to resolve just the augment artifacts, to create an isolated class loader that is just used for
-        //augmentation. We do this by resolving all dependencies of the -deployment artifacts, which will include
-        //the runtime dependencies but not any user dependencies.
-
-        //there does not seem to be a reliable way to get maven to directly alight the dependency versions so we do it manually after resolution
-        //with the existing resolved versions taking precedence.
-
-        List<Dependency> allDepVersions = userDeps.stream()
-                .map((i) -> new Dependency(
-                        new DefaultArtifact(i.getArtifact().getGroupId(), i.getArtifact().getArtifactId(),
-                                i.getArtifact().getClassifier(), i.getArtifact().getClassifier(), i.getArtifact().getVersion()),
-                        i.getScope()))
-                .collect(Collectors.toList());
-        List<ArtifactResult> fullDeploymentDepsList = mvn
-                .resolveManagedDependencies(deploymentDependencies, allDepVersions, managedRepos)
-                .getArtifactResults();
-
-        Map<AppKey, AppArtifact> versionMap = new HashMap<>();
-        for (AppDependency i : userDeps) {
-            versionMap.put(
-                    new AppKey(i.getArtifact().getGroupId(), i.getArtifact().getArtifactId(), i.getArtifact().getClassifier()),
-                    i.getArtifact());
-        }
-        List<AppDependency> fullDeploymentDeps = new ArrayList<>();
-        for (ArtifactResult child : fullDeploymentDepsList) {
-            fullDeploymentDeps.add(new AppDependency(toAppArtifact(child.getArtifact(), versionMap), "compile", false));
-        }
+        List<AppDependency> fullDeploymentDeps = new ArrayList<>(userDeps);
+        fullDeploymentDeps.addAll(deploymentDeps);
         return appBuilder
                 .addDeploymentDeps(deploymentDeps)
                 .setAppArtifact(appArtifact)

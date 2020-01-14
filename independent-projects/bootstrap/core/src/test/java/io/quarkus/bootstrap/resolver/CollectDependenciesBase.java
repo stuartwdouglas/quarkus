@@ -44,7 +44,7 @@ public abstract class CollectDependenciesBase extends ResolverSetupCleanup {
             expected.addAll(expectedResult);
             expected.addAll(deploymentDeps);
         }
-        final List<AppDependency> resolvedDeps = getTestResolver().resolveModel(root.toAppArtifact()).getAllDependencies();
+        final List<AppDependency> resolvedDeps = getTestResolver().resolveModel(root.toAppArtifact()).getFullDeploymentDeps();
         assertEquals(new HashSet<>(expected), new HashSet<>(resolvedDeps));
     }
 
