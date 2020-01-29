@@ -204,7 +204,6 @@ public class QuarkusTestExtension
         if (isNativeTest(context)) {
             return;
         }
-        ensureStarted(context);
         if (failedBoot) {
             throw new TestAbortedException("Not running test as boot failed");
         }

@@ -32,14 +32,29 @@ import org.jboss.jandex.Indexer;
 public class TestResourceManager {
 
     private final List<QuarkusTestResourceLifecycleManager> testResources;
+    private final List<QuarkusTestEnhancer> enhancers;
     private Map<String, String> oldSystemProps;
+    private final IndexView index;
 
     public TestResourceManager(Class<?> testClass) {
-        testResources = getTestResources(testClass);
+        index = indexTestClasses(testClass);
+        testResources = getTestResources(index);
+        enhancers = getTestEnhancers();
+    }
+
+    private List<QuarkusTestEnhancer> getTestEnhancers() {
+        ArrayList<QuarkusTestEnhancer> quarkusTestEnhancers = new ArrayList<>();
+        for (QuarkusTestEnhancer i : ServiceLoader.load(QuarkusTestEnhancer.class)) {
+            quarkusTestEnhancers.add(i);
+        }
+        return quarkusTestEnhancers;
     }
 
     public Map<String, String> start() {
         Map<String, String> ret = new HashMap<>();
+        for (QuarkusTestEnhancer i : enhancers) {
+            i.beforeStart(index);
+        }
         for (QuarkusTestResourceLifecycleManager testResource : testResources) {
             try {
                 ret.putAll(testResource.start());
@@ -89,11 +104,13 @@ public class TestResourceManager {
             cpr.releaseConfig(cpr.getConfig());
         } catch (Throwable ignored) {
         }
+        for (QuarkusTestEnhancer i : enhancers) {
+            i.afterShutdown();
+        }
     }
 
     @SuppressWarnings("unchecked")
-    private List<QuarkusTestResourceLifecycleManager> getTestResources(Class<?> testClass) {
-        IndexView index = indexTestClasses(testClass);
+    private List<QuarkusTestResourceLifecycleManager> getTestResources(IndexView index) {
 
         Set<Class<? extends QuarkusTestResourceLifecycleManager>> testResourceRunnerClasses = new LinkedHashSet<>();
 

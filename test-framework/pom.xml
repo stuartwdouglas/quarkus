@@ -26,6 +26,7 @@
         <module>maven</module>
         <module>vault</module>
         <module>ldap</module>
+        <module>testcontainers-jdbc</module>
     </modules>
 
 </project>
