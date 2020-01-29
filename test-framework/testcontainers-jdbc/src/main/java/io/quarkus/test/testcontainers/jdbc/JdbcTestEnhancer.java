@@ -9,7 +9,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.junit.jupiter.Container;
 
 import io.quarkus.test.common.QuarkusTestEnhancer;
 
@@ -17,10 +16,12 @@ public class JdbcTestEnhancer implements QuarkusTestEnhancer {
 
     protected static final String QUARKUS_DATASOURCE_URL = "quarkus.datasource.url";
     boolean set = false;
+    JdbcDatabaseContainer container;
 
     @Override
     public void beforeStart(IndexView indexView) {
-        Collection<AnnotationInstance> containers = indexView.getAnnotations(DotName.createSimple(Container.class.getName()));
+        Collection<AnnotationInstance> containers = indexView
+                .getAnnotations(DotName.createSimple(QuarkusJdbcContainer.class.getName()));
         for (AnnotationInstance i : containers) {
             if (i.target().kind() == AnnotationTarget.Kind.FIELD) {
                 if (Modifier.isStatic(i.target().asField().flags())) {
@@ -31,7 +32,8 @@ public class JdbcTestEnhancer implements QuarkusTestEnhancer {
                         Field f = clazz.getDeclaredField(field);
                         f.setAccessible(true);
                         if (JdbcDatabaseContainer.class.isAssignableFrom(f.getType())) {
-                            JdbcDatabaseContainer container = (JdbcDatabaseContainer) f.get(null);
+                            container = (JdbcDatabaseContainer) f.get(null);
+                            container.start();
                             String url = container.getJdbcUrl();
                             System.setProperty(QUARKUS_DATASOURCE_URL, url);
                             set = true;
@@ -50,6 +52,7 @@ public class JdbcTestEnhancer implements QuarkusTestEnhancer {
     @Override
     public void afterShutdown() {
         if (set) {
+            container.stop();
             System.clearProperty(QUARKUS_DATASOURCE_URL);
         }
     }
