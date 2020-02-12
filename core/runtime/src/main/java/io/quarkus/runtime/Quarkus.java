@@ -65,5 +65,5 @@ public class Quarkus {
      */
     public static void waitForExit() {
 
-   }
+    }
 }

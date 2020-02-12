@@ -1,10 +1,10 @@
 package io.quarkus.it.hibernate.validator;
 
-import io.quarkus.launcher.QuarkusLauncher;
+import io.quarkus.runtime.Quarkus;
 
 public class Main {
 
     public static void main(String... args) throws Exception {
-        QuarkusLauncher.main(args);
+        Quarkus.start(args);
     }
 }
