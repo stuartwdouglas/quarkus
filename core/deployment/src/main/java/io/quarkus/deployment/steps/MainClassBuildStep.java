@@ -127,7 +127,7 @@ class MainClassBuildStep {
 
         // Application class: start method
 
-        mv = file.getMethodCreator("doStart", void.class, Class.class, String[].class);
+        mv = file.getMethodCreator("doStart", void.class, String[].class);
         mv.setModifiers(Modifier.PROTECTED | Modifier.FINAL);
 
         // very first thing is to set system props (for run time, which use substitutions for a different
@@ -175,6 +175,11 @@ class MainClassBuildStep {
 
         mv.invokeStaticMethod(ofMethod(Timing.class, "mainStarted", void.class));
         startupContext = mv.readStaticField(scField.getFieldDescriptor());
+
+        //now set the command line arguments
+        mv.invokeVirtualMethod(
+                MethodDescriptor.ofMethod(StartupContext.class, "setCommandLineArguments", void.class, String[].class),
+                startupContext, mv.getMethodParam(1));
 
         tryBlock = mv.tryBlock();
 

@@ -19,7 +19,7 @@ public class Quarkus {
             //we already have an application, run it directly
             Class<? extends Application> appClass = (Class<? extends Application>) Class.forName(Application.APP_CLASS_NAME);
             application = appClass.newInstance();
-            application.start(quarkusApplication, args);
+            application.run(quarkusApplication, args);
             System.exit(application.getExitCode());
         } catch (ClassNotFoundException e) {
             //ignore, this happens when running in dev mode
@@ -65,5 +65,5 @@ public class Quarkus {
      */
     public static void waitForExit() {
 
-    }
+   }
 }

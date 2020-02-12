@@ -72,4 +72,14 @@ public class StartupContext implements Closeable {
             }
         }
     }
+
+    @SuppressWarnings("unused")
+    public void setCommandLineArguments(String[] commandLineArguments) {
+        values.put(RawCommandLineArguments.class.getName(), new RawCommandLineArguments() {
+            @Override
+            public String[] getArguments() {
+                return commandLineArguments;
+            }
+        });
+    }
 }

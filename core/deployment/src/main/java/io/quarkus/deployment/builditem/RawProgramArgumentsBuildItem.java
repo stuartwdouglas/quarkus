@@ -1,23 +1,29 @@
 package io.quarkus.deployment.builditem;
 
-import java.util.function.Supplier;
-
 import io.quarkus.builder.item.SimpleBuildItem;
+import io.quarkus.deployment.recording.BytecodeRecorderImpl;
+import io.quarkus.runtime.RawCommandLineArguments;
 
 /**
  * A build item that represents the raw command line arguments as they were passed to the application.
  *
  * No filtering is done on these parameters.
  */
-public final class RawProgramArgumentsBuildItem extends SimpleBuildItem {
+public final class RawProgramArgumentsBuildItem extends SimpleBuildItem
+        implements BytecodeRecorderImpl.ReturnedProxy, RawCommandLineArguments {
 
-    private final Supplier<String[]> args;
-
-    public RawProgramArgumentsBuildItem(Supplier<String[]> args) {
-        this.args = args;
+    @Override
+    public String __returned$proxy$key() {
+        return RawCommandLineArguments.class.getName();
     }
 
-    public Supplier<String[]> getArgs() {
-        return args;
+    @Override
+    public boolean __static$$init() {
+        return false;
+    }
+
+    @Override
+    public String[] getArguments() {
+        throw new IllegalStateException("Can only be called at runtime");
     }
 }

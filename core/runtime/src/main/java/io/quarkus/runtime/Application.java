@@ -1,12 +1,19 @@
 package io.quarkus.runtime;
 
 import java.io.Closeable;
+import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.LockSupport;
 
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.CDI;
+
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.graalvm.nativeimage.ImageInfo;
+import org.jboss.logging.Logger;
 import org.wildfly.common.Assert;
 import org.wildfly.common.lock.Locks;
 
@@ -64,19 +71,6 @@ public abstract class Application implements Closeable {
      *           letting the user hook into it.
      */
     public final void start(String[] args) {
-        start(null, args);
-    }
-
-    /**
-     * Start the application. If another thread is also trying to start the application, this method waits for that
-     * thread to finish starting. Returns immediately if the application is started already. If the application
-     * fails to start, an exception is thrown.
-     *
-     * @param args the command-line arguments
-     * @implNote The command line args are not yet used, but at some point we'll want a facility for overriding config and/or
-     *           letting the user hook into it.
-     */
-    public final void start(Class<?> quarkusApplication, String[] args) {
         currentApplication = this;
         final Lock stateLock = this.stateLock;
         stateLock.lock();
@@ -105,7 +99,7 @@ public abstract class Application implements Closeable {
             stateLock.unlock();
         }
         try {
-            doStart(quarkusApplication, args);
+            doStart(args);
         } catch (Throwable t) {
             stateLock.lock();
             try {
@@ -125,7 +119,7 @@ public abstract class Application implements Closeable {
         }
     }
 
-    protected abstract void doStart(Class<?> quarkusApplication, String[] args);
+    protected abstract void doStart(String[] args);
 
     public final void close() {
         try {
@@ -209,10 +203,11 @@ public abstract class Application implements Closeable {
 
     public abstract String getName();
 
-    /**
-     * Run the application as if it were in a standalone JVM.
-     */
     public final void run(String[] args) {
+        run(null, args);
+    }
+
+    public final void run(Class<? extends QuarkusApplication> quarkusApplication, String[] args) {
         try {
             if (ImageInfo.inImageRuntimeCode() && System.getenv(DISABLE_SIGNAL_HANDLERS) == null) {
                 final SignalHandler handler = new SignalHandler() {
@@ -242,11 +237,33 @@ public abstract class Application implements Closeable {
             final ShutdownHookThread shutdownHookThread = new ShutdownHookThread(Thread.currentThread());
             Runtime.getRuntime().addShutdownHook(shutdownHookThread);
             start(args);
+            //now we are started, we either run the main application or just wait to exit
             try {
-                while (!shutdownRequested) {
-                    Thread.interrupted();
-                    LockSupport.park(shutdownHookThread);
+                if (quarkusApplication != null) {
+                    Set<Bean<?>> beans = CDI.current().getBeanManager().getBeans(quarkusApplication, new Any.Literal());
+                    Bean<?> bean = null;
+                    for (Bean<?> i : beans) {
+                        if (i.getBeanClass() == quarkusApplication) {
+                            bean = i;
+                            break;
+                        }
+                    }
+                    if (bean == null) {
+                        throw new RuntimeException("Could not find CDI bean for application class " + quarkusApplication);
+                    }
+                    CreationalContext<?> ctx = CDI.current().getBeanManager().createCreationalContext(bean);
+                    QuarkusApplication instance = (QuarkusApplication) CDI.current().getBeanManager().getReference(bean,
+                            quarkusApplication, ctx);
+                    exitCode = instance.run(args); //TODO: argument filtering?
+                } else {
+                    while (!shutdownRequested) {
+                        Thread.interrupted();
+                        LockSupport.park(shutdownHookThread);
+                    }
                 }
+            } catch (Exception e) {
+                Logger.getLogger(Application.class).error("Error running Quarkus application", e);
+                exitCode = 1;
             } finally {
                 stop();
             }
