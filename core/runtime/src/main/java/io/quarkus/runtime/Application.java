@@ -24,6 +24,11 @@ import sun.misc.SignalHandler;
 @SuppressWarnings("restriction")
 public abstract class Application implements Closeable {
 
+    /**
+     * The name of the generated application class
+     */
+    public static final String APP_CLASS_NAME = "io.quarkus.runner.ApplicationImpl";
+
     // WARNING: do not inject a logger here, it's too early: the log manager has not been properly set up yet
 
     private static final String DISABLE_SIGNAL_HANDLERS = "DISABLE_SIGNAL_HANDLERS";
@@ -38,10 +43,10 @@ public abstract class Application implements Closeable {
     private final Lock stateLock = Locks.reentrantLock();
     private final Condition stateCond = stateLock.newCondition();
 
-    private String name;
     private int state = ST_INITIAL;
     private volatile boolean shutdownRequested;
     private static volatile Application currentApplication;
+    private volatile int exitCode;
 
     /**
      * Construct a new instance.
@@ -59,6 +64,19 @@ public abstract class Application implements Closeable {
      *           letting the user hook into it.
      */
     public final void start(String[] args) {
+        start(null, args);
+    }
+
+    /**
+     * Start the application. If another thread is also trying to start the application, this method waits for that
+     * thread to finish starting. Returns immediately if the application is started already. If the application
+     * fails to start, an exception is thrown.
+     *
+     * @param args the command-line arguments
+     * @implNote The command line args are not yet used, but at some point we'll want a facility for overriding config and/or
+     *           letting the user hook into it.
+     */
+    public final void start(Class<?> quarkusApplication, String[] args) {
         currentApplication = this;
         final Lock stateLock = this.stateLock;
         stateLock.lock();
@@ -87,7 +105,7 @@ public abstract class Application implements Closeable {
             stateLock.unlock();
         }
         try {
-            doStart(args);
+            doStart(quarkusApplication, args);
         } catch (Throwable t) {
             stateLock.lock();
             try {
@@ -107,7 +125,7 @@ public abstract class Application implements Closeable {
         }
     }
 
-    protected abstract void doStart(String[] args);
+    protected abstract void doStart(Class<?> quarkusApplication, String[] args);
 
     public final void close() {
         try {
@@ -175,7 +193,7 @@ public abstract class Application implements Closeable {
             stateLock.lock();
             try {
                 state = ST_STOPPED;
-                Timing.printStopTime(name);
+                Timing.printStopTime(getName());
                 stateCond.signalAll();
             } finally {
                 stateLock.unlock();
@@ -189,9 +207,7 @@ public abstract class Application implements Closeable {
 
     protected abstract void doStop();
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public abstract String getName();
 
     /**
      * Run the application as if it were in a standalone JVM.
@@ -266,6 +282,10 @@ public abstract class Application implements Closeable {
         } catch (IllegalArgumentException ignored) {
             // Do nothing
         }
+    }
+
+    public int getExitCode() {
+        return exitCode;
     }
 
     class ShutdownHookThread extends Thread {

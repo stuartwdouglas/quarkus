@@ -1,4 +1,4 @@
-package io.quarkus.dev;
+package io.quarkus.deployment.dev;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

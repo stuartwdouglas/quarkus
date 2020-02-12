@@ -1,9 +1,8 @@
-package io.quarkus.dev;
+package io.quarkus.deployment.dev;
 
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

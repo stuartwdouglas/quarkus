@@ -29,6 +29,7 @@ import io.quarkus.deployment.builditem.ObjectSubstitutionBuildItem;
 import io.quarkus.deployment.builditem.SslTrustStoreSystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.StaticBytecodeRecorderBuildItem;
 import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
 import io.quarkus.deployment.recording.BytecodeRecorderImpl;
 import io.quarkus.gizmo.BytecodeCreator;
@@ -50,14 +51,13 @@ import io.quarkus.runtime.configuration.ProfileManager;
 
 class MainClassBuildStep {
 
-    private static final String APP_CLASS = "io.quarkus.runner.ApplicationImpl";
-    private static final String MAIN_CLASS = "io.quarkus.runner.GeneratedMain";
-    private static final String STARTUP_CONTEXT = "STARTUP_CONTEXT";
-    private static final String LOG = "LOG";
-    private static final String JAVA_LIBRARY_PATH = "java.library.path";
-    private static final String JAVAX_NET_SSL_TRUST_STORE = "javax.net.ssl.trustStore";
+    static final String MAIN_CLASS = "io.quarkus.runner.GeneratedMain";
+    static final String STARTUP_CONTEXT = "STARTUP_CONTEXT";
+    static final String LOG = "LOG";
+    static final String JAVA_LIBRARY_PATH = "java.library.path";
+    static final String JAVAX_NET_SSL_TRUST_STORE = "javax.net.ssl.trustStore";
 
-    private static final FieldDescriptor STARTUP_CONTEXT_FIELD = FieldDescriptor.of(APP_CLASS, STARTUP_CONTEXT,
+    private static final FieldDescriptor STARTUP_CONTEXT_FIELD = FieldDescriptor.of(Application.APP_CLASS_NAME, STARTUP_CONTEXT,
             StartupContext.class);
 
     @BuildStep
@@ -74,11 +74,11 @@ class MainClassBuildStep {
             LaunchModeBuildItem launchMode,
             ApplicationInfoBuildItem applicationInfo) {
 
-        appClassNameProducer.produce(new ApplicationClassNameBuildItem(APP_CLASS));
+        appClassNameProducer.produce(new ApplicationClassNameBuildItem(Application.APP_CLASS_NAME));
 
         // Application class
         GeneratedClassGizmoAdaptor gizmoOutput = new GeneratedClassGizmoAdaptor(generatedClass, true);
-        ClassCreator file = new ClassCreator(gizmoOutput, APP_CLASS, null,
+        ClassCreator file = new ClassCreator(gizmoOutput, Application.APP_CLASS_NAME, null,
                 Application.class.getName());
 
         // Application class: static init
@@ -127,7 +127,7 @@ class MainClassBuildStep {
 
         // Application class: start method
 
-        mv = file.getMethodCreator("doStart", void.class, String[].class);
+        mv = file.getMethodCreator("doStart", void.class, Class.class, String[].class);
         mv.setModifiers(Modifier.PROTECTED | Modifier.FINAL);
 
         // very first thing is to set system props (for run time, which use substitutions for a different
@@ -216,6 +216,10 @@ class MainClassBuildStep {
         mv.invokeVirtualMethod(ofMethod(StartupContext.class, "close", void.class), startupContext);
         mv.returnValue(null);
 
+        // getName method
+        mv = file.getMethodCreator("getName", String.class);
+        mv.returnValue(mv.load(applicationInfo.getName()));
+
         // Finish application class
         file.close();
 
@@ -227,11 +231,7 @@ class MainClassBuildStep {
         mv = file.getMethodCreator("main", void.class, String[].class);
         mv.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
 
-        final ResultHandle appClassInstance = mv.newInstance(ofConstructor(APP_CLASS));
-
-        // Set the application name
-        mv.invokeVirtualMethod(ofMethod(Application.class, "setName", void.class, String.class), appClassInstance,
-                mv.load(applicationInfo.getName()));
+        final ResultHandle appClassInstance = mv.newInstance(ofConstructor(Application.APP_CLASS_NAME));
 
         // run the app
         mv.invokeVirtualMethod(ofMethod(Application.class, "run", void.class, String[].class), appClassInstance,
@@ -267,6 +267,15 @@ class MainClassBuildStep {
                 .newInstance(ofConstructor(recorder != null ? recorder.getClassName() : fallbackGeneratedStartupTaskClassName));
         bytecodeCreator.invokeInterfaceMethod(ofMethod(StartupTask.class, "deploy", void.class, StartupContext.class), dup,
                 startupContext);
+    }
+
+    /**
+     * registers the generated application class for reflection, needed when launching via the Quarkus launcher
+     * 
+     */
+    @BuildStep
+    ReflectiveClassBuildItem applicationReflection() {
+        return new ReflectiveClassBuildItem(false, false, Application.APP_CLASS_NAME);
     }
 
 }

@@ -61,8 +61,8 @@ import org.eclipse.aether.util.artifact.JavaScopes;
 import org.twdata.maven.mojoexecutor.MojoExecutor;
 
 import io.quarkus.bootstrap.resolver.maven.workspace.LocalProject;
-import io.quarkus.dev.DevModeContext;
-import io.quarkus.dev.DevModeMain;
+import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.deployment.dev.DevModeMain;
 import io.quarkus.maven.components.MavenVersionEnforcer;
 import io.quarkus.maven.utilities.MojoUtils;
 import io.quarkus.utilities.JavaBinFinder;
@@ -581,14 +581,13 @@ public class DevMojo extends AbstractMojo {
                     pomFiles.add(project.getDir().resolve("pom.xml"));
                 }
             }
-
-            final DefaultArtifact devModeJar = new DefaultArtifact("io.quarkus", "quarkus-development-mode", "jar",
+            DefaultArtifact bootstrap = new DefaultArtifact("io.quarkus", "quarkus-core-deployment", "jar",
                     pluginDef.getVersion());
             final DependencyResult cpRes = repoSystem.resolveDependencies(repoSession,
                     new DependencyRequest()
                             .setCollectRequest(
                                     new CollectRequest()
-                                            .setRoot(new org.eclipse.aether.graph.Dependency(devModeJar, JavaScopes.RUNTIME))
+                                            .setRoot(new org.eclipse.aether.graph.Dependency(bootstrap, JavaScopes.RUNTIME))
                                             .setRepositories(repos)));
 
             for (ArtifactResult appDep : cpRes.getArtifactResults()) {

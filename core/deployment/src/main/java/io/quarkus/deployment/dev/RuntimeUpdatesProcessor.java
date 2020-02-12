@@ -1,4 +1,4 @@
-package io.quarkus.dev;
+package io.quarkus.deployment.dev;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;

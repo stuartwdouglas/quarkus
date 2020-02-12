@@ -1,4 +1,4 @@
-package io.quarkus.dev;
+package io.quarkus.deployment.dev;
 
 import java.io.Closeable;
 import java.io.DataInputStream;

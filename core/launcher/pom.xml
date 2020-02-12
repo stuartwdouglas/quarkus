@@ -11,14 +11,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>quarkus-launcher</artifactId>
-    <name>Quarkus - Dev Mode Launcher</name>
+    <name>Quarkus - Launcher</name>
 
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-bootstrap-core</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -33,6 +32,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
                             <createSourcesJar>true</createSourcesJar>
                             <filters>
                                 <filter>

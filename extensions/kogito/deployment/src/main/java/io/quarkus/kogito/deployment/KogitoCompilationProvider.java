@@ -19,7 +19,7 @@ import org.kie.kogito.codegen.GeneratorContext;
 import org.kie.kogito.codegen.context.QuarkusKogitoBuildContext;
 import org.kie.kogito.codegen.di.CDIDependencyInjectionAnnotator;
 
-import io.quarkus.dev.JavaCompilationProvider;
+import io.quarkus.deployment.dev.JavaCompilationProvider;
 
 public abstract class KogitoCompilationProvider extends JavaCompilationProvider {
 

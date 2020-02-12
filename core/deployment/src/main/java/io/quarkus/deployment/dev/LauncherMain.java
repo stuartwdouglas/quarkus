@@ -1,4 +1,4 @@
-package io.quarkus.dev;
+package io.quarkus.deployment.dev;
 
 import java.io.File;
 import java.net.URL;
@@ -21,7 +21,6 @@ public class LauncherMain {
         context.setTest(false);
         context.setCacheDir(Files.createTempDirectory("quarkus-cache").toFile());
         context.setSourceEncoding("UTF-8");
-        context.setWiringClassesdir(wiring);
         File appClassesFile = appClasses.toFile();
         context.getClassesRoots().add(appClassesFile);
 
