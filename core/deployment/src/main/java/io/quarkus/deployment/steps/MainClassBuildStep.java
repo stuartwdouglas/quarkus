@@ -179,7 +179,7 @@ class MainClassBuildStep {
         //now set the command line arguments
         mv.invokeVirtualMethod(
                 MethodDescriptor.ofMethod(StartupContext.class, "setCommandLineArguments", void.class, String[].class),
-                startupContext, mv.getMethodParam(1));
+                startupContext, mv.getMethodParam(0));
 
         tryBlock = mv.tryBlock();
 

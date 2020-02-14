@@ -53,7 +53,8 @@ public abstract class Application implements Closeable {
     private int state = ST_INITIAL;
     private volatile boolean shutdownRequested;
     private static volatile Application currentApplication;
-    private volatile int exitCode;
+    private volatile int exitCode = -1;
+    private volatile Thread mainThread;
 
     /**
      * Construct a new instance.
@@ -234,7 +235,8 @@ public abstract class Application implements Closeable {
                 }
             }
 
-            final ShutdownHookThread shutdownHookThread = new ShutdownHookThread(Thread.currentThread());
+            mainThread = Thread.currentThread();
+            final ShutdownHookThread shutdownHookThread = new ShutdownHookThread(mainThread);
             Runtime.getRuntime().addShutdownHook(shutdownHookThread);
             start(args);
             //now we are started, we either run the main application or just wait to exit
@@ -248,17 +250,35 @@ public abstract class Application implements Closeable {
                             break;
                         }
                     }
+                    QuarkusApplication instance;
                     if (bean == null) {
-                        throw new RuntimeException("Could not find CDI bean for application class " + quarkusApplication);
+                        instance = quarkusApplication.newInstance();
+                    } else {
+                        CreationalContext<?> ctx = CDI.current().getBeanManager().createCreationalContext(bean);
+                        instance = (QuarkusApplication) CDI.current().getBeanManager().getReference(bean,
+                                quarkusApplication, ctx);
                     }
-                    CreationalContext<?> ctx = CDI.current().getBeanManager().createCreationalContext(bean);
-                    QuarkusApplication instance = (QuarkusApplication) CDI.current().getBeanManager().getReference(bean,
-                            quarkusApplication, ctx);
-                    exitCode = instance.run(args); //TODO: argument filtering?
+                    int result = -1;
+                    try {
+                        result = instance.run(args);//TODO: argument filtering?
+                    } finally {
+                        stateLock.lock();
+                        try {
+                            //now we exit
+                            if (exitCode == -1 && result != -1) {
+                                exitCode = result;
+                            }
+                            shutdownRequested = true;
+                            stateCond.signalAll();
+                        } finally {
+                            stateLock.unlock();
+                        }
+
+                    }
                 } else {
                     while (!shutdownRequested) {
                         Thread.interrupted();
-                        LockSupport.park(shutdownHookThread);
+                        LockSupport.park(mainThread);
                     }
                 }
             } catch (Exception e) {
@@ -302,7 +322,37 @@ public abstract class Application implements Closeable {
     }
 
     public int getExitCode() {
-        return exitCode;
+        return exitCode == -1 ? 0 : exitCode;
+    }
+
+    public void exit(int code) {
+        stateLock.lock();
+        try {
+            if (shutdownRequested) {
+                return;
+            }
+            if (code != -1) {
+                exitCode = code;
+            }
+            shutdownRequested = true;
+            stateCond.signalAll();
+            LockSupport.unpark(mainThread);
+        } finally {
+            stateLock.unlock();
+        }
+    }
+
+    public void waitForExit() {
+        final Lock stateLock = Application.this.stateLock;
+        final Condition stateCond = Application.this.stateCond;
+        stateLock.lock();
+        try {
+            while (!shutdownRequested) {
+                stateCond.awaitUninterruptibly();
+            }
+        } finally {
+            stateLock.unlock();
+        }
     }
 
     class ShutdownHookThread extends Thread {
@@ -316,11 +366,11 @@ public abstract class Application implements Closeable {
 
         @Override
         public void run() {
-            shutdownRequested = true;
-            LockSupport.unpark(mainThread);
             final Lock stateLock = Application.this.stateLock;
             final Condition stateCond = Application.this.stateCond;
             stateLock.lock();
+            shutdownRequested = true;
+            LockSupport.unpark(mainThread);
             try {
                 while (state != ST_EXIT) {
                     stateCond.awaitUninterruptibly();
