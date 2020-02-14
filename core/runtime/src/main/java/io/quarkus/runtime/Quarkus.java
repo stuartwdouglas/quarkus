@@ -9,6 +9,9 @@ import io.quarkus.launcher.QuarkusLauncher;
 
 /**
  * The entry point for applications that use a main method.
+ * 
+ * If this application has already been generated then it will be run directly, otherwise
+ * 
  */
 public class Quarkus {
 
@@ -17,7 +20,11 @@ public class Quarkus {
 
     /**
      * Runs a quarkus application, that will run until the provided {@link QuarkusApplication} has completed.
-     *
+     * 
+     * Note that if this is run from the IDE the application will run in a different class loader to the
+     * calling class. It is recommended that the calling class do no logic, and instead this logic should
+     * go into the QuarkusApplication.
+     * 
      * @param quarkusApplication The application to run, or null
      * @param args The command line parameters
      */
@@ -32,6 +39,10 @@ public class Quarkus {
 
     /**
      * Runs a quarkus application, that will run until the provided {@link QuarkusApplication} has completed.
+     * 
+     * Note that if this is run from the IDE the application will run in a different class loader to the 
+     * calling class. It is recommended that the calling class do no logic, and instead this logic should
+     * go into the QuarkusApplication.
      *
      * @param quarkusApplication The application to run, or null
      * @param exitHandler The handler that is called with the exit code when the application has finished
@@ -62,8 +73,14 @@ public class Quarkus {
 
         //some trickery, get the class that has invoked us, and use this to figure out the
         //classes root
-        String callingClass = Thread.currentThread().getStackTrace()[2].getClassName();
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        int pos = 2;
+        while (stackTrace[pos].getClassName().equals(Quarkus.class.getName())) {
+            pos++;
+        }
+        String callingClass = stackTrace[pos].getClassName();
         CuratedApplication app = QuarkusLauncher.launch(callingClass);
+        app.runInAugmentClassLoader()
 
     }
 

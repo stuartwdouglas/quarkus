@@ -1,60 +1,44 @@
 package io.quarkus.runtime;
 
 import java.io.Closeable;
-import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.LockSupport;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.CDI;
 
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
-import org.graalvm.nativeimage.ImageInfo;
-import org.jboss.logging.Logger;
 import org.wildfly.common.Assert;
 import org.wildfly.common.lock.Locks;
 
-import com.oracle.svm.core.OS;
-
-import io.quarkus.runtime.graal.DiagnosticPrinter;
 import io.quarkus.runtime.shutdown.ShutdownRecorder;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
 /**
  * The application base class, which is extended and implemented by a generated class which implements the application
- * setup logic. The base class does some basic error checking.
+ * setup logic. The base class does some basic error checking, and maintains the application state.
+ * 
+ * Note that this class does not manage the application lifecycle in any way, it is solely responsible for starting and
+ * stopping the application.
+ * 
  */
 @SuppressWarnings("restriction")
 public abstract class Application implements Closeable {
+
+    // WARNING: do not inject a logger here, it's too early: the log manager has not been properly set up yet
 
     /**
      * The name of the generated application class
      */
     public static final String APP_CLASS_NAME = "io.quarkus.runner.ApplicationImpl";
 
-    // WARNING: do not inject a logger here, it's too early: the log manager has not been properly set up yet
-
-    private static final String DISABLE_SIGNAL_HANDLERS = "DISABLE_SIGNAL_HANDLERS";
-
     private static final int ST_INITIAL = 0;
     private static final int ST_STARTING = 1;
     private static final int ST_STARTED = 2;
     private static final int ST_STOPPING = 3;
     private static final int ST_STOPPED = 4;
-    private static final int ST_EXIT = 5;
 
     private final Lock stateLock = Locks.reentrantLock();
     private final Condition stateCond = stateLock.newCondition();
 
     private int state = ST_INITIAL;
-    private volatile boolean shutdownRequested;
     private static volatile Application currentApplication;
-    private volatile int exitCode = -1;
-    private volatile Thread mainThread;
 
     /**
      * Construct a new instance.
@@ -170,7 +154,6 @@ public abstract class Application implements Closeable {
                         break;
                     }
                     case ST_STOPPED:
-                    case ST_EXIT:
                         return; // all good
                     default:
                         throw Assert.impossibleSwitchCase(state);
@@ -204,185 +187,11 @@ public abstract class Application implements Closeable {
 
     public abstract String getName();
 
-    public final void run(String[] args) {
-        run(null, args);
-    }
-
-    public final void run(Class<? extends QuarkusApplication> quarkusApplication, String[] args) {
-        try {
-            if (ImageInfo.inImageRuntimeCode() && System.getenv(DISABLE_SIGNAL_HANDLERS) == null) {
-                final SignalHandler handler = new SignalHandler() {
-                    @Override
-                    public void handle(Signal signal) {
-                        System.exit(signal.getNumber() + 0x80);
-                    }
-                };
-                final SignalHandler quitHandler = new SignalHandler() {
-                    @Override
-                    public void handle(Signal signal) {
-                        DiagnosticPrinter.printDiagnostics(System.out);
-                    }
-                };
-                handleSignal("INT", handler);
-                handleSignal("TERM", handler);
-                // the HUP and QUIT signals are not defined for the Windows OpenJDK implementation:
-                // https://hg.openjdk.java.net/jdk8u/jdk8u-dev/hotspot/file/7d5c800dae75/src/os/windows/vm/jvm_windows.cpp
-                if (OS.getCurrent() == OS.WINDOWS) {
-                    handleSignal("BREAK", quitHandler);
-                } else {
-                    handleSignal("HUP", handler);
-                    handleSignal("QUIT", quitHandler);
-                }
-            }
-
-            mainThread = Thread.currentThread();
-            final ShutdownHookThread shutdownHookThread = new ShutdownHookThread(mainThread);
-            Runtime.getRuntime().addShutdownHook(shutdownHookThread);
-            start(args);
-            //now we are started, we either run the main application or just wait to exit
-            try {
-                if (quarkusApplication != null) {
-                    Set<Bean<?>> beans = CDI.current().getBeanManager().getBeans(quarkusApplication, new Any.Literal());
-                    Bean<?> bean = null;
-                    for (Bean<?> i : beans) {
-                        if (i.getBeanClass() == quarkusApplication) {
-                            bean = i;
-                            break;
-                        }
-                    }
-                    QuarkusApplication instance;
-                    if (bean == null) {
-                        instance = quarkusApplication.newInstance();
-                    } else {
-                        CreationalContext<?> ctx = CDI.current().getBeanManager().createCreationalContext(bean);
-                        instance = (QuarkusApplication) CDI.current().getBeanManager().getReference(bean,
-                                quarkusApplication, ctx);
-                    }
-                    int result = -1;
-                    try {
-                        result = instance.run(args);//TODO: argument filtering?
-                    } finally {
-                        stateLock.lock();
-                        try {
-                            //now we exit
-                            if (exitCode == -1 && result != -1) {
-                                exitCode = result;
-                            }
-                            shutdownRequested = true;
-                            stateCond.signalAll();
-                        } finally {
-                            stateLock.unlock();
-                        }
-
-                    }
-                } else {
-                    while (!shutdownRequested) {
-                        Thread.interrupted();
-                        LockSupport.park(mainThread);
-                    }
-                }
-            } catch (Exception e) {
-                Logger.getLogger(Application.class).error("Error running Quarkus application", e);
-                exitCode = 1;
-            } finally {
-                stop();
-            }
-        } finally {
-            exit();
-        }
-    }
-
-    private void exit() {
-        stateLock.lock();
-        try {
-            System.out.flush();
-            System.err.flush();
-            state = ST_EXIT;
-            stateCond.signalAll();
-            // code beyond this point may not run
-        } finally {
-            stateLock.unlock();
-        }
-    }
-
     private static IllegalStateException interruptedOnAwaitStart() {
         return new IllegalStateException("Interrupted while waiting for another thread to start the application");
     }
 
     private static IllegalStateException interruptedOnAwaitStop() {
         return new IllegalStateException("Interrupted while waiting for another thread to stop the application");
-    }
-
-    private static void handleSignal(final String signal, final SignalHandler handler) {
-        try {
-            Signal.handle(new Signal(signal), handler);
-        } catch (IllegalArgumentException ignored) {
-            // Do nothing
-        }
-    }
-
-    public int getExitCode() {
-        return exitCode == -1 ? 0 : exitCode;
-    }
-
-    public void exit(int code) {
-        stateLock.lock();
-        try {
-            if (shutdownRequested) {
-                return;
-            }
-            if (code != -1) {
-                exitCode = code;
-            }
-            shutdownRequested = true;
-            stateCond.signalAll();
-            LockSupport.unpark(mainThread);
-        } finally {
-            stateLock.unlock();
-        }
-    }
-
-    public void waitForExit() {
-        final Lock stateLock = Application.this.stateLock;
-        final Condition stateCond = Application.this.stateCond;
-        stateLock.lock();
-        try {
-            while (!shutdownRequested) {
-                stateCond.awaitUninterruptibly();
-            }
-        } finally {
-            stateLock.unlock();
-        }
-    }
-
-    class ShutdownHookThread extends Thread {
-        private final Thread mainThread;
-
-        ShutdownHookThread(Thread mainThread) {
-            super("Shutdown thread");
-            this.mainThread = mainThread;
-            setDaemon(false);
-        }
-
-        @Override
-        public void run() {
-            final Lock stateLock = Application.this.stateLock;
-            final Condition stateCond = Application.this.stateCond;
-            stateLock.lock();
-            shutdownRequested = true;
-            LockSupport.unpark(mainThread);
-            try {
-                while (state != ST_EXIT) {
-                    stateCond.awaitUninterruptibly();
-                }
-            } finally {
-                stateLock.unlock();
-            }
-        }
-
-        @Override
-        public String toString() {
-            return getName();
-        }
     }
 }
