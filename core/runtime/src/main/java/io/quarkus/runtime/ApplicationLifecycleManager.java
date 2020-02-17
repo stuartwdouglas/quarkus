@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.Consumer;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.Any;
@@ -15,6 +16,7 @@ import org.jboss.logging.Logger;
 import org.wildfly.common.lock.Locks;
 
 import com.oracle.svm.core.OS;
+
 import io.quarkus.runtime.graal.DiagnosticPrinter;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
@@ -32,7 +34,6 @@ import sun.misc.SignalHandler;
  */
 public class ApplicationLifecycleManager {
 
-
     private ApplicationLifecycleManager() {
 
     }
@@ -47,48 +48,15 @@ public class ApplicationLifecycleManager {
 
     private static int exitCode = -1;
     private static boolean shutdownRequested;
-    private static Application application;
     private static boolean signalSetup;
 
     public static final void run(Application application, String[] args) {
         run(null, args);
     }
 
-    public static final void run(Application application, Class<? extends QuarkusApplication> quarkusApplication, String[] args) {
+    public static final void run(Application application, Class<? extends QuarkusApplication> quarkusApplication,
+            String[] args, Consumer<Integer> exitCodeHandler) {
         try {
-            stateLock.lock();
-            try {
-                if (!ImageInfo.inImageRuntimeCode() && System.getenv(DISABLE_SIGNAL_HANDLERS) == null) {
-                    final SignalHandler handler = new SignalHandler() {
-                        @Override
-                        public void handle(Signal signal) {
-                            System.exit(signal.getNumber() + 0x80);
-                        }
-                    };
-                    final SignalHandler quitHandler = new SignalHandler() {
-                        @Override
-                        public void handle(Signal signal) {
-                            DiagnosticPrinter.printDiagnostics(System.out);
-                        }
-                    };
-                    handleSignal("INT", handler);
-                    handleSignal("TERM", handler);
-                    // the HUP and QUIT signals are not defined for the Windows OpenJDK implementation:
-                    // https://hg.openjdk.java.net/jdk8u/jdk8u-dev/hotspot/file/7d5c800dae75/src/os/windows/vm/jvm_windows.cpp
-                    if (OS.getCurrent() == OS.WINDOWS) {
-                        handleSignal("BREAK", quitHandler);
-                    } else {
-                        handleSignal("HUP", handler);
-                        handleSignal("QUIT", quitHandler);
-                    }
-                }
-                ApplicationLifecycleManager.application = application;
-            } finally {
-                stateLock.unlock();
-            }
-
-            final ShutdownHookThread shutdownHookThread = new ShutdownHookThread();
-            Runtime.getRuntime().addShutdownHook(shutdownHookThread);
             application.start(args);
             //now we are started, we either run the main application or just wait to exit
             try {
@@ -133,7 +101,9 @@ public class ApplicationLifecycleManager {
                 }
             } catch (Exception e) {
                 Logger.getLogger(Application.class).error("Error running Quarkus application", e);
-                exitCode = 1;
+                application.stop();
+                exitCodeHandler.accept(1);
+                return;
             } finally {
                 application.stop();
             }
@@ -142,11 +112,59 @@ public class ApplicationLifecycleManager {
         }
     }
 
+    /**
+     * Runs the application, registering signal handlers and shutdown handlers if required.
+     *
+     * This method is guarenteed not to return, as System.exit will be called once it completes.
+     *
+     * This method should not be called to run test or dev mode applications.
+     * @param application The application
+     * @param quarkusApplication
+     * @param args
+     */
+    public static final void runProductionApplication(Application application, Class<? extends QuarkusApplication> quarkusApplication,
+                                 String[] args) {
+
+        if (!ImageInfo.inImageRuntimeCode() && System.getenv(DISABLE_SIGNAL_HANDLERS) == null) {
+            final SignalHandler handler = new SignalHandler() {
+                @Override
+                public void handle(Signal signal) {
+                    System.exit(signal.getNumber() + 0x80);
+                }
+            };
+            final SignalHandler quitHandler = new SignalHandler() {
+                @Override
+                public void handle(Signal signal) {
+                    DiagnosticPrinter.printDiagnostics(System.out);
+                }
+            };
+            handleSignal("INT", handler);
+            handleSignal("TERM", handler);
+            // the HUP and QUIT signals are not defined for the Windows OpenJDK implementation:
+            // https://hg.openjdk.java.net/jdk8u/jdk8u-dev/hotspot/file/7d5c800dae75/src/os/windows/vm/jvm_windows.cpp
+            if (OS.getCurrent() == OS.WINDOWS) {
+                handleSignal("BREAK", quitHandler);
+            } else {
+                handleSignal("HUP", handler);
+                handleSignal("QUIT", quitHandler);
+            }
+        }
+        final ShutdownHookThread shutdownHookThread = new ShutdownHookThread(application);
+        Runtime.getRuntime().addShutdownHook(shutdownHookThread);
+        run(application, quarkusApplication, args, new Consumer<Integer>() {
+
+    @Override
+    public void accept(Integer integer) {
+        System.exit(integer);
+    }
+
+    });}
+
     public static int getExitCode() {
         return exitCode == -1 ? 0 : exitCode;
     }
 
-    public  static void exit(int code) {
+    public static void exit(int code) {
         stateLock.lock();
         try {
             if (shutdownRequested) {
@@ -163,7 +181,10 @@ public class ApplicationLifecycleManager {
         }
     }
 
-    public void waitForExit() {
+    /**
+     * Waits for the shutdown process to be initiated. This does
+     */
+    public static void waitForExit(boolean ) {
         stateLock.lock();
         try {
             while (!shutdownRequested) {
@@ -176,9 +197,12 @@ public class ApplicationLifecycleManager {
 
     static class ShutdownHookThread extends Thread {
 
-        ShutdownHookThread() {
+        private final Application application;
+
+        ShutdownHookThread(Application application) {
             super("Shutdown thread");
             setDaemon(false);
+            this.application = application;
         }
 
         @Override
@@ -187,10 +211,12 @@ public class ApplicationLifecycleManager {
             shutdownRequested = true;
             try {
                 stateCond.signalAll();
-                Application.currentApplication().
             } finally {
                 stateLock.unlock();
             }
+            application.awaitShutdown();
+            System.out.flush();
+            System.err.flush();
         }
 
         @Override
@@ -210,7 +236,6 @@ public class ApplicationLifecycleManager {
             stateLock.unlock();
         }
     }
-
 
     private static void handleSignal(final String signal, final SignalHandler handler) {
         try {

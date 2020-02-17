@@ -194,4 +194,26 @@ public abstract class Application implements Closeable {
     private static IllegalStateException interruptedOnAwaitStop() {
         return new IllegalStateException("Interrupted while waiting for another thread to stop the application");
     }
+
+    public void awaitShutdown() {
+        final Lock stateLock = this.stateLock;
+        stateLock.lock();
+        try {
+            for (;;) {
+                switch (state) {
+                    case ST_STOPPED:
+                        return; // all good
+                    default:
+                        try {
+                            stateCond.await();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw interruptedOnAwaitStop();
+                        }
+                }
+            }
+        } finally {
+            stateLock.unlock();
+        }
+    }
 }
