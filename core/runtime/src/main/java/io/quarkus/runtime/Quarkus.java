@@ -40,7 +40,7 @@ public class Quarkus {
     /**
      * Runs a quarkus application, that will run until the provided {@link QuarkusApplication} has completed.
      * 
-     * Note that if this is run from the IDE the application will run in a different class loader to the 
+     * Note that if this is run from the IDE the application will run in a different class loader to the
      * calling class. It is recommended that the calling class do no logic, and instead this logic should
      * go into the QuarkusApplication.
      *
@@ -55,8 +55,7 @@ public class Quarkus {
             //we already have an application, run it directly
             Class<? extends Application> appClass = (Class<? extends Application>) Class.forName(Application.APP_CLASS_NAME);
             Application application = appClass.newInstance();
-            application.run(quarkusApplication, args);
-            exitHandler.accept(application.getExitCode());
+            ApplicationLifecycleManager.run(application, quarkusApplication, args, exitHandler);
             return;
         } catch (ClassNotFoundException e) {
             //ignore, this happens when running in dev mode
@@ -80,7 +79,6 @@ public class Quarkus {
         }
         String callingClass = stackTrace[pos].getClassName();
         CuratedApplication app = QuarkusLauncher.launch(callingClass);
-        app.runInAugmentClassLoader()
 
     }
 
@@ -112,7 +110,7 @@ public class Quarkus {
      * @param code The exit code. This may be overridden if an exception occurs on shutdown
      */
     public static void asyncExit(int code) {
-        Application.currentApplication().exit(code);
+        ApplicationLifecycleManager.exit(code);
     }
 
     /**
@@ -128,7 +126,7 @@ public class Quarkus {
      *
      */
     public static void asyncExit() {
-        Application.currentApplication().exit(-1);
+        ApplicationLifecycleManager.exit(-1);
     }
 
     /**
@@ -141,7 +139,7 @@ public class Quarkus {
      * then run should call this method.
      */
     public static void waitForExit() {
-        Application.currentApplication().waitForExit();
+        ApplicationLifecycleManager.waitForExit();
 
     }
 }
