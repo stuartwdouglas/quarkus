@@ -51,7 +51,7 @@ public class Quarkus {
     public static void run(Class<? extends QuarkusApplication> quarkusApplication, Consumer<Integer> exitHandler,
             String... args) {
         try {
-            //production mode path
+            //production and common dev mode path
             //we already have an application, run it directly
             Class<? extends Application> appClass = (Class<? extends Application>) Class.forName(Application.APP_CLASS_NAME);
             Application application = appClass.newInstance();

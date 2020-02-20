@@ -44,6 +44,7 @@ import io.quarkus.gizmo.TryBlock;
 import io.quarkus.runtime.Application;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.NativeImageRuntimePropertiesRecorder;
+import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.StartupContext;
 import io.quarkus.runtime.StartupTask;
 import io.quarkus.runtime.Timing;
@@ -235,13 +236,8 @@ class MainClassBuildStep {
 
         mv = file.getMethodCreator("main", void.class, String[].class);
         mv.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
-
-        final ResultHandle appClassInstance = mv.newInstance(ofConstructor(Application.APP_CLASS_NAME));
-
-        // run the app
-        mv.invokeVirtualMethod(ofMethod(Application.class, "run", void.class, String[].class), appClassInstance,
+        mv.invokeStaticMethod(MethodDescriptor.ofMethod(Quarkus.class, "run", void.class, String[].class),
                 mv.getMethodParam(0));
-
         mv.returnValue(null);
 
         file.close();
