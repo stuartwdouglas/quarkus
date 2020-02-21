@@ -6,7 +6,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.RawCommandLineArgumentsBuildItem;
-import io.quarkus.runtime.CommandLineArguments;
+import io.quarkus.runtime.annotations.CommandLineArguments;
 
 public class CommandLineArgumentsProcessor {
 

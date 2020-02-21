@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.runtime.CommandLineArguments;
+import io.quarkus.runtime.annotations.CommandLineArguments;
 import io.quarkus.test.QuarkusUnitTest;
 
 public class CommandLineArgumentsTestCase {

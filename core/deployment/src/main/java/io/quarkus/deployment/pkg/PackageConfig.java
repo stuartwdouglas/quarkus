@@ -35,8 +35,8 @@ public class PackageConfig {
     /**
      * The entry point of the application. In most cases this should not be modified.
      */
-    @ConfigItem(defaultValue = "io.quarkus.runner.GeneratedMain")
-    public String mainClass;
+    @ConfigItem
+    public Optional<String> mainClass;
 
     /**
      * Files that should not be copied to the output artifact

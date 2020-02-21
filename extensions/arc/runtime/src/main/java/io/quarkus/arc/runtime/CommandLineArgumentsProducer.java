@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
-import io.quarkus.runtime.CommandLineArguments;
+import io.quarkus.runtime.annotations.CommandLineArguments;
 
 @ApplicationScoped
 public class CommandLineArgumentsProducer {

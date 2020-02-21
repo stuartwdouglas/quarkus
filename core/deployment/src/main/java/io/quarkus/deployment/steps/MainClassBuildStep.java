@@ -5,20 +5,26 @@ import static io.quarkus.gizmo.MethodDescriptor.ofMethod;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.graalvm.nativeimage.ImageInfo;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
 
 import io.quarkus.builder.Version;
 import io.quarkus.deployment.GeneratedClassGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.ApplicationClassNameBuildItem;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
 import io.quarkus.deployment.builditem.BytecodeRecorderObjectLoaderBuildItem;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.JavaLibraryPathAdditionalPathBuildItem;
@@ -31,6 +37,7 @@ import io.quarkus.deployment.builditem.StaticBytecodeRecorderBuildItem;
 import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
+import io.quarkus.deployment.pkg.PackageConfig;
 import io.quarkus.deployment.recording.BytecodeRecorderImpl;
 import io.quarkus.gizmo.BytecodeCreator;
 import io.quarkus.gizmo.CatchBlockCreator;
@@ -45,9 +52,11 @@ import io.quarkus.runtime.Application;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.NativeImageRuntimePropertiesRecorder;
 import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.StartupContext;
 import io.quarkus.runtime.StartupTask;
 import io.quarkus.runtime.Timing;
+import io.quarkus.runtime.annotations.DefaultMain;
 import io.quarkus.runtime.configuration.ProfileManager;
 
 class MainClassBuildStep {
@@ -62,7 +71,7 @@ class MainClassBuildStep {
             StartupContext.class);
 
     @BuildStep
-    MainClassBuildItem build(List<StaticBytecodeRecorderBuildItem> staticInitTasks,
+    void build(List<StaticBytecodeRecorderBuildItem> staticInitTasks,
             List<ObjectSubstitutionBuildItem> substitutions,
             List<MainBytecodeRecorderBuildItem> mainMethod,
             List<SystemPropertyBuildItem> properties,
@@ -228,20 +237,66 @@ class MainClassBuildStep {
 
         // Finish application class
         file.close();
+    }
 
-        // Main class
+    @BuildStep
+    public MainClassBuildItem mainClassBuildStep(BuildProducer<GeneratedClassBuildItem> generatedClass,
+            ApplicationArchivesBuildItem applicationArchivesBuildItem,
+            CombinedIndexBuildItem combinedIndexBuildItem,
+            PackageConfig packageConfig) {
+        if (packageConfig.mainClass.isPresent()) {
+            //user defined main class, nothing to do
+            return new MainClassBuildItem(packageConfig.mainClass.get());
+        }
+        Collection<AnnotationInstance> defaultMains = applicationArchivesBuildItem.getRootArchive().getIndex()
+                .getAnnotations(DotName.createSimple(DefaultMain.class.getName()));
+        if (defaultMains.size() > 1) {
+            throw new RuntimeException(
+                    "More than one @DefaultMain method found in application, could not determine main class to use"
+                            + defaultMains);
+        }
+        String mainClassName = MAIN_CLASS;
+        if (defaultMains.isEmpty()) {
+            //generate a main that just runs the app
+            ClassCreator file = new ClassCreator(new GeneratedClassGizmoAdaptor(generatedClass, true), MAIN_CLASS, null,
+                    Object.class.getName());
 
-        file = new ClassCreator(gizmoOutput, MAIN_CLASS, null,
-                Object.class.getName());
+            MethodCreator mv = file.getMethodCreator("main", void.class, String[].class);
+            mv.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
+            mv.invokeStaticMethod(MethodDescriptor.ofMethod(Quarkus.class, "run", void.class, String[].class),
+                    mv.getMethodParam(0));
+            mv.returnValue(null);
 
-        mv = file.getMethodCreator("main", void.class, String[].class);
-        mv.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
-        mv.invokeStaticMethod(MethodDescriptor.ofMethod(Quarkus.class, "run", void.class, String[].class),
-                mv.getMethodParam(0));
-        mv.returnValue(null);
+            file.close();
+        } else {
+            AnnotationInstance annotation = defaultMains.iterator().next();
+            Collection<ClassInfo> impls = combinedIndexBuildItem.getIndex()
+                    .getAllKnownImplementors(DotName.createSimple(QuarkusApplication.class.getName()));
+            boolean found = false;
+            for (ClassInfo i : impls) {
+                if (i.name().equals(annotation.target().asClass().name())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                //this is QuarkusApplication, generate a real main to run it
+                ClassCreator file = new ClassCreator(new GeneratedClassGizmoAdaptor(generatedClass, true), MAIN_CLASS, null,
+                        Object.class.getName());
 
-        file.close();
-        return new MainClassBuildItem(MAIN_CLASS);
+                MethodCreator mv = file.getMethodCreator("main", void.class, String[].class);
+                mv.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
+                mv.invokeStaticMethod(MethodDescriptor.ofMethod(Quarkus.class, "run", void.class, Class.class, String[].class),
+                        mv.loadClass(annotation.target().asClass().name().toString()),
+                        mv.getMethodParam(0));
+                mv.returnValue(null);
+                file.close();
+            } else {
+                mainClassName = annotation.target().asClass().name().toString();
+            }
+        }
+
+        return new MainClassBuildItem(mainClassName);
     }
 
     private void writeRecordedBytecode(BytecodeRecorderImpl recorder, String fallbackGeneratedStartupTaskClassName,
