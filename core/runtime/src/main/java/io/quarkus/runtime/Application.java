@@ -216,4 +216,8 @@ public abstract class Application implements Closeable {
             stateLock.unlock();
         }
     }
+
+    public boolean isStarted() {
+        return state == ST_STARTED;
+    }
 }

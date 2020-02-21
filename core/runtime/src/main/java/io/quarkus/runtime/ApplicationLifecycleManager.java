@@ -60,13 +60,16 @@ public class ApplicationLifecycleManager {
     private static Application currentApplication;
     private static boolean hooksRegistered;
 
-    public static final void run(Application application, String[] args) {
-        run(application, null, args, EXIT_CODE_HANDLER);
+    public static final void run(Application application, String... args) {
+        run(application, null, EXIT_CODE_HANDLER, args);
     }
 
     public static final void run(Application application, Class<? extends QuarkusApplication> quarkusApplication,
-            String[] args, Consumer<Integer> exitCodeHandler) {
+            Consumer<Integer> exitCodeHandler, String... args) {
         stateLock.lock();
+        //in tests we might pass this method an already started application
+        //in this case we don't shut it down at the end
+        boolean alreadyStarted = application.isStarted();
         if (!hooksRegistered) {
             registerHooks();
             hooksRegistered = true;
@@ -141,7 +144,9 @@ public class ApplicationLifecycleManager {
             exitCodeHandler.accept(1);
             return;
         }
-        application.stop(); //this could have already been called
+        if (!alreadyStarted) {
+            application.stop(); //this could have already been called
+        }
         exitCodeHandler.accept(getExitCode()); //this may not be called if shutdown was initiated by a signal
     }
 

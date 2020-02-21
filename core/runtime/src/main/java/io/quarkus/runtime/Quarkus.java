@@ -55,7 +55,7 @@ public class Quarkus {
             //we already have an application, run it directly
             Class<? extends Application> appClass = (Class<? extends Application>) Class.forName(Application.APP_CLASS_NAME);
             Application application = appClass.newInstance();
-            ApplicationLifecycleManager.run(application, quarkusApplication, args, exitHandler);
+            ApplicationLifecycleManager.run(application, quarkusApplication, exitHandler, args);
             return;
         } catch (ClassNotFoundException e) {
             //ignore, this happens when running in dev mode
