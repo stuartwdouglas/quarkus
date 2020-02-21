@@ -67,7 +67,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                         .invoke(null, new Consumer<Integer>() {
                             @Override
                             public void accept(Integer integer) {
-                                if (restarting) {
+                                if (restarting || ApplicationLifecycleManager.isVmShuttingDown()) {
                                     return;
                                 }
                                 System.out.println("Quarkus application exited with code " + integer);
@@ -197,6 +197,8 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     }
 
     public void close() {
+        //don't attempt to restart in the exit code handler
+        restarting = true;
         try {
             stop();
         } finally {

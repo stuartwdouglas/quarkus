@@ -138,4 +138,17 @@ public class Quarkus {
         ApplicationLifecycleManager.waitForExit();
 
     }
+
+    /**
+     * Starts the shutdown process, then waits for the application to shut down.
+     *
+     * Must not be called by the main thread, or a deadlock will result.
+     */
+    public static void blockingExit() {
+        Application app = Application.currentApplication();
+        asyncExit();
+        if (app != null) {
+            app.awaitShutdown();
+        }
+    }
 }

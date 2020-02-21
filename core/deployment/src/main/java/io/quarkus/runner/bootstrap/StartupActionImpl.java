@@ -29,7 +29,6 @@ import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.MainClassBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
-import io.quarkus.runtime.Application;
 import io.quarkus.runtime.Quarkus;
 
 public class StartupActionImpl implements StartupAction {
@@ -82,11 +81,10 @@ public class StartupActionImpl implements StartupAction {
                 @Override
                 public void close() throws IOException {
                     try {
-                        Application current = Application.currentApplication();
-                        if (current != null) {
-                            Quarkus.asyncExit();
-                            current.awaitShutdown();
-                        }
+                        runtimeClassLoader.loadClass(Quarkus.class.getName()).getMethod("blockingExit").invoke(null);
+                    } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException
+                            | ClassNotFoundException e) {
+                        log.error("Failed to stop Quarkus", e);
                     } finally {
                         ForkJoinClassLoading.setForkJoinClassLoader(ClassLoader.getSystemClassLoader());
                         if (curatedApplication.getQuarkusBootstrap().getMode() == QuarkusBootstrap.Mode.TEST) {

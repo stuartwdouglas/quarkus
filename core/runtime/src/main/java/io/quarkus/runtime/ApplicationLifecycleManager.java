@@ -60,6 +60,7 @@ public class ApplicationLifecycleManager {
     private static boolean shutdownRequested;
     private static Application currentApplication;
     private static boolean hooksRegistered;
+    private static boolean vmShuttingDown;
 
     public static final void run(Application application, String... args) {
         run(application, null, null, args);
@@ -76,7 +77,7 @@ public class ApplicationLifecycleManager {
             hooksRegistered = true;
         }
         if (currentApplication != null && !shutdownRequested) {
-            throw new IllegalStateException("");
+            throw new IllegalStateException("Quarkus already running");
         }
         try {
             exitCode = -1;
@@ -207,6 +208,14 @@ public class ApplicationLifecycleManager {
     }
 
     /**
+     *
+     * @return <code>true</code> if the VM is shutting down
+     */
+    public static boolean isVmShuttingDown() {
+        return vmShuttingDown;
+    }
+
+    /**
      * Sets the default exit code handler for application run through the run method
      * that does not take an exit handler.
      * 
@@ -268,6 +277,7 @@ public class ApplicationLifecycleManager {
         @Override
         public void run() {
             stateLock.lock();
+            vmShuttingDown = true;
             //we just request shutdown and unblock the main thread
             //we let the application main thread take care of actually exiting
             //TODO: if the main thread is not actively waiting to exit should we interrupt it?
