@@ -4,7 +4,6 @@ import java.util.function.Consumer;
 
 import org.jboss.logging.Logger;
 
-import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.launcher.QuarkusLauncher;
 
 /**
@@ -65,7 +64,12 @@ public class Quarkus {
         //dev mode path, i.e. launching from the IDE
         //this is not the quarkus:dev path as it will augment before
         //calling this method
+        launchFromIDE(quarkusApplication, exitHandler, args);
 
+    }
+
+    private static void launchFromIDE(Class<? extends QuarkusApplication> quarkusApplication, Consumer<Integer> exitHandler,
+            String... args) {
         //some trickery, get the class that has invoked us, and use this to figure out the
         //classes root
         StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -74,8 +78,7 @@ public class Quarkus {
             pos++;
         }
         String callingClass = stackTrace[pos].getClassName();
-        CuratedApplication app = QuarkusLauncher.launch(callingClass);
-
+        QuarkusLauncher.launch(callingClass, quarkusApplication.getName(), exitHandler, args);
     }
 
     /**

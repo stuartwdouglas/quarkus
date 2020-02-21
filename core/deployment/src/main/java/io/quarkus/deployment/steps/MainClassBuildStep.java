@@ -244,20 +244,22 @@ class MainClassBuildStep {
             ApplicationArchivesBuildItem applicationArchivesBuildItem,
             CombinedIndexBuildItem combinedIndexBuildItem,
             PackageConfig packageConfig) {
-        if (packageConfig.mainClass.isPresent()) {
-            //user defined main class, nothing to do
-            return new MainClassBuildItem(packageConfig.mainClass.get());
-        }
-        Collection<AnnotationInstance> defaultMains = applicationArchivesBuildItem.getRootArchive().getIndex()
-                .getAnnotations(DotName.createSimple(DefaultMain.class.getName()));
-        if (defaultMains.size() > 1) {
-            throw new RuntimeException(
-                    "More than one @DefaultMain method found in application, could not determine main class to use"
-                            + defaultMains);
-        }
         String mainClassName = MAIN_CLASS;
-        if (defaultMains.isEmpty()) {
-            //generate a main that just runs the app
+        if (packageConfig.mainClass.isPresent()) {
+            mainClassName = packageConfig.mainClass.get();
+        } else {
+            Collection<AnnotationInstance> defaultMains = applicationArchivesBuildItem.getRootArchive().getIndex()
+                    .getAnnotations(DotName.createSimple(DefaultMain.class.getName()));
+            if (defaultMains.size() > 1) {
+                throw new RuntimeException(
+                        "More than one @DefaultMain method found in application, could not determine main class to use"
+                                + defaultMains);
+            } else if (!defaultMains.isEmpty()) {
+                mainClassName = defaultMains.iterator().next().target().asClass().name().toString();
+            }
+        }
+        if (mainClassName.equals(MAIN_CLASS)) {
+            //generate a main that just runs the app, the user has not supplied a main class
             ClassCreator file = new ClassCreator(new GeneratedClassGizmoAdaptor(generatedClass, true), MAIN_CLASS, null,
                     Object.class.getName());
 
@@ -269,12 +271,11 @@ class MainClassBuildStep {
 
             file.close();
         } else {
-            AnnotationInstance annotation = defaultMains.iterator().next();
             Collection<ClassInfo> impls = combinedIndexBuildItem.getIndex()
                     .getAllKnownImplementors(DotName.createSimple(QuarkusApplication.class.getName()));
             boolean found = false;
             for (ClassInfo i : impls) {
-                if (i.name().equals(annotation.target().asClass().name())) {
+                if (i.name().toString().equals(mainClassName)) {
                     found = true;
                     break;
                 }
@@ -287,12 +288,11 @@ class MainClassBuildStep {
                 MethodCreator mv = file.getMethodCreator("main", void.class, String[].class);
                 mv.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
                 mv.invokeStaticMethod(MethodDescriptor.ofMethod(Quarkus.class, "run", void.class, Class.class, String[].class),
-                        mv.loadClass(annotation.target().asClass().name().toString()),
+                        mv.loadClass(mainClassName),
                         mv.getMethodParam(0));
                 mv.returnValue(null);
                 file.close();
-            } else {
-                mainClassName = annotation.target().asClass().name().toString();
+                mainClassName = MAIN_CLASS;
             }
         }
 
