@@ -31,6 +31,7 @@ import io.quarkus.builder.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationClassPredicateBuildItem;
 import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.runner.bootstrap.AugmentActionImpl;
+import io.quarkus.runtime.ApplicationLifecycleManager;
 import io.quarkus.runtime.Timing;
 import io.quarkus.runtime.configuration.QuarkusConfigFactory;
 import io.quarkus.runtime.logging.InitialConfigurator;
@@ -49,6 +50,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     static volatile RuntimeUpdatesProcessor runtimeUpdatesProcessor;
     private static volatile CuratedApplication curatedApplication;
     private static volatile AugmentAction augmentAction;
+    private static volatile boolean restarting;
 
     private synchronized void firstStart() {
         ClassLoader old = Thread.currentThread().getContextClassLoader();
@@ -57,7 +59,31 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
             //ok, we have resolved all the deps
             try {
                 StartupAction start = augmentAction.createInitialRuntimeApplication();
-                runner = start.run();
+                //this is a bit yuck, but we need replace the default
+                //exit handler in the runtime class loader
+                //TODO: look at implementing a common core classloader, that removes the need for this sort of crappy hack
+                curatedApplication.getBaseRuntimeClassLoader().loadClass(ApplicationLifecycleManager.class.getName())
+                        .getMethod("setDefaultExitCodeHandler", Consumer.class)
+                        .invoke(null, new Consumer<Integer>() {
+                            @Override
+                            public void accept(Integer integer) {
+                                if (restarting) {
+                                    return;
+                                }
+                                System.out.println("Quarkus application exited with code " + integer);
+                                System.out.println("Press Enter to restart");
+                                try {
+                                    while (System.in.read() != '\n') {
+                                    }
+                                    runtimeUpdatesProcessor.checkForChangedClasses();
+                                    restartApp(runtimeUpdatesProcessor.checkForFileChange());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+
+                runner = start.runMainClass();
             } catch (Throwable t) {
                 deploymentProblem = t;
                 if (context.isAbortOnFailedStart()) {
@@ -91,7 +117,9 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     }
 
     public synchronized void restartApp(Set<String> changedResources) {
+        restarting = true;
         stop();
+        restarting = false;
         Timing.restart(curatedApplication.getAugmentClassLoader());
         deploymentProblem = null;
         ClassLoader old = Thread.currentThread().getContextClassLoader();
@@ -100,7 +128,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
             //ok, we have resolved all the deps
             try {
                 StartupAction start = augmentAction.reloadExistingApplication(changedResources);
-                runner = start.run();
+                runner = start.runMainClass();
             } catch (Throwable t) {
                 deploymentProblem = t;
                 log.error("Failed to start quarkus", t);

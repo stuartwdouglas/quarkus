@@ -29,12 +29,7 @@ public class Quarkus {
      * @param args The command line parameters
      */
     public static void run(Class<? extends QuarkusApplication> quarkusApplication, String... args) {
-        run(quarkusApplication, new Consumer<Integer>() {
-            @Override
-            public void accept(Integer integer) {
-                System.exit(integer);
-            }
-        }, args);
+        run(quarkusApplication, null, args);
     }
 
     /**
@@ -53,7 +48,8 @@ public class Quarkus {
         try {
             //production and common dev mode path
             //we already have an application, run it directly
-            Class<? extends Application> appClass = (Class<? extends Application>) Class.forName(Application.APP_CLASS_NAME);
+            Class<? extends Application> appClass = (Class<? extends Application>) Class.forName(Application.APP_CLASS_NAME,
+                    false, Thread.currentThread().getContextClassLoader());
             Application application = appClass.newInstance();
             ApplicationLifecycleManager.run(application, quarkusApplication, exitHandler, args);
             return;

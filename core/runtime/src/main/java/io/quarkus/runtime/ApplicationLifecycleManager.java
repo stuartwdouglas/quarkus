@@ -1,5 +1,6 @@
 package io.quarkus.runtime;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -37,7 +38,7 @@ import sun.misc.SignalHandler;
  */
 public class ApplicationLifecycleManager {
 
-    protected static final Consumer<Integer> EXIT_CODE_HANDLER = new Consumer<Integer>() {
+    private static volatile Consumer<Integer> defaultExitCodeHandler = new Consumer<Integer>() {
         @Override
         public void accept(Integer integer) {
             System.exit(integer);
@@ -61,7 +62,7 @@ public class ApplicationLifecycleManager {
     private static boolean hooksRegistered;
 
     public static final void run(Application application, String... args) {
-        run(application, null, EXIT_CODE_HANDLER, args);
+        run(application, null, null, args);
     }
 
     public static final void run(Application application, Class<? extends QuarkusApplication> quarkusApplication,
@@ -141,13 +142,13 @@ public class ApplicationLifecycleManager {
                 stateLock.unlock();
             }
             application.stop();
-            exitCodeHandler.accept(1);
+            (exitCodeHandler == null ? defaultExitCodeHandler : exitCodeHandler).accept(1);
             return;
         }
         if (!alreadyStarted) {
             application.stop(); //this could have already been called
         }
-        exitCodeHandler.accept(getExitCode()); //this may not be called if shutdown was initiated by a signal
+        (exitCodeHandler == null ? defaultExitCodeHandler : exitCodeHandler).accept(getExitCode()); //this may not be called if shutdown was initiated by a signal
     }
 
     private static void registerHooks() {
@@ -199,6 +200,24 @@ public class ApplicationLifecycleManager {
      */
     public static void exit() {
         exit(-1);
+    }
+
+    public static Consumer<Integer> getDefaultExitCodeHandler() {
+        return defaultExitCodeHandler;
+    }
+
+    /**
+     * Sets the default exit code handler for application run through the run method
+     * that does not take an exit handler.
+     * 
+     * By default this will just call System.exit, however this is not always
+     * what is wanted.
+     * 
+     * @param defaultExitCodeHandler
+     */
+    public static void setDefaultExitCodeHandler(Consumer<Integer> defaultExitCodeHandler) {
+        Objects.requireNonNull(defaultExitCodeHandler);
+        ApplicationLifecycleManager.defaultExitCodeHandler = defaultExitCodeHandler;
     }
 
     /**

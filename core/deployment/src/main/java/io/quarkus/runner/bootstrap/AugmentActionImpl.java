@@ -32,6 +32,7 @@ import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
+import io.quarkus.deployment.builditem.MainClassBuildItem;
 import io.quarkus.deployment.builditem.RawCommandLineArgumentsBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
@@ -94,7 +95,8 @@ public class AugmentActionImpl implements AugmentAction {
             throw new IllegalStateException("Cannot launch a runtime application with NORMAL launch mode");
         }
         BuildResult result = runAugment(true, Collections.emptySet(), GeneratedClassBuildItem.class,
-                GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class);
+                GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class,
+                MainClassBuildItem.class);
         return new StartupActionImpl(curatedApplication, result);
     }
 

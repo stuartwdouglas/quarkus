@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import org.jboss.logging.Logger;
 import org.objectweb.asm.ClassVisitor;
@@ -26,7 +27,10 @@ import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.DeploymentClassLoaderBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
+import io.quarkus.deployment.builditem.MainClassBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
+import io.quarkus.runtime.Application;
+import io.quarkus.runtime.Quarkus;
 
 public class StartupActionImpl implements StartupAction {
 
@@ -43,10 +47,74 @@ public class StartupActionImpl implements StartupAction {
     }
 
     /**
-     * Runs the application, and returns a handle that can be used to shut it down.
+     * Runs the application by running the main method of the main class. As this is a blocking method a new
+     * thread is created to run this task.
+     * 
+     * Before this method is called an appropriate exit handler will likely need to
+     * be set in {@link io.quarkus.runtime.ApplicationLifecycleManager#setDefaultExitCodeHandler(Consumer)}
+     * of the JVM will exit when the app stops.
      */
-    public RunningQuarkusApplication run(String... args) throws Exception {
+    public RunningQuarkusApplication runMainClass(String... args) throws Exception {
         //first
+        QuarkusClassLoader runtimeClassLoader = createRuntimeClassLoader();
+
+        //we have our class loaders
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(runtimeClassLoader);
+        final String className = buildResult.consume(MainClassBuildItem.class).getClassName();
+        try {
+            // force init here
+            Class<?> appClass = Class.forName(className, true, runtimeClassLoader);
+            Method start = appClass.getMethod("main", String[].class);
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Thread.currentThread().setContextClassLoader(runtimeClassLoader);
+                    try {
+                        start.invoke(null, (Object) args);
+                    } catch (Throwable e) {
+                        log.error("Error running Quarkus", e);
+                    }
+                }
+            }, "Quarkus Main Thread");
+            t.start();
+            return new RunningQuarkusApplicationImpl(new Closeable() {
+                @Override
+                public void close() throws IOException {
+                    try {
+                        Application current = Application.currentApplication();
+                        if (current != null) {
+                            Quarkus.asyncExit();
+                            current.awaitShutdown();
+                        }
+                    } finally {
+                        ForkJoinClassLoading.setForkJoinClassLoader(ClassLoader.getSystemClassLoader());
+                        if (curatedApplication.getQuarkusBootstrap().getMode() == QuarkusBootstrap.Mode.TEST) {
+                            //for tests we just always shut down the curated application, as it is only used once
+                            //dev mode might be about to restart, so we leave it
+                            curatedApplication.close();
+                        }
+                    }
+                }
+            }, runtimeClassLoader);
+        } catch (Throwable t) {
+            // todo: dev mode expects run time config to be available immediately even if static init didn't complete.
+            try {
+                final Class<?> configClass = Class.forName(RunTimeConfigurationGenerator.CONFIG_CLASS_NAME, true,
+                        runtimeClassLoader);
+                configClass.getDeclaredMethod(RunTimeConfigurationGenerator.C_CREATE_BOOTSTRAP_CONFIG.getName())
+                        .invoke(null);
+            } catch (Throwable t2) {
+                t.addSuppressed(t2);
+            }
+            throw t;
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
+        }
+
+    }
+
+    private QuarkusClassLoader createRuntimeClassLoader() {
         Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers = extractTransformers();
         QuarkusClassLoader baseClassLoader = curatedApplication.getBaseRuntimeClassLoader();
         ClassLoader transformerClassLoader = buildResult.consume(DeploymentClassLoaderBuildItem.class).getClassLoader();
@@ -68,6 +136,15 @@ public class StartupActionImpl implements StartupAction {
             runtimeClassLoader = baseClassLoader;
         }
         ForkJoinClassLoading.setForkJoinClassLoader(runtimeClassLoader);
+        return runtimeClassLoader;
+    }
+
+    /**
+     * Runs the application, and returns a handle that can be used to shut it down.
+     */
+    public RunningQuarkusApplication run(String... args) throws Exception {
+        //first
+        QuarkusClassLoader runtimeClassLoader = createRuntimeClassLoader();
 
         //we have our class loaders
         ClassLoader old = Thread.currentThread().getContextClassLoader();
