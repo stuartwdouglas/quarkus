@@ -9,6 +9,7 @@ import org.wildfly.common.Assert;
 import org.wildfly.common.lock.Locks;
 
 import io.quarkus.runtime.shutdown.ShutdownRecorder;
+import io.quarkus.dev.appstate.ApplicationStateNotification;
 
 /**
  * The application base class, which is extended and implemented by a generated class which implements the application
@@ -93,12 +94,14 @@ public abstract class Application implements Closeable {
             } finally {
                 stateLock.unlock();
             }
+            ApplicationStateNotification.notifyStartupComplete(t);
             throw t;
         }
         stateLock.lock();
         try {
             state = ST_STARTED;
             stateCond.signalAll();
+            ApplicationStateNotification.notifyStartupComplete(null);
         } finally {
             stateLock.unlock();
         }
@@ -173,6 +176,7 @@ public abstract class Application implements Closeable {
                 state = ST_STOPPED;
                 Timing.printStopTime(getName());
                 stateCond.signalAll();
+                ApplicationStateNotification.notifyApplicationStopped();
             } finally {
                 stateLock.unlock();
             }

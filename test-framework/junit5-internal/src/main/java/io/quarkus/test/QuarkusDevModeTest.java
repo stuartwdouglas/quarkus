@@ -35,6 +35,7 @@ import io.quarkus.deployment.dev.CompilationProvider;
 import io.quarkus.deployment.dev.DevModeContext;
 import io.quarkus.deployment.dev.DevModeMain;
 import io.quarkus.deployment.util.FileUtil;
+import io.quarkus.dev.appstate.ApplicationStateNotification;
 import io.quarkus.test.common.PathTestHelper;
 import io.quarkus.test.common.PropertyTestUtil;
 import io.quarkus.test.common.TestResourceManager;
@@ -149,6 +150,7 @@ public class QuarkusDevModeTest
             context.setAbortOnFailedStart(true);
             devModeMain = new DevModeMain(context);
             devModeMain.start();
+            ApplicationStateNotification.waitForApplicationStart();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

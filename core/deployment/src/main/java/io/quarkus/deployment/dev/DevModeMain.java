@@ -20,6 +20,7 @@ import org.jboss.logging.Logger;
 import io.quarkus.bootstrap.app.AdditionalDependency;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.dev.appstate.ApplicationStateNotification;
 
 /**
  * The main entry point for the dev mojo execution
@@ -113,5 +114,6 @@ public class DevModeMain implements Closeable {
     @Override
     public void close() throws IOException {
         realCloseable.close();
+        ApplicationStateNotification.waitForApplicationStop();
     }
 }
