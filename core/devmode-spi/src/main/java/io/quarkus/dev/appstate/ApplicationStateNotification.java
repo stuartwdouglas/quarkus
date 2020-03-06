@@ -16,7 +16,7 @@ public class ApplicationStateNotification {
     private static Throwable startupProblem;
 
     public static synchronized void notifyStartupComplete(Throwable sp) {
-        started = true;
+        started = startupProblem == null;
         startupProblem = sp;
         ApplicationStateNotification.class.notifyAll();
     }
@@ -28,7 +28,7 @@ public class ApplicationStateNotification {
     }
 
     public static synchronized void waitForApplicationStart() {
-        while (!started) {
+        while (!started && startupProblem == null) {
             try {
                 ApplicationStateNotification.class.wait();
             } catch (InterruptedException e) {

@@ -120,6 +120,9 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     public synchronized void restartApp(Set<String> changedResources) {
         restarting = true;
         stop();
+
+        //this clears any old state
+        ApplicationStateNotification.notifyApplicationStopped();
         restarting = false;
         Timing.restart(curatedApplication.getAugmentClassLoader());
         deploymentProblem = null;
@@ -134,7 +137,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
             } catch (Throwable t) {
                 deploymentProblem = t;
                 log.error("Failed to start quarkus", t);
-
             }
         } finally {
             Thread.currentThread().setContextClassLoader(old);

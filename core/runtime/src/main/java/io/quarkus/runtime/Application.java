@@ -8,8 +8,8 @@ import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.wildfly.common.Assert;
 import org.wildfly.common.lock.Locks;
 
-import io.quarkus.runtime.shutdown.ShutdownRecorder;
 import io.quarkus.dev.appstate.ApplicationStateNotification;
+import io.quarkus.runtime.shutdown.ShutdownRecorder;
 
 /**
  * The application base class, which is extended and implemented by a generated class which implements the application

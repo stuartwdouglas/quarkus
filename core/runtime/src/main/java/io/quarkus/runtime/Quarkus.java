@@ -57,7 +57,11 @@ public class Quarkus {
         } catch (Exception e) {
             //TODO: exception mappers
             Logger.getLogger(Quarkus.class).error("Error running Quarkus", e);
-            exitHandler.accept(1);
+            if (exitHandler == null) {
+                exitHandler.accept(1);
+            } else {
+                ApplicationLifecycleManager.getDefaultExitCodeHandler().accept(1);
+            }
             return;
         }
 
