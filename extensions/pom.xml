@@ -161,6 +161,9 @@
         
         <!-- Templating -->
         <module>qute</module>
+
+        <!-- Programming Model-->
+        <module>deltaspike-partial-bean</module>
     </modules>
 
     <!-- Unfortunately the config below introduces a build dependency on the maven plugin

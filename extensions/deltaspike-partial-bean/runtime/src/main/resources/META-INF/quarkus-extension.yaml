@@ -1,0 +1,9 @@
+---
+name: "Deltaspike Partial Bean"
+metadata:
+  short-name: "Partial Bean"
+  keywords:
+  - "deltaspike"
+  categories:
+  - "programming model"
+  status: "stable"

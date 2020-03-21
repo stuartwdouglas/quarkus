@@ -87,6 +87,7 @@
         <!-- Code Coverage Properties-->
         <jacoco.agent.argLine></jacoco.agent.argLine>
         <jacoco.version>0.8.5</jacoco.version>
+        <deltaspike-data-module.version>1.9.3</deltaspike-data-module.version>
     </properties>
 
     <dependencyManagement>
@@ -164,6 +165,12 @@
                 <groupId>com.unboundid</groupId>
                 <artifactId>unboundid-ldapsdk</artifactId>
                 <version>${unboundid-ldap.version}</version>
+            </dependency>
+            <!-- Used for testing partial bean support -->
+            <dependency>
+                <groupId>org.apache.deltaspike.modules</groupId>
+                <artifactId>deltaspike-data-module-impl</artifactId>
+                <version>${deltaspike-data-module.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

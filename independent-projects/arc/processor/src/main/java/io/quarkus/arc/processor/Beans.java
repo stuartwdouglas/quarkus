@@ -134,9 +134,9 @@ final class Beans {
 
             // after all attempts, priority is still null, bean will be ignored
             if (alternativePriority == null) {
-                throw new IllegalStateException("Bean defined via class " + beanClass.name()
-                        + " is declared as an @Alternative, " +
-                        "but has no @Priority. Either declare a @Priority or leverage @io.quarkus.arc.AlernativePriority annotation.");
+                //                throw new IllegalStateException("Bean defined via class " + beanClass.name()
+                //                        + " is declared as an @Alternative, " +
+                //                        "but has no @Priority. Either declare a @Priority or leverage @io.quarkus.arc.AlernativePriority annotation.");
             }
         }
 
