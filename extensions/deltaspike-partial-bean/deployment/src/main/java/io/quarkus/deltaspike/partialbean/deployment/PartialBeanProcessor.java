@@ -1,4 +1,4 @@
-package io.quarkus.deltaspike.partialbean;
+package io.quarkus.deltaspike.partialbean.deployment;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -82,7 +82,7 @@ public class PartialBeanProcessor {
                 //inject the invocation handler 
                 //TODO: qualifiers
                 FieldDescriptor delegate = FieldDescriptor.of(c.getClassName(), "delegate", invocationHandler);
-                c.getFieldCreator(delegate).addAnnotation(Inject.class);
+                c.getFieldCreator(delegate).setModifiers(0).addAnnotation(Inject.class);
 
                 for (Method method : bean.getMethods()) {
                     if (Modifier.isAbstract(method.getModifiers())) {

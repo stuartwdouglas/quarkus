@@ -166,12 +166,6 @@
                 <artifactId>unboundid-ldapsdk</artifactId>
                 <version>${unboundid-ldap.version}</version>
             </dependency>
-            <!-- Used for testing partial bean support -->
-            <dependency>
-                <groupId>org.apache.deltaspike.modules</groupId>
-                <artifactId>deltaspike-data-module-impl</artifactId>
-                <version>${deltaspike-data-module.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

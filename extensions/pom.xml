@@ -91,6 +91,7 @@
         <module>mongodb-client</module>
         <module>artemis-core</module>
         <module>artemis-jms</module>
+        <module>deltaspike-data</module>
 
         <!-- Spring -->
         <module>spring-di</module>

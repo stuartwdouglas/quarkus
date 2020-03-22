@@ -3,50 +3,58 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>quarkus-deltaspike-partial-bean-parent</artifactId>
+        <artifactId>quarkus-deltaspike-data-parent</artifactId>
         <groupId>io.quarkus</groupId>
         <version>999-SNAPSHOT</version>
-        <relativePath>../</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>quarkus-deltaspike-partial-bean-deployment</artifactId>
-    <name>Quarkus - Deltaspike Partial Bean - Deployment</name>
-
+    <artifactId>quarkus-deltaspike-data</artifactId>
+    <name>Quarkus - Deltaspike Data - Runtime</name>
+    <description>Define JPA queries using interfaces</description>
     <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-deltaspike-partial-bean</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-arc-deployment</artifactId>
+            <artifactId>quarkus-hibernate-orm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.deltaspike.modules</groupId>
+            <artifactId>deltaspike-data-module-impl</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.deltaspike.core</groupId>
+                    <artifactId>deltaspike-core-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.deltaspike.modules</groupId>
+                    <artifactId>deltaspike-partial-bean-module-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.deltaspike.modules</groupId>
+                    <artifactId>deltaspike-jpa-module-impl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-junit5-internal</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- These are needed to test the RESTEASY_JSON_EXTENSION representation of the NotFoundExceptionMapper-->
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-json-binding-provider</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-jsonb</artifactId>
-            <scope>test</scope>
+            <artifactId>quarkus-arc</artifactId>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
+            </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -61,5 +69,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

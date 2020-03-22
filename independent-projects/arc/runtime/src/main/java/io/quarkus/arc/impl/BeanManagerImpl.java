@@ -164,7 +164,8 @@ public class BeanManagerImpl implements BeanManager {
 
     @Override
     public boolean isStereotype(Class<? extends Annotation> annotationType) {
-        throw new UnsupportedOperationException();
+        //TODO: DO NOT MERGE
+        return false;
     }
 
     @Override
