@@ -1,6 +1,7 @@
 package io.quarkus.bootstrap.app;
 
 import io.quarkus.bootstrap.BootstrapConstants;
+import io.quarkus.bootstrap.classloading.ByteBuddyCapture;
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.DirectoryClassPathElement;
 import io.quarkus.bootstrap.classloading.JarClassPathElement;
@@ -161,6 +162,13 @@ public class CuratedApplication implements Serializable, Closeable {
             //first run, we need to build all the class loaders
             QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Augmentation Class Loader",
                     quarkusBootstrap.getBaseClassLoader(), !quarkusBootstrap.isIsolateDeployment());
+
+            //huge hack alert
+            //we need to get some bytecode out of hibernate at build time
+            //so we use a transformer to intercept the ASM calls
+            //this needs to be deleted ASAP
+            builder.setBytecodeTransformers(ByteBuddyCapture.transformers());
+
             //we want a class loader that can load the deployment artifacts and all their dependencies, but not
             //any of the runtime artifacts, or user classes
             //this will load any deployment artifacts from the parent CL if they are present

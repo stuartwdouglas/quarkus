@@ -95,7 +95,6 @@ import io.quarkus.hibernate.orm.runtime.boot.scan.QuarkusScanner;
 import io.quarkus.hibernate.orm.runtime.dialect.QuarkusH2Dialect;
 import io.quarkus.hibernate.orm.runtime.dialect.QuarkusPostgreSQL10Dialect;
 import io.quarkus.hibernate.orm.runtime.metrics.HibernateCounter;
-import io.quarkus.hibernate.orm.runtime.proxies.ProxyDefinitions;
 import io.quarkus.hibernate.orm.runtime.recording.RecordedState;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.smallrye.metrics.deployment.spi.MetricBuildItem;
@@ -261,7 +260,7 @@ public final class HibernateOrmProcessor {
 
         for (ParsedPersistenceXmlDescriptor unit : allDescriptors) {
             RecordedState m = PersistenceUnitsHolder.createMetadata(unit, scanner, Collections.emptyList());
-            ProxyDefinitions.createFromMetadata(m.getMetadata());
+            DeploymentProxyDefinitions.createFromMetadata(m.getMetadata());
         }
 
         beanContainerListener

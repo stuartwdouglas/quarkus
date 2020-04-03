@@ -1,4 +1,4 @@
-package io.quarkus.hibernate.orm.runtime.proxies;
+package io.quarkus.hibernate.orm.deployment;
 
 import static org.objectweb.asm.Opcodes.ACC_FINAL;
 
@@ -17,6 +17,8 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.proxy.pojo.ProxyFactoryHelper;
 import org.hibernate.proxy.pojo.bytebuddy.ByteBuddyProxyHelper;
 import org.jboss.logging.Logger;
+
+import io.quarkus.bootstrap.classloading.ByteBuddyCapture;
 
 /**
  * Runtime proxies are used by Hibernate ORM to handle a number of corner cases;
@@ -40,17 +42,17 @@ import org.jboss.logging.Logger;
  * can simply fallback to not use the enhanced proxy for the specific entity, and because
  * it's a common case when writing entities in Kotlin.
  */
-public final class ProxyDefinitions {
+public final class DeploymentProxyDefinitions {
 
     private final Map<Class<?>, ProxyClassDetailsHolder> proxyDefinitionMap;
-    private static final Logger LOGGER = Logger.getLogger(ProxyDefinitions.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DeploymentProxyDefinitions.class.getName());
 
-    private ProxyDefinitions(Map<Class<?>, ProxyClassDetailsHolder> proxyDefinitionMap) {
+    private DeploymentProxyDefinitions(Map<Class<?>, ProxyClassDetailsHolder> proxyDefinitionMap) {
         this.proxyDefinitionMap = proxyDefinitionMap;
     }
 
-    public static ProxyDefinitions createFromMetadata(Metadata storeableMetadata) {
-
+    public static DeploymentProxyDefinitions createFromMetadata(Metadata storeableMetadata) {
+        ByteBuddyCapture.beginCapture();
         //Check upfront for any need across all metadata: would be nice to avoid initializing the Bytecode provider.
         if (needAnyProxyDefinitions(storeableMetadata)) {
             final HashMap<Class<?>, ProxyClassDetailsHolder> proxyDefinitionMap = new HashMap<>();
@@ -78,9 +80,10 @@ public final class ProxyDefinitions {
             } finally {
                 bytecodeProvider.resetCaches();
             }
-            return new ProxyDefinitions(proxyDefinitionMap);
+            System.out.println(ByteBuddyCapture.endCapture());
+            return new DeploymentProxyDefinitions(proxyDefinitionMap);
         } else {
-            return new ProxyDefinitions(Collections.emptyMap());
+            return new DeploymentProxyDefinitions(Collections.emptyMap());
         }
     }
 
