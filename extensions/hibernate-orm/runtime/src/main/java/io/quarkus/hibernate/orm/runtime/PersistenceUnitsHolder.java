@@ -105,7 +105,7 @@ public final class PersistenceUnitsHolder {
         return name;
     }
 
-    private static RecordedState createMetadata(PersistenceUnitDescriptor unit, Scanner scanner,
+    public static RecordedState createMetadata(PersistenceUnitDescriptor unit, Scanner scanner,
             Collection<Class<? extends Integrator>> additionalIntegrators) {
         FastBootMetadataBuilder fastBootMetadataBuilder = new FastBootMetadataBuilder(unit, scanner, additionalIntegrators);
         return fastBootMetadataBuilder.build();

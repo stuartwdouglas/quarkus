@@ -88,12 +88,15 @@ import io.quarkus.hibernate.orm.runtime.DefaultEntityManagerProducer;
 import io.quarkus.hibernate.orm.runtime.HibernateOrmRecorder;
 import io.quarkus.hibernate.orm.runtime.JPAConfig;
 import io.quarkus.hibernate.orm.runtime.JPAResourceReferenceProvider;
+import io.quarkus.hibernate.orm.runtime.PersistenceUnitsHolder;
 import io.quarkus.hibernate.orm.runtime.RequestScopedEntityManagerHolder;
 import io.quarkus.hibernate.orm.runtime.TransactionEntityManagers;
 import io.quarkus.hibernate.orm.runtime.boot.scan.QuarkusScanner;
 import io.quarkus.hibernate.orm.runtime.dialect.QuarkusH2Dialect;
 import io.quarkus.hibernate.orm.runtime.dialect.QuarkusPostgreSQL10Dialect;
 import io.quarkus.hibernate.orm.runtime.metrics.HibernateCounter;
+import io.quarkus.hibernate.orm.runtime.proxies.ProxyDefinitions;
+import io.quarkus.hibernate.orm.runtime.recording.RecordedState;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.smallrye.metrics.deployment.spi.MetricBuildItem;
 
@@ -254,6 +257,11 @@ public final class HibernateOrmProcessor {
                 SERVICE_CONTRIBUTOR_SERVICE_FILE)) {
             serviceContributorClasses
                     .add((Class<? extends ServiceContributor>) recorderContext.classProxy(serviceContributorClassName));
+        }
+
+        for (ParsedPersistenceXmlDescriptor unit : allDescriptors) {
+            RecordedState m = PersistenceUnitsHolder.createMetadata(unit, scanner, Collections.emptyList());
+            ProxyDefinitions.createFromMetadata(m.getMetadata());
         }
 
         beanContainerListener
