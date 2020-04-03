@@ -25,7 +25,7 @@ public final class RecordedState {
     public RecordedState(Dialect dialect, JtaPlatform jtaPlatform, PrevalidatedQuarkusMetadata metadata,
             BuildTimeSettings settings, Collection<Integrator> integrators,
             Collection<ProvidedService> providedServices, IntegrationSettings integrationSettings,
-            ProxyDefinitions classDefinitions) {
+            ProxyDefinitions proxyClassDefinitions) {
         this.dialect = dialect;
         this.jtaPlatform = jtaPlatform;
         this.metadata = metadata;
@@ -33,7 +33,7 @@ public final class RecordedState {
         this.integrators = integrators;
         this.providedServices = providedServices;
         this.integrationSettings = integrationSettings;
-        this.proxyClassDefinitions = classDefinitions;
+        this.proxyClassDefinitions = proxyClassDefinitions;
     }
 
     public Dialect getDialect() {

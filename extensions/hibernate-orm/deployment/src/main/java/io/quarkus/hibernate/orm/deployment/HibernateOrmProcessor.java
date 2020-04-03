@@ -88,14 +88,18 @@ import io.quarkus.hibernate.orm.runtime.DefaultEntityManagerProducer;
 import io.quarkus.hibernate.orm.runtime.HibernateOrmRecorder;
 import io.quarkus.hibernate.orm.runtime.JPAConfig;
 import io.quarkus.hibernate.orm.runtime.JPAResourceReferenceProvider;
+import io.quarkus.hibernate.orm.runtime.PersistenceUnitsHolder;
 import io.quarkus.hibernate.orm.runtime.RequestScopedEntityManagerHolder;
 import io.quarkus.hibernate.orm.runtime.TransactionEntityManagers;
 import io.quarkus.hibernate.orm.runtime.boot.scan.QuarkusScanner;
 import io.quarkus.hibernate.orm.runtime.dialect.QuarkusH2Dialect;
 import io.quarkus.hibernate.orm.runtime.dialect.QuarkusPostgreSQL10Dialect;
 import io.quarkus.hibernate.orm.runtime.metrics.HibernateCounter;
+import io.quarkus.hibernate.orm.runtime.proxies.ProxyDefinitions;
+import io.quarkus.hibernate.orm.runtime.recording.RecordedState;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.smallrye.metrics.deployment.spi.MetricBuildItem;
+import net.bytebuddy.description.type.TypeDescription;
 
 /**
  * Simulacrum of JPA bootstrap.
@@ -164,6 +168,7 @@ public final class HibernateOrmProcessor {
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
             BuildProducer<JpaEntitiesBuildItem> domainObjectsProducer,
             BuildProducer<BeanContainerListenerBuildItem> beanContainerListener,
+            BuildProducer<GeneratedClassBuildItem> generatedClassBuildItemBuildProducer,
             List<HibernateOrmIntegrationBuildItem> integrations,
             LaunchModeBuildItem launchMode) throws Exception {
 
@@ -256,9 +261,26 @@ public final class HibernateOrmProcessor {
                     .add((Class<? extends ServiceContributor>) recorderContext.classProxy(serviceContributorClassName));
         }
 
+        ProxyDefinitions proxyDefinitions = new ProxyDefinitions();
+        for (ParsedPersistenceXmlDescriptor unit : allDescriptors) {
+            RecordedState m = PersistenceUnitsHolder.createMetadata(unit, scanner, Collections.emptyList(),
+                    new ProxyDefinitions());
+            DeploymentProxyDefinitions deps = DeploymentProxyDefinitions.createFromMetadata(m.getMetadata());
+            for (Entry<Class<?>, DeploymentProxyDefinitions.DeploymentProxyClassDetailsHolder> proxy : deps
+                    .getProxyDefinitionMap().entrySet()) {
+                for (Entry<TypeDescription, byte[]> i : proxy.getValue().getClassData().getAllTypes().entrySet()) {
+                    generatedClassBuildItemBuildProducer
+                            .produce(new GeneratedClassBuildItem(true, i.getKey().getName(), i.getValue()));
+                }
+                proxyDefinitions.getProxyDefinitionMap().put(proxy.getKey(), new ProxyDefinitions.ProxyClassDetailsHolder(
+                        proxy.getValue().isOverridesEquals(), proxy.getValue().getClassData().getTypeDescription().getName()));
+            }
+        }
+
         beanContainerListener
                 .produce(new BeanContainerListenerBuildItem(
-                        recorder.initMetadata(allDescriptors, scanner, integratorClasses, serviceContributorClasses)));
+                        recorder.initMetadata(allDescriptors, scanner, integratorClasses, serviceContributorClasses,
+                                proxyDefinitions)));
     }
 
     @BuildStep

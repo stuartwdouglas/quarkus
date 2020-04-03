@@ -99,12 +99,14 @@ public class FastBootMetadataBuilder {
     private final Object validatorFactory;
     private final Collection<Class<? extends Integrator>> additionalIntegrators;
     private final Collection<ProvidedService> providedServices;
+    private final ProxyDefinitions proxyClassDefinitions;
 
     @SuppressWarnings("unchecked")
     public FastBootMetadataBuilder(final PersistenceUnitDescriptor persistenceUnit, Scanner scanner,
-            Collection<Class<? extends Integrator>> additionalIntegrators) {
+            Collection<Class<? extends Integrator>> additionalIntegrators, ProxyDefinitions proxyClassDefinitions) {
         this.persistenceUnit = persistenceUnit;
         this.additionalIntegrators = additionalIntegrators;
+        this.proxyClassDefinitions = proxyClassDefinitions;
         final ClassLoaderService providedClassLoaderService = FlatClassLoaderService.INSTANCE;
 
         // Copying semantics from: new EntityManagerFactoryBuilderImpl( unit,
@@ -337,7 +339,6 @@ public class FastBootMetadataBuilder {
         PrevalidatedQuarkusMetadata storeableMetadata = trimBootstrapMetadata(fullMeta);
         //Make sure that the service is destroyed after the metadata has been validated and trimmed, as validation needs to use it.
         destroyServiceRegistry(fullMeta);
-        ProxyDefinitions proxyClassDefinitions = ProxyDefinitions.createFromMetadata(storeableMetadata);
         return new RecordedState(dialect, jtaPlatform, storeableMetadata, buildTimeSettings, getIntegrators(),
                 providedServices, integrationSettingsBuilder.build(), proxyClassDefinitions);
     }

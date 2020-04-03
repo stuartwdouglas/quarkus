@@ -12,6 +12,7 @@ import org.jboss.logging.Logger;
 
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.arc.runtime.BeanContainerListener;
+import io.quarkus.hibernate.orm.runtime.proxies.ProxyDefinitions;
 import io.quarkus.runtime.annotations.Recorder;
 
 /**
@@ -68,12 +69,12 @@ public class HibernateOrmRecorder {
 
     public BeanContainerListener initMetadata(List<ParsedPersistenceXmlDescriptor> parsedPersistenceXmlDescriptors,
             Scanner scanner, Collection<Class<? extends Integrator>> additionalIntegrators,
-            Collection<Class<? extends ServiceContributor>> additionalServiceContributors) {
+            Collection<Class<? extends ServiceContributor>> additionalServiceContributors, ProxyDefinitions proxyDefinitions) {
         return new BeanContainerListener() {
             @Override
             public void created(BeanContainer beanContainer) {
                 PersistenceUnitsHolder.initializeJpa(parsedPersistenceXmlDescriptors, scanner, additionalIntegrators,
-                        additionalServiceContributors);
+                        additionalServiceContributors, proxyDefinitions);
             }
         };
     }
