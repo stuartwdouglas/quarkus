@@ -29,6 +29,7 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.CapabilityBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
+import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBundleBuildItem;
@@ -162,7 +163,12 @@ class LiquibaseProcessor {
             LiquibaseRuntimeConfig liquibaseRuntimeConfig,
             BeanContainerBuildItem beanContainer,
             List<JdbcDataSourceBuildItem> jdbcDataSourceBuildItems,
-            BuildProducer<JdbcDataSourceSchemaReadyBuildItem> jdbcDataSourceSchemaReady) {
+            BuildProducer<JdbcDataSourceSchemaReadyBuildItem> jdbcDataSourceSchemaReady,
+            LiveReloadBuildItem liveReloadBuildItem) {
+
+        if (liveReloadBuildItem.isLiveReload() && liveReloadBuildItem.getChangedResources().isEmpty()) {
+            return null;
+        }
         recorder.doStartActions(liquibaseRuntimeConfig, beanContainer.getValue());
         // once we are done running the migrations, we produce a build item indicating that the
         // schema is "ready"
