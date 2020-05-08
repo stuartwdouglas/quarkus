@@ -80,7 +80,8 @@ public final class LoggingResourceProcessor {
 
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
-    void setupLoggingRuntimeInit(LoggingSetupRecorder recorder, LogConfig log, List<LogHandlerBuildItem> handlers,
+    LoggingSetupBuildItem setupLoggingRuntimeInit(LoggingSetupRecorder recorder, LogConfig log,
+            List<LogHandlerBuildItem> handlers,
             List<LogConsoleFormatBuildItem> consoleFormatItems,
             Optional<ConsoleFormatterBannerBuildItem> possibleBannerBuildItem) {
         final List<RuntimeValue<Optional<Handler>>> list = handlers.stream().map(LogHandlerBuildItem::getHandlerValue)
@@ -97,6 +98,7 @@ public final class LoggingResourceProcessor {
         recorder.initializeLogging(log, list,
                 consoleFormatItems.stream().map(LogConsoleFormatBuildItem::getFormatterValue).collect(Collectors.toList()),
                 possibleSupplier);
+        return new LoggingSetupBuildItem();
     }
 
     @BuildStep

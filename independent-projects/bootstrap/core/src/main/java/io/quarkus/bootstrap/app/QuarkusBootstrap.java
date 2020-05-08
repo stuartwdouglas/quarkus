@@ -4,6 +4,7 @@ import io.quarkus.bootstrap.BootstrapAppModelFactory;
 import io.quarkus.bootstrap.BootstrapException;
 import io.quarkus.bootstrap.model.AppArtifact;
 import io.quarkus.bootstrap.model.AppDependency;
+import io.quarkus.bootstrap.model.AppModel;
 import io.quarkus.bootstrap.model.PathsCollection;
 import io.quarkus.bootstrap.resolver.AppModelResolver;
 import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
@@ -76,6 +77,7 @@ public class QuarkusBootstrap implements Serializable {
     private final MavenArtifactResolver mavenArtifactResolver;
     private final AppArtifact managingProject;
     private final List<AppDependency> forcedDependencies;
+    private final AppModel existingModel;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -100,12 +102,16 @@ public class QuarkusBootstrap implements Serializable {
         this.mavenArtifactResolver = builder.mavenArtifactResolver;
         this.managingProject = builder.managingProject;
         this.forcedDependencies = new ArrayList<>(builder.forcedDependencies);
+        this.existingModel = builder.existingModel;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
         //all we want to do is resolve all our dependencies
         //once we have this it is up to augment to set up the class loader to actually use them
 
+        if (existingModel != null) {
+            return new CuratedApplication(this, new CurationResult(existingModel));
+        }
         //first we check for updates
         if (mode != Mode.PROD) {
             if (versionUpdate != VersionUpdate.NONE) {
@@ -217,6 +223,7 @@ public class QuarkusBootstrap implements Serializable {
         MavenArtifactResolver mavenArtifactResolver;
         AppArtifact managingProject;
         List<AppDependency> forcedDependencies = new ArrayList<>();
+        AppModel existingModel;
 
         public Builder() {
         }
@@ -365,6 +372,15 @@ public class QuarkusBootstrap implements Serializable {
          */
         public Builder setForcedDependencies(List<AppDependency> forcedDependencies) {
             this.forcedDependencies = forcedDependencies;
+            return this;
+        }
+
+        public AppModel getExistingModel() {
+            return existingModel;
+        }
+
+        public Builder setExistingModel(AppModel existingModel) {
+            this.existingModel = existingModel;
             return this;
         }
 
