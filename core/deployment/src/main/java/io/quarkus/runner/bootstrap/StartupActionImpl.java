@@ -19,7 +19,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jboss.logging.Logger;
 import org.objectweb.asm.ClassVisitor;
@@ -35,6 +38,7 @@ import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.MainClassBuildItem;
+import io.quarkus.deployment.builditem.TransformedClassesBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
 import io.quarkus.deployment.index.ConstPoolScanner;
 import io.quarkus.dev.appstate.ApplicationStateNotification;
@@ -53,9 +57,11 @@ public class StartupActionImpl implements StartupAction {
         this.curatedApplication = curatedApplication;
         this.buildResult = buildResult;
         Set<String> eagerClasses = new HashSet<>();
-        Map<String, Predicate<byte[]>> transformerPredicates = new HashMap<>();
-        Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers = extractTransformers(
-                eagerClasses, transformerPredicates);
+        List<TransformedClassesBuildItem.TransformedClass> transformedList = buildResult.consume(TransformedClassesBuildItem.class).getTransformedClassesByJar().values().stream().flatMap((Function<Set<TransformedClassesBuildItem.TransformedClass>, Stream<TransformedClassesBuildItem.TransformedClass>>) transformedClasses -> transformedClasses.stream()).collect(Collectors.toList());
+        Map<String, byte[]> transformedClasses = new HashMap<>();
+        for (TransformedClassesBuildItem.TransformedClass i : transformedList) {
+            transformedClasses.put(i.getFileName(), i.getData());
+        }
         QuarkusClassLoader baseClassLoader = curatedApplication.getBaseRuntimeClassLoader();
         QuarkusClassLoader runtimeClassLoader;
 
@@ -63,16 +69,15 @@ public class StartupActionImpl implements StartupAction {
         //test mode only has a single class loader, while dev uses a disposable runtime class loader
         //that is discarded between restarts
         if (curatedApplication.getQuarkusBootstrap().getMode() == QuarkusBootstrap.Mode.DEV) {
-            baseClassLoader.reset(extractGeneratedResources(false), bytecodeTransformers, transformerPredicates,
-                    deploymentClassLoader);
+            baseClassLoader.reset(extractGeneratedResources(false), transformedClasses);
             runtimeClassLoader = curatedApplication.createRuntimeClassLoader(baseClassLoader,
-                    bytecodeTransformers, transformerPredicates,
+                    transformedClasses,
                     deploymentClassLoader, extractGeneratedResources(true));
         } else {
             Map<String, byte[]> resources = new HashMap<>();
             resources.putAll(extractGeneratedResources(false));
             resources.putAll(extractGeneratedResources(true));
-            baseClassLoader.reset(resources, bytecodeTransformers, transformerPredicates, deploymentClassLoader);
+            baseClassLoader.reset(resources, transformedClasses);
             runtimeClassLoader = baseClassLoader;
         }
         this.runtimeClassLoader = runtimeClassLoader;

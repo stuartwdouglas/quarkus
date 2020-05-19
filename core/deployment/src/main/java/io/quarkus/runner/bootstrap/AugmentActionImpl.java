@@ -40,6 +40,7 @@ import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.MainClassBuildItem;
 import io.quarkus.deployment.builditem.RawCommandLineArgumentsBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
+import io.quarkus.deployment.builditem.TransformedClassesBuildItem;
 import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
 import io.quarkus.deployment.pkg.builditem.JarBuildItem;
 import io.quarkus.deployment.pkg.builditem.NativeImageBuildItem;
@@ -128,7 +129,7 @@ public class AugmentActionImpl implements AugmentAction {
         }
         ClassLoader classLoader = curatedApplication.createDeploymentClassLoader();
         BuildResult result = runAugment(true, Collections.emptySet(), classLoader, GeneratedClassBuildItem.class,
-                GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class,
+                GeneratedResourceBuildItem.class, TransformedClassesBuildItem.class, ApplicationClassNameBuildItem.class,
                 MainClassBuildItem.class);
         return new StartupActionImpl(curatedApplication, result, classLoader);
     }
@@ -140,7 +141,7 @@ public class AugmentActionImpl implements AugmentAction {
         }
         ClassLoader classLoader = curatedApplication.createDeploymentClassLoader();
         BuildResult result = runAugment(!hasStartedSuccessfully, changedResources, classLoader, GeneratedClassBuildItem.class,
-                GeneratedResourceBuildItem.class, BytecodeTransformerBuildItem.class, ApplicationClassNameBuildItem.class);
+                GeneratedResourceBuildItem.class, TransformedClassesBuildItem.class, ApplicationClassNameBuildItem.class);
         return new StartupActionImpl(curatedApplication, result, classLoader);
     }
 

@@ -19,11 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import org.objectweb.asm.ClassVisitor;
 
 /**
  * The result of the curate step that is done by QuarkusBootstrap.
@@ -268,14 +265,12 @@ public class CuratedApplication implements Serializable, Closeable {
     }
 
     public QuarkusClassLoader createRuntimeClassLoader(QuarkusClassLoader loader,
-            Map<String, List<BiFunction<String, ClassVisitor, ClassVisitor>>> bytecodeTransformers,
-            Map<String, Predicate<byte[]>> transformerPredicates,
+            Map<String, byte[]> transformedClasses,
             ClassLoader deploymentClassLoader, Map<String, byte[]> resources) {
         QuarkusClassLoader.Builder builder = QuarkusClassLoader.builder("Quarkus Runtime ClassLoader",
                 loader, false)
                 .setAggregateParentResources(true);
-        builder.setTransformerPredicates(transformerPredicates);
-        builder.setTransformerClassLoader(deploymentClassLoader);
+        builder.setTransformedClasses(transformedClasses);
 
         for (Path root : quarkusBootstrap.getApplicationRoot()) {
             builder.addElement(ClassPathElement.fromPath(root));
@@ -289,7 +284,6 @@ public class CuratedApplication implements Serializable, Closeable {
                 }
             }
         }
-        builder.setBytecodeTransformers(bytecodeTransformers);
         return builder.build();
     }
 
