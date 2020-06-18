@@ -1,10 +1,12 @@
 package io.quarkus.arc.impl;
 
+import io.netty.util.concurrent.FastThreadLocal;
 import io.quarkus.arc.ContextInstanceHandle;
 import io.quarkus.arc.InjectableBean;
 import io.quarkus.arc.InstanceHandle;
 import io.quarkus.arc.ManagedContext;
 import io.quarkus.arc.impl.EventImpl.Notifier;
+import io.smallrye.context.ContextBoundary;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,11 +34,14 @@ class RequestContext implements ManagedContext {
     private static final Logger LOGGER = Logger.getLogger(RequestContext.class.getPackage().getName());
 
     // It's a normal scope so there may be no more than one mapped instance per contextual type per thread
-    private final ThreadLocal<ConcurrentMap<Contextual<?>, ContextInstanceHandle<?>>> currentContext = new ThreadLocal<>();
+    private final FastThreadLocal<ConcurrentMap<Contextual<?>, ContextInstanceHandle<?>>> currentContext = new FastThreadLocal<>();
 
     private final LazyValue<Notifier<Object>> initializedNotifier;
     private final LazyValue<Notifier<Object>> beforeDestroyedNotifier;
     private final LazyValue<Notifier<Object>> destroyedNotifier;
+    static {
+        ContextBoundary.setEnabled(true);
+    }
 
     public RequestContext() {
         this.initializedNotifier = new LazyValue<>(RequestContext::createInitializedNotifier);
@@ -95,6 +100,7 @@ class RequestContext implements ManagedContext {
 
     @Override
     public void activate(ContextState initialState) {
+        ContextBoundary.contextChanged();
         if (initialState == null) {
             currentContext.set(new ConcurrentHashMap<>());
             // Fire an event with qualifier @Initialized(RequestScoped.class) if there are any observers for it
@@ -120,6 +126,7 @@ class RequestContext implements ManagedContext {
 
     @Override
     public void deactivate() {
+        ContextBoundary.contextChanged();
         currentContext.remove();
     }
 

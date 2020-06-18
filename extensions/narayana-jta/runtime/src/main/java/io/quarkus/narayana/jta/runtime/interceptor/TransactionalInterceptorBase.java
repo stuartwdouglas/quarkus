@@ -23,6 +23,7 @@ import com.arjuna.ats.jta.logging.jtaLogger;
 import io.quarkus.arc.runtime.InterceptorBindings;
 import io.quarkus.narayana.jta.runtime.CDIDelegatingTransactionManager;
 import io.quarkus.narayana.jta.runtime.TransactionConfiguration;
+import io.smallrye.context.ContextBoundary;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.reactive.converters.ReactiveTypeConverter;
 import io.smallrye.reactive.converters.Registry;
@@ -45,6 +46,7 @@ public abstract class TransactionalInterceptorBase implements Serializable {
     }
 
     public Object intercept(InvocationContext ic) throws Exception {
+        ContextBoundary.contextChanged();
         final TransactionManager tm = transactionManager;
         final Transaction tx = tm.getTransaction();
 
@@ -52,6 +54,7 @@ public abstract class TransactionalInterceptorBase implements Serializable {
         try {
             return doIntercept(tm, tx, ic);
         } finally {
+            ContextBoundary.contextChanged();
             resetUserTransactionAvailability(previousUserTransactionAvailability);
         }
     }
