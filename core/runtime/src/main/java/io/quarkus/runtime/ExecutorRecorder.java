@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import io.netty.util.concurrent.FastThreadLocalThread;
 import org.jboss.logging.Logger;
 import org.jboss.threads.EnhancedQueueExecutor;
 import org.jboss.threads.JBossExecutors;
@@ -153,8 +155,13 @@ public class ExecutorRecorder {
     }
 
     private static EnhancedQueueExecutor createExecutor(ThreadPoolConfig threadPoolConfig) {
-        final JBossThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("executor"), Boolean.TRUE, null,
-                "executor-thread-%t", JBossExecutors.loggingExceptionHandler("org.jboss.executor.uncaught"), null);
+
+        final ThreadFactory threadFactory = new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable runnable) {
+                return new FastThreadLocalThread(runnable);
+            }
+        };
         final EnhancedQueueExecutor.Builder builder = new EnhancedQueueExecutor.Builder()
                 .setRegisterMBean(false)
                 .setHandoffExecutor(JBossExecutors.rejectingExecutor())
