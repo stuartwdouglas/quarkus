@@ -85,6 +85,7 @@ public class QuarkusBootstrap implements Serializable {
     private final AppModel existingModel;
     private final boolean rebuild;
     private final Set<AppArtifactKey> localArtifacts;
+    private final boolean testScopeParentFirst;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -113,6 +114,7 @@ public class QuarkusBootstrap implements Serializable {
         this.existingModel = builder.existingModel;
         this.rebuild = builder.rebuild;
         this.localArtifacts = new HashSet<>(builder.localArtifacts);
+        this.testScopeParentFirst = builder.testScopeParentFirst;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
@@ -142,6 +144,7 @@ public class QuarkusBootstrap implements Serializable {
                 .setManagingProject(managingProject)
                 .setForcedDependencies(forcedDependencies)
                 .setLocalArtifacts(localArtifacts)
+                .setTestScopeParentFirst(testScopeParentFirst)
                 .setProjectRoot(getProjectRoot());
         if (mode == Mode.TEST || test) {
             appModelFactory.setTest(true);
@@ -240,6 +243,7 @@ public class QuarkusBootstrap implements Serializable {
         DependenciesOrigin dependenciesOrigin;
         AppArtifact appArtifact;
         boolean isolateDeployment;
+        boolean testScopeParentFirst;
         MavenArtifactResolver mavenArtifactResolver;
         AppArtifact managingProject;
         List<AppDependency> forcedDependencies = new ArrayList<>();
@@ -418,6 +422,11 @@ public class QuarkusBootstrap implements Serializable {
 
         public Builder addLocalArtifact(AppArtifactKey key) {
             localArtifacts.add(key);
+            return this;
+        }
+
+        public Builder setTestScopeParentFirst(boolean testScopeParentFirst) {
+            this.testScopeParentFirst = testScopeParentFirst;
             return this;
         }
 

@@ -61,6 +61,7 @@ public class BootstrapAppModelFactory {
     private static final int CP_CACHE_FORMAT_ID = 2;
 
     private static final Logger log = Logger.getLogger(BootstrapAppModelFactory.class);
+    private boolean testScopeParentFirst;
 
     public static BootstrapAppModelFactory newInstance() {
         return new BootstrapAppModelFactory();
@@ -184,6 +185,7 @@ public class BootstrapAppModelFactory {
 
                 return bootstrapAppModelResolver = new BootstrapAppModelResolver(mvn)
                         .setTest(test)
+                        .setTestScopeParentFirst(testScopeParentFirst)
                         .setDevMode(devMode);
             }
 
@@ -193,6 +195,7 @@ public class BootstrapAppModelFactory {
             }
             return bootstrapAppModelResolver = new BootstrapAppModelResolver(mvn)
                     .setTest(test)
+                    .setTestScopeParentFirst(testScopeParentFirst)
                     .setDevMode(devMode);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create application model resolver for " + projectRoot, e);
@@ -481,5 +484,14 @@ public class BootstrapAppModelFactory {
     public BootstrapAppModelFactory setManagingProject(AppArtifact managingProject) {
         this.managingProject = managingProject;
         return this;
+    }
+
+    public BootstrapAppModelFactory setTestScopeParentFirst(boolean testScopeParentFirst) {
+        this.testScopeParentFirst = testScopeParentFirst;
+        return this;
+    }
+
+    public boolean getTestScopeParentFirst() {
+        return testScopeParentFirst;
     }
 }

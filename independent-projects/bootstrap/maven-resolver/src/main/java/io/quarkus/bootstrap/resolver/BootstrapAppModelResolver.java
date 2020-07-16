@@ -45,6 +45,7 @@ public class BootstrapAppModelResolver implements AppModelResolver {
     protected Consumer<String> buildTreeConsumer;
     protected boolean devmode;
     protected boolean test;
+    protected boolean testScopeParentFirst;
 
     public BootstrapAppModelResolver(MavenArtifactResolver mvn) {
         this.mvn = mvn;
@@ -69,6 +70,11 @@ public class BootstrapAppModelResolver implements AppModelResolver {
 
     public BootstrapAppModelResolver setTest(boolean test) {
         this.test = test;
+        return this;
+    }
+
+    public BootstrapAppModelResolver setTestScopeParentFirst(boolean testScopeParentFirst) {
+        this.testScopeParentFirst = testScopeParentFirst;
         return this;
     }
 
@@ -180,8 +186,18 @@ public class BootstrapAppModelResolver implements AppModelResolver {
                 directMvnDeps, managedDeps, managedRepos, excludedScopes.toArray(new String[0])).getRoot();
 
         final TreeDependencyVisitor visitor = new TreeDependencyVisitor(new DependencyVisitor() {
+
+            DependencyNode quarkusNode;
+
             @Override
             public boolean visitEnter(DependencyNode node) {
+                if (quarkusNode != null) {
+                    return true;
+                }
+                //quarkus deps at test scope and their dependencies are not loaded parent first
+                if (node.getArtifact().getGroupId().equals("io.quarkus")) {
+                    quarkusNode = node;
+                }
                 return true;
             }
 
@@ -192,6 +208,12 @@ public class BootstrapAppModelResolver implements AppModelResolver {
                     final AppArtifact appArtifact = toAppArtifact(dep.getArtifact());
                     appDeps.add(appArtifact.getKey());
                     userDeps.add(new AppDependency(appArtifact, dep.getScope(), dep.isOptional()));
+                    if (quarkusNode == null && testScopeParentFirst && "test".equals(dep.getScope())) {
+                        appBuilder.addParentFirstArtifact(appArtifact.getKey());
+                    }
+                }
+                if (quarkusNode == node) {
+                    quarkusNode = null;
                 }
                 return true;
             }

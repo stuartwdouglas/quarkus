@@ -132,6 +132,7 @@ public class QuarkusTestExtension
 
             final QuarkusBootstrap.Builder runnerBuilder = QuarkusBootstrap.builder()
                     .setIsolateDeployment(true)
+                    .setTestScopeParentFirst(true)
                     .setMode(QuarkusBootstrap.Mode.TEST);
             QuarkusTestProfile profileInstance = null;
             if (profile != null) {
