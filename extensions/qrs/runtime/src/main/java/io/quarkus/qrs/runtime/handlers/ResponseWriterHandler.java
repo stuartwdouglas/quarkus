@@ -35,8 +35,9 @@ public class ResponseWriterHandler implements RestHandler {
 
         if (entity != null) {
             MessageBodyWriter<Object> writer = requestContext.getMessageBodyWriter();
-            if(writer instanceof QrsMessageBodyWriter) {
-                ((QrsMessageBodyWriter<Object>)writer).writeTo(entity, null, null, null, response.getMediaType(), null, requestContext);
+            if (writer instanceof QrsMessageBodyWriter) {
+                ((QrsMessageBodyWriter<Object>) writer).writeTo(entity, null, null, null, response.getMediaType(), null,
+                        requestContext);
             } else {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 writer.writeTo(entity, null, null, null, response.getMediaType(), null, baos);
