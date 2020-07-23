@@ -31,7 +31,7 @@ public class VertxBufferMessageBodyWriter implements QrsMessageBodyWriter<Buffer
 
     @Override
     public void writeTo(Buffer buffer, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
-                        MultivaluedMap<String, Object> httpHeaders, RequestContext context)
+            MultivaluedMap<String, Object> httpHeaders, RequestContext context)
             throws WebApplicationException {
         HttpServerResponse vertxResponse = context.getContext().response();
         vertxResponse.end(buffer);

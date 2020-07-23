@@ -159,8 +159,9 @@ public class QrsProcessor {
                 true);
         registerWriter(recorder, serialisers, Object.class, JsonbMessageBodyWriter.class, beanContainerBuildItem.getValue(),
                 false);
-        registerWriter(recorder, serialisers, Buffer.class, VertxBufferMessageBodyWriter.class, beanContainerBuildItem.getValue(),
-                       true);
+        registerWriter(recorder, serialisers, Buffer.class, VertxBufferMessageBodyWriter.class,
+                beanContainerBuildItem.getValue(),
+                true);
 
         return new FilterBuildItem(
                 recorder.handler(interceptors, exceptionMapping, serialisers, resourceClasses,

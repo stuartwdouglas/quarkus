@@ -15,8 +15,8 @@ import io.quarkus.qrs.runtime.core.RequestContext;
  */
 // FIXME: do we actually need to make it extend MessageBodyWriter?
 public interface QrsMessageBodyWriter<T> extends MessageBodyWriter<T> {
-    
+
     public void writeTo(T o, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
-                        MultivaluedMap<String, Object> httpHeaders, RequestContext context) throws WebApplicationException;
+            MultivaluedMap<String, Object> httpHeaders, RequestContext context) throws WebApplicationException;
 
 }
