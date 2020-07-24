@@ -126,7 +126,7 @@ public class EndpointIndexer {
                             // no name required
                             type = ParameterType.CONTEXT;
                         } else {
-                            throw new RuntimeException("Not implemented yet " + info);
+                            type = ParameterType.BODY;
                         }
                         methodParameters[i] = new MethodParameter(name,
                                 info.parameters().get(i).asClassType().name().toString(), type);
