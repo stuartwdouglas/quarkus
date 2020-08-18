@@ -26,7 +26,7 @@ public class VertxInputStream extends InputStream {
     private ByteBuf pooled;
     private final long limit;
 
-    public VertxInputStream(RoutingContext request, long timeout) throws IOException {
+    public VertxInputStream(RoutingContext request, long timeout) {
 
         this.exchange = new VertxBlockingInput(request.request(), timeout);
         Long limitObj = request.get(VertxHttpRecorder.MAX_REQUEST_SIZE_KEY);
@@ -35,6 +35,17 @@ public class VertxInputStream extends InputStream {
         } else {
             limit = limitObj;
         }
+    }
+
+    public VertxInputStream(RoutingContext request, long timeout, ByteBuf existing) {
+        this.exchange = new VertxBlockingInput(request.request(), timeout);
+        Long limitObj = request.get(VertxHttpRecorder.MAX_REQUEST_SIZE_KEY);
+        if (limitObj == null) {
+            limit = -1;
+        } else {
+            limit = limitObj;
+        }
+        this.pooled = existing;
     }
 
     @Override
@@ -150,7 +161,7 @@ public class VertxInputStream extends InputStream {
         protected Throwable readException;
         private final long timeout;
 
-        public VertxBlockingInput(HttpServerRequest request, long timeout) throws IOException {
+        public VertxBlockingInput(HttpServerRequest request, long timeout) {
             this.request = request;
             this.timeout = timeout;
             if (!request.isEnded()) {
