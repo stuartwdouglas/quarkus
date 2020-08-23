@@ -37,6 +37,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import jdk.nio.zipfs.ZipFileSystemProvider;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.jboss.logging.Logger;
@@ -236,7 +238,8 @@ public class BootstrapAppModelFactory {
             }
         }
 
-        if (projectRoot != null && !Files.isDirectory(projectRoot)) {
+        // Massive hack to dected zipped/jar
+        if (projectRoot != null && (!Files.isDirectory(projectRoot) || projectRoot.getFileSystem().getClass().getName().contains("Zip"))) {
             return createAppModelForJar(projectRoot);
         }
 
