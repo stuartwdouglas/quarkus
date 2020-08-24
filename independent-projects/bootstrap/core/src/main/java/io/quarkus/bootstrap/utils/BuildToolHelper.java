@@ -62,7 +62,6 @@ public class BuildToolHelper {
         return false;
     }
 
-
     public static Path getBuildFile(Path project, BuildTool tool) {
         Path currentPath = project;
         while (currentPath != null) {

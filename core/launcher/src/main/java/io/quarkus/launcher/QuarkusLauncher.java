@@ -3,10 +3,9 @@ package io.quarkus.launcher;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -37,12 +36,13 @@ public class QuarkusLauncher {
             URL newResource = new URL(resource.getProtocol(), resource.getHost(), resource.getPort(), path);
 
             URI uri = newResource.toURI();
-            if("jar".equals(uri.getScheme())) {
-                Map<String, String> env = new HashMap<>();
-                env.put("create", "true");
-                FileSystem fs = FileSystems.newFileSystem(uri, env);
+            Path appClasses;
+            if ("jar".equals(uri.getScheme())) {
+                JarURLConnection connection = (JarURLConnection) uri.toURL().openConnection();
+                appClasses = Paths.get(connection.getJarFileURL().toURI());
+            } else {
+                appClasses = Paths.get(uri);
             }
-            Path appClasses = Paths.get(uri);
             if (quarkusApplication != null) {
                 System.setProperty("quarkus.package.main-class", quarkusApplication);
             }
