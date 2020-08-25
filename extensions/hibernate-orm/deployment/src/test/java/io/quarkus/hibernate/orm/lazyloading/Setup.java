@@ -36,7 +36,7 @@ public class Setup {
         Supervisor s1 = new Supervisor();
         s1.setName("Bob");
         s1.getManagers().add(m1);
-        s1.getManagers().add(m2);
+        s1.getManagers().add(m2); //comment out this line and the test will pass
         s1.setCeo(ceo);
         entityManager.persist(s1);
 
