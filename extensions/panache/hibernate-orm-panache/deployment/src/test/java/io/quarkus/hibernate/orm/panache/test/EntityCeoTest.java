@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-public class EntityManagerTest {
+public class EntityCeoTest {
 
     @RegisterExtension
     static QuarkusUnitTest runner = new QuarkusUnitTest()
