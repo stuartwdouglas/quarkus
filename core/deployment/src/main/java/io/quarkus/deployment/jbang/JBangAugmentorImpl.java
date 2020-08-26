@@ -30,6 +30,7 @@ import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.dev.DevModeContext;
 import io.quarkus.deployment.dev.IDEDevModeMain;
+import io.quarkus.deployment.pkg.builditem.ArtifactResultBuildItem;
 import io.quarkus.deployment.pkg.builditem.NativeImageBuildItem;
 import io.quarkus.deployment.pkg.builditem.ProcessInheritIODisabled;
 import io.quarkus.runtime.LaunchMode;
@@ -80,8 +81,17 @@ public class JBangAugmentorImpl implements BiConsumer<CuratedApplication, Map<St
         builder.addFinal(GeneratedClassBuildItem.class);
         builder.addFinal(GeneratedResourceBuildItem.class);
         boolean nativeRequested = "native".equals(System.getProperty("quarkus.package.type"));
+        boolean containerBuildRequested = Boolean.getBoolean("quarkus.container-image.build");
         if (nativeRequested) {
             builder.addFinal(NativeImageBuildItem.class);
+        }
+        if (containerBuildRequested) {
+            //TODO: this is a bit ugly
+            //we don't nessesarily need these artifacts
+            //but if we include them it does mean that you can auto create docker images
+            //and deploy to kube etc
+            //for an ordinary build with no native and no docker this is a waste
+            builder.addFinal(ArtifactResultBuildItem.class);
         }
 
         try {
