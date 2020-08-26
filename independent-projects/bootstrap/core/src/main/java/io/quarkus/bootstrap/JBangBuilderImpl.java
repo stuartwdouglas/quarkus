@@ -4,6 +4,7 @@ import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.model.AppArtifact;
 import io.quarkus.bootstrap.model.AppDependency;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -11,14 +12,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class JBangBuilderImpl {
-    public static Map<String, byte[]> postBuild(Path appClasses, Path pomFile, List<Map.Entry<String, Path>> dependencies) {
+    public static Map<String, Object> postBuild(Path appClasses, Path pomFile, List<Map.Entry<String, Path>> dependencies,
+            boolean nativeImage) {
 
         try {
+            Path target = Files.createTempDirectory("quarkus-jbang");
             AppArtifact appArtifact = new AppArtifact("dev.jbang.user", "quarkus", null, "jar", "999-SNAPSHOT");
             appArtifact.setPath(appClasses);
             final QuarkusBootstrap.Builder builder = QuarkusBootstrap.builder()
                     .setBaseClassLoader(JBangBuilderImpl.class.getClassLoader())
                     .setProjectRoot(pomFile.getParent())
+                    .setTargetDirectory(target)
                     .setForcedDependencies(dependencies.stream().map(s -> {
                         String[] parts = s.getKey().split(":");
                         AppArtifact artifact;
@@ -41,9 +45,12 @@ public class JBangBuilderImpl {
             CuratedApplication app = builder
                     .build().bootstrap();
 
+            if (nativeImage) {
+                System.setProperty("quarkus.package.type", "native");
+            }
             Map<String, Object> output = new HashMap<>();
             app.runInAugmentClassLoader("io.quarkus.deployment.jbang.JBangAugmentorImpl", output);
-            return (Map<String, byte[]>) output.get("result");
+            return output;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

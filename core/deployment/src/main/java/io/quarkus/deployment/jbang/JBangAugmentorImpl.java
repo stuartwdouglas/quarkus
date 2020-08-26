@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.jboss.logging.Logger;
 
@@ -19,7 +20,9 @@ import io.quarkus.bootstrap.model.AppArtifactKey;
 import io.quarkus.bootstrap.resolver.maven.workspace.LocalProject;
 import io.quarkus.bootstrap.resolver.model.WorkspaceModule;
 import io.quarkus.bootstrap.util.QuarkusModelHelper;
+import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildResult;
+import io.quarkus.builder.BuildStepBuilder;
 import io.quarkus.deployment.QuarkusAugmentor;
 import io.quarkus.deployment.builditem.ApplicationClassNameBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
@@ -27,6 +30,8 @@ import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.dev.DevModeContext;
 import io.quarkus.deployment.dev.IDEDevModeMain;
+import io.quarkus.deployment.pkg.builditem.NativeImageBuildItem;
+import io.quarkus.deployment.pkg.builditem.ProcessInheritIODisabled;
 import io.quarkus.runtime.LaunchMode;
 
 public class JBangAugmentorImpl implements BiConsumer<CuratedApplication, Map<String, Object>> {
@@ -62,9 +67,22 @@ public class JBangAugmentorImpl implements BiConsumer<CuratedApplication, Map<St
                 builder.addAdditionalApplicationArchive(i.getArchivePath());
             }
         }
+        builder.addBuildChainCustomizer(new Consumer<BuildChainBuilder>() {
+            @Override
+            public void accept(BuildChainBuilder builder) {
+                final BuildStepBuilder stepBuilder = builder.addBuildStep((ctx) -> {
+                    ctx.produce(new ProcessInheritIODisabled());
+                });
+                stepBuilder.produces(ProcessInheritIODisabled.class).build();
+            }
+        });
         builder.excludeFromIndexing(quarkusBootstrap.getExcludeFromClassPath());
         builder.addFinal(GeneratedClassBuildItem.class);
         builder.addFinal(GeneratedResourceBuildItem.class);
+        boolean nativeRequested = "native".equals(System.getProperty("quarkus.package.type"));
+        if (nativeRequested) {
+            builder.addFinal(NativeImageBuildItem.class);
+        }
 
         try {
             BuildResult buildResult = builder.build().run();
@@ -75,7 +93,10 @@ public class JBangAugmentorImpl implements BiConsumer<CuratedApplication, Map<St
             for (GeneratedResourceBuildItem i : buildResult.consumeMulti(GeneratedResourceBuildItem.class)) {
                 result.put(i.getName(), i.getClassData());
             }
-            resultMap.put("result", result);
+            resultMap.put("files", result);
+            if (nativeRequested) {
+                resultMap.put("native-image", buildResult.consume(NativeImageBuildItem.class).getPath());
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

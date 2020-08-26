@@ -10,16 +10,28 @@ import java.util.Map;
 
 import io.quarkus.bootstrap.BootstrapConstants;
 
-/**
- * Class that starts the integration process for JBang
- */
-public class JBangRuntimeBuilder {
+public class JBangIntegration {
 
-    public static Map<String, byte[]> postBuild(Path appClasses, Path pomFile, List<Map.Entry<String, Path>> dependencies) {
+    public static final String CONFIG = "//CONFIG";
+
+    public static Map<String, Object> postBuild(Path appClasses, Path pomFile, List<Map.Entry<String, Path>> dependencies,
+            List<String> comments, boolean nativeImage) {
+        for (String comment : comments) {
+            //we allow config to be provided via //CONFIG name=value
+            if (comment.startsWith(CONFIG)) {
+                String conf = comment.substring(CONFIG.length()).trim();
+                int equals = conf.indexOf("=");
+                if (equals == -1) {
+                    throw new RuntimeException("invalid config  " + comment);
+                }
+                System.setProperty(conf.substring(0, equals), conf.substring(equals + 1));
+            }
+        }
+
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
             RuntimeLaunchClassLoader loader = new RuntimeLaunchClassLoader(
-                    new ClassLoader(JBangRuntimeBuilder.class.getClassLoader()) {
+                    new ClassLoader(JBangIntegration.class.getClassLoader()) {
                         @Override
                         public Class<?> loadClass(String name) throws ClassNotFoundException {
                             return loadClass(name, false);
@@ -60,9 +72,10 @@ public class JBangRuntimeBuilder {
                     });
             Thread.currentThread().setContextClassLoader(loader);
             Class<?> launcher = loader.loadClass("io.quarkus.bootstrap.JBangBuilderImpl");
-            return (Map<String, byte[]>) launcher.getDeclaredMethod("postBuild", Path.class, Path.class, List.class).invoke(
-                    null, appClasses, pomFile,
-                    dependencies);
+            return (Map<String, Object>) launcher
+                    .getDeclaredMethod("postBuild", Path.class, Path.class, List.class, boolean.class).invoke(
+                            null, appClasses, pomFile,
+                            dependencies, nativeImage);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
