@@ -119,6 +119,12 @@ class HibernateValidatorProcessor {
                     "io.quarkus.hibernate.validator.runtime.jaxrs.JaxrsEndPointValidationInterceptor"));
             additionalBeans.produce(new AdditionalBeanBuildItem(
                     "io.quarkus.hibernate.validator.runtime.jaxrs.ResteasyContextLocaleResolver"));
+        } else if (capabilities.isPresent(Capability.QUARKUS_REST)) {
+            // The CDI interceptor which will validate the methods annotated with @JaxrsEndPointValidated
+            additionalBeans.produce(new AdditionalBeanBuildItem(
+                    "io.quarkus.hibernate.validator.runtime.jaxrs.QuarkusRestEndPointValidationInterceptor"));
+            additionalBeans.produce(new AdditionalBeanBuildItem(
+                    "io.quarkus.hibernate.validator.runtime.jaxrs.QuarkusRestViolationExceptionMapper"));
         }
 
         // Do not remove the Bean Validation beans
