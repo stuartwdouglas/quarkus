@@ -26,8 +26,6 @@ import javax.ws.rs.core.Response;
  * POJO with empty InputStream field returned as "mutlipart/form-data" produces no headers in multipart
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EmptyInputStreamMultipartProviderTest {
 
    protected final Logger logger = Logger.getLogger(EmptyInputStreamMultipartProviderTest.class.getName());

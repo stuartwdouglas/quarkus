@@ -35,8 +35,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails EJB, CDI, Validation, and RESTEasy integration test: RESTEASY-1749
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EJBCDIValidationTest {
 
    private static Client client;

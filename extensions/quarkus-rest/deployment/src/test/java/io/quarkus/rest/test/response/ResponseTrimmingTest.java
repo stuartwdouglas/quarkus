@@ -25,8 +25,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Ensures that response is not too long after endpoint consumes big invalid data (see https://issues.jboss.org/browse/JBEAP-6316)
  * @tpSince RESTEasy 3.6.1
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResponseTrimmingTest {
 
    static Client client;

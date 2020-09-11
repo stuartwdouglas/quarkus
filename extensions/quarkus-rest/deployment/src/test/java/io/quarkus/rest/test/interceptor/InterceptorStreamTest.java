@@ -27,8 +27,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.1.0
  * @tpTestCaseDetails Change InputStream and OutputStream in ReaderInterceptor and WriterInterceptor
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InterceptorStreamTest {
    @Deployment
    public static Archive<?> deploy() {

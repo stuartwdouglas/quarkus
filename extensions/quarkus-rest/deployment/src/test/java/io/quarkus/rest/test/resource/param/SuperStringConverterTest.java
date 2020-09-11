@@ -33,8 +33,6 @@ import org.junit.runner.RunWith;
  *                    See javax.ws.rs.ext.ParamConverter
  *                    See org.jboss.resteasy.test.resource.param.ParamConverterTest
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SuperStringConverterTest {
    @Deployment
    public static Archive<?> deploy() {

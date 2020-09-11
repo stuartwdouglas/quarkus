@@ -37,8 +37,6 @@ import org.junit.runner.RunWith;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression test for RESTEASY-981
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ExceptionBufferingTest {
 
    protected static final Logger logger = LogManager.getLogger(ExceptionBufferingTest.class.getName());

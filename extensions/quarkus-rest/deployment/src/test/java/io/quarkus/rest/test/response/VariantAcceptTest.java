@@ -32,8 +32,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for RESTEASY-994
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class VariantAcceptTest {
 
    public static final MediaType WILDCARD_WITH_PARAMS;

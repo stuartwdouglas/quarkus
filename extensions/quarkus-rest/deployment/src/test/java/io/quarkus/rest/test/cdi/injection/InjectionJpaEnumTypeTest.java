@@ -30,8 +30,6 @@ import javax.ws.rs.core.MediaType;
  * described in WFLY-7037 is needed to examine the heapdump.
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InjectionJpaEnumTypeTest {
 
    @Deployment

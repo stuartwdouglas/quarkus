@@ -39,8 +39,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test connection cleanup for ApacheHttpClient4Engine and URLConnectionEngine
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ApacheHttpClient43Test {
 
    protected static final Logger logger = LogManager.getLogger(ApacheHttpClient43Test.class.getName());

@@ -24,8 +24,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for new Link provided by jax-rs 2.0 spec
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class LinkHeaderTest extends ClientTestBase{
 
    protected static ResteasyClient client;

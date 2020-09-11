@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for RESTEASY-1203
  * @tpSince RESTEasy 3.12.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ManagedBeanValidationTest {
 
    private static Client client;

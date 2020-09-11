@@ -37,8 +37,6 @@ import static org.jboss.resteasy.utils.PortProviderUtil.generateURL;
  *      running the application server, and potentially perform other more advanced XXE attacks.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ExternalParameterEntityTest {
 
    protected final Logger logger = LogManager.getLogger(ExternalParameterEntityTest.class.getName());

@@ -45,8 +45,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Injection of @FormParam InputPart fields in @MultipartForm parameters
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class Resteasy1405Test
 {
 

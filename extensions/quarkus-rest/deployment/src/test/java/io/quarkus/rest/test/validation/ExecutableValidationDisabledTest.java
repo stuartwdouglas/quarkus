@@ -38,8 +38,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test basic validation with disable executable-validation in validation.xml file. Validation should not be active.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ExecutableValidationDisabledTest {
    static final String RESPONSE_ERROR_MSG = "Response has wrong content";
    static final String WRONG_ERROR_MSG = "Expected validation error is not in response";

@@ -23,8 +23,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PatchErrorHandlingTest {
    static Client client;
 

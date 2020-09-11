@@ -24,8 +24,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for special characters in get request
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EncodedParamsTest {
 
    public static final String ERROR_MESSAGE = "Wrong encoded characters in request";

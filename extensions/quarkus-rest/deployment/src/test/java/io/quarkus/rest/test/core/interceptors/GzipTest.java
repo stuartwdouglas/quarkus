@@ -47,8 +47,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Gzip compression tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class GzipTest {
 
    static ResteasyClient client;

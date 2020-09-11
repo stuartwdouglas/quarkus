@@ -31,8 +31,6 @@ import static org.junit.Assert.assertTrue;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class BadContentTypeTest {
 
    private static Logger logger = Logger.getLogger(BadContentTypeTest.class.getName());

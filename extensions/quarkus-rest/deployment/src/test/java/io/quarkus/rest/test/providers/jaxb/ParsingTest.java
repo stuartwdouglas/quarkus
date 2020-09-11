@@ -30,8 +30,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Regression test for RESTEASY-143
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ParsingTest {
 
    static ResteasyClient client;

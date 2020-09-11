@@ -61,8 +61,6 @@ import static org.junit.Assert.assertThat;
  * @tpTestCaseDetails Interceptors test.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InterceptorTest {
    protected static final Logger log = LogManager.getLogger(InterceptorTest.class.getName());
 

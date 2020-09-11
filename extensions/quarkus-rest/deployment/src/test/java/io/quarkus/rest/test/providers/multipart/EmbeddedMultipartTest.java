@@ -31,8 +31,6 @@ import java.lang.reflect.ReflectPermission;
  * @tpTestCaseDetails Regression test for RESTEASY-929
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EmbeddedMultipartTest {
 
    protected static final MediaType MULTIPART_MIXED = new MediaType("multipart", "mixed");

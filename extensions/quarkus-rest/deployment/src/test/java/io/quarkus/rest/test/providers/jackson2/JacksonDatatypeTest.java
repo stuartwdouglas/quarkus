@@ -38,8 +38,6 @@ import java.util.Map;
  * @tpTestCaseDetails Test for WFLY-5916. Integration tests for jackson-datatype-jsr310 and jackson-datatype-jdk8 modules
  * @tpSince RESTEasy 3.1.0.CR3
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JacksonDatatypeTest {
    private static final String DEFAULT_DEPLOYMENT = String.format("%sDefault",
          JacksonDatatypeTest.class.getSimpleName());

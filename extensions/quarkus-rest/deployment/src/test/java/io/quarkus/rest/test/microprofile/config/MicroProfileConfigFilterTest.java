@@ -29,8 +29,6 @@ import java.util.PropertyPermission;
  * @tpTestCaseDetails Regression tests for RESTEASY-2131
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MicroProfileConfigFilterTest {
 
    static ResteasyClient client;

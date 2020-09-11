@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails RESTEASY-1540
  * @tpSince RESTEasy 3.1.0.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AbortMessageTest {
    static Client client;
 

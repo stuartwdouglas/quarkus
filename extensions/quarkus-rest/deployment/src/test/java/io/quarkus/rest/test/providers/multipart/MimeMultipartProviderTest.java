@@ -49,8 +49,6 @@ import java.util.Map;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MimeMultipartProviderTest {
 
    private static Logger logger = Logger.getLogger(MimeMultipartProviderTest.class);

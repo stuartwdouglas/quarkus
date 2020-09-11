@@ -23,8 +23,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.1.1.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class NullHeaderTest {
 
    @Deployment

@@ -26,8 +26,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Regression test for RESTEASY-208 and RESTEASY-214
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SpecialCharactersTest {
 
    protected static ResteasyClient client;

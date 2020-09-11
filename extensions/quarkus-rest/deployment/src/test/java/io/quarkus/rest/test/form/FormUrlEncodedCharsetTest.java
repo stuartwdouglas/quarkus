@@ -32,8 +32,6 @@ import java.nio.charset.StandardCharsets;
  * @tpTestCaseDetails Regression test for JBEAP-4693
  * @tpSince RESTEasy 3.0.17
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class FormUrlEncodedCharsetTest {
    protected static MediaType testMediaType8 = MediaType.APPLICATION_FORM_URLENCODED_TYPE.withCharset(StandardCharsets.UTF_8.displayName());
    protected static MediaType testMediaType16 = MediaType.APPLICATION_FORM_URLENCODED_TYPE.withCharset(StandardCharsets.UTF_16.displayName());

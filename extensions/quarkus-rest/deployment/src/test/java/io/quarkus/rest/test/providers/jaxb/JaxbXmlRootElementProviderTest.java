@@ -40,8 +40,6 @@ import javax.xml.namespace.QName;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JaxbXmlRootElementProviderTest {
 
    private String JAXB_URL = generateURL("/jaxb");

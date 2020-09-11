@@ -29,8 +29,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Read and write InputStreams
  * @tpSince RESTEasy 3.0.20
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InputStreamResourceTest extends ClientTestBase{
 
    static Client resteasyClient;

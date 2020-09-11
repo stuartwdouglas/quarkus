@@ -30,8 +30,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.Assert;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResponseStreamPrematurelyClosedTest {
 
    static Client client;

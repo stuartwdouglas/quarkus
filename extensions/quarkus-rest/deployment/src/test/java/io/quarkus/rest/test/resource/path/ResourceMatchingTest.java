@@ -39,8 +39,6 @@ import java.io.Reader;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResourceMatchingTest {
 
    public static final String readFromStream(InputStream stream) throws IOException {

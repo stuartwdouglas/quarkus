@@ -25,8 +25,6 @@ import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALI
  * @tpSince RESTEasy 4.0.0
  * Created by rsearls on 9/11/17.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SubResourceWarningTest {
 
    // check server.log msg count before app is deployed.  Deploying causes messages to be logged.

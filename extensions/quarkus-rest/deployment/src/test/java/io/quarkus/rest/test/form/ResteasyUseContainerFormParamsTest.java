@@ -31,8 +31,6 @@ import java.util.Map;
  * @tpSince RESTEasy 4.5.3
  * Show use of context parameter resteasy.use.container.form.params
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResteasyUseContainerFormParamsTest {
     private static Client client;
     private static String testSimpleName = ResteasyUseContainerFormParamsTest.class.getSimpleName();

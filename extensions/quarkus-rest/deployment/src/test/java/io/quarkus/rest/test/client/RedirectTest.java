@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
  * @tpSince RESTEasy 3.5
  * @tpTestCaseDetails https://issues.jboss.org/browse/RESTEASY-1075
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class RedirectTest extends ClientTestBase
 {
    @Deployment

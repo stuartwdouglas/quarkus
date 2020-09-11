@@ -36,8 +36,6 @@ import java.util.concurrent.Future;
  * @tpTestCaseDetails Test for async exception handling
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CallbackTest {
    public static Client client;
 

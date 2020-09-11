@@ -43,8 +43,6 @@ import java.net.URL;
  *                    Test logic is in the end-point in deployment.
  * @tpSince RESTEasy 3.6
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class RESTEasyParamBasicTest {
    protected static final Logger logger = Logger.getLogger(JsonBindingTest.class.getName());
 

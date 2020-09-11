@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test for resource without @Path annotation.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AnnotationInheritanceTest {
    static ResteasyClient client;
 

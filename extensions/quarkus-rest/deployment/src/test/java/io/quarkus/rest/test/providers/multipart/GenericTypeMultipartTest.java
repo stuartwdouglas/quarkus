@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for JBEAP-1795
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class GenericTypeMultipartTest {
    public static final GenericType<List<String>> stringListType = new GenericType<List<String>>() {
    };

@@ -29,8 +29,6 @@ import javax.ws.rs.Produces;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JacksonJsonViewTest {
 
    private final String ERROR_MESSAGE = "The response entity doesn't contain correctly serialized value";

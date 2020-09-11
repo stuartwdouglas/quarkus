@@ -24,8 +24,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test getting GenericType from return entity.
  * @tpSince RESTEasy 3.7.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AsyncGenericEntityTest {
 
    @Deployment()

@@ -32,8 +32,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails This class tests CDI inheritance (default bean - Book)
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class VanillaInheritanceTest {
    protected static final Logger log = LogManager.getLogger(SpecializedInheritanceTest.class.getName());
 

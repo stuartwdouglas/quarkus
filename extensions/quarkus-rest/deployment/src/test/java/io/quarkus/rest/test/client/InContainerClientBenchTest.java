@@ -31,8 +31,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails https://issues.jboss.org/browse/RESTEASY-XYZ
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 @Ignore("Not a functional test")
 public class InContainerClientBenchTest extends ClientTestBase
 {

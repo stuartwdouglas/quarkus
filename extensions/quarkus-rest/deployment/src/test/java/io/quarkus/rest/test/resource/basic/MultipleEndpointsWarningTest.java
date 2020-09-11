@@ -29,8 +29,6 @@ import java.util.logging.LoggingPermission;
  * @tpTestCaseDetails Regression tests for RESTEASY-1398
  * @tpSince RESTEasy 3.0.20
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MultipleEndpointsWarningTest
 {
    private static Client client;

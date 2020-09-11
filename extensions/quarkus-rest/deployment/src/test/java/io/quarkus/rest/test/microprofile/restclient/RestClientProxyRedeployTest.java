@@ -19,8 +19,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class RestClientProxyRedeployTest
 {
    @Deployment(name="deployment1", order = 1)

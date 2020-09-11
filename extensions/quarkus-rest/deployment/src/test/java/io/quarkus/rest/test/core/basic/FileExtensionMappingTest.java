@@ -25,8 +25,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Mapping file extensions to media types
  * @tpSince RESTEasy 3.0.20
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class FileExtensionMappingTest
 {
    static Client client;

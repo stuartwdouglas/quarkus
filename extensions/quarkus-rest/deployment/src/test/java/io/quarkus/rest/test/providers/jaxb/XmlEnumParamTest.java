@@ -23,8 +23,6 @@ import org.jboss.resteasy.utils.PortProviderUtil;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class XmlEnumParamTest {
 
    static ResteasyClient client;

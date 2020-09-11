@@ -53,8 +53,6 @@ import java.util.List;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ValidationExceptionsTest {
 
    protected static final Logger logger = LogManager.getLogger(ValidationExceptionsTest.class.getName());

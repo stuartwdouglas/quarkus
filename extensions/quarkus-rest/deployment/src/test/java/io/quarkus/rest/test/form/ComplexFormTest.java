@@ -28,8 +28,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test complex inner form parameters. Check return value, it is based on form.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ComplexFormTest {
 
    @Deployment

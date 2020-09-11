@@ -32,8 +32,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails EJB, CDI, Validation, and RESTEasy integration test: RESTEASY-2358
  * @tpSince RESTEasy 4.5.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EJBCDIValidationEJBProxyTest {
 
    private static final String VALID_REQUEST = "{\n"

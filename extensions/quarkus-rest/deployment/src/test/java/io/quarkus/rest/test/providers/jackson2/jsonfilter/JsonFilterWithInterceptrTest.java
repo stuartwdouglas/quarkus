@@ -27,8 +27,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JsonFilterWithInterceptrTest {
 
    @Deployment(name = "default")

@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for RESTEASY-1475.
  * @tpSince RESTEasy 3.1.4
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EncodedPathProxyTest {
    private static ResteasyClient client;
 

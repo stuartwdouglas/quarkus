@@ -67,8 +67,6 @@ import org.junit.runner.RunWith;
  *                    It tests the injection of a variety of beans into Resteasy objects.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InjectionTest extends AbstractInjectionTestBase {
    protected static final Logger log = LogManager.getLogger(InjectionTest.class.getName());
 

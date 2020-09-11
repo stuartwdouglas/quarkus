@@ -33,8 +33,6 @@ import static org.hamcrest.CoreMatchers.is;
  * This test checks CDI integration.
  * @tpSince RESTEasy 3.6
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class RESTEasyParamCdiTest {
    protected static final Logger logger = Logger.getLogger(RESTEasyParamCdiTest.class.getName());
 

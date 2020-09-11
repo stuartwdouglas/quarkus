@@ -32,8 +32,6 @@ import static org.hamcrest.core.Is.is;
  * @tpChapter Integration test
  * @tpSince RESTEasy 3.3
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PreferJacksonOverJsonBClientTest {
 
    protected static final Logger LOG = Logger.getLogger(PreferJacksonOverJsonBClientTest.class.getName());

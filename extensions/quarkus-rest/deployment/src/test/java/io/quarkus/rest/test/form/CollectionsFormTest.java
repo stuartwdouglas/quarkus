@@ -29,8 +29,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test inner form parameters and collections.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CollectionsFormTest {
 
    @Deployment

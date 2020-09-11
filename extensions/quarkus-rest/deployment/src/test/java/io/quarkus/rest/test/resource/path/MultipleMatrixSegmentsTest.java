@@ -25,8 +25,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test that a locator and resource with same path params work
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MultipleMatrixSegmentsTest {
 
    static Client client;

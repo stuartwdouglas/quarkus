@@ -33,8 +33,6 @@ import static org.junit.Assert.assertThat;
  * @tpTestCaseDetails Test for asynchronous behavior of RESTEasy with CDI.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AsynchronousCdiTest {
 
    public static final Long DELAY = 5000L;

@@ -45,8 +45,6 @@ import java.util.Hashtable;
  * @tpSince RESTEasy 3.0.21
  */
 @ServerSetup({TwoSecurityDomainsTest.SecurityDomainSetup1.class, TwoSecurityDomainsTest.SecurityDomainSetup2.class})
-@RunWith(Arquillian.class)
-@RunAsClient
 @Category({ExpectedFailingOnWildFly18.class}) //WFLY-12655
 public class TwoSecurityDomainsTest {
 

@@ -26,8 +26,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for asyncHttpServlet module
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AsyncServletTest {
 
    static ResteasyClient client;

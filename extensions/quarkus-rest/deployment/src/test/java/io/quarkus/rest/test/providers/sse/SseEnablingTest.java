@@ -27,8 +27,6 @@ import org.junit.runner.RunWith;
  * @author Nicolas NESMON
  *
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SseEnablingTest {
 
    @Deployment

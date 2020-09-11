@@ -29,8 +29,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Test for interceptors with timer service.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class TimerInterceptorTest {
    protected static final Logger log = LogManager.getLogger(TimerInterceptorTest.class.getName());
 

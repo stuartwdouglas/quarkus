@@ -28,8 +28,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SseReconnectTest {
 
    @Deployment

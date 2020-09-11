@@ -46,8 +46,6 @@ import static org.hamcrest.CoreMatchers.is;
  * @tpTestCaseDetails ResourceClassProcessor SPI basic test, see RESTEASY-1805
  * @tpSince RESTEasy 3.6
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResourceClassProcessorBasicTest {
 
    static ResteasyClient client;

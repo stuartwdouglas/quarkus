@@ -27,8 +27,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for RESTEASY-1684
  * @tpSince RESTEasy 3.0.24
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class NullEntityProxyTest {
 
    private static ResteasyClient client;

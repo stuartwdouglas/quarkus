@@ -45,8 +45,6 @@ import org.wildfly.extras.creaper.core.online.operations.admin.Administration;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EntityBufferingInFileTest extends ClientTestBase{
 
    private static final Logger logger = Logger.getLogger(EntityBufferingInFileTest.class);

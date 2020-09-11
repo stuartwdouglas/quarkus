@@ -28,8 +28,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for RESTEASY-952
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InheritedContextTest {
 
    @Deployment

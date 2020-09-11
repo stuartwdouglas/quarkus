@@ -28,8 +28,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.19
  * @author Ivo Studensky
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class HeadContentLengthTest {
 
    static Client client;

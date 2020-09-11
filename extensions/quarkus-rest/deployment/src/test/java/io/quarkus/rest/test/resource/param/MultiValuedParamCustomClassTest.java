@@ -28,8 +28,6 @@ import javax.ws.rs.core.Response;
  *                    org.jboss.resteasy.test.resource.param.resource.MultiValuedParamPersonWithConverter class is used
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MultiValuedParamCustomClassTest {
 
    @Deployment

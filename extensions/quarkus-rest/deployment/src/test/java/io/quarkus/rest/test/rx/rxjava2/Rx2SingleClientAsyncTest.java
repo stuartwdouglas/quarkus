@@ -52,8 +52,6 @@ import io.reactivex.Single;
  * In these tests, the client uses a SingleRxInvoker and subscribes to instances of Single<T>.
  * The server synchronously returns objects of type T.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class Rx2SingleClientAsyncTest {
 
    private static ResteasyClient client;

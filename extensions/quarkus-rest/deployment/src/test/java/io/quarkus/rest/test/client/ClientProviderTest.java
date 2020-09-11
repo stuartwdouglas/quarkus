@@ -39,8 +39,6 @@ import java.io.Reader;
  * its own pre-packaged providers when either could handle the same request."
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientProviderTest extends ClientTestBase{
 
    static Client client;

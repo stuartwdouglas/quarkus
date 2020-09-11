@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test for resource and provider defined in one class together.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AppConfigTest {
 
    private static ResteasyClient client;

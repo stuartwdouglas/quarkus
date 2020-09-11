@@ -26,8 +26,6 @@ import javax.ws.rs.client.WebTarget;
  * @tpTestCaseDetails Test for custom Application class with overridden getProperties() method
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ApplicationPropertiesConfigPropertyApplicationInjectionTest {
    static Client client;
 

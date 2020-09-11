@@ -27,8 +27,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for special characters in url
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SpecialCharsInUrlTest {
 
    static Client client;

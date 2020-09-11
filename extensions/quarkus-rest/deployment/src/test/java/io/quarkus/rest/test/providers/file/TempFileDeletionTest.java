@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.1.3.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class TempFileDeletionTest {
 
    @Deployment

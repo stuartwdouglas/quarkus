@@ -34,8 +34,6 @@ import java.lang.reflect.Type;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression test for RESTEASY-666
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AbstractExceptionMapperTest {
 
    private Client client;

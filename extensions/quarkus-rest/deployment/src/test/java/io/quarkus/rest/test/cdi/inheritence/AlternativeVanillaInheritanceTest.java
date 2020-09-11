@@ -33,8 +33,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails This class tests CDI inheritance (BookVanilaAlternative should not be used)
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AlternativeVanillaInheritanceTest {
    protected static final Logger log = LogManager.getLogger(AlternativeVanillaInheritanceTest.class.getName());
 

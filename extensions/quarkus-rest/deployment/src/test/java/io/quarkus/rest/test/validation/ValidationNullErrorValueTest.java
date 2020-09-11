@@ -27,8 +27,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for validation of null error value
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ValidationNullErrorValueTest {
 
    static ResteasyClient client;

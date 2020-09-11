@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Name bound interceptors and Application CDI proxies
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class NameBoundCDIProxiesTest {
 
    @Deployment

@@ -38,8 +38,6 @@ import static org.junit.Assert.assertThat;
  *      AllowGzipOnServerAbstractTestBase
  *      NotAllowGzipOnServerAbstractTestBase
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public abstract class GzipAbstractTestBase {
 
    private static final Logger LOG = LogManager.getLogger(GzipAbstractTestBase.class);

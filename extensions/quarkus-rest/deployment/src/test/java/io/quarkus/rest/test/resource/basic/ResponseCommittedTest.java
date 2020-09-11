@@ -25,8 +25,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for RESTEASY-1238
  * @tpSince RESTEasy 3.1.3.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResponseCommittedTest
 {
    public static int TEST_STATUS = 444;

@@ -26,8 +26,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Regression test for RESTEASY-1049
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class FilterTest {
    @Deployment
    public static Archive<?> createTestArchive() {

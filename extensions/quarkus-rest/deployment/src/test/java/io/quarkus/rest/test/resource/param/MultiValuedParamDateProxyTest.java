@@ -49,8 +49,6 @@ import org.junit.runner.RunWith;
  *                    Client Proxy is used
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MultiValuedParamDateProxyTest {
 
    @Deployment

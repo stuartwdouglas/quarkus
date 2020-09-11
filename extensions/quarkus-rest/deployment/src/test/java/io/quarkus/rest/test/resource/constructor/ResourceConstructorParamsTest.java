@@ -29,8 +29,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResourceConstructorParamsTest {
     protected static final Logger logger = Logger.getLogger(
             ResourceConstructorParamsTest.class.getName());

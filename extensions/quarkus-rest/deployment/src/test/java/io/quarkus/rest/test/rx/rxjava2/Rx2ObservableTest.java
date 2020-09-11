@@ -58,8 +58,6 @@ import io.reactivex.Observable;
  *
  * The client makes invocations on an ObservableRxInvoker.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Rx2ObservableTest {
 

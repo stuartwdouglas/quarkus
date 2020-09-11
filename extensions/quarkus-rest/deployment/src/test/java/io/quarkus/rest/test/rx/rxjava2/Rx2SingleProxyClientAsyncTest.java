@@ -51,8 +51,6 @@ import io.reactivex.Single;
  *
  * The server synchronously returns objects of type T.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class Rx2SingleProxyClientAsyncTest {
 
    private static ResteasyClient client;

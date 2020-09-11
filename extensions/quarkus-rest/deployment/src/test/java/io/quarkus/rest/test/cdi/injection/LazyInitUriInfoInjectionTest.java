@@ -26,8 +26,6 @@ import javax.ws.rs.client.WebTarget;
  * @tpTestCaseDetails Regression test for RESTEASY-573
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class LazyInitUriInfoInjectionTest {
 
    @Deployment

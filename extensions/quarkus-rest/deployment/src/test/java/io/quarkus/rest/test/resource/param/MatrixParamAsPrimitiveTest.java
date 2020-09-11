@@ -39,8 +39,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test all variants of primitive matrix parameters (boolean, int, long, float, etc.)
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MatrixParamAsPrimitiveTest {
 
    public static final String ERROR_MESSAGE = "Wrong content of matrix parameter";

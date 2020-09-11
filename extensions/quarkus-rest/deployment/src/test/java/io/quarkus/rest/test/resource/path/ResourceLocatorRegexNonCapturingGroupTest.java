@@ -28,8 +28,6 @@ import javax.ws.rs.core.Response;
  * User: rsearls
  * Date: 2/18/17
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResourceLocatorRegexNonCapturingGroupTest {
    private static final String ERROR_MSG = "Response contain wrong content";
    static Client client;

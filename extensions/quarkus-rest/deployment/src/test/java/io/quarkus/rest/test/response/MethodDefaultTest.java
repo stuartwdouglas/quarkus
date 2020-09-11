@@ -26,8 +26,6 @@ import java.util.HashSet;
  * @tpTestCaseDetails Spec requires that HEAD and OPTIONS are handled in a default manner
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MethodDefaultTest {
 
    static ResteasyClient client;

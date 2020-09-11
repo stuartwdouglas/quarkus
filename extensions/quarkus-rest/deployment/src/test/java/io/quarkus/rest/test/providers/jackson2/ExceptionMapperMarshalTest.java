@@ -43,8 +43,6 @@ import java.util.PropertyPermission;
  * @tpTestCaseDetails Regression test for RESTEASY-937
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ExceptionMapperMarshalTest {
 
    protected static final Logger logger = Logger.getLogger(ProxyWithGenericReturnTypeJacksonTest.class.getName());

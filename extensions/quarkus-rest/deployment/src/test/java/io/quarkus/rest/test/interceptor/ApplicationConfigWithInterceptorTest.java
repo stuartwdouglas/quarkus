@@ -25,8 +25,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.20
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ApplicationConfigWithInterceptorTest
 {
    private static Client client;

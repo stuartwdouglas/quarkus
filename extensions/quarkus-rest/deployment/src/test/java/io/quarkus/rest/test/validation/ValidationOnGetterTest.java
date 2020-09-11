@@ -29,8 +29,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test getter validation
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ValidationOnGetterTest {
    ResteasyClient client;
 

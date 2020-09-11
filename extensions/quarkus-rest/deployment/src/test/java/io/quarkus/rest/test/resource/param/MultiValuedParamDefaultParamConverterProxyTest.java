@@ -53,8 +53,6 @@ import org.junit.runner.RunWith;
  *                    org.jboss.resteasy.plugins.providers.MultiValuedCollectionParamConverter are used
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MultiValuedParamDefaultParamConverterProxyTest {
 
    private static ResteasyClient client;

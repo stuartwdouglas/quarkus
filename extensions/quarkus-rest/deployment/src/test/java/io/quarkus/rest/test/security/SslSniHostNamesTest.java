@@ -40,8 +40,6 @@ import static org.jboss.resteasy.test.ContainerConstants.SSL_CONTAINER_QUALIFIER
  * @tpTestCaseDetails Test for sniHostNames - method to choose which certificate should be presented by the server
  * @tpSince RESTEasy 3.7.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SslSniHostNamesTest extends SslTestBase {
 
    private static final Logger LOG = Logger.getLogger(SslSniHostNamesTest.class.getName());

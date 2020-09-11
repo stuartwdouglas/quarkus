@@ -48,8 +48,6 @@ import io.reactivex.Single;
  * In these tests, the server resource methods create and return objects of type Single<T>.
  * The client uses a proxy that uses a SingleRxInvoker to get objects of type Single<T>.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class Rx2SingleProxyTest {
 
    private static ResteasyClient client;

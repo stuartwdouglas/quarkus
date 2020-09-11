@@ -28,8 +28,6 @@ import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALI
  * @tpSince RESTEasy 3.0.17
  * @tpTestCaseDetails Regression test for JBEAP-3725
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class NotFoundErrorMessageTest {
    static Client client;
 

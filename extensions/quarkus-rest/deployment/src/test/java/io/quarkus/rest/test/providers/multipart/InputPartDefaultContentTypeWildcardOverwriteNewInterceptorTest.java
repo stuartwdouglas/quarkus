@@ -31,8 +31,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails MultiPart provider should be able to process xml, if wildcard is set. Wildcard is set in new version of interceptor.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InputPartDefaultContentTypeWildcardOverwriteNewInterceptorTest {
 
    public static final String WILDCARD_WITH_CHARSET_UTF_8 = MediaType.APPLICATION_XML + "; charset=UTF-8";  // this mediatype works correctly

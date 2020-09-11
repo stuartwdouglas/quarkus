@@ -40,8 +40,6 @@ import static org.junit.Assert.assertEquals;
  *                    that cannot be proxied.
  * @tpSince RESTEasy 3.7
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class NonProxyableProviderTest {
 
    protected static final Logger logger = LogManager.getLogger(

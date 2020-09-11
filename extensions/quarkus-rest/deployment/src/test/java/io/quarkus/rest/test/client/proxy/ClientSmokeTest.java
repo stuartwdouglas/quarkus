@@ -21,8 +21,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Smoke test for client ProxyFactory.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientSmokeTest {
 
    @Deployment

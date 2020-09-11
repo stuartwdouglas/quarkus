@@ -25,8 +25,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SseEventSourceTest {
    private static final Logger logger = Logger.getLogger(SseEventSourceTest.class);
 

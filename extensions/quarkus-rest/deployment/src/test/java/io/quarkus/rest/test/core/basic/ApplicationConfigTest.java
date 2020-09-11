@@ -30,8 +30,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for custom Application class
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ApplicationConfigTest {
 
    static Client client;

@@ -41,8 +41,6 @@ import java.util.stream.Collectors;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.5.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class WhiteListPolymorphicTypeValidatorCatchAllTest {
 
     protected static final Logger logger = Logger.getLogger(WhiteListPolymorphicTypeValidatorCatchAllTest.class.getName());

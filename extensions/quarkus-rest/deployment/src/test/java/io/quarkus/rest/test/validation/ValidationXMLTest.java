@@ -47,8 +47,6 @@ import java.util.Map;
  * @tpTestCaseDetails Test of xml validation
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ValidationXMLTest {
    static final String WRONG_ERROR_MSG = "Expected validation error is not in response";
    protected static final Logger logger = LogManager.getLogger(ValidationXMLTest.class.getName());

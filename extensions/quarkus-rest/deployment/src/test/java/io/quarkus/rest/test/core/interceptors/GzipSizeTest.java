@@ -42,8 +42,6 @@ import com.google.common.net.HttpHeaders;
  * @tpTestCaseDetails Gzip compression tests
  * @tpSince RESTEasy 3.1.0.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class GzipSizeTest {
 
    static Client client;

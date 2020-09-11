@@ -26,8 +26,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for custom reader-writer for bean.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class BeanReaderWriterTest {
    @Deployment
    public static Archive<?> createTestArchive() {

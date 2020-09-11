@@ -24,8 +24,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Unhandled exceptions should return 500 status
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AsyncUnhandledExceptionTest {
 
    @Deployment

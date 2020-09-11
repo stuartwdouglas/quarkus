@@ -45,8 +45,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test all variants of primitive URI parameters (boolean, int, long, float, etc.)
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class UriParamAsPrimitiveTest {
    public static final String ERROR_CODE = "Wrong parameter";
 

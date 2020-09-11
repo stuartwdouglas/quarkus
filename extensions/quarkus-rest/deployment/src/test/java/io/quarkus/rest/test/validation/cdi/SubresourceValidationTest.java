@@ -32,8 +32,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Regression test for RESTEASY-1103
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SubresourceValidationTest {
    @Deployment
    public static Archive<?> createTestArchive() {

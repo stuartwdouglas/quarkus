@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Add charset "UTF-8" to response mediatype if context parameter "resteasy.add.charset" is true
  * @tpSince RESTEasy 3.1.1.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class DefaultCharsetTest {
 
    protected enum ADD_CHARSET {TRUE, FALSE, DEFAULT};

@@ -36,8 +36,6 @@ import java.lang.reflect.Type;
  * @tpTestCaseDetails Regression test for RESTEASY-1119. Test for new client.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ContextProvidersNewClientTest extends ContextProvidersTestBase {
    @Deployment
    public static Archive<?> createTestArchive() {

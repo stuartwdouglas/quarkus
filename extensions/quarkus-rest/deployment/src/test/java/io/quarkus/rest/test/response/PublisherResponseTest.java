@@ -44,8 +44,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PublisherResponseTest {
 
    Client client;

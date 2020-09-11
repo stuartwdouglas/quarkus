@@ -39,8 +39,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Tests client exception handling for AsyncInvoker interface and InvocationCallBack interface.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AsyncTimeoutExceptionsTest extends ClientTestBase{
 
    protected static final Logger logger = LogManager.getLogger(AsyncTimeoutExceptionsTest.class.getName());

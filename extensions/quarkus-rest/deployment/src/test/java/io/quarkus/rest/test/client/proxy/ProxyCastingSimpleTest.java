@@ -33,8 +33,6 @@ import static org.junit.Assert.assertEquals;
  *                JBEAP-3197, JBEAP-4700
  * @tpSince RESTEasy 3.0.17
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ProxyCastingSimpleTest {
    private static Client client;
    private static ResteasyWebTarget target;

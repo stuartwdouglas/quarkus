@@ -38,8 +38,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for RESTEASY-2503
  * @tpSince RESTEasy 4.5
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EJBParameterViolationsOnlyTest {
 
    private static ResteasyClient client;

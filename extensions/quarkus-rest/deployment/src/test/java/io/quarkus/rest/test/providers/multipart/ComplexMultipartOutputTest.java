@@ -38,8 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ComplexMultipartOutputTest {
     protected final Logger logger = LogManager.getLogger(
             ComplexMultipartOutputTest.class.getName());

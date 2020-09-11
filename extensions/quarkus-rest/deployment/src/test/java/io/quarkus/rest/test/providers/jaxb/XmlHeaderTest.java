@@ -28,8 +28,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class XmlHeaderTest {
 
    private final Logger logger = Logger.getLogger(XmlHeaderTest.class.getName());

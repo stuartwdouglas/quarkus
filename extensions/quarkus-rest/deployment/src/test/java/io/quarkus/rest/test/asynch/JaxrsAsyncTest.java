@@ -23,8 +23,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Basic asynchronous test. Resource creates new threads.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JaxrsAsyncTest {
 
    @Deployment

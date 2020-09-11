@@ -24,8 +24,6 @@ import javax.ws.rs.client.ClientBuilder;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResourceMatchingMultipleTest {
 
    private String generateURL(String path) {

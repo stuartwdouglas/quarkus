@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
  * @author Nicolas NESMON
  *
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SsePostResourceMethodInvokerTest {
 
    private static final String WITHOUT_EXCEPTION_REQUEST_FILTER = "withoutExceptionRequestFilter";

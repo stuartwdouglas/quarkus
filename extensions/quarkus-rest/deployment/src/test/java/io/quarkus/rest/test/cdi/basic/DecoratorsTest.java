@@ -53,8 +53,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Test for integration of RESTEasy and CDI decorators.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class DecoratorsTest {
 
    private static Logger log = Logger.getLogger(DecoratorsTest.class);

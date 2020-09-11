@@ -40,8 +40,6 @@ import static org.jboss.resteasy.test.client.proxy.resource.GenericEntities.Gene
  * @tpTestCaseDetails Regression test for RESTEASY-1047.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class GenericProxyTest {
    private static ResteasyClient client;
 

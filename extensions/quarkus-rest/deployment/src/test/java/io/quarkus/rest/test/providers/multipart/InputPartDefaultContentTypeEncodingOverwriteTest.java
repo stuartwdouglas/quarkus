@@ -30,8 +30,6 @@ import java.lang.reflect.ReflectPermission;
  * @tpTestCaseDetails Test for default content type encoding of multipart provider
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InputPartDefaultContentTypeEncodingOverwriteTest {
    public static final String TEXT_PLAIN_WITH_CHARSET_UTF_8 = "text/plain; charset=utf-8";
    private static Client client;

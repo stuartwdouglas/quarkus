@@ -34,8 +34,6 @@ import java.lang.reflect.ReflectPermission;
 import java.util.Iterator;
 import java.util.List;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SoupMultipartMsgTest {
     protected final Logger logger = LogManager.getLogger(SoupMultipartMsgTest.class.getName());
     static ResteasyClient  client;

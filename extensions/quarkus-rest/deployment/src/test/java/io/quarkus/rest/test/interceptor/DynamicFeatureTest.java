@@ -32,8 +32,6 @@ import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALI
  * @tpTestCaseDetails Test for DynamicFeature
  * @tpSince RESTEasy 3.8.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class DynamicFeatureTest {
 
    private static Client client;

@@ -29,8 +29,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Check basic resource function.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class WireSmokeTest {
 
    static Client client;

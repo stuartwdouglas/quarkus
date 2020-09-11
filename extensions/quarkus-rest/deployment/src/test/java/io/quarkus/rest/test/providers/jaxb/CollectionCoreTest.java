@@ -34,8 +34,6 @@ import static org.hamcrest.CoreMatchers.containsString;
  * @tpTestCaseDetails Check jaxb requests with collection
  * @tpSince RESTEasy 3.0.16
 */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CollectionCoreTest {
    private static final String WRONG_RESPONSE = "Response contains wrong data";
    protected static final Logger logger = LogManager.getLogger(CollectionCoreTest.class.getName());

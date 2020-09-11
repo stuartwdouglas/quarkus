@@ -30,8 +30,6 @@ import java.util.List;
  * @tpTestCaseDetails Test for response secured by PKCS7SignatureInput
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PKCS7SignatureSmokeTest {
    protected static final Logger logger = LogManager.getLogger(PKCS7SignatureSmokeTest.class.getName());
    static Client client;

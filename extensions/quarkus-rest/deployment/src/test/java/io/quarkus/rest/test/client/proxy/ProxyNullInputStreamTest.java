@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  *
  * Created by rsearls on 8/24/17.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ProxyNullInputStreamTest {
 
    @Deployment

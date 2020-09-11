@@ -22,8 +22,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Test query params with multiple equals
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class QueryParamWithMultipleEqualsTest {
 
    @Deployment

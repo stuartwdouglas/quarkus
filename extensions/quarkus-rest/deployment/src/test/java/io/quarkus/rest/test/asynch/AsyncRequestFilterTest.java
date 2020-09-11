@@ -39,8 +39,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Async Request Filter test.
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AsyncRequestFilterTest {
    protected static final Logger log = Logger.getLogger(AsyncRequestFilterTest.class.getName());
 

@@ -35,8 +35,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Test bean injection from lib to lib in ear.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EarLibIntoEarLibTest {
    protected static final org.apache.logging.log4j.Logger log = LogManager.getLogger(EarLibIntoEarLibTest.class.getName());
 

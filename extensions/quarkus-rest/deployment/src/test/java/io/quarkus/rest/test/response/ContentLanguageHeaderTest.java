@@ -25,8 +25,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Check presence of Content-Language header in a response
  * @tpSince RESTEasy 3.8.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ContentLanguageHeaderTest {
 
    static Client client;

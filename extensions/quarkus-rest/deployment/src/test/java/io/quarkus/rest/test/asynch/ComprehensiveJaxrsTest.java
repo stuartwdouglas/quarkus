@@ -52,8 +52,6 @@ import org.junit.runner.RunWith;
  *                    property.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ComprehensiveJaxrsTest
 {
    protected static final Logger logger = LogManager.getLogger(ComprehensiveJaxrsTest.class.getName());

@@ -36,8 +36,6 @@ import org.junit.runner.RunWith;
  *
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CharsetTest {
 
    protected static final Logger logger = Logger.getLogger(CharSetTest.class.getName());

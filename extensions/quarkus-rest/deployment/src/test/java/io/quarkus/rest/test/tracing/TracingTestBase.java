@@ -29,8 +29,6 @@ import java.util.Map;
 import static org.jboss.resteasy.test.ContainerConstants.TRACING_CONTAINER_PORT_OFFSET;
 import static org.jboss.resteasy.test.ContainerConstants.TRACING_CONTAINER_QUALIFIER;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public abstract class TracingTestBase {
    protected static final String WAR_BASIC_TRACING_FILE = "war_basic_tracing";
    protected static final String WAR_ON_DEMAND_TRACING_FILE = "war_on_demand_tracing";

@@ -19,8 +19,6 @@ import org.junit.runner.RunWith;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ProxyClassloaderTest
 {
 

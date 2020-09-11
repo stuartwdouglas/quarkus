@@ -25,8 +25,6 @@ import javax.ws.rs.client.ClientBuilder;
  * Demonstrates that a Response filter can process the entity data in a response object
  * and the entity can be properly accessed by the client call.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientFilterResponseBuilderTest {
 
     @Deployment

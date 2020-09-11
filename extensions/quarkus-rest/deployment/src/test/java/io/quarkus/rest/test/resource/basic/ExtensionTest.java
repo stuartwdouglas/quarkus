@@ -27,8 +27,6 @@ import java.util.Map;
  * @tpTestCaseDetails Test for resteasy.media.type.mappings and resteasy.language.mappings parameters
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ExtensionTest {
 
    static Client client;

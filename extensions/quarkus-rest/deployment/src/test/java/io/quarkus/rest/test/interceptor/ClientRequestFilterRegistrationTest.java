@@ -28,8 +28,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Tests @Provider annotation on ClientRequestFilter (RESTEASY-2084)
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientRequestFilterRegistrationTest extends ClientTestBase {
 
    static Client client;

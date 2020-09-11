@@ -18,8 +18,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 //Test for RESTEASY-1537:Client proxy framework clears previously set Content-Language header when setting POST message body entity
 public class ContentLanguageProxyTest
 {

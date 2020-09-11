@@ -33,8 +33,6 @@ import javax.ws.rs.core.Response;
  * complex inheritance structure
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class GenericResourceTest {
 
    String str = "<genericResourceModel></genericResourceModel>";

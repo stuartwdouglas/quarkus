@@ -31,8 +31,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression tests for RESTEASY-2227
  * @tpSince RESTEasy 3.6
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PostConstructInjectionTest {
 
    static Client client;

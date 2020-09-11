@@ -46,8 +46,6 @@ import static org.hamcrest.CoreMatchers.not;
  * @tpChapter Integration test
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JsonBindingTest {
 
    protected static final Logger logger = Logger.getLogger(JsonBindingTest.class.getName());

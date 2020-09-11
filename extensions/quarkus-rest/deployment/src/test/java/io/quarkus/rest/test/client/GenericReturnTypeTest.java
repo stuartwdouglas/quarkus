@@ -24,8 +24,6 @@ import javax.ws.rs.client.Client;
  * @tpSince RESTEasy 3.0.17
  * @tpTestCaseDetails Regression for JBEAP-4699
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class GenericReturnTypeTest extends ClientTestBase{
 
    @Deployment

@@ -53,8 +53,6 @@ import io.reactivex.Observable;
  *
  * The client uses a proxy that calls an ObservableRxInvoker.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class Rx2ObservableProxyTest {
 
    private static ResteasyClient client;

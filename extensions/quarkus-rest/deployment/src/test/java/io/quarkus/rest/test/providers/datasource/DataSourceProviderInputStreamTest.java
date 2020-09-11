@@ -40,8 +40,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for https://issues.jboss.org/browse/RESTEASY-779
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class DataSourceProviderInputStreamTest {
 
    public static Logger logger = Logger.getLogger(DataSourceProviderInputStreamTest.class);

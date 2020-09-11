@@ -68,8 +68,6 @@ import static org.junit.Assert.fail;
  * @tpTestCaseDetails Test primitive header parameters
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class HeaderParamsAsPrimitivesTest {
 
    public static final String ERROR_MESSAGE = "Wrong content of header parameter";

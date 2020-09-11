@@ -26,8 +26,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression test for RESTEASY-421
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ExceptionMapperApplicationRuntimeExceptionTest {
 
    @Deployment

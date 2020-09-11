@@ -32,8 +32,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Tests for SSL - server without certificate
  * @tpSince RESTEasy 3.7.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SslServerWithoutCertificateTest extends SslTestBase {
 
    private static final Logger LOG = Logger.getLogger(SslServerWithoutCertificateTest.class.getName());

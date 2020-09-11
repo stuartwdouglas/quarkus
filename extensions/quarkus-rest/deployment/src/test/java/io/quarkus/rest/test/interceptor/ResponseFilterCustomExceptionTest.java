@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpSince RESTEasy 3.0.21
  * @tpTestCaseDetails Throw custom exception from a ClientResponseFilter [RESTEASY-1591]
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResponseFilterCustomExceptionTest {
    @Deployment
    public static Archive<?> deploy() {

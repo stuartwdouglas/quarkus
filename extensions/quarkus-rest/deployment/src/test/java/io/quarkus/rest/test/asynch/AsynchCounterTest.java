@@ -29,8 +29,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Tests use of SecureRandom to generate location job ids, RESTEASY-1483
  * @tpSince RESTEasy 3.1.0.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AsynchCounterTest {
 
    static Client client;

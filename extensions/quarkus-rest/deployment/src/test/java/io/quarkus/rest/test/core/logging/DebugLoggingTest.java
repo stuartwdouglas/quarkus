@@ -41,8 +41,6 @@ import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALI
  *                    Regression test for RESTEASY-1415 and RESTEASY-1558.
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class DebugLoggingTest {
 
    static ResteasyClient client;

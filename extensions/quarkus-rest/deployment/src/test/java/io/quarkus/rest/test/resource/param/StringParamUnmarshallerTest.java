@@ -29,8 +29,6 @@ import java.lang.annotation.RetentionPolicy;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Test for unmarshalling with string parameter. StringParameterUnmarshallerBinder annotation is used
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class StringParamUnmarshallerTest {
    @Retention(RetentionPolicy.RUNTIME)
    @StringParameterUnmarshallerBinder(StringParamUnmarshallerDateFormatter.class)

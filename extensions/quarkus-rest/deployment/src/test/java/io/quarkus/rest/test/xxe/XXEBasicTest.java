@@ -32,8 +32,6 @@ import java.util.Map;
  *                    Basic XXE test.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class XXEBasicTest {
 
    static String request;

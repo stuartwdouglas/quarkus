@@ -23,8 +23,6 @@ import java.lang.reflect.ReflectPermission;
 
 import static org.junit.Assert.assertNotNull;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class DeploymentTest {
 
    private static ResteasyClient client;

@@ -51,8 +51,6 @@ import io.restassured.path.json.JsonPath;
  * @tpTestCaseDetails Regression test for JBEAP-3280
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ValidationJaxbTest {
    ResteasyClient client;
    private static final String UNEXPECTED_VALIDATION_ERROR_MSG = "Unexpected validation error";

@@ -53,8 +53,6 @@ import io.reactivex.Flowable;
  *
  * The client uses a proxy that calls an FlowableRxInvoker.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class Rx2FlowableProxyTest {
 
    private static ResteasyClient client;

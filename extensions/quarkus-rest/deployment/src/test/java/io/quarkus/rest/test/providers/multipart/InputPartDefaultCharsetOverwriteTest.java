@@ -37,8 +37,6 @@ import java.util.Random;
  * @tpTestCaseDetails Regression test for RESTEASY-723
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InputPartDefaultCharsetOverwriteTest {
    private static final org.jboss.logging.Logger logger = org.jboss.logging.Logger.getLogger(InputPartDefaultCharsetOverwriteTest.class);
 

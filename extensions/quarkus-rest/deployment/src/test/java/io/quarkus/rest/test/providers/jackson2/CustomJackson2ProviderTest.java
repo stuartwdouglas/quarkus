@@ -35,8 +35,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.23
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CustomJackson2ProviderTest {
 
    private static Client client;

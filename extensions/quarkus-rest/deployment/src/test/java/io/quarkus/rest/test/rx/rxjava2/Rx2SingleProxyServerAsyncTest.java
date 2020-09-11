@@ -36,8 +36,6 @@ import org.junit.runner.RunWith;
  * In these tests, the server creates and returns a Single<T>.
  * The client uses a proxy to do a synchronous invocation to get an object of type T.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class Rx2SingleProxyServerAsyncTest {
 
    private static ResteasyClient client;

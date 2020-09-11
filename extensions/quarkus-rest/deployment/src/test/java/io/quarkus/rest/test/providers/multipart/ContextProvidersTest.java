@@ -64,8 +64,6 @@ import org.junit.runner.RunWith;
  * @tpSince RESTEasy 3.0.16
  */
 @SuppressWarnings("deprecation")
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ContextProvidersTest {
 
    protected final Logger logger = LogManager.getLogger(ContextProvidersTest.class.getName());

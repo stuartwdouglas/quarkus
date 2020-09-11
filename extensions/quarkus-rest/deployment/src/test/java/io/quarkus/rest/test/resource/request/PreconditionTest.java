@@ -29,8 +29,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Tests for preconditions specified in the header of the request
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PreconditionTest {
 
    static Client client;

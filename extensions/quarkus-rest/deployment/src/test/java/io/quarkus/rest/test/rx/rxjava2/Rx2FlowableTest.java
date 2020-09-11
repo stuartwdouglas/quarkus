@@ -57,8 +57,6 @@ import io.reactivex.Flowable;
  *
  * The client makes invocations on an FlowableRxInvoker.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Rx2FlowableTest {
 

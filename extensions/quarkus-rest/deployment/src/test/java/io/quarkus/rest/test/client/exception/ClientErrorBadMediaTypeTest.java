@@ -26,8 +26,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Test client error caused by bad media type
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientErrorBadMediaTypeTest {
 
    private static Logger logger = Logger.getLogger(ClientErrorBadMediaTypeTest.class);

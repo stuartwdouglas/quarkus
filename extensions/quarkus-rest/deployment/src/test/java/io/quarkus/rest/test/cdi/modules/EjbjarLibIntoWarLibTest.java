@@ -38,8 +38,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Test bean injection from jar lib to war in ear.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EjbjarLibIntoWarLibTest {
    protected static final Logger log = LogManager.getLogger(EjbjarLibIntoWarLibTest.class.getName());
 

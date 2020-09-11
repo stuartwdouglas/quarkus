@@ -24,8 +24,6 @@ import javax.ws.rs.client.WebTarget;
  * @tpTestCaseDetails Test for CDI locator
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CDILocatorTest {
    static Client client;
    static WebTarget baseTarget;

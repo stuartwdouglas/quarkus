@@ -27,8 +27,6 @@ import static org.junit.Assert.assertTrue;
  *                    using constructor or field injection.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ProviderInjectionTest {
    static ResteasyClient client;
 

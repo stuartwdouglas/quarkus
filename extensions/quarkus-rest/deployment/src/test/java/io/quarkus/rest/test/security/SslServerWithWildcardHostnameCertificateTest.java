@@ -40,8 +40,6 @@ import static org.jboss.resteasy.test.ContainerConstants.SSL_CONTAINER_QUALIFIER
  * @tpTestCaseDetails Tests for SSL - server secured with certificate with wildcard hostname "*host"
  * @tpSince RESTEasy 3.7.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
 
    private static final Logger LOG = Logger.getLogger(SslServerWithWildcardHostnameCertificateTest.class.getName());

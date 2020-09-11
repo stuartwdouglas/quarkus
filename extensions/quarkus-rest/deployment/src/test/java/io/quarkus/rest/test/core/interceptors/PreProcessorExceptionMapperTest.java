@@ -28,8 +28,6 @@ import static org.jboss.resteasy.utils.PortProviderUtil.generateURL;
  * @tpTestCaseDetails Regression test for RESTEASY-433
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PreProcessorExceptionMapperTest {
 
    @Deployment

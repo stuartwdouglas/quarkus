@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.1.4
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MessageBodyWriterObjectDefaultTest {
 
    static Client client;

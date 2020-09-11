@@ -46,8 +46,6 @@ import org.jboss.resteasy.test.cdi.basic.resource.resteasy1082.TestServlet;
  * Jul 27, 2018 Test rewritten to generated the needed archive and write it to disk.
  */
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CDIResourceTest {
 
    protected static final Logger logger = LogManager.getLogger(CDIResourceTest.class.getName());

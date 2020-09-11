@@ -34,8 +34,6 @@ import org.junit.runner.RunWith;
  *
  * These tests check raw streaming.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class StreamRawFlowableRxJava2Test {
 
    private static ResteasyClient client;

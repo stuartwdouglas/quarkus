@@ -30,8 +30,6 @@ import java.io.FilePermission;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression for RESTEASY-699
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ContextTest {
    public static final String WRONG_RESPONSE_ERROR_MSG = "Wrong content of response";
 

@@ -55,8 +55,6 @@ import static org.hamcrest.CoreMatchers.containsString;
  * @tpTestCaseDetails Signing test for RESTEasy-crypto
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SigningTest {
    public static KeyPair keys;
    public static DosetaKeyRepository repository;

@@ -30,8 +30,6 @@ import javax.ws.rs.core.Response;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ProxyWithGenericReturnTypeJacksonTest {
 
    protected static final Logger logger = Logger.getLogger(ProxyWithGenericReturnTypeJacksonTest.class.getName());

@@ -47,8 +47,6 @@ import org.junit.runners.MethodSorters;
  *
  * The client uses a proxy to make synchronous calls.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Rx2FlowableProxyServerAsyncTest {
 

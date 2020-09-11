@@ -44,8 +44,6 @@ import org.junit.runner.RunWith;
  *                    the presence of CDI.
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ValidationWithCDITest
 {
    @Deployment(testable = false)

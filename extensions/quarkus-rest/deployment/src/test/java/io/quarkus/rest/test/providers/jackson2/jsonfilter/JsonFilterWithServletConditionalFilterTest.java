@@ -31,8 +31,6 @@ import org.junit.runner.RunWith;
  * out and not returned in the response. See http://www.baeldung.com/jackson-serialize-field-custom-criteria
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JsonFilterWithServletConditionalFilterTest {
 
    static ResteasyClient client;

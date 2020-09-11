@@ -35,8 +35,6 @@ import java.util.Collection;
  * @tpTestCaseDetails Test for JAX-RS annotation inheritance with generics.
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AnnotationInheritanceGenericsTest {
 
    private static final String TEST_NAME = AnnotationInheritanceGenericsTest.class.getSimpleName();

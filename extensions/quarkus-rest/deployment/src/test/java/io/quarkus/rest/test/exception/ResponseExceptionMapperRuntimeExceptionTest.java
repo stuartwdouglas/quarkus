@@ -30,8 +30,6 @@ import java.net.URL;
  * @tpSince RESTEasy 3.6.0
  * @tpTestCaseDetails Regression test for RESTEASY-1847
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResponseExceptionMapperRuntimeExceptionTest {
 
    @Deployment

@@ -36,8 +36,6 @@ import java.util.Hashtable;
  * RestEasy is vulnerable to XML Entity Denial of Service XXE is disabled.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class XxeJaxbTest {
 
    static ResteasyClient client;

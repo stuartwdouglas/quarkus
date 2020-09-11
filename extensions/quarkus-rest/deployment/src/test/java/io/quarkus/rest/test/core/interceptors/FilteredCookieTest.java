@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for RESTEASY-1266
  * @tpSince RESTEasy 3.1.0.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class FilteredCookieTest {
 
    private static final String OLD_COOKIE_NAME = "old-cookie";

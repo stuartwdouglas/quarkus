@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Tests path encoding
  * @tpSince RESTEasy 3.0.20
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EncodedPathTest
 {
    static Client client;

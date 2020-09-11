@@ -35,8 +35,6 @@ import java.util.TimeZone;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class RangeTest {
 
    protected final Logger logger = LogManager.getLogger(VariantsTest.class.getName());

@@ -38,8 +38,6 @@ import static org.junit.Assert.assertEquals;
  *                    Test that JPA dependencies are set for sub-deployments
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class WeldSubdeploymentTest {
 
    protected static final Logger logger = LogManager.getLogger(WeldSubdeploymentTest.class.getName());

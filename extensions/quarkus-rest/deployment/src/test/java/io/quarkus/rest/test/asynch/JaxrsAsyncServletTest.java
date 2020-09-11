@@ -37,8 +37,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for asyncHttpServlet module. Check cooperation during more requests and exception mapping.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JaxrsAsyncServletTest {
 
    static ResteasyClient client;

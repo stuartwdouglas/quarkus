@@ -24,8 +24,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test proxy with null part of message with multipart provider
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class NullPartTest {
    @Deployment
    public static Archive<?> deploy() {

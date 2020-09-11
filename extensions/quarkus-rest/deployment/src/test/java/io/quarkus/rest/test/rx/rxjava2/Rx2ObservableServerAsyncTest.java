@@ -50,8 +50,6 @@ import org.junit.runners.MethodSorters;
  *
  * The client makes synchronous calls.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Rx2ObservableServerAsyncTest {
 

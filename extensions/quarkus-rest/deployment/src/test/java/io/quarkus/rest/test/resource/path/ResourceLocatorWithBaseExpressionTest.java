@@ -29,8 +29,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Check resources with locator with base expression
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResourceLocatorWithBaseExpressionTest {
    private static final String ERROR_MSG = "Response contain wrong content";
    static Client client;

@@ -29,8 +29,6 @@ import java.io.StringWriter;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SeeAlsoAnnotationTest {
 
    private final Logger logger = Logger.getLogger(SeeAlsoAnnotationTest.class.getName());

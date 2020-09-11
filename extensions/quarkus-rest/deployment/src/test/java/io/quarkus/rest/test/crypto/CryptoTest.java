@@ -56,8 +56,6 @@ import java.util.Base64;
  * @tpSince RESTEasy 3.0.16
  */
 @SuppressWarnings(value = "unchecked")
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CryptoTest {
    private static final String ERROR_CONTENT_MSG = "Wrong content of response";
    private static final String ERROR_CORE_MSG = "Wrong BouncyCastleProvider and RESTEasy integration";

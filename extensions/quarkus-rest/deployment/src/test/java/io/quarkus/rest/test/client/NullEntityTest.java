@@ -24,8 +24,6 @@ import javax.ws.rs.core.MediaType;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression for RESTEASY-1057
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class NullEntityTest extends ClientTestBase{
 
    @Deployment

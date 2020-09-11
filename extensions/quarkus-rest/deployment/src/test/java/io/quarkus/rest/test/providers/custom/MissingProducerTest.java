@@ -18,8 +18,6 @@ import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALI
  * @tpSince RESTEasy 3.0.17
  * @tpTestCaseDetails Regression test for JBEAP-4719
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MissingProducerTest {
    private static final String ERR_MSG = "Warning was not logged";
    private static int initLogMsg1Count = parseLog1();

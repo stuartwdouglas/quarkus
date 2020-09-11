@@ -30,8 +30,6 @@ import java.util.Iterator;
  * @tpTestCaseDetails Test integration of atom provider and JAXB Context finder
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JAXBContextFinderTest {
 
    static ResteasyClient client;

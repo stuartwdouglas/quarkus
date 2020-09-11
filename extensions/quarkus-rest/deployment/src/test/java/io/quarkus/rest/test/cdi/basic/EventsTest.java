@@ -45,8 +45,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Test integration of Events and RESTEasy.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EventsTest {
 
    @Deployment

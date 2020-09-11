@@ -30,8 +30,6 @@ import java.util.Map;
  * @tpTestCaseDetails Tests for RFC 7232 functionality
  * @tpSince RESTEasy 3.0.17
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PreconditionRfc7232Test {
    private Client client;
    private WebTarget webTarget;

@@ -41,8 +41,6 @@ import javax.ws.rs.client.ClientBuilder;
  *                    org.jboss.resteasy.plugins.providers.MultiValuedArrayParamConverter are used
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MultiValuedParamDefaultParamConverterTest {
 

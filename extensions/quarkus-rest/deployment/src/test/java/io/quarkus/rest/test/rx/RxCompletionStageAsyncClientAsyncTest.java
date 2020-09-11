@@ -48,8 +48,6 @@ import org.junit.runner.RunWith;
  * The server creates and returns objects synchronously.
  * The client uses an AsyncClientHttpEngine
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class RxCompletionStageAsyncClientAsyncTest {
 
    private static Client client;

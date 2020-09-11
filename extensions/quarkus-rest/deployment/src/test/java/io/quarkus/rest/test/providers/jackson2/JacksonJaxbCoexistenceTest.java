@@ -33,8 +33,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.16
  */
 @Ignore
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JacksonJaxbCoexistenceTest {
 
    static ResteasyClient client;

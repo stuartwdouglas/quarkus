@@ -43,8 +43,6 @@ import org.junit.runner.RunWith;
  * BostonHolder and BostonLeaf, that are annotated with @Boston, and it registers them with the CDI runtime.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class BeanExtensionTest {
    protected static final Logger log = LogManager.getLogger(BeanExtensionTest.class.getName());
 

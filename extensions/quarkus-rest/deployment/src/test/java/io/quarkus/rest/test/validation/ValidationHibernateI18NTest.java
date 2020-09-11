@@ -30,8 +30,6 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
  * @tpTestCaseDetails Test for internationalization of hibernate validator
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ValidationHibernateI18NTest {
    static final String WRONG_ERROR_MSG = "Expected validation error is not in response";
    ResteasyClient client;

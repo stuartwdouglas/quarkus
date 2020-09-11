@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SseSmokeTest {
    private static final Logger logger = Logger.getLogger(SseSmokeTest.class);
    static Client client;

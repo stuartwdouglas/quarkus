@@ -26,8 +26,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Regression test for JBEAP-982
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class FormParamPutTest {
    @Deployment
    public static Archive<?> createTestArchive() {

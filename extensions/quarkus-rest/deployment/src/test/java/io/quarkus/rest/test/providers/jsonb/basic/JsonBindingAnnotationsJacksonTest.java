@@ -33,8 +33,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration test
  * @tpSince RESTEasy 3.5
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JsonBindingAnnotationsJacksonTest {
 
 

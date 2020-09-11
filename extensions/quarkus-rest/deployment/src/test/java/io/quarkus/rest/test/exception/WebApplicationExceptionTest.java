@@ -24,8 +24,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for javax.ws.rs.WebApplicationException class
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class WebApplicationExceptionTest {
 
    @Deployment

@@ -29,8 +29,6 @@ import java.util.Map;
  * @tpTestCaseDetails Regression tests for RESTEASY-263 and RESTEASY-274
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ScanTest {
    private static Client client;
 

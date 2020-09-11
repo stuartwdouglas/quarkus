@@ -27,8 +27,6 @@ import javax.ws.rs.core.Response;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class StreamResetTest {
 
    private final Logger logger = Logger.getLogger(StreamResetTest.class);

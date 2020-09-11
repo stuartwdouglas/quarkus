@@ -42,8 +42,6 @@ import static org.jboss.resteasy.utils.PortProviderUtil.generateURL;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResteasyViolationExceptionRepresentationTest {
 
    protected static final Logger logger = LogManager.getLogger(ResteasyViolationExceptionRepresentationTest.class.getName());

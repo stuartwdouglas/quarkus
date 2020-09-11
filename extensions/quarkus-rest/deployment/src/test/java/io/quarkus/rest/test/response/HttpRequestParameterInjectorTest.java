@@ -26,8 +26,6 @@ import javax.ws.rs.core.Form;
  * @tpTestCaseDetails Test for InjectorFactoryImpl. It is used for new type of parameters in resource.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class HttpRequestParameterInjectorTest {
 
    private static final String DEPLOYMENT_NAME = "app";

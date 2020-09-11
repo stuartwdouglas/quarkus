@@ -39,8 +39,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ProviderPriorityProvidersInApplicationTest {
 
    static ResteasyClient client;

@@ -23,8 +23,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test for default value of resteasy.validation.suppress.path parameter
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ValidationSurpressPathDefaultTest extends ValidationSuppressPathTestBase {
    @SuppressWarnings(value = "unchecked")
    @Deployment

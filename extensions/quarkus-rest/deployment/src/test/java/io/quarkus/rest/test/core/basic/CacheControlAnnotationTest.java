@@ -27,8 +27,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for org.jboss.resteasy.annotations.cache.Cache class
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CacheControlAnnotationTest {
 
    private static ResteasyClient client;

@@ -25,8 +25,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test for @PathParam capturing multiple PathSegments (RESTEASY-1653)
  * @tpSince RESTEasy 3.1.3.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MultiplePathSegmentTest {
 
    private static Client client;

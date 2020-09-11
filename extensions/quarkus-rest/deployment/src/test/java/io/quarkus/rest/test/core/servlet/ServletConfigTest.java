@@ -29,8 +29,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Regression test for RESTEASY-381, RESTEASY-518 and RESTEASY-582. Check ServletConfig instance.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ServletConfigTest {
    private static ResteasyClient client;
 

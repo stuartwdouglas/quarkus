@@ -31,8 +31,6 @@ import org.junit.runner.RunWith;
  * JsonFilterParent defines the @JsonFilter annotation. JsonFilter applies to its subclass JsonFilterChild as well.
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JsonFilterSuperClassTest {
 
    @Deployment

@@ -54,8 +54,6 @@ import java.util.List;
  * @tpTestCaseDetails Test all variants of primitive query parameters (boolean, int, long, float, etc.)
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class QueryParamAsPrimitiveTest {
 
    public static final String ERROR_MESSAGE = "Wrong object received";

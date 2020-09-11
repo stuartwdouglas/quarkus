@@ -41,8 +41,6 @@ import java.util.PropertyPermission;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CleanFilesDataSourceProviderTest {
 
    protected static final Logger logger = Logger.getLogger(CleanFilesDataSourceProviderTest.class.getName());

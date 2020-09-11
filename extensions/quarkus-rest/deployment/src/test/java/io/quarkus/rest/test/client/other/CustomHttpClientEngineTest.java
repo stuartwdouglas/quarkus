@@ -25,8 +25,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Client engine customization (RESTEASY-1599)
  * @tpSince RESTEasy 3.0.24
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CustomHttpClientEngineTest {
 
    @Deployment

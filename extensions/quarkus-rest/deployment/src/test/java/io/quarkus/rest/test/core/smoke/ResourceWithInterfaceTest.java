@@ -21,8 +21,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Smoke test for resource with interface.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResourceWithInterfaceTest {
    @Deployment(name = "LocatingResource")
    public static Archive<?> deployLocatingResource() {

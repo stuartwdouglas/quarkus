@@ -30,8 +30,6 @@ import javax.ws.rs.ProcessingException;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResponseObjectTest {
 
    protected static final Logger logger = LogManager.getLogger(ResponseObjectTest.class.getName());

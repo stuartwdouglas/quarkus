@@ -26,8 +26,6 @@ import java.util.Map;
  * @tpTestCaseDetails Test for false value of resteasy.validation.suppress.path parameter
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ValidationSurpressPathFalseTest extends ValidationSuppressPathTestBase {
    @SuppressWarnings(value = "unchecked")
    @Deployment

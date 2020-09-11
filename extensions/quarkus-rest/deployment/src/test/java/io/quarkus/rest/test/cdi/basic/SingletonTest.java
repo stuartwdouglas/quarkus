@@ -31,8 +31,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for Singleton beans
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SingletonTest {
    static Client client;
    protected static final Logger logger = LogManager.getLogger(SingletonTest.class.getName());

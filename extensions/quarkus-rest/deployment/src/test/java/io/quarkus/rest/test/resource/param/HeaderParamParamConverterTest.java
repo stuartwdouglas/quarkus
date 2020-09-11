@@ -20,8 +20,6 @@ import javax.ws.rs.client.ClientBuilder;
 /**
  * Provides a ParamConverter for an input parameter using annotation @HeaderParam
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class HeaderParamParamConverterTest {
     private static String testSimpleName = HeaderParamParamConverterTest.class.getSimpleName();
     @Deployment

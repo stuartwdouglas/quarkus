@@ -26,8 +26,6 @@ import java.util.Map;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class WebTargetTest extends ClientTestBase{
 
    static Client client;

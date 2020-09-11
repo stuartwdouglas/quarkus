@@ -40,8 +40,6 @@ import java.net.URL;
  * @tpTestCaseDetails Regression test for RESTEasy issues
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ReaderWriterTest {
    static ResteasyClient client;
    static final String PriorityDeploymenetName = "ReaderWriterCustomerWriterWithPriority";

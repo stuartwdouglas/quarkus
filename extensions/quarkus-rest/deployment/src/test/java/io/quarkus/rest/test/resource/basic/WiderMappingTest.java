@@ -29,8 +29,6 @@ import java.util.Map;
  * @tpTestCaseDetails Test positive scenario for "resteasy.wider.request.matching" property
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class WiderMappingTest {
 
    static Client client;

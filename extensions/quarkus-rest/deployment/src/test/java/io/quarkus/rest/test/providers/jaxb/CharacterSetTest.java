@@ -29,8 +29,6 @@ import static org.junit.Assert.assertTrue;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CharacterSetTest {
 
    private final String[] characterSets = {"US-ASCII", "UTF-8", "ISO-8859-1"};

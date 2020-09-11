@@ -25,8 +25,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for discovering root resource classes when no Application subclass is present
  * @tpSince RESTEasy 3.6.2.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class NoApplicationSubclassTest {
 
    private static ResteasyClient client;

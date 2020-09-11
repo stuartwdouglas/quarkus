@@ -26,8 +26,6 @@ import javax.ws.rs.Produces;
  * @tpChapter Client tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class WhitespaceTest {
 
    static ResteasyClient client;

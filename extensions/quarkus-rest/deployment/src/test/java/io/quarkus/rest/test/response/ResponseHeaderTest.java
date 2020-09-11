@@ -28,8 +28,6 @@ import java.util.List;
  * @tpTestCaseDetails Check that HEADS can replace existing text with new specified text
  * @tpSince RESTEasy 3.0.23
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResponseHeaderTest {
 
 

@@ -24,8 +24,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test for ParamConverter RESTEASY-2222
  * @tpSince RESTEasy 3.7.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PrimitiveParamConverterTest {
 
    @Deployment

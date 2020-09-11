@@ -42,8 +42,6 @@ import org.junit.runner.RunWith;
  * In these tests, the server resource methods create and return objects of type Single<T>.
  * The client does synchronous invocations to get objects of type T.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class Rx2SingleServerAsyncTest {
 
    private static ResteasyClient client;

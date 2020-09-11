@@ -23,8 +23,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test for RESTEASY-798.
  * @tpSince RESTEasy 3.5.1
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PartialAnnotationResourceTest
 {
    static ResteasyClient client;

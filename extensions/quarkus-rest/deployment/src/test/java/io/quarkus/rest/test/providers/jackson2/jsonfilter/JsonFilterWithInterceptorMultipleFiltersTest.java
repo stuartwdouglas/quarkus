@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
  * Only one is set to for Json2Person pojo.
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JsonFilterWithInterceptorMultipleFiltersTest {
 
    @Deployment

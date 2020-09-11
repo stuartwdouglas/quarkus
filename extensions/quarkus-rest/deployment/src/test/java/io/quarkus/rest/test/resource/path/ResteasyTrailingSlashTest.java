@@ -22,8 +22,6 @@ import static org.junit.Assert.assertEquals;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Check for slash in URL
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResteasyTrailingSlashTest {
 
    @Deployment

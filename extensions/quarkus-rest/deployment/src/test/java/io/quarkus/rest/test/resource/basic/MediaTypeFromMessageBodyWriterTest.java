@@ -35,8 +35,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test that MessageBodyWriters can be consulted for media type
  * @tpSince RESTEasy 3.1.3.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MediaTypeFromMessageBodyWriterTest {
 
    private static class Target {

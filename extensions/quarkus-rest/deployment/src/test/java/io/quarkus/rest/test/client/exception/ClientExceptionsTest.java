@@ -45,8 +45,6 @@ import javax.ws.rs.core.Response;
  * if thrown while processing a response."
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientExceptionsTest extends ClientTestBase {
 
    @Rule

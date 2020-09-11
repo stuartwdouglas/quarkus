@@ -44,8 +44,6 @@ import java.util.Hashtable;
  * @tpSince RESTEasy 3.1.0
  */
 @ServerSetup({CustomForbiddenMessageTest.SecurityDomainSetup.class})
-@RunWith(Arquillian.class)
-@RunAsClient
 @Category({ExpectedFailingOnWildFly18.class}) //WFLY-12655
 public class CustomForbiddenMessageTest {
 

@@ -25,8 +25,6 @@ import org.junit.runner.RunWith;
 
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class HtmlSanitizerOptionalTest {
 
    static ResteasyClient client;

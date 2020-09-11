@@ -36,8 +36,6 @@ import java.security.cert.X509Certificate;
  * @tpTestCaseDetails Regression test for RESTEASY-962
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class VerifyDecryptTest {
    private static final String RESPONSE_ERROR_MSG = "Response contains wrong content";
 

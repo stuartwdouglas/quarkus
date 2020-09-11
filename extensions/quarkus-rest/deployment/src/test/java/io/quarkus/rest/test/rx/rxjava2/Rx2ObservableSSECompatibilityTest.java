@@ -44,8 +44,6 @@ import io.reactivex.Observable;
  *
  * These tests demonstrate compatibility between Rx and SSE clients and servers.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Rx2ObservableSSECompatibilityTest {
 

@@ -40,8 +40,6 @@ import org.junit.runner.RunWith;
 
 import io.reactivex.Single;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class RestClientProxyTest
 {
 

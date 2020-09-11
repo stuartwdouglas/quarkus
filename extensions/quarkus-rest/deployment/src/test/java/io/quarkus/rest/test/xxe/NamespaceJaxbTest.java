@@ -33,8 +33,6 @@ import java.util.Map;
  * @tpTestCaseDetails Regression test for RESTEASY-996
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class NamespaceJaxbTest {
    protected static ResteasyClient client;
    protected static final String WRONG_RESPONSE_ERROR_MSG = "Response has wrong content";

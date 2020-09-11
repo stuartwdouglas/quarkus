@@ -25,8 +25,6 @@ import javax.ws.rs.core.Response;
  *                Test for org.jboss.resteasy.annotations.Suspend annotation
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SuspendAnnotationTest {
 
    @Deployment

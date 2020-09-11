@@ -38,8 +38,6 @@ import static org.jboss.resteasy.test.ContainerConstants.SSL_CONTAINER_QUALIFIER
  * @tpTestCaseDetails Tests for SSL - server secured with certificate with wrong hostname "abc"
  * @tpSince RESTEasy 3.7.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SslServerWithWrongHostnameCertificateTest extends SslTestBase {
 
    private static final Logger LOG = Logger.getLogger(SslServerWithWrongHostnameCertificateTest.class.getName());

@@ -24,8 +24,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Smoke test for resource with multiple interfaces.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResourceWithMultipleInterfacesTest {
 
    static ResteasyClient client;

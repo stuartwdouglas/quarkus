@@ -44,8 +44,6 @@ import javax.ws.rs.core.Response;
  *                    Client Proxy is not used
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MultiValuedParamDateNoProxyTest {
 
    @Deployment

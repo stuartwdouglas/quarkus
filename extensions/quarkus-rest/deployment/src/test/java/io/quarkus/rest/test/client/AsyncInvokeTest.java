@@ -33,8 +33,6 @@ import java.util.concurrent.TimeUnit;
  * @tpChapter Client tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AsyncInvokeTest extends ClientTestBase{
 
    @java.lang.annotation.Target({ElementType.METHOD})

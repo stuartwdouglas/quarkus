@@ -32,8 +32,6 @@ import javax.ws.rs.core.MediaType;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class JsonpTest {
 
    protected static final Logger logger = Logger.getLogger(JsonpTest.class.getName());

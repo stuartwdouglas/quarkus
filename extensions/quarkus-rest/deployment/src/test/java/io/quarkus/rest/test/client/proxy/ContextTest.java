@@ -27,8 +27,6 @@ import javax.ws.rs.core.UriInfo;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ContextTest {
 
    @Path(value = "/test")

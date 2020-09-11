@@ -44,8 +44,6 @@ import javax.ws.rs.core.Response;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class Jackson2Test {
 
    protected static final Logger logger = Logger.getLogger(Jackson2Test.class.getName());

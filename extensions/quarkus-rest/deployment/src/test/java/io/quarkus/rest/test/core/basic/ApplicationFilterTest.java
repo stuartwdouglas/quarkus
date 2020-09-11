@@ -35,8 +35,6 @@ import java.util.List;
  * @tpTestCaseDetails Regression test for RESTEASY-541
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ApplicationFilterTest {
 
    private static ResteasyClient client;

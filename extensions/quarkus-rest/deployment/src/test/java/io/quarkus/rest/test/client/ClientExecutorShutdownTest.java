@@ -33,8 +33,6 @@ import static org.junit.Assert.fail;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails https://issues.jboss.org/browse/RESTEASY-621
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientExecutorShutdownTest extends ClientTestBase{
    private static Logger log = Logger.getLogger(ClientExecutorShutdownTest.class);
 

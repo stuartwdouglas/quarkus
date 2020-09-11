@@ -34,8 +34,6 @@ import java.util.Map;
  * @tpTestCaseDetails Regression test for RESTEASY-1066.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CharSetRE1066Test
 {
    public static final MediaType APPLICATION_XML_UTF16_TYPE;

@@ -27,8 +27,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Tests for ResteasyRequest
  * @tpSince RESTEasy 4.3.2
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResteasyRequestTest {
 
    static Client client;

@@ -25,8 +25,6 @@ import org.apache.logging.log4j.Logger;
  * @tpTestCaseDetails Regression test for RESTEASY-903
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class FilterDispatcherUndertowTest {
    private static final Logger logger = LogManager.getLogger(FilterDispatcherUndertowTest.class.getName());
 

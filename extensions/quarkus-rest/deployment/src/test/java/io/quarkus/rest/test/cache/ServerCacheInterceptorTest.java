@@ -36,8 +36,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression test for RESTEASY-1423
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 @Category({ExpectedFailingOnWildFly19.class})
 public class ServerCacheInterceptorTest {
 

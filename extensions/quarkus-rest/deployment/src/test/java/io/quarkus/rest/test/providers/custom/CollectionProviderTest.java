@@ -33,8 +33,6 @@ import java.util.List;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CollectionProviderTest {
 
    public static String getPathValue(Annotation[] annotations) {

@@ -60,8 +60,6 @@ import static org.junit.Assert.assertNotNull;
  * @tpTestCaseDetails Check complex model with Atom Provider
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AtomComplexModelTest {
 
    static ResteasyClient client;

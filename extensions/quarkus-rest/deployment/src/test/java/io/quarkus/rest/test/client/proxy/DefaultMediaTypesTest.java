@@ -28,8 +28,6 @@ import static org.junit.Assert.assertEquals;
  * @tpChapter Client tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class DefaultMediaTypesTest {
 
    public interface Foo {

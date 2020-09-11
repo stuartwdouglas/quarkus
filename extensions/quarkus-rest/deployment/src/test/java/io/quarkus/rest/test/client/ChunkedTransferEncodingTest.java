@@ -33,8 +33,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test facility for sending requests in chunked format
  * @tpSince RESTEasy 3.0.24
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ChunkedTransferEncodingTest {
 
    static ResteasyClient clientDefault;

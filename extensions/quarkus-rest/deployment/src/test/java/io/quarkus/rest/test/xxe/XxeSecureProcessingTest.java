@@ -30,8 +30,6 @@ import java.util.Map;
  * @tpTestCaseDetails Regression test for RESTEASY-869
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class XxeSecureProcessingTest {
 
    private ResteasyClient client;

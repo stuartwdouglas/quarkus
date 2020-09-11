@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
  * @tpSince RESTEasy 3.0.20
  * @tpTestCaseDetails Test client error caused by bad media type
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientErrorTest
 {
    private static Client client;

@@ -29,8 +29,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy
  *
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientCookieTest extends ClientTestBase
 {
 

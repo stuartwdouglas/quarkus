@@ -39,8 +39,6 @@ import java.lang.reflect.ReflectPermission;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class HomecontrolCustomJAXBContextTest {
 
    static ResteasyClient client;

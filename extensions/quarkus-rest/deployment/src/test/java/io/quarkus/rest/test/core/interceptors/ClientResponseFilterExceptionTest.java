@@ -43,8 +43,6 @@ import io.reactivex.Single;
  * @tpTestCaseDetails Regression test for RESTEASY-1932
  * @tpSince RESTEasy 4.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClientResponseFilterExceptionTest {
 
    private static Client client;

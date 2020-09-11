@@ -34,8 +34,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Tests that Providers context is not discarded prematurely
  * @tpSince RESTEasy 3.1.1.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AsynchContextualDataTest {
 
    public static Client client;

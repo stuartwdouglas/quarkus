@@ -40,8 +40,6 @@ import org.wildfly.extras.creaper.core.online.operations.admin.Administration;
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  * @date March 9, 2016
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class RxInvokerTest extends ClientTestBase
 {
    private static final GenericType<String> STRING_TYPE = new GenericType<String>() {};

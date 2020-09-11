@@ -27,8 +27,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for @Query param of the resource, RESTEASY-715
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class QueryTest {
 
    static Client client;

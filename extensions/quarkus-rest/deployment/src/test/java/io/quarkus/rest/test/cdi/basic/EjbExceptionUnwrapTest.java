@@ -33,8 +33,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for unwrapping EJB exception
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EjbExceptionUnwrapTest {
 
    static Client client;

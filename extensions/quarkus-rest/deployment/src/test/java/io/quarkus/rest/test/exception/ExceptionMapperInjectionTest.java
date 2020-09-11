@@ -31,8 +31,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails ExceptionMapper testing. Regression test for RESTEASY-300 and RESTEASY-396
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ExceptionMapperInjectionTest {
 
    static ResteasyClient client;

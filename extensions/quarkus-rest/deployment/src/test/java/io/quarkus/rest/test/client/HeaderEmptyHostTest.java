@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
  * RESTEASY-2300 and UNDERTOW-1614
  * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class HeaderEmptyHostTest extends ClientTestBase {
     private static Logger logger = Logger.getLogger(HeaderEmptyHostTest.class);
 

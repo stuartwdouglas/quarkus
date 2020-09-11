@@ -40,8 +40,6 @@ import static org.jboss.resteasy.utils.PortProviderUtil.generateURL;
  *      RestEasy is vulnerable to XML Entity Denial of Service XXE is disabled.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SecureProcessingTest {
 
    protected final Logger logger = LogManager.getLogger(SecureProcessingTest.class.getName());

@@ -34,8 +34,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SseJsonEventTest
 {
    private static final Logger logger = Logger.getLogger(SseJsonEventTest.class);

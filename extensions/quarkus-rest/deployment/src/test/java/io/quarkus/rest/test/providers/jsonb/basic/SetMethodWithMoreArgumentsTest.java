@@ -27,8 +27,6 @@ import javax.ws.rs.core.MediaType;
  * @tpChapter Integration test
  * @tpSince RESTEasy 3.6.2.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SetMethodWithMoreArgumentsTest {
 
    protected static final Logger LOG = Logger.getLogger(SetMethodWithMoreArgumentsTest.class.getName());

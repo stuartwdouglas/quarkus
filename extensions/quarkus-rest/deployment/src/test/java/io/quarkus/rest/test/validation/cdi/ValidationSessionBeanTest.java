@@ -34,8 +34,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Regression test for RESTEASY-923
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 @Ignore("RESTEASY-2601") //FIXME
 public class ValidationSessionBeanTest {
    @SuppressWarnings(value = "unchecked")

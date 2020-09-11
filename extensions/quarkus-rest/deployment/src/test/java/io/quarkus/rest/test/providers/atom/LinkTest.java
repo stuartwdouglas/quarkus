@@ -28,8 +28,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test for org.jboss.resteasy.plugins.providers.atom.Link class
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class LinkTest {
 
    static ResteasyClient client;

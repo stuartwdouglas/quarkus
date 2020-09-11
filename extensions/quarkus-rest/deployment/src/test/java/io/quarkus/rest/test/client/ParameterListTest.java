@@ -32,8 +32,6 @@ import java.util.TreeSet;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression for RESTEASY-756
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ParameterListTest extends ClientTestBase{
 
    protected static final Logger logger = LogManager.getLogger(ParameterListTest.class.getName());

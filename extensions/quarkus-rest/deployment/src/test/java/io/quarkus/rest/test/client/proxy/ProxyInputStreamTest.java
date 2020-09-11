@@ -26,8 +26,6 @@ import java.io.InputStream;
  * @tpTestCaseDetails Regression test for RESTEASY-351
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ProxyInputStreamTest {
 
    static ResteasyClient client;

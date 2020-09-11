@@ -26,8 +26,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test for custom ContextProvider preference.
  * @tpSince RESTEasy 3.1.2.Final
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CustomContextProviderPreferenceTest {
 
    static ResteasyClient client;

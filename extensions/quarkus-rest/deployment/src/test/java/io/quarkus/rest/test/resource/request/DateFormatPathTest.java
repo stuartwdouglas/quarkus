@@ -25,8 +25,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Tests date encoding as query parameter
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class DateFormatPathTest {
    static Client client;
 

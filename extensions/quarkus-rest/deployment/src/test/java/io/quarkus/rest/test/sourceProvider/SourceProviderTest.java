@@ -27,8 +27,6 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SourceProviderTest {
 
    private static Client client;

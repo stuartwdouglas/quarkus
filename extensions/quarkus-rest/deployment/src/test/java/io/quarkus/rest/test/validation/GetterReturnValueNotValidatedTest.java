@@ -30,8 +30,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test ignored validation
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class GetterReturnValueNotValidatedTest {
    protected final Logger logger = LogManager.getLogger(GetterReturnValueNotValidatedTest.class.getName());
    ResteasyClient client;

@@ -40,8 +40,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails RESTEasy integration test for CDI && decorators
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ConcreteDecoratorTest {
    @Deployment
    public static Archive<?> createTestArchive() {

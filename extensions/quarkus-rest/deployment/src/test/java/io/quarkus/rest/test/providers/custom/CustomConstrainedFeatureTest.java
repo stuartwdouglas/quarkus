@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
  * @tpSince RESTEasy 3.6.1
  * @tpTestCaseDetails Regression test for RESTEASY-1861
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CustomConstrainedFeatureTest {
 
    private static final String TEST_URI = generateURL("/test-custom-feature");

@@ -24,8 +24,6 @@ import javax.ws.rs.NotAuthorizedException;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression test for RESTEASY-435
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class UnauthorizedExceptionTest {
 
    @Deployment

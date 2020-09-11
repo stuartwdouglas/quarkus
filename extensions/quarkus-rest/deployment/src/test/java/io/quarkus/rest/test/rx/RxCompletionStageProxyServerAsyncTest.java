@@ -36,8 +36,6 @@ import org.junit.runner.RunWith;
  * These tests run synchronously on client, calling a proxy which does a synchronous invocation.
  * The server creates and returns CompletionStages which run asynchronously.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class RxCompletionStageProxyServerAsyncTest {
 
    private static ResteasyClient client;

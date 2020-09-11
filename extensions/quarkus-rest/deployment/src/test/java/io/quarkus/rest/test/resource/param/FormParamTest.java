@@ -32,8 +32,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for form parameters
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class FormParamTest {
    static Client client;
 

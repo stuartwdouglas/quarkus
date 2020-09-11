@@ -24,8 +24,6 @@ import org.junit.runner.RunWith;
  * @tpSince RESTEasy 4.0.0
  * @tpTestCaseDetails Check for slash in URL
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class PathParamMissingDefaultValueTest {
 
    @Deployment

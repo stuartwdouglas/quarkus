@@ -36,8 +36,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Regression test for RESTEASY-1008
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class CDIValidationCoreTest {
    @Deployment
    public static Archive<?> createTestArchive() {

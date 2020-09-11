@@ -24,8 +24,6 @@ import javax.ws.rs.client.Client;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class LinkJaxbTest {
 
    private static Logger logger = Logger.getLogger(LinkJaxbTest.class.getName());

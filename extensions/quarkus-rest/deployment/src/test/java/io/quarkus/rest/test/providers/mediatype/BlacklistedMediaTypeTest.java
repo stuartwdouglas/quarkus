@@ -41,8 +41,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class BlacklistedMediaTypeTest {
 
    private static final String APPLICATION_SIGNED_EXCHANGE = "application/signed-exchange";

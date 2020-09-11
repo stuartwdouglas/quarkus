@@ -40,8 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResponseTest {
 
    protected static final Logger logger = LogManager.getLogger(VariantsTest.class.getName());

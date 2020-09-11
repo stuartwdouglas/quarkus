@@ -32,8 +32,6 @@ import org.junit.runner.RunWith;
  * @author <a href="ron.sigal@jboss.com">Ron Sigal</a>
  * @author <a href="jonas.zeiger@talpidae.net">Jonas Zeiger</a>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ClosedResponseHandlingTest {
 
    @Deployment

@@ -36,8 +36,6 @@ import java.nio.file.Paths;
  * @tpSince RESTEasy 3.0.16
  */
 @ServerSetup({SecurityContextTest.SecurityDomainSetup.class})
-@RunWith(Arquillian.class)
-@RunAsClient
 public class SecurityContextTest {
 
    private static final String USERNAME = "bill";

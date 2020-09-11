@@ -35,8 +35,6 @@ import java.lang.reflect.ReflectPermission;
  * @tpTestCaseDetails Test for servlet mapping. This settings is in web.xml
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ServletMappingTest {
    public static final String WRONG_RESPONSE_ERROR_MSG = "Wrong content of response";
 

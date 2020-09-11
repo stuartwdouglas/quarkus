@@ -51,8 +51,6 @@ import java.io.IOException;
  * @tpSince RESTEasy 3.0.16
  */
 @ServerSetup({BasicAuthTest.SecurityDomainSetup.class})
-@RunWith(Arquillian.class)
-@RunAsClient
 @Category({ExpectedFailingOnWildFly18.class}) //WFLY-12655
 public class BasicAuthTest {
 

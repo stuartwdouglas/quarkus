@@ -35,8 +35,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails Test bean injection in lib of war.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class WarLibIntoWarClassesTest {
    protected static final Logger log = LogManager.getLogger(WarLibIntoWarClassesTest.class.getName());
 

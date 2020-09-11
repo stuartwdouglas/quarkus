@@ -27,8 +27,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Regression tests for RESTEASY-2266
  * @tpSince RESTEasy 4.1.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MicroProfileConfigUseGlobalTest {
 
    static ResteasyClient client;

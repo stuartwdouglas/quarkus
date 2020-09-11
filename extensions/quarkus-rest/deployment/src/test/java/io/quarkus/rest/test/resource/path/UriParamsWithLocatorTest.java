@@ -28,8 +28,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Test that a locator and resource with same path params work
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class UriParamsWithLocatorTest {
    static Client client;
 

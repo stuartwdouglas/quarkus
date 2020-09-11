@@ -26,8 +26,6 @@ import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALI
  * @tpTestCaseDetails ResourceClassProcessor should print suitable error/exception, if some exception is thrown
  * @tpSince RESTEasy 3.6
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class ResourceClassProcessorErrorTest {
 
    private static final String DEPLOYMENT_NAME = "deployment_name";

@@ -27,8 +27,6 @@ import org.junit.runner.RunWith;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.6.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class EncodingMimeMultipartFormProviderTest {
 
    private static final String TEST_URI = generateURL("/encoding-mime");

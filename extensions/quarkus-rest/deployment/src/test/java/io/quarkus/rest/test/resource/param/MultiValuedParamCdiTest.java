@@ -29,8 +29,6 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test of CDI integration for RESTEasy extended support for multivalue @*Param (RESTEASY-1566 + RESTEASY-1746)
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MultiValuedParamCdiTest {
 
    @Deployment

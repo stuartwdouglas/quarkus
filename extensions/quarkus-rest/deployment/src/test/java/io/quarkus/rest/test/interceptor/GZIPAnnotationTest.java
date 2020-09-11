@@ -28,8 +28,6 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Tests @GZIP annotation on client (RESTEASY-1265)
  * @tpSince RESTEasy 3.0.20
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class GZIPAnnotationTest {
 
    static Client client;

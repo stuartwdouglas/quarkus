@@ -34,8 +34,6 @@ import static org.junit.Assert.assertEquals;
  * @tpTestCaseDetails This class tests CDI inheritance (BookSelectedAlternative should be used)
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class AlternativeSelectedInheritanceTest {
    protected static final Logger log = LogManager.getLogger(AlternativeSelectedInheritanceTest.class.getName());
 

@@ -38,8 +38,6 @@ import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALI
  * resteasy to report error and not warning.
  * This feature is provided for quarkus.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MultipleGetResourceTest {
     static ResteasyClient client;
 

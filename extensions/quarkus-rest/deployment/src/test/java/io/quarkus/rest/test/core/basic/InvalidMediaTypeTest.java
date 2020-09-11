@@ -26,8 +26,6 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression for RESTEASY-699
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class InvalidMediaTypeTest {
 
    protected static final Logger logger = LogManager.getLogger(InvalidMediaTypeTest.class.getName());

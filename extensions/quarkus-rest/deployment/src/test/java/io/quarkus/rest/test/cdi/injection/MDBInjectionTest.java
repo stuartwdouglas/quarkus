@@ -58,8 +58,6 @@ import org.junit.runner.RunWith;
  *                    JAX-RS resource into an MDB.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
-@RunAsClient
 public class MDBInjectionTest extends AbstractInjectionTestBase {
    protected static final Logger log = LogManager.getLogger(MDBInjectionTest.class.getName());
 
