@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.response;
+package io.quarkus.rest.test.response;
 
 import java.util.PropertyPermission;
 import java.util.concurrent.Future;
@@ -13,12 +13,12 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.response.resource.AsyncResponseCallback;
-import org.jboss.resteasy.test.response.resource.AsyncResponseException;
-import org.jboss.resteasy.test.response.resource.AsyncResponseExceptionMapper;
-import org.jboss.resteasy.test.response.resource.PublisherResponseRawStreamResource;
-import org.jboss.resteasy.test.response.resource.SlowString;
-import org.jboss.resteasy.test.response.resource.SlowStringWriter;
+import io.quarkus.rest.test.response.resource.AsyncResponseCallback;
+import io.quarkus.rest.test.response.resource.AsyncResponseException;
+import io.quarkus.rest.test.response.resource.AsyncResponseExceptionMapper;
+import io.quarkus.rest.test.response.resource.PublisherResponseRawStreamResource;
+import io.quarkus.rest.test.response.resource.SlowString;
+import io.quarkus.rest.test.response.resource.SlowStringWriter;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -29,7 +29,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Publisher response type
@@ -40,9 +46,14 @@ public class PublisherResponseRawStreamTest {
 
    Client client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(PublisherResponseRawStreamTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
               + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.reactivestreams\n"));
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
@@ -53,7 +64,7 @@ public class PublisherResponseRawStreamTest {
       return TestUtil.finishContainerPrepare(war, null, PublisherResponseRawStreamResource.class,
             SlowStringWriter.class, SlowString.class,
             AsyncResponseCallback.class, AsyncResponseExceptionMapper.class, AsyncResponseException.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, PublisherResponseRawStreamTest.class.getSimpleName());

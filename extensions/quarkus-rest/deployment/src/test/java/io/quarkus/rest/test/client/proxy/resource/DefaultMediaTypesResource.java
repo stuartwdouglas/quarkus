@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.client.proxy.resource;
+package io.quarkus.rest.test.client.proxy.resource;
 
 import org.jboss.resteasy.spi.HttpRequest;
-import org.jboss.resteasy.test.client.proxy.DefaultMediaTypesTest;
+import io.quarkus.rest.test.client.proxy.DefaultMediaTypesTest;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;

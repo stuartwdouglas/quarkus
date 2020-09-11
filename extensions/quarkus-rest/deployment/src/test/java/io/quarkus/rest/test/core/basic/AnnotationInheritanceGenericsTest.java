@@ -1,13 +1,13 @@
-package org.jboss.resteasy.test.core.basic;
+package io.quarkus.rest.test.core.basic;
 
 import org.hamcrest.Matchers;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.core.basic.resource.AnnotationInheritanceGenericsAbstract;
-import org.jboss.resteasy.test.core.basic.resource.AnnotationInheritanceGenericsEntity;
-import org.jboss.resteasy.test.core.basic.resource.AnnotationInheritanceGenericsImpl;
-import org.jboss.resteasy.test.core.basic.resource.AnnotationInheritanceGenericsInterface;
+import io.quarkus.rest.test.core.basic.resource.AnnotationInheritanceGenericsAbstract;
+import io.quarkus.rest.test.core.basic.resource.AnnotationInheritanceGenericsEntity;
+import io.quarkus.rest.test.core.basic.resource.AnnotationInheritanceGenericsImpl;
+import io.quarkus.rest.test.core.basic.resource.AnnotationInheritanceGenericsInterface;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -16,7 +16,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
@@ -39,9 +45,14 @@ public class AnnotationInheritanceGenericsTest {
 
    private static final String TEST_NAME = AnnotationInheritanceGenericsTest.class.getSimpleName();
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(TEST_NAME);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(
             AnnotationInheritanceGenericsEntity.class,
             AnnotationInheritanceGenericsInterface.class,
@@ -49,7 +60,7 @@ public class AnnotationInheritanceGenericsTest {
       );
 
       return TestUtil.finishContainerPrepare(war, null, AnnotationInheritanceGenericsImpl.class);
-   }
+   }});
 
    protected Client client;
 

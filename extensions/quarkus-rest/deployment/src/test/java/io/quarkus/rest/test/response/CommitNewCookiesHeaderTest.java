@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.response;
+package io.quarkus.rest.test.response;
 
 import java.lang.reflect.ReflectPermission;
 import java.util.Map;
@@ -29,7 +29,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 public class CommitNewCookiesHeaderTest {
 
@@ -77,9 +83,14 @@ public class CommitNewCookiesHeaderTest {
    private static Client client;
    private static final String DEP = "CommitCookiesHeaderTest";
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(DEP);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(EchoResource.class);
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
               new ReflectPermission("suppressAccessChecks"),
@@ -87,7 +98,7 @@ public class CommitNewCookiesHeaderTest {
               new PropertyPermission("node", "read")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, EchoResource.class);
-   }
+   }});
 
    @BeforeClass
    public static void setup() {

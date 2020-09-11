@@ -1,16 +1,16 @@
-package org.jboss.resteasy.test.response;
+package io.quarkus.rest.test.response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.response.resource.DuplicitePathDupliciteApplicationOne;
-import org.jboss.resteasy.test.response.resource.DuplicitePathDupliciteApplicationTwo;
-import org.jboss.resteasy.test.response.resource.DuplicitePathDupliciteResourceOne;
-import org.jboss.resteasy.test.response.resource.DuplicitePathDupliciteResourceTwo;
-import org.jboss.resteasy.test.response.resource.DuplicitePathMethodResource;
-import org.jboss.resteasy.test.response.resource.DuplicitePathNoDupliciteApplication;
+import io.quarkus.rest.test.response.resource.DuplicitePathDupliciteApplicationOne;
+import io.quarkus.rest.test.response.resource.DuplicitePathDupliciteApplicationTwo;
+import io.quarkus.rest.test.response.resource.DuplicitePathDupliciteResourceOne;
+import io.quarkus.rest.test.response.resource.DuplicitePathDupliciteResourceTwo;
+import io.quarkus.rest.test.response.resource.DuplicitePathMethodResource;
+import io.quarkus.rest.test.response.resource.DuplicitePathNoDupliciteApplication;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -21,7 +21,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -29,7 +35,7 @@ import javax.ws.rs.core.Response;
 
 import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.is;
-import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
 
 /**
  * @tpSubChapter Response
@@ -38,7 +44,7 @@ import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALI
  * @tpSince RESTEasy 3.0.17
  */
 public class DuplicitePathTest {
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
    /**
     * Init servlet warning count ( WFLYUT0101: Duplicate servlet mapping /a/* found )
@@ -76,7 +82,7 @@ public class DuplicitePathTest {
 
    @BeforeClass
    public static void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass

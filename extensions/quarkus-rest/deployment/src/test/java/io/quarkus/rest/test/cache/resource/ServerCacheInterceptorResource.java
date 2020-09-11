@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cache.resource;
+package io.quarkus.rest.test.cache.resource;
 
 import org.jboss.resteasy.annotations.cache.Cache;
 

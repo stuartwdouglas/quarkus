@@ -1,12 +1,12 @@
-package org.jboss.resteasy.test.warning;
+package io.quarkus.rest.test.warning;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.core.interceptors.resource.TestResource1;
-import org.jboss.resteasy.test.core.interceptors.resource.TestResource2;
-import org.jboss.resteasy.test.core.interceptors.resource.TestSubResource;
-import org.jboss.resteasy.test.warning.resource.SubResourceWarningResource;
+import io.quarkus.rest.test.core.interceptors.resource.TestResource1;
+import io.quarkus.rest.test.core.interceptors.resource.TestResource2;
+import io.quarkus.rest.test.core.interceptors.resource.TestSubResource;
+import io.quarkus.rest.test.warning.resource.SubResourceWarningResource;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -14,10 +14,16 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 import org.wildfly.extras.creaper.core.online.OnlineManagementClient;
 
-import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
 
 /**
  * @tpSubChapter Miscellaneous
@@ -30,12 +36,17 @@ public class SubResourceWarningTest {
    // check server.log msg count before app is deployed.  Deploying causes messages to be logged.
    private static int preTestCnt = TestUtil.getWarningCount("have the same path, [test", false, DEFAULT_CONTAINER_QUALIFIER);
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(SubResourceWarningTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, SubResourceWarningResource.class,
               TestResource1.class, TestResource2.class, TestSubResource.class);
-   }
+   }});
 
    @BeforeClass
    public static void initLogging() throws Exception {

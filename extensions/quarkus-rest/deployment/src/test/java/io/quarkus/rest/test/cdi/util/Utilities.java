@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.cdi.util;
+package io.quarkus.rest.test.cdi.util;
 
 
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsBoston;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBoston;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;

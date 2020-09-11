@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.response.resource;
+package io.quarkus.rest.test.response.resource;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;

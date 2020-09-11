@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.response;
+package io.quarkus.rest.test.response;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -15,7 +15,7 @@ import org.jboss.arquillian.junit.Arquillian;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.response.resource.VariantAcceptResource;
+import io.quarkus.rest.test.response.resource.VariantAcceptResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -24,7 +24,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Resteasy-client
@@ -59,12 +65,17 @@ public class VariantAcceptTest {
       TEXT_PLAIN_WITH_PARAMS = new MediaType("text", "plain", params);
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(VariantAcceptTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(VariantAcceptTest.class);
       return TestUtil.finishContainerPrepare(war, null, VariantAcceptResource.class);
-   }
+   }});
 
    protected Client client;
 

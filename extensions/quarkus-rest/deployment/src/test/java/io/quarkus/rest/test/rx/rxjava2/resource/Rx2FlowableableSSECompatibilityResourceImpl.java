@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.rx.rxjava2.resource;
+package io.quarkus.rest.test.rx.rxjava2.resource;
 
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -11,7 +11,7 @@ import javax.ws.rs.sse.OutboundSseEvent;
 import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 
-import org.jboss.resteasy.test.rx.resource.Thing;
+import io.quarkus.rest.test.rx.resource.Thing;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;

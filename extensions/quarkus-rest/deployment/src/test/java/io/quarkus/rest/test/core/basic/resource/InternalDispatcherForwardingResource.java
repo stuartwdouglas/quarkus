@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.basic.resource;
+package io.quarkus.rest.test.core.basic.resource;
 
 import java.util.Stack;
 
@@ -20,7 +20,7 @@ import org.jboss.resteasy.core.InternalDispatcher;
 import org.jboss.resteasy.core.MessageBodyParameterInjector;
 import org.jboss.resteasy.core.ResteasyContext;
 import javax.ws.rs.BadRequestException;
-import org.jboss.resteasy.test.core.basic.InternalDispatcherTest;
+import io.quarkus.rest.test.core.basic.InternalDispatcherTest;
 import org.junit.Assert;
 
 @Path("/")

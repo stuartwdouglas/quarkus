@@ -1,8 +1,8 @@
-package org.jboss.resteasy.test.providers.multipart.resource;
+package io.quarkus.rest.test.providers.multipart.resource;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
-import org.jboss.resteasy.test.providers.multipart.GenericTypeMultipartTest;
+import io.quarkus.rest.test.providers.multipart.GenericTypeMultipartTest;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

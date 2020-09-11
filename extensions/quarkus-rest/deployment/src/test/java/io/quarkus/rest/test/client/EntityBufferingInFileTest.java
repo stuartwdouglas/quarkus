@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client;
+package io.quarkus.rest.test.client;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
@@ -6,13 +6,13 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.dmr.ModelNode;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
-import org.jboss.resteasy.test.client.resource.EntityBufferingInFileResource;
+import io.quarkus.rest.test.client.resource.EntityBufferingInFileResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -34,7 +34,13 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
 import org.jboss.logging.Logger;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 import org.wildfly.extras.creaper.core.online.OnlineManagementClient;
 import org.wildfly.extras.creaper.core.online.operations.Address;
 import org.wildfly.extras.creaper.core.online.operations.Operations;
@@ -80,9 +86,14 @@ public class EntityBufferingInFileTest extends ClientTestBase{
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(EntityBufferingInFileTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(EntityBufferingInFileTest.class);
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
             new FilePermission("/tmp/*", "read")
@@ -90,7 +101,7 @@ public class EntityBufferingInFileTest extends ClientTestBase{
       // DataSource provider creates tmp file in the filesystem
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new FilePermission("/tmp/-", "read")), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, EntityBufferingInFileResource.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Custom ApacheHttpClient4Engine is created which defines maximum file size allowed in memory - 16 bytes
@@ -190,7 +201,7 @@ public class EntityBufferingInFileTest extends ClientTestBase{
          }
          String body = sb.toString();
 
-         ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(executor).build();
+         QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(executor).build();
          Response response = client.target(generateURL("/hello")).request().header("content-type", "text/plain; charset=UTF-8").post(Entity.text(body));
          logger.info("Received response");
          Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());

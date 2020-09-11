@@ -1,29 +1,29 @@
-package org.jboss.resteasy.test.interceptor;
+package io.quarkus.rest.test.interceptor;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientRequestFilter1;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientRequestFilter2;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientRequestFilter3;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientRequestFilterMax;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientRequestFilterMin;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientResponseFilter1;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientResponseFilter2;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientResponseFilter3;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientResponseFilterMax;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionClientResponseFilterMin;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerRequestFilter1;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerRequestFilter2;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerRequestFilter3;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerRequestFilterMax;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerRequestFilterMin;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerResponseFilter1;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerResponseFilter2;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerResponseFilter3;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerResponseFilterMax;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionContainerResponseFilterMin;
-import org.jboss.resteasy.test.interceptor.resource.PriorityExecutionResource;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientRequestFilter1;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientRequestFilter2;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientRequestFilter3;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientRequestFilterMax;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientRequestFilterMin;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientResponseFilter1;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientResponseFilter2;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientResponseFilter3;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientResponseFilterMax;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientResponseFilterMin;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerRequestFilter1;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerRequestFilter2;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerRequestFilter3;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerRequestFilterMax;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerRequestFilterMin;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerResponseFilter1;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerResponseFilter2;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerResponseFilter3;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerResponseFilterMax;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionContainerResponseFilterMin;
+import io.quarkus.rest.test.interceptor.resource.PriorityExecutionResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -34,7 +34,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -58,9 +64,14 @@ public class PriorityExecutionTest {
    public static Logger logger = Logger.getLogger(PriorityExecutionTest.class);
    private static final String WRONG_ORDER_ERROR_MSG = "Wrong order of interceptor execution";
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(PriorityExecutionTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       war.addClasses(PriorityExecutionClientResponseFilterMin.class,
             PriorityExecutionClientResponseFilter1.class,
@@ -100,7 +111,7 @@ public class PriorityExecutionTest {
             PriorityExecutionContainerRequestFilterMin.class,
             PriorityExecutionContainerRequestFilterMax.class
       );
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, PriorityExecutionTest.class.getSimpleName());

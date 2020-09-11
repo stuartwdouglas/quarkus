@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.tracing;
+package io.quarkus.rest.test.tracing;
 
 import static org.junit.Assert.assertTrue;
 

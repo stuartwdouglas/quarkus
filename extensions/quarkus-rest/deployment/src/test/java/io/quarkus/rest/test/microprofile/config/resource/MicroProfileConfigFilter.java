@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.microprofile.config.resource;
+package io.quarkus.rest.test.microprofile.config.resource;
 
 import java.io.IOException;
 

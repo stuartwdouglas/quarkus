@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation.resource;
+package io.quarkus.rest.test.validation.resource;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;

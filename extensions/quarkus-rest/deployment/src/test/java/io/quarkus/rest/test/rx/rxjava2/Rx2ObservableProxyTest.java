@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.rx.rxjava2;
+package io.quarkus.rest.test.rx.rxjava2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,17 +16,17 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.rxjava2.ObservableRxInvokerProvider;
-import org.jboss.resteasy.test.rx.resource.Bytes;
-import org.jboss.resteasy.test.rx.resource.RxScheduledExecutorService;
-import org.jboss.resteasy.test.rx.resource.TRACE;
-import org.jboss.resteasy.test.rx.resource.TestException;
-import org.jboss.resteasy.test.rx.resource.TestExceptionMapper;
-import org.jboss.resteasy.test.rx.resource.Thing;
-import org.jboss.resteasy.test.rx.rxjava2.resource.Rx2ObservableResource;
-import org.jboss.resteasy.test.rx.rxjava2.resource.Rx2ObservableResourceImpl;
+import io.quarkus.rest.test.rx.resource.Bytes;
+import io.quarkus.rest.test.rx.resource.RxScheduledExecutorService;
+import io.quarkus.rest.test.rx.resource.TRACE;
+import io.quarkus.rest.test.rx.resource.TestException;
+import io.quarkus.rest.test.rx.resource.TestExceptionMapper;
+import io.quarkus.rest.test.rx.resource.Thing;
+import io.quarkus.rest.test.rx.rxjava2.resource.Rx2ObservableResource;
+import io.quarkus.rest.test.rx.rxjava2.resource.Rx2ObservableResourceImpl;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -38,7 +38,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import io.reactivex.Observable;
 
@@ -55,7 +61,7 @@ import io.reactivex.Observable;
  */
 public class Rx2ObservableProxyTest {
 
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
    private static Rx2ObservableResource proxy;
    private static CountDownLatch latch;
    private static AtomicInteger errors;
@@ -82,9 +88,14 @@ public class Rx2ObservableProxyTest {
       for (int i = 0; i < 2; i++) {aThingListList.add(aThingList);}
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(Rx2ObservableProxyTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(Thing.class);
       war.addClass(TRACE.class);
       war.addClass(Bytes.class);
@@ -93,7 +104,7 @@ public class Rx2ObservableProxyTest {
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
          + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services\n"));
       return TestUtil.finishContainerPrepare(war, null, Rx2ObservableResourceImpl.class, TestExceptionMapper.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, Rx2ObservableProxyTest.class.getSimpleName());
@@ -102,7 +113,7 @@ public class Rx2ObservableProxyTest {
    //////////////////////////////////////////////////////////////////////////////
    @BeforeClass
    public static void beforeClass() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       proxy = client.target(generateURL("/")).proxy(Rx2ObservableResource.class);
    }
 
@@ -488,7 +499,7 @@ public class Rx2ObservableProxyTest {
          latch = new CountDownLatch(1);
          RxScheduledExecutorService.used = false;
          RxScheduledExecutorService executor = new RxScheduledExecutorService();
-         ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).executorService(executor).build();
+         QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).executorService(executor).build();
          client.register(ObservableRxInvokerProvider.class);
          Rx2ObservableResource proxy = client.target(generateURL("/")).proxy(Rx2ObservableResource.class);
          Observable<String> observable = proxy.get();
@@ -540,12 +551,12 @@ public class Rx2ObservableProxyTest {
       CountDownLatch cdl = new CountDownLatch(2);
       CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<String>();
 
-      ResteasyClient client1 = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client1 = (QuarkusRestClient)ClientBuilder.newClient();
       client1.register(ObservableRxInvokerProvider.class);
       Rx2ObservableResource proxy1 = client1.target(generateURL("/")).proxy(Rx2ObservableResource.class);
       Observable<String> observable1 = proxy1.get();
 
-      ResteasyClient client2 = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client2 = (QuarkusRestClient)ClientBuilder.newClient();
       client2.register(ObservableRxInvokerProvider.class);
       Rx2ObservableResource proxy2 = client2.target(generateURL("/")).proxy(Rx2ObservableResource.class);
       Observable<String> observable2 = proxy2.get();

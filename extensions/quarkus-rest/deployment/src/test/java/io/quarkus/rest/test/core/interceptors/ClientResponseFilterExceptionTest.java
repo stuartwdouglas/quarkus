@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.interceptors;
+package io.quarkus.rest.test.core.interceptors;
 
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
@@ -16,12 +16,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ClientHttpEngine;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
-import org.jboss.resteasy.test.core.interceptors.resource.ClientResponseFilterExceptionFilter;
-import org.jboss.resteasy.test.core.interceptors.resource.ClientResponseFilterExceptionResource;
-import org.jboss.resteasy.test.core.interceptors.resource.ClientResponseFilterExceptionResourceImpl;
+import io.quarkus.rest.test.core.interceptors.resource.ClientResponseFilterExceptionFilter;
+import io.quarkus.rest.test.core.interceptors.resource.ClientResponseFilterExceptionResource;
+import io.quarkus.rest.test.core.interceptors.resource.ClientResponseFilterExceptionResourceImpl;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -31,7 +31,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
@@ -49,14 +55,19 @@ public class ClientResponseFilterExceptionTest {
    private static ClientResponseFilterExceptionResource service;
    private static CountDownLatch latch;;
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(ClientResponseFilterExceptionTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(ClientResponseFilterExceptionResource.class);
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
          + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services\n"));
       return TestUtil.finishContainerPrepare(war, null, ClientResponseFilterExceptionFilter.class, ClientResponseFilterExceptionResourceImpl.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ClientResponseFilterExceptionTest.class.getSimpleName());
@@ -77,7 +88,7 @@ public class ClientResponseFilterExceptionTest {
 
       ClientHttpEngine engine = ApacheHttpClientEngine.create(httpClientBuilder.build(), true);
 
-      client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine)
+      client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine)
          .register(ClientResponseFilterExceptionFilter.class).build();
 
       WebTarget target = client.target(generateURL("/"));

@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.client.resource;
+package io.quarkus.rest.test.client.resource;
 
-import org.jboss.resteasy.test.client.ClientResponseRedirectTest;
+import io.quarkus.rest.test.client.ClientResponseRedirectTest;
 import org.jboss.resteasy.utils.PortProviderUtil;
 
 import javax.ws.rs.GET;

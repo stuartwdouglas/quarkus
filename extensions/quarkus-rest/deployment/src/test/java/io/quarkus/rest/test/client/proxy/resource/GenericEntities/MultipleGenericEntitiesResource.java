@@ -1,9 +1,9 @@
-package org.jboss.resteasy.test.client.proxy.resource.GenericEntities;
+package io.quarkus.rest.test.client.proxy.resource.GenericEntities;
 
 import java.util.HashMap;
 
-import static org.jboss.resteasy.test.client.proxy.resource.GenericEntities.GenericEntityExtendingBaseEntityResource.FIRST_NAME;
-import static org.jboss.resteasy.test.client.proxy.resource.GenericEntities.GenericEntityExtendingBaseEntityResource.LAST_NAME;
+import static io.quarkus.rest.test.client.proxy.resource.GenericEntities.GenericEntityExtendingBaseEntityResource.FIRST_NAME;
+import static io.quarkus.rest.test.client.proxy.resource.GenericEntities.GenericEntityExtendingBaseEntityResource.LAST_NAME;
 
 public class MultipleGenericEntitiesResource implements MultipleGenericEntities<String, EntityExtendingBaseEntity> {
 

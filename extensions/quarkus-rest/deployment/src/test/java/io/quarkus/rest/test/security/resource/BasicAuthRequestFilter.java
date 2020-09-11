@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.security.resource;
+package io.quarkus.rest.test.security.resource;
 
 
 import javax.ws.rs.client.ClientRequestContext;

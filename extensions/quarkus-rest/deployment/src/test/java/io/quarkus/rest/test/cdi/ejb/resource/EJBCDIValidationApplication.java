@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.ejb.resource;
+package io.quarkus.rest.test.cdi.ejb.resource;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;

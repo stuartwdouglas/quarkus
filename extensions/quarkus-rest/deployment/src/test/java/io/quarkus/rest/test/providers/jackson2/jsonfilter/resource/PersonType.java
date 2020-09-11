@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.jsonfilter.resource;
+package io.quarkus.rest.test.providers.jackson2.jsonfilter.resource;
 
 public enum PersonType {
    CUSTOMER,

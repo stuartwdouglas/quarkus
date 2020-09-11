@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.xxe.resource.xxeJaxb;
+package io.quarkus.rest.test.xxe.resource.xxeJaxb;
 
 import org.jboss.logging.Logger;
 import javax.ws.rs.Consumes;

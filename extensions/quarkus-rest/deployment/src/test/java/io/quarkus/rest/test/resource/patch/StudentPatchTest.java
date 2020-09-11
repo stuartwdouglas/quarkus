@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.patch;
+package io.quarkus.rest.test.resource.patch;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,8 +17,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -28,7 +28,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 public class StudentPatchTest {
 
@@ -46,19 +52,29 @@ public class StudentPatchTest {
       client = null;
    }
 
-   @Deployment(name=PATCH_DEPLOYMENT, order = 1)
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(StudentPatchTest.class.getSimpleName());
-      return TestUtil.finishContainerPrepare(war, null, StudentResource.class, Student.class);
-   }
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
 
-   @Deployment(name=DISABLED_PATCH_DEPLOYMENT, order = 2)
-   public static Archive<?> createDisablePatchFilterDeployment() {
-       WebArchive war = TestUtil.prepareArchive(DISABLED_PATCH_DEPLOYMENT);
+      return TestUtil.finishContainerPrepare(war, null, StudentResource.class, Student.class);
+   }});
+
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
        Map<String, String> contextParam = new HashMap<>();
        contextParam.put(ResteasyContextParameters.RESTEASY_PATCH_FILTER_DISABLED, "true");
        return TestUtil.finishContainerPrepare(war, contextParam, StudentResource.class, Student.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, StudentPatchTest.class.getSimpleName());
@@ -67,7 +83,7 @@ public class StudentPatchTest {
    @Test
    @OperateOnDeployment(PATCH_DEPLOYMENT)
    public void testPatchStudent() throws Exception {
-      ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
 
       WebTarget base = client.target(generateURL("/students"));
       //add a student, first name is Taylor and school is school1, other fields is null.
@@ -104,7 +120,7 @@ public class StudentPatchTest {
    @Test
    @OperateOnDeployment(PATCH_DEPLOYMENT)
    public void testMergePatchStudent() throws Exception {
-      ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
       WebTarget base = client.target(generateURL("/students"));
       Student newStudent = new Student().setId(2L).setFirstName("Alice").setSchool("school2");
       Response response = base.request().post(Entity.<Student>entity(newStudent, MediaType.APPLICATION_JSON_TYPE));
@@ -127,7 +143,7 @@ public class StudentPatchTest {
    @Test
    @OperateOnDeployment(DISABLED_PATCH_DEPLOYMENT)
    public void testPatchDisabled() throws Exception {
-      ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
 
       WebTarget base = client.target(PortProviderUtil.generateURL("/students", DISABLED_PATCH_DEPLOYMENT));
       //add a student, first name is Taylor and school is school1, other fields is null.

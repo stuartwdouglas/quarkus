@@ -1,13 +1,13 @@
-package org.jboss.resteasy.test.core.smoke;
+package io.quarkus.rest.test.core.smoke;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.core.smoke.resource.ResourceWithMultipleInterfacesEmpty;
-import org.jboss.resteasy.test.core.smoke.resource.ResourceWithMultipleInterfacesIntA;
-import org.jboss.resteasy.test.core.smoke.resource.ResourceWithMultipleInterfacesRootResource;
+import io.quarkus.rest.test.core.smoke.resource.ResourceWithMultipleInterfacesEmpty;
+import io.quarkus.rest.test.core.smoke.resource.ResourceWithMultipleInterfacesIntA;
+import io.quarkus.rest.test.core.smoke.resource.ResourceWithMultipleInterfacesRootResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -16,7 +16,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Smoke tests for jaxrs
@@ -26,15 +32,20 @@ import org.junit.runner.RunWith;
  */
 public class ResourceWithMultipleInterfacesTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
-   @Deployment(name = "LocatingResource")
-   public static Archive<?> deployLocatingResource() {
-      WebArchive war = TestUtil.prepareArchive(ResourceWithMultipleInterfacesTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(ResourceWithMultipleInterfacesIntA.class);
       war.addClass(ResourceWithMultipleInterfacesEmpty.class);
       return TestUtil.finishContainerPrepare(war, null, ResourceWithMultipleInterfacesRootResource.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ResourceWithMultipleInterfacesTest.class.getSimpleName());
@@ -42,7 +53,7 @@ public class ResourceWithMultipleInterfacesTest {
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

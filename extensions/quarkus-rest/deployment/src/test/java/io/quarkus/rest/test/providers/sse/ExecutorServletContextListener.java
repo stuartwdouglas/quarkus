@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.sse;
+package io.quarkus.rest.test.providers.sse;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

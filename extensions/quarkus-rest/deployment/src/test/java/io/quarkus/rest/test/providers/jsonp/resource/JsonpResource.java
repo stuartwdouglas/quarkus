@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jsonp.resource;
+package io.quarkus.rest.test.providers.jsonp.resource;
 
 import org.junit.Assert;
 

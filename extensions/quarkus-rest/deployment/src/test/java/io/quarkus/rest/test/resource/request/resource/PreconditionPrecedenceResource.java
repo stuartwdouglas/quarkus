@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.request.resource;
+package io.quarkus.rest.test.resource.request.resource;
 
 import org.jboss.resteasy.util.DateUtil;
 

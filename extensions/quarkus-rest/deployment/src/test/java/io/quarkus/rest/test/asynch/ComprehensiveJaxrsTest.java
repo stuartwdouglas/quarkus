@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.asynch;
+package io.quarkus.rest.test.asynch;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,15 +25,15 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletApp;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletAsyncResponseBlockingQueue;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletJaxrsResource;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletPrintingErrorHandler;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletResource;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletServiceUnavailableExceptionMapper;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletTimeoutHandler;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletXmlData;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletApp;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletAsyncResponseBlockingQueue;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletJaxrsResource;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletPrintingErrorHandler;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletResource;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletServiceUnavailableExceptionMapper;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletTimeoutHandler;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletXmlData;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -43,7 +43,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Asynchronous RESTEasy
@@ -79,7 +85,7 @@ public class ComprehensiveJaxrsTest
    @Before
    public void beforeTest()
    {
-      client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
    }
 
    @After

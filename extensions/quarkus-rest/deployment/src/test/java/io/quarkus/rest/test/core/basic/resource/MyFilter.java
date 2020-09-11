@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.basic.resource;
+package io.quarkus.rest.test.core.basic.resource;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.constructor.resource;
+package io.quarkus.rest.test.resource.constructor.resource;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;

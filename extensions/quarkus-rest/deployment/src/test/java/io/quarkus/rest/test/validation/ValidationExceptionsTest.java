@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
@@ -12,28 +12,28 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
 import org.jboss.resteasy.api.validation.Validation;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
 
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionClassValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionCrazyConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionCrazyValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionIncorrectConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionMapper;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionOtherConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionOtherValidationException;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionOtherValidationException2;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionOtherValidationException3;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionOtherValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionResourceCrazy;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionResourceWithIncorrectConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionResourceWithInvalidConstraintGroup;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionResourceWithOther;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionSubResourceWithInvalidOverride;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionSuperResource;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionTestGroup1;
-import org.jboss.resteasy.test.validation.resource.ValidationExceptionTestGroup2;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionClassValidator;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionCrazyConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionCrazyValidator;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionIncorrectConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionMapper;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionOtherConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionOtherValidationException;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionOtherValidationException2;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionOtherValidationException3;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionOtherValidator;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionResourceCrazy;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionResourceWithIncorrectConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionResourceWithInvalidConstraintGroup;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionResourceWithOther;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionSubResourceWithInvalidOverride;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionSuperResource;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionTestGroup1;
+import io.quarkus.rest.test.validation.resource.ValidationExceptionTestGroup2;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -42,7 +42,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import static org.jboss.resteasy.utils.PortProviderUtil.generateURL;
 
@@ -56,7 +62,7 @@ import java.util.List;
 public class ValidationExceptionsTest {
 
    protected static final Logger logger = LogManager.getLogger(ValidationExceptionsTest.class.getName());
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
    private static final String DEF_EXCEPTION = "constraintDefinitionException";
    private static final String CUSTOM_DEF_EXCEPTION = "customConstraintDefinitionException";
@@ -89,7 +95,7 @@ public class ValidationExceptionsTest {
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

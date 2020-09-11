@@ -1,11 +1,11 @@
-package org.jboss.resteasy.test.microprofile.config;
+package io.quarkus.rest.test.microprofile.config;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.test.microprofile.config.resource.MicroProfileConfigFilter;
-import org.jboss.resteasy.test.microprofile.config.resource.MicroProfileConfigResource;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.microprofile.config.resource.MicroProfileConfigFilter;
+import io.quarkus.rest.test.microprofile.config.resource.MicroProfileConfigResource;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -16,7 +16,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
@@ -30,23 +36,25 @@ import java.util.PropertyPermission;
  */
 public class MicroProfileConfigServletContextListenerTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(MicroProfileConfigServletContextListenerTest.class.getSimpleName())
-            .addClass(MicroProfileConfigFilter.class)
-            .setWebXML(MicroProfileConfigServletContextListenerTest.class.getPackage(), "web_servlet_context_listener.xml")
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
               new PropertyPermission("system", "write")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, MicroProfileConfigResource.class);
-   }
+   }});
 
    @BeforeClass
    public static void before() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass

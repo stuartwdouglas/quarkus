@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.basic.resource;
+package io.quarkus.rest.test.core.basic.resource;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;

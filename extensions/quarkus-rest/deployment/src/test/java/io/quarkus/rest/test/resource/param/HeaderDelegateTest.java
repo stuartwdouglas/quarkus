@@ -1,22 +1,22 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.plugins.delegates.DateDelegate;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.test.resource.param.resource.HeaderDelegateDate;
-import org.jboss.resteasy.test.resource.param.resource.HeaderDelegateDelegate;
-import org.jboss.resteasy.test.resource.param.resource.HeaderDelegateInterface1;
-import org.jboss.resteasy.test.resource.param.resource.HeaderDelegateInterface2;
-import org.jboss.resteasy.test.resource.param.resource.HeaderDelegateInterface3;
-import org.jboss.resteasy.test.resource.param.resource.HeaderDelegateInterface4;
-import org.jboss.resteasy.test.resource.param.resource.HeaderDelegateResource;
-import org.jboss.resteasy.test.resource.param.resource.HeaderDelegateSubDelegate;
+import io.quarkus.rest.test.resource.param.resource.HeaderDelegateDate;
+import io.quarkus.rest.test.resource.param.resource.HeaderDelegateDelegate;
+import io.quarkus.rest.test.resource.param.resource.HeaderDelegateInterface1;
+import io.quarkus.rest.test.resource.param.resource.HeaderDelegateInterface2;
+import io.quarkus.rest.test.resource.param.resource.HeaderDelegateInterface3;
+import io.quarkus.rest.test.resource.param.resource.HeaderDelegateInterface4;
+import io.quarkus.rest.test.resource.param.resource.HeaderDelegateResource;
+import io.quarkus.rest.test.resource.param.resource.HeaderDelegateSubDelegate;
 import org.jboss.resteasy.util.DateUtil;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
@@ -28,7 +28,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
@@ -50,9 +56,14 @@ public class HeaderDelegateTest {
    public static final Date RIGHT_AFTER_BIG_BANG = new HeaderDelegateDate(3000);
 
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(HeaderDelegateTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(HeaderDelegateDate.class);
       war.addClass(HeaderDelegateDelegate.class);
       war.addClass(HeaderDelegateInterface1.class);
@@ -75,7 +86,7 @@ public class HeaderDelegateTest {
             new ReflectPermission("suppressAccessChecks")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, HeaderDelegateResource.class);
-   }
+   }});
 
 
    private ResteasyProviderFactory factory;
@@ -103,7 +114,7 @@ public class HeaderDelegateTest {
     */
    @Test
    public void lastModifiedTest() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       ResteasyWebTarget target = client.target(generateURL("/last"));
       Invocation.Builder request = target.request();
       Response response = request.get();

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.form.resteasy1405;
+package io.quarkus.rest.test.form.resteasy1405;
 
 import java.util.List;
 

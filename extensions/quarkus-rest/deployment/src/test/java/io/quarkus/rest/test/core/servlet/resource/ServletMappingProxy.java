@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.servlet.resource;
+package io.quarkus.rest.test.core.servlet.resource;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;

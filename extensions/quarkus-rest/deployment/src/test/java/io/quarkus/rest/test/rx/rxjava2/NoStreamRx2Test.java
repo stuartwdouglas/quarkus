@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.rx.rxjava2;
+package io.quarkus.rest.test.rx.rxjava2;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -7,8 +7,8 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.test.rx.rxjava2.resource.NoStreamRx2Resource;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.rx.rxjava2.resource.NoStreamRx2Resource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -18,7 +18,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Reactive classes
@@ -27,15 +33,20 @@ import org.junit.runner.RunWith;
  */
 public class NoStreamRx2Test
 {
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(NoStreamRx2Test.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
          + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.jboss.resteasy.resteasy-context-propagation services\n"));
       return TestUtil.finishContainerPrepare(war, null, NoStreamRx2Resource.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, NoStreamRx2Test.class.getSimpleName());
@@ -44,7 +55,7 @@ public class NoStreamRx2Test
    //////////////////////////////////////////////////////////////////////////////
    @BeforeClass
    public static void beforeClass() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass

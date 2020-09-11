@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.rx.rxjava2.resource;
+package io.quarkus.rest.test.rx.rxjava2.resource;
 
 
 import java.util.ArrayList;
@@ -16,10 +16,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.jboss.resteasy.annotations.Stream;
-import org.jboss.resteasy.test.rx.resource.Bytes;
-import org.jboss.resteasy.test.rx.resource.TRACE;
-import org.jboss.resteasy.test.rx.resource.TestException;
-import org.jboss.resteasy.test.rx.resource.Thing;
+import io.quarkus.rest.test.rx.resource.Bytes;
+import io.quarkus.rest.test.rx.resource.TRACE;
+import io.quarkus.rest.test.rx.resource.TestException;
+import io.quarkus.rest.test.rx.resource.Thing;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;

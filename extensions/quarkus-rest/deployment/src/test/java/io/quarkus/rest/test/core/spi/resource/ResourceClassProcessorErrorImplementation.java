@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.spi.resource;
+package io.quarkus.rest.test.core.spi.resource;
 
 import org.jboss.resteasy.spi.metadata.ResourceClass;
 import org.jboss.resteasy.spi.metadata.ResourceClassProcessor;

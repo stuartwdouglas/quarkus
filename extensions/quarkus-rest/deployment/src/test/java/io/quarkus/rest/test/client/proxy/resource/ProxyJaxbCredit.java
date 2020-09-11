@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.proxy.resource;
+package io.quarkus.rest.test.client.proxy.resource;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.mbw.resource;
+package io.quarkus.rest.test.providers.mbw.resource;
 
 public class MessageBodyWriterObjectMessage {
 

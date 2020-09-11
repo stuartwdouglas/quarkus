@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.plain.resource;
+package io.quarkus.rest.test.providers.plain.resource;
 
 public class CharsetFoo {
    private String s;

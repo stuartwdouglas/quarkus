@@ -1,27 +1,27 @@
-package org.jboss.resteasy.test.providers.atom;
+package io.quarkus.rest.test.providers.atom;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.plugins.providers.atom.Content;
 import org.jboss.resteasy.plugins.providers.atom.Entry;
 import org.jboss.resteasy.plugins.providers.atom.Person;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelArchived;
-import org.jboss.resteasy.test.providers.atom.resource.AtomAssetMetadata;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelAtomAssetMetadataDecorators;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelAtomAssetMetadtaProcessor;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelCategories;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelCheckinComment;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelCreated;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelDisabled;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelEntryResource;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelFormat;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelNote;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelState;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelUuid;
-import org.jboss.resteasy.test.providers.atom.resource.AtomComplexModelVersionNumber;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelArchived;
+import io.quarkus.rest.test.providers.atom.resource.AtomAssetMetadata;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelAtomAssetMetadataDecorators;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelAtomAssetMetadtaProcessor;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelCategories;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelCheckinComment;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelCreated;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelDisabled;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelEntryResource;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelFormat;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelNote;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelState;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelUuid;
+import io.quarkus.rest.test.providers.atom.resource.AtomComplexModelVersionNumber;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -32,7 +32,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -62,11 +68,16 @@ import static org.junit.Assert.assertNotNull;
  */
 public class AtomComplexModelTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(AtomComplexModelTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(AtomComplexModelArchived.class,
             AtomAssetMetadata.class,
             AtomComplexModelAtomAssetMetadataDecorators.class,
@@ -89,11 +100,11 @@ public class AtomComplexModelTest {
          "permissions.xml");
 
       return TestUtil.finishContainerPrepare(war, null, AtomComplexModelEntryResource.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

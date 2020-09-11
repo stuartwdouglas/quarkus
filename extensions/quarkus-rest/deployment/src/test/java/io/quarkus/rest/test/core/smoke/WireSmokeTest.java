@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.smoke;
+package io.quarkus.rest.test.core.smoke;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Client;
@@ -10,9 +10,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.core.smoke.resource.WireSmokeLocatingResource;
-import org.jboss.resteasy.test.core.smoke.resource.WireSmokeSimpleResource;
-import org.jboss.resteasy.test.core.smoke.resource.WireSmokeSimpleSubresource;
+import io.quarkus.rest.test.core.smoke.resource.WireSmokeLocatingResource;
+import io.quarkus.rest.test.core.smoke.resource.WireSmokeSimpleResource;
+import io.quarkus.rest.test.core.smoke.resource.WireSmokeSimpleSubresource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -21,7 +21,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Smoke tests for jaxrs
@@ -34,17 +40,27 @@ public class WireSmokeTest {
    static Client client;
    private static final String WRONG_RESPONSE = "Wrong response content.";
 
-   @Deployment(name = "LocatingResource")
-   public static Archive<?> deployLocatingResource() {
-      WebArchive war = TestUtil.prepareArchive(WireSmokeLocatingResource.class.getSimpleName());
-      return TestUtil.finishContainerPrepare(war, null, WireSmokeLocatingResource.class, WireSmokeSimpleResource.class, WireSmokeSimpleSubresource.class);
-   }
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
 
-   @Deployment(name = "SimpleResource")
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(WireSmokeSimpleResource.class.getSimpleName());
+      return TestUtil.finishContainerPrepare(war, null, WireSmokeLocatingResource.class, WireSmokeSimpleResource.class, WireSmokeSimpleSubresource.class);
+   }});
+
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, WireSmokeSimpleResource.class);
-   }
+   }});
 
    @Before
    public void init() {

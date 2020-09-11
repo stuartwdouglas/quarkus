@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.MatrixParam;
@@ -16,7 +16,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 public class MatrixPathParamTest
 {

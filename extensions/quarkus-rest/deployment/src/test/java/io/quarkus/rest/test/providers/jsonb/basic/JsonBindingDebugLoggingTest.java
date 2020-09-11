@@ -1,15 +1,15 @@
-package org.jboss.resteasy.test.providers.jsonb.basic;
+package io.quarkus.rest.test.providers.jsonb.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.test.ContainerConstants;
-import org.jboss.resteasy.test.providers.jsonb.basic.resource.DebugLoggingServerSetup;
-import org.jboss.resteasy.test.providers.jsonb.basic.resource.JsonBindingDebugLoggingEndPoint;
-import org.jboss.resteasy.test.providers.jsonb.basic.resource.JsonBindingDebugLoggingItem;
-import org.jboss.resteasy.test.providers.jsonb.basic.resource.JsonBindingDebugLoggingItemCorruptedGet;
-import org.jboss.resteasy.test.providers.jsonb.basic.resource.JsonBindingDebugLoggingItemCorruptedSet;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.ContainerConstants;
+import io.quarkus.rest.test.providers.jsonb.basic.resource.DebugLoggingServerSetup;
+import io.quarkus.rest.test.providers.jsonb.basic.resource.JsonBindingDebugLoggingEndPoint;
+import io.quarkus.rest.test.providers.jsonb.basic.resource.JsonBindingDebugLoggingItem;
+import io.quarkus.rest.test.providers.jsonb.basic.resource.JsonBindingDebugLoggingItemCorruptedGet;
+import io.quarkus.rest.test.providers.jsonb.basic.resource.JsonBindingDebugLoggingItemCorruptedSet;
 import org.jboss.resteasy.utils.LogCounter;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -20,7 +20,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.ClientBuilder;
@@ -50,11 +56,16 @@ import static org.hamcrest.Matchers.greaterThan;
 @ServerSetup({DebugLoggingServerSetup.class}) // TBD: remove debug logging activation?
 public class JsonBindingDebugLoggingTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> createTestArchive1() {
-      WebArchive war = TestUtil.prepareArchive(JsonBindingDebugLoggingTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(JsonBindingDebugLoggingItem.class);
       war.addClass(JsonBindingDebugLoggingItemCorruptedGet.class);
       war.addClass(JsonBindingDebugLoggingItemCorruptedSet.class);
@@ -72,11 +83,11 @@ public class JsonBindingDebugLoggingTest {
               new PropertyPermission("jboss.server.base.dir", "read")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, JsonBindingDebugLoggingEndPoint.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient) ClientBuilder.newClient();
+      client = (QuarkusRestClient) ClientBuilder.newClient();
    }
 
    @After

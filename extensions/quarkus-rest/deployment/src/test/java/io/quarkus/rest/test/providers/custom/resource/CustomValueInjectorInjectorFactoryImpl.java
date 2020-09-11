@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.custom.resource;
+package io.quarkus.rest.test.providers.custom.resource;
 
 import org.jboss.resteasy.core.InjectorFactoryImpl;
 import org.jboss.resteasy.spi.HttpRequest;

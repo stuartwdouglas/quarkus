@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.security.testjar;
+package io.quarkus.rest.test.security.testjar;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.junit.Assert;
@@ -22,8 +22,8 @@ public class ClientConfigBearerTokenTestMainClass {
 
         String testType = args[0];
         String result = null;
-        ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-        ResteasyClient client = builder.build();
+        QuarkusRestClientBuilder builder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+        QuarkusRestClient client = builder.build();
 
         if (testType.equals("TEST_BEARER_TOKEN_IS_USED")) {
             Response response = client.target(dummyUrl)

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
@@ -10,10 +10,10 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedOutput;
-import org.jboss.resteasy.test.validation.resource.ContextProvidersCustomer;
-import org.jboss.resteasy.test.validation.resource.ContextProvidersCustomerForm;
-import org.jboss.resteasy.test.validation.resource.ContextProvidersName;
-import org.jboss.resteasy.test.validation.resource.ContextProvidersXop;
+import io.quarkus.rest.test.validation.resource.ContextProvidersCustomer;
+import io.quarkus.rest.test.validation.resource.ContextProvidersCustomerForm;
+import io.quarkus.rest.test.validation.resource.ContextProvidersName;
+import io.quarkus.rest.test.validation.resource.ContextProvidersXop;
 import org.junit.Assert;
 import org.junit.Test;
 

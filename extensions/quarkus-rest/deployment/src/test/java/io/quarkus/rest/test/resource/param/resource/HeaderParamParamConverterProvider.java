@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.param.resource;
+package io.quarkus.rest.test.resource.param.resource;
 
 import java.lang.annotation.Annotation;
 import javax.ws.rs.ext.ParamConverter;

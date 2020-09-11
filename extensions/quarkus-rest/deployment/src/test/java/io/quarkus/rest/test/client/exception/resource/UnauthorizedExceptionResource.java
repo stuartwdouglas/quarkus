@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.exception.resource;
+package io.quarkus.rest.test.client.exception.resource;
 
 import org.jboss.resteasy.spi.HttpResponseCodes;
 

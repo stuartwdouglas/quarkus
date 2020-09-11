@@ -1,16 +1,16 @@
-package org.jboss.resteasy.test.cdi.modules;
+package io.quarkus.rest.test.cdi.modules;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.cdi.modules.resource.CDIModulesInjectable;
-import org.jboss.resteasy.test.cdi.modules.resource.CDIModulesInjectableBinder;
-import org.jboss.resteasy.test.cdi.modules.resource.CDIModulesInjectableIntf;
-import org.jboss.resteasy.test.cdi.modules.resource.CDIModulesModulesResource;
-import org.jboss.resteasy.test.cdi.modules.resource.CDIModulesModulesResourceIntf;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.cdi.modules.resource.CDIModulesInjectable;
+import io.quarkus.rest.test.cdi.modules.resource.CDIModulesInjectableBinder;
+import io.quarkus.rest.test.cdi.modules.resource.CDIModulesInjectableIntf;
+import io.quarkus.rest.test.cdi.modules.resource.CDIModulesModulesResource;
+import io.quarkus.rest.test.cdi.modules.resource.CDIModulesModulesResourceIntf;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -20,7 +20,13 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;

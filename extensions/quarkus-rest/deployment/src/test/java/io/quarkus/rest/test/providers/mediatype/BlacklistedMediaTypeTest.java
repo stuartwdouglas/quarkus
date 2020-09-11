@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.mediatype;
+package io.quarkus.rest.test.providers.mediatype;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,8 +23,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.security.KeyTools;
 import org.jboss.resteasy.security.smime.EnvelopedInput;
-import org.jboss.resteasy.test.crypto.resource.CryptoCertResource;
-import org.jboss.resteasy.test.providers.mediatype.resource.BlacklistedMediaTypeResource;
+import io.quarkus.rest.test.crypto.resource.CryptoCertResource;
+import io.quarkus.rest.test.providers.mediatype.resource.BlacklistedMediaTypeResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -34,7 +34,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Blacklisted media types - RESTEASY-2198
@@ -63,11 +69,16 @@ public class BlacklistedMediaTypeTest {
       client = ClientBuilder.newClient();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(BlacklistedMediaTypeTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       try {
-         // Code borrowed from org.jboss.resteasy.test.crypto.CryptoTest
+         // Code borrowed from io.quarkus.rest.test.crypto.CryptoTest
          BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
          Security.addProvider(bouncyCastleProvider);
          KeyPair keyPair = KeyPairGenerator.getInstance("RSA", "BC").generateKeyPair();
@@ -77,7 +88,7 @@ public class BlacklistedMediaTypeTest {
          String certString = toString(cert);
          war.addAsResource(new StringAsset(privateKeyString), "privateKey.txt");
          war.addAsResource(new StringAsset(certString), "cert.txt");
-      } catch (Exception e) {
+      }}); catch (Exception e) {
          throw new RuntimeException(e);
       }
       war.addAsManifestResource("jboss-deployment-structure-bouncycastle.xml", "jboss-deployment-structure.xml");
@@ -201,7 +212,7 @@ public class BlacklistedMediaTypeTest {
 
    /**
     * Write the object to a Base64 string.
-    * Borrowed from org.jboss.resteasy.test.crypto.CryptoTest
+    * Borrowed from io.quarkus.rest.test.crypto.CryptoTest
     */
    private static String toString(Serializable o) throws IOException {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();

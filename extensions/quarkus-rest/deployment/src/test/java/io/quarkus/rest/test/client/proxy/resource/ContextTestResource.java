@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.client.proxy.resource;
+package io.quarkus.rest.test.client.proxy.resource;
 
-import org.jboss.resteasy.test.client.proxy.ContextTest;
+import io.quarkus.rest.test.client.proxy.ContextTest;
 import org.junit.Assert;
 
 import javax.ws.rs.core.UriInfo;

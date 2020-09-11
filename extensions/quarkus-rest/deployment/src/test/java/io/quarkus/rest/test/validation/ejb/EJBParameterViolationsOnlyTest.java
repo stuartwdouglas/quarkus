@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation.ejb;
+package io.quarkus.rest.test.validation.ejb;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -12,14 +12,14 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.test.validation.ejb.resource.EJBParameterViolationsOnlyAbstractDataObject;
-import org.jboss.resteasy.test.validation.ejb.resource.EJBParameterViolationsOnlyDataObject;
-import org.jboss.resteasy.test.validation.ejb.resource.EJBParameterViolationsOnlyResourceIntf;
-import org.jboss.resteasy.test.validation.ejb.resource.EJBParameterViolationsOnlySingletonResource;
-import org.jboss.resteasy.test.validation.ejb.resource.EJBParameterViolationsOnlyStatefulResource;
-import org.jboss.resteasy.test.validation.ejb.resource.EJBParameterViolationsOnlyStatelessResource;
-import org.jboss.resteasy.test.validation.ejb.resource.EJBParameterViolationsOnlyTestApplication;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.validation.ejb.resource.EJBParameterViolationsOnlyAbstractDataObject;
+import io.quarkus.rest.test.validation.ejb.resource.EJBParameterViolationsOnlyDataObject;
+import io.quarkus.rest.test.validation.ejb.resource.EJBParameterViolationsOnlyResourceIntf;
+import io.quarkus.rest.test.validation.ejb.resource.EJBParameterViolationsOnlySingletonResource;
+import io.quarkus.rest.test.validation.ejb.resource.EJBParameterViolationsOnlyStatefulResource;
+import io.quarkus.rest.test.validation.ejb.resource.EJBParameterViolationsOnlyStatelessResource;
+import io.quarkus.rest.test.validation.ejb.resource.EJBParameterViolationsOnlyTestApplication;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -29,7 +29,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 
 /**
@@ -40,25 +46,24 @@ import org.junit.runner.RunWith;
  */
 public class EJBParameterViolationsOnlyTest {
 
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
    private static EJBParameterViolationsOnlyDataObject validDataObject;
    private static EJBParameterViolationsOnlyDataObject invalidDataObject;
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(EJBParameterViolationsOnlyTest.class.getSimpleName())
-            .addClasses(
-                  EJBParameterViolationsOnlyTestApplication.class,
-                  EJBParameterViolationsOnlyDataObject.class,
-                  EJBParameterViolationsOnlyAbstractDataObject.class,
-                  EJBParameterViolationsOnlyResourceIntf.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null,
             EJBParameterViolationsOnlyStatelessResource.class,
             EJBParameterViolationsOnlyStatefulResource.class,
             EJBParameterViolationsOnlySingletonResource.class
             );
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, EJBParameterViolationsOnlyTest.class.getSimpleName());
@@ -66,7 +71,7 @@ public class EJBParameterViolationsOnlyTest {
 
    @BeforeClass
    public static void beforeClass() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
 
       // Create valid data object.
       validDataObject = new EJBParameterViolationsOnlyDataObject();

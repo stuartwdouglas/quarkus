@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.mediatype.resource;
+package io.quarkus.rest.test.providers.mediatype.resource;
 
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayReader;
@@ -16,8 +16,8 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.jboss.resteasy.plugins.providers.FileRange;
 import org.jboss.resteasy.security.smime.EnvelopedOutput;
-import org.jboss.resteasy.test.crypto.resource.CryptoCertResource;
-import org.jboss.resteasy.test.providers.mediatype.BlacklistedMediaTypeTest;
+import io.quarkus.rest.test.crypto.resource.CryptoCertResource;
+import io.quarkus.rest.test.providers.mediatype.BlacklistedMediaTypeTest;
 
 @Path("")
 public class BlacklistedMediaTypeResource {

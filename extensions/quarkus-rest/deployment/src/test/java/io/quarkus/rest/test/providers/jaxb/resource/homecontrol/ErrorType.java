@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jaxb.resource.homecontrol;
+package io.quarkus.rest.test.providers.jaxb.resource.homecontrol;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;

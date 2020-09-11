@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.asynch.resource;
+package io.quarkus.rest.test.asynch.resource;
 
 import org.jboss.logging.Logger;
 import javax.ws.rs.GET;

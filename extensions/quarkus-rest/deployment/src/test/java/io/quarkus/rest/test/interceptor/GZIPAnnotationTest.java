@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.interceptor;
+package io.quarkus.rest.test.interceptor;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -10,8 +10,8 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.plugins.interceptors.AcceptEncodingGZIPFilter;
 import org.jboss.resteasy.plugins.interceptors.GZIPDecodingInterceptor;
 import org.jboss.resteasy.plugins.interceptors.GZIPEncodingInterceptor;
-import org.jboss.resteasy.test.interceptor.resource.GZIPAnnotationInterface;
-import org.jboss.resteasy.test.interceptor.resource.GZIPAnnotationResource;
+import io.quarkus.rest.test.interceptor.resource.GZIPAnnotationInterface;
+import io.quarkus.rest.test.interceptor.resource.GZIPAnnotationResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -20,7 +20,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Interceptor
@@ -45,13 +51,18 @@ public class GZIPAnnotationTest {
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(GZIPAnnotationTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(GZIPAnnotationInterface.class);
       war.addAsManifestResource("org/jboss/resteasy/test/client/javax.ws.rs.ext.Providers", "services/javax.ws.rs.ext.Providers");
       return TestUtil.finishContainerPrepare(war, null, GZIPAnnotationResource.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, GZIPAnnotationTest.class.getSimpleName());

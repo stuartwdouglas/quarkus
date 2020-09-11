@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jaxb.resource;
+package io.quarkus.rest.test.providers.jaxb.resource;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.PUT;

@@ -1,11 +1,11 @@
-package org.jboss.resteasy.test.security;
+package io.quarkus.rest.test.security;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.test.security.resource.SslResource;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.test.security.resource.SslResource;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -13,7 +13,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -41,11 +47,16 @@ public class SslServerWithoutCertificateTest extends SslTestBase {
    private static final String CLIENT_TRUSTSTORE_PATH = RESOURCES + "/client.truststore";
    private static final String URL = generateHttpsURL(0, false);
 
-   @Deployment
-   public static Archive<?> createDeployment() {
-      WebArchive war = TestUtil.prepareArchive(DEPLOYMENT_NAME);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, SslResource.class);
-   }
+   }});
 
    @BeforeClass
    public static void prepareTruststore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
@@ -63,10 +74,10 @@ public class SslServerWithoutCertificateTest extends SslTestBase {
     */
    @Test(expected = ProcessingException.class)
    public void testServerWithoutCertificate() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(false);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      client = resteasyClientBuilder.trustStore(truststore).build();
+      client = QuarkusRestClientBuilder.trustStore(truststore).build();
       client.target(URL).request().get();
    }
 
@@ -78,12 +89,12 @@ public class SslServerWithoutCertificateTest extends SslTestBase {
     */
    @Test
    public void testServerWithoutCertificateDisabledTrustManager() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(false);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      resteasyClientBuilder = resteasyClientBuilder.disableTrustManager();
+      QuarkusRestClientBuilder = QuarkusRestClientBuilder.disableTrustManager();
 
-      client = resteasyClientBuilder.trustStore(truststore).build();
+      client = QuarkusRestClientBuilder.trustStore(truststore).build();
       Response response = client.target(URL).request().get();
       Assert.assertEquals("Hello World!", response.readEntity(String.class));
       Assert.assertEquals(200, response.getStatus());

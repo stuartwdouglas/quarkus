@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.client.resource;
+package io.quarkus.rest.test.client.resource;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.test.client.TraceTest;
+import io.quarkus.rest.test.client.TraceTest;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;

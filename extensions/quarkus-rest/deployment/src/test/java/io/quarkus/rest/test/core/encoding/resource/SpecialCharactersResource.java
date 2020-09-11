@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.encoding.resource;
+package io.quarkus.rest.test.core.encoding.resource;
 
 import org.junit.Assert;
 

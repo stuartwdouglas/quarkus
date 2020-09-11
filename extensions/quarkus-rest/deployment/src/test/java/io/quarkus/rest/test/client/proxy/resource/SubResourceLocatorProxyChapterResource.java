@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.client.proxy.resource;
+package io.quarkus.rest.test.client.proxy.resource;
 
-import org.jboss.resteasy.test.client.proxy.SubResourceLocatorProxyTest;
+import io.quarkus.rest.test.client.proxy.SubResourceLocatorProxyTest;
 
 public class SubResourceLocatorProxyChapterResource implements SubResourceLocatorProxyTest.Chapter {
    private final int number;

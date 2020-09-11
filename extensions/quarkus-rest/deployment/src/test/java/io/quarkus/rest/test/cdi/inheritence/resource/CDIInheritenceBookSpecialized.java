@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.inheritence.resource;
+package io.quarkus.rest.test.cdi.inheritence.resource;
 
 import javax.enterprise.inject.Specializes;
 

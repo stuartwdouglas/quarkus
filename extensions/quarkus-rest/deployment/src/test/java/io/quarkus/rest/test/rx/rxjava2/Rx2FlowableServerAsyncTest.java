@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.rx.rxjava2;
+package io.quarkus.rest.test.rx.rxjava2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,13 +17,13 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.rx.resource.Bytes;
-import org.jboss.resteasy.test.rx.resource.RxScheduledExecutorService;
-import org.jboss.resteasy.test.rx.resource.TRACE;
-import org.jboss.resteasy.test.rx.resource.TestException;
-import org.jboss.resteasy.test.rx.resource.TestExceptionMapper;
-import org.jboss.resteasy.test.rx.resource.Thing;
-import org.jboss.resteasy.test.rx.rxjava2.resource.Rx2FlowableResourceNoStreamImpl;
+import io.quarkus.rest.test.rx.resource.Bytes;
+import io.quarkus.rest.test.rx.resource.RxScheduledExecutorService;
+import io.quarkus.rest.test.rx.resource.TRACE;
+import io.quarkus.rest.test.rx.resource.TestException;
+import io.quarkus.rest.test.rx.resource.TestExceptionMapper;
+import io.quarkus.rest.test.rx.resource.Thing;
+import io.quarkus.rest.test.rx.rxjava2.resource.Rx2FlowableResourceNoStreamImpl;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -36,7 +36,13 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 import org.junit.runners.MethodSorters;
 
 
@@ -82,9 +88,14 @@ public class Rx2FlowableServerAsyncTest {
       for (int i = 0; i < 2; i++) {aThingListList.add(aThingList);}
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(Rx2FlowableServerAsyncTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(Thing.class);
       war.addClass(Bytes.class);
       war.addClass(TRACE.class);
@@ -93,7 +104,7 @@ public class Rx2FlowableServerAsyncTest {
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
          + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.jboss.resteasy.resteasy-json-binding-provider services\n"));
       return TestUtil.finishContainerPrepare(war, null, Rx2FlowableResourceNoStreamImpl.class, TestExceptionMapper.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, Rx2FlowableServerAsyncTest.class.getSimpleName());

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.resource;
+package io.quarkus.rest.test.providers.jackson2.resource;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

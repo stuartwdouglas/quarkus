@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.multipart;
+package io.quarkus.rest.test.providers.multipart;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -8,9 +8,9 @@ import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedOutput;
-import org.jboss.resteasy.test.providers.multipart.resource.MimeMultipartProviderClient;
-import org.jboss.resteasy.test.providers.multipart.resource.MimeMultipartProviderCustomer;
-import org.jboss.resteasy.test.providers.multipart.resource.MimeMultipartProviderResource;
+import io.quarkus.rest.test.providers.multipart.resource.MimeMultipartProviderClient;
+import io.quarkus.rest.test.providers.multipart.resource.MimeMultipartProviderCustomer;
+import io.quarkus.rest.test.providers.multipart.resource.MimeMultipartProviderResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -21,7 +21,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.activation.DataHandler;
 import javax.mail.internet.MimeMultipart;
@@ -69,14 +75,19 @@ public class MimeMultipartProviderTest {
 
    static final String testFilePath = TestUtil.getResourcePath(MimeMultipartProviderTest.class, "HeaderFlushedOutputStreamTestData.txt");
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(MimeMultipartProviderTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
             new ReflectPermission("suppressAccessChecks")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, MimeMultipartProviderResource.class, MimeMultipartProviderCustomer.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, MimeMultipartProviderTest.class.getSimpleName());

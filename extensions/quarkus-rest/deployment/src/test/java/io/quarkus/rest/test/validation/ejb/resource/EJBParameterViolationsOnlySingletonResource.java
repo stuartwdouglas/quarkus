@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation.ejb.resource;
+package io.quarkus.rest.test.validation.ejb.resource;
 
 import javax.ejb.Singleton;
 import javax.ws.rs.Path;

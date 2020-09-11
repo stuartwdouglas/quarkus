@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.spi;
+package io.quarkus.rest.test.core.spi;
 
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -6,20 +6,20 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorEndPointCDI;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorEndPointEJB;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorImplementation;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorClass;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorMethod;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorEndPoint;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorProxy;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorProxyEndPoint;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorPureEndPoint;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorPureEndPointCDI;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorPureEndPointEJB;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorEndPointCDI;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorEndPointEJB;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorImplementation;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorClass;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorMethod;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorEndPoint;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorProxy;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorProxyEndPoint;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorPureEndPoint;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorPureEndPointCDI;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorPureEndPointEJB;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -32,7 +32,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
 
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 
 import javax.ws.rs.core.Response;
@@ -48,7 +54,7 @@ import static org.hamcrest.CoreMatchers.is;
  */
 public class ResourceClassProcessorBasicTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
    protected static final Logger logger = Logger.getLogger(ResourceClassProcessorBasicTest.class.getName());
 
@@ -96,7 +102,7 @@ public class ResourceClassProcessorBasicTest {
 
    @BeforeClass
    public static void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass
@@ -232,7 +238,7 @@ public class ResourceClassProcessorBasicTest {
    @Test
    @Ignore("https://issues.jboss.org/browse/RESTEASY-2071")
    public void proxyTest() {
-      ResteasyClient proxyClient= (ResteasyClient)ClientBuilder.newBuilder()
+      QuarkusRestClient proxyClient= (QuarkusRestClient)ClientBuilder.newBuilder()
             .register(ResourceClassProcessorImplementation.class)
             .build();
 

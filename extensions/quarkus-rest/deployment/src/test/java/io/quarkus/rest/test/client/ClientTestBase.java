@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client;
+package io.quarkus.rest.test.client;
 
 import java.net.URI;
 

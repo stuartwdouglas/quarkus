@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.asynch.resource;
+package io.quarkus.rest.test.asynch.resource;
 
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -10,7 +10,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.jboss.resteasy.spi.HttpRequest;
-import org.jboss.resteasy.test.asynch.resource.AsyncInjectionPrimitiveInjectorSpecifier.Type;
+import io.quarkus.rest.test.asynch.resource.AsyncInjectionPrimitiveInjectorSpecifier.Type;
 
 @Path("/")
 public class AsyncInjectionResource

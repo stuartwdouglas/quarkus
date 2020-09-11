@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.asynch.resource;
+package io.quarkus.rest.test.asynch.resource;
 
 @SuppressWarnings("serial")
 public class AsyncInjectionException extends Exception

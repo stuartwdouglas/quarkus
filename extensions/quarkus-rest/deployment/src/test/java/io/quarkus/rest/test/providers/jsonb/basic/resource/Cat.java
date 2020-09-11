@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jsonb.basic.resource;
+package io.quarkus.rest.test.providers.jsonb.basic.resource;
 
 import javax.json.bind.annotation.JsonbPropertyOrder;
 import javax.json.bind.annotation.JsonbTransient;

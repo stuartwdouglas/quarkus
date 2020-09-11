@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2;
+package io.quarkus.rest.test.providers.jackson2;
 
 import static org.hamcrest.CoreMatchers.containsString;
 
@@ -15,8 +15,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.providers.jackson2.resource.CustomJackson2ProviderApplication;
-import org.jboss.resteasy.test.providers.jackson2.resource.CustomJackson2ProviderResource;
+import io.quarkus.rest.test.providers.jackson2.resource.CustomJackson2ProviderApplication;
+import io.quarkus.rest.test.providers.jackson2.resource.CustomJackson2ProviderResource;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -27,7 +27,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 
 /**
@@ -39,9 +45,14 @@ public class CustomJackson2ProviderTest {
 
    private static Client client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(CustomJackson2ProviderTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(CustomJackson2ProviderApplication.class, CustomJackson2ProviderResource.class);
       war.addAsWebInfResource(CustomJackson2ProviderTest.class.getPackage(), "jboss-deployment-structure-exclude-jaxrs.xml","jboss-deployment-structure.xml");
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
@@ -56,7 +67,7 @@ public class CustomJackson2ProviderTest {
       mavenUtil = MavenUtil.create(true);
       String version = System.getProperty("project.version");
       try {
-         war.addAsLibraries(mavenUtil.createMavenGavRecursiveFiles("org.jboss.resteasy:resteasy-servlet-initializer:" + version).toArray(new File[]{}));
+         war.addAsLibraries(mavenUtil.createMavenGavRecursiveFiles("org.jboss.resteasy:resteasy-servlet-initializer:" + version).toArray(new File[]{}});));
          war.addAsLibraries(mavenUtil.createMavenGavRecursiveFiles("org.jboss.resteasy:resteasy-core:" + version).toArray(new File[]{}));
          war.addAsLibraries(mavenUtil.createMavenGavRecursiveFiles("org.jboss.resteasy:resteasy-core-spi:" + version).toArray(new File[]{}));
          war.addAsLibraries(mavenUtil.createMavenGavRecursiveFiles("org.jboss.resteasy:resteasy-jackson2-provider:" + version).toArray(new File[]{}));

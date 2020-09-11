@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -7,55 +7,55 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexA;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexArrayOfStrings;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexB;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexCrossParameterConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexCrossParameterValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexFoo;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexFooConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexFooReaderWriter;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexFooValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexInterface;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexInterfaceSub;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexInterfaceSuper;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexListOfArrayOfStrings;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexListOfStrings;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexMapOfListOfArrayOfStrings;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexMapOfStrings;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexOneString;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexOtherGroup;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexOtherGroupConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexClassConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexClassConstraint2;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexClassInheritanceSubConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexClassInheritanceSuperConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexClassValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexClassValidator2;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexClassValidatorSubInheritance;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexClassValidatorSuperInheritance;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexOtherGroupValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexProxyInterface;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexProxyResource;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithAllFivePotentialViolations;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithArray;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithClassConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithClassConstraintInterface;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithFieldAndProperty;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithGraph;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithInvalidField;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithList;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithMap;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithMapOfListOfArrayOfStrings;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithOtherGroups;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithParameters;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithProperty;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithReturnValues;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithSubLocators;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithValidField;
-import org.jboss.resteasy.test.validation.resource.ValidationComplexSubResourceWithCrossParameterConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationComplexA;
+import io.quarkus.rest.test.validation.resource.ValidationComplexArrayOfStrings;
+import io.quarkus.rest.test.validation.resource.ValidationComplexB;
+import io.quarkus.rest.test.validation.resource.ValidationComplexCrossParameterConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationComplexCrossParameterValidator;
+import io.quarkus.rest.test.validation.resource.ValidationComplexFoo;
+import io.quarkus.rest.test.validation.resource.ValidationComplexFooConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationComplexFooReaderWriter;
+import io.quarkus.rest.test.validation.resource.ValidationComplexFooValidator;
+import io.quarkus.rest.test.validation.resource.ValidationComplexInterface;
+import io.quarkus.rest.test.validation.resource.ValidationComplexInterfaceSub;
+import io.quarkus.rest.test.validation.resource.ValidationComplexInterfaceSuper;
+import io.quarkus.rest.test.validation.resource.ValidationComplexListOfArrayOfStrings;
+import io.quarkus.rest.test.validation.resource.ValidationComplexListOfStrings;
+import io.quarkus.rest.test.validation.resource.ValidationComplexMapOfListOfArrayOfStrings;
+import io.quarkus.rest.test.validation.resource.ValidationComplexMapOfStrings;
+import io.quarkus.rest.test.validation.resource.ValidationComplexOneString;
+import io.quarkus.rest.test.validation.resource.ValidationComplexOtherGroup;
+import io.quarkus.rest.test.validation.resource.ValidationComplexOtherGroupConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationComplexClassConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationComplexClassConstraint2;
+import io.quarkus.rest.test.validation.resource.ValidationComplexClassInheritanceSubConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationComplexClassInheritanceSuperConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationComplexClassValidator;
+import io.quarkus.rest.test.validation.resource.ValidationComplexClassValidator2;
+import io.quarkus.rest.test.validation.resource.ValidationComplexClassValidatorSubInheritance;
+import io.quarkus.rest.test.validation.resource.ValidationComplexClassValidatorSuperInheritance;
+import io.quarkus.rest.test.validation.resource.ValidationComplexOtherGroupValidator;
+import io.quarkus.rest.test.validation.resource.ValidationComplexProxyInterface;
+import io.quarkus.rest.test.validation.resource.ValidationComplexProxyResource;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithAllFivePotentialViolations;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithArray;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithClassConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithClassConstraintInterface;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithFieldAndProperty;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithGraph;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithInvalidField;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithList;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithMap;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithMapOfListOfArrayOfStrings;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithOtherGroups;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithParameters;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithProperty;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithReturnValues;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithSubLocators;
+import io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithValidField;
+import io.quarkus.rest.test.validation.resource.ValidationComplexSubResourceWithCrossParameterConstraint;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -67,7 +67,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.InternalServerErrorException;
@@ -105,11 +111,11 @@ public class ValidationComplexTest {
    private static final String CUSTOM_OBJECT_DEPLOYMENT = "customObjectDeployment";
    private static final String ASYNC_CUSTOM_OBJECT_DEPLOYMENT = "asyncCustomObjectDeployment";
 
-   ResteasyClient client;
+   QuarkusRestClient client;
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient().register(ValidationComplexFooReaderWriter.class);
+      client = (QuarkusRestClient)ClientBuilder.newClient().register(ValidationComplexFooReaderWriter.class);
    }
 
    @After
@@ -735,7 +741,7 @@ public class ValidationComplexTest {
       Assert.assertEquals(RESPONSE_ERROR_MSG, "z", cv.getValue());
       cv = r.getClassViolations().iterator().next();
       Assert.assertEquals(WRONG_ERROR_MSG, "Concatenation of s and t must have length > 5", cv.getMessage());
-      Assert.assertTrue(WRONG_ERROR_MSG, cv.getValue().startsWith("org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithAllFivePotentialViolations@"));
+      Assert.assertTrue(WRONG_ERROR_MSG, cv.getValue().startsWith("io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithAllFivePotentialViolations@"));
       cv = r.getParameterViolations().iterator().next();
       Assert.assertEquals(WRONG_ERROR_MSG, "s must have length: 3 <= length <= 5", cv.getMessage());
       Assert.assertEquals(RESPONSE_ERROR_MSG, "ValidationComplexFoo[p]", cv.getValue());
@@ -882,7 +888,7 @@ public class ValidationComplexTest {
 
       // Invalid: Should have 1 each of field, property, class, and parameter violations,and no return value violations.
       // Note: expect warning because ValidationComplexResourceWithAllFivePotentialViolations is being used a sub-resource and it has an injectible field:
-      //       WARN org.jboss.resteasy.core.ResourceLocator - Field s of subresource org.jboss.resteasy.test.validation.ValidationComplexTest$ValidationComplexResourceWithAllFivePotentialViolations will not be injected according to spec
+      //       WARN org.jboss.resteasy.core.ResourceLocator - Field s of subresource io.quarkus.rest.test.validation.ValidationComplexTest$ValidationComplexResourceWithAllFivePotentialViolations will not be injected according to spec
       foo = new ValidationComplexFoo("p");
       response = client.target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/everything/a/z/unused/unused", ValidationComplexResourceWithSubLocators.class.getSimpleName()))
             .request().post(Entity.entity(foo, "application/foo"));
@@ -898,7 +904,7 @@ public class ValidationComplexTest {
       Assert.assertEquals(WRONG_ERROR_MSG, "z", violation.getValue());
       cv = r.getClassViolations().iterator().next();
       Assert.assertEquals(WRONG_ERROR_MSG, "Concatenation of s and t must have length > 5", cv.getMessage());
-      Assert.assertTrue(RESPONSE_ERROR_MSG, cv.getValue().startsWith("org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithAllFivePotentialViolations@"));
+      Assert.assertTrue(RESPONSE_ERROR_MSG, cv.getValue().startsWith("io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithAllFivePotentialViolations@"));
       response.close();
 
       // Sub-sub-resource locator returns resource with valid property.
@@ -958,7 +964,7 @@ public class ValidationComplexTest {
       Assert.assertEquals(RESPONSE_ERROR_MSG, "z", cv.getValue());
       cv = r.getClassViolations().iterator().next();
       Assert.assertEquals(WRONG_ERROR_MSG, "Concatenation of s and t must have length > 5", cv.getMessage());
-      Assert.assertTrue(RESPONSE_ERROR_MSG, cv.getValue().startsWith("org.jboss.resteasy.test.validation.resource.ValidationComplexResourceWithAllFivePotentialViolations@"));
+      Assert.assertTrue(RESPONSE_ERROR_MSG, cv.getValue().startsWith("io.quarkus.rest.test.validation.resource.ValidationComplexResourceWithAllFivePotentialViolations@"));
       cv = r.getParameterViolations().iterator().next();
       Assert.assertEquals(WRONG_ERROR_MSG, "s must have length: 3 <= length <= 5", cv.getMessage());
       Assert.assertEquals(RESPONSE_ERROR_MSG, "ValidationComplexFoo[p]", cv.getValue());

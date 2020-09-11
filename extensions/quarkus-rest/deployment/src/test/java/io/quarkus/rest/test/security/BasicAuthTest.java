@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.security;
+package io.quarkus.rest.test.security;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -21,16 +21,16 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.resteasy.category.ExpectedFailingOnWildFly18;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
 import org.jboss.resteasy.setup.AbstractUsersRolesSecurityDomainSetup;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.security.resource.BasicAuthRequestFilter;
-import org.jboss.resteasy.test.security.resource.BasicAuthBaseProxy;
-import org.jboss.resteasy.test.security.resource.BasicAuthBaseResource;
-import org.jboss.resteasy.test.security.resource.BasicAuthBaseResourceAnybody;
-import org.jboss.resteasy.test.security.resource.BasicAuthBaseResourceMoreSecured;
+import io.quarkus.rest.test.security.resource.BasicAuthRequestFilter;
+import io.quarkus.rest.test.security.resource.BasicAuthBaseProxy;
+import io.quarkus.rest.test.security.resource.BasicAuthBaseResource;
+import io.quarkus.rest.test.security.resource.BasicAuthBaseResourceAnybody;
+import io.quarkus.rest.test.security.resource.BasicAuthBaseResourceMoreSecured;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -40,7 +40,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import java.io.IOException;
 
@@ -57,14 +63,14 @@ public class BasicAuthTest {
    private static final String WRONG_RESPONSE = "Wrong response content.";
    private static final String ACCESS_FORBIDDEN_MESSAGE = "Access forbidden: role not allowed";
 
-   private static ResteasyClient authorizedClient;
-   private static ResteasyClient unauthorizedClient;
-   private static ResteasyClient noAutorizationClient;
+   private static QuarkusRestClient authorizedClient;
+   private static QuarkusRestClient unauthorizedClient;
+   private static QuarkusRestClient noAutorizationClient;
 
     // Following clients are used in tests for ClientRequestFilter
-    private static ResteasyClient authorizedClientUsingRequestFilter;
-    private static ResteasyClient unauthorizedClientUsingRequestFilter;
-    private static ResteasyClient unauthorizedClientUsingRequestFilterWithWrongPassword;
+    private static QuarkusRestClient authorizedClientUsingRequestFilter;
+    private static QuarkusRestClient unauthorizedClientUsingRequestFilter;
+    private static QuarkusRestClient unauthorizedClientUsingRequestFilterWithWrongPassword;
 
     @BeforeClass
     public static void init() {
@@ -75,7 +81,7 @@ public class BasicAuthTest {
             credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY), credentials);
             CloseableHttpClient client = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
             ApacheHttpClientEngine engine = ApacheHttpClientEngine.create(client);
-            authorizedClient = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
+            authorizedClient = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
         }
         // unauthorizedClient
         {
@@ -84,25 +90,25 @@ public class BasicAuthTest {
             credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY), credentials_other);
             CloseableHttpClient client = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
             ApacheHttpClientEngine engine = ApacheHttpClientEngine.create(client);
-            unauthorizedClient = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
+            unauthorizedClient = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
         }
         // noAuthorizationClient
-        noAutorizationClient = (ResteasyClient)ClientBuilder.newClient();
+        noAutorizationClient = (QuarkusRestClient)ClientBuilder.newClient();
 
         // authorizedClient with ClientRequestFilter
         {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            authorizedClientUsingRequestFilter = (ResteasyClient) builder.register(new BasicAuthRequestFilter("bill", "password1")).build();
+            QuarkusRestClientBuilder builder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+            authorizedClientUsingRequestFilter = (QuarkusRestClient) builder.register(new BasicAuthRequestFilter("bill", "password1")).build();
         }
         // unauthorizedClient with ClientRequestFilter - unauthorized user
         {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            unauthorizedClientUsingRequestFilter = (ResteasyClient) builder.register(new BasicAuthRequestFilter("ordinaryUser", "password2")).build();
+            QuarkusRestClientBuilder builder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+            unauthorizedClientUsingRequestFilter = (QuarkusRestClient) builder.register(new BasicAuthRequestFilter("ordinaryUser", "password2")).build();
         }
         // unauthorizedClient with ClientRequestFilter - wrong password
         {
-            ResteasyClientBuilder builder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-            unauthorizedClientUsingRequestFilterWithWrongPassword = (ResteasyClient) builder.register(new BasicAuthRequestFilter("bill", "password2")).build();
+            QuarkusRestClientBuilder builder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+            unauthorizedClientUsingRequestFilterWithWrongPassword = (QuarkusRestClient) builder.register(new BasicAuthRequestFilter("bill", "password2")).build();
         }
     }
 
@@ -116,9 +122,14 @@ public class BasicAuthTest {
         unauthorizedClientUsingRequestFilterWithWrongPassword.close();
     }
 
-   @Deployment
-   public static Archive<?> deployLocatingResource() {
-      WebArchive war = TestUtil.prepareArchive(BasicAuthTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
 
       Hashtable<String, String> contextParams = new Hashtable<String, String>();
       contextParams.put("resteasy.role.based.security", "true");
@@ -129,7 +140,7 @@ public class BasicAuthTest {
 
       return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class,
             BasicAuthBaseResourceMoreSecured.class, BasicAuthBaseResourceAnybody.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, BasicAuthTest.class.getSimpleName());
@@ -254,7 +265,7 @@ public class BasicAuthTest {
       CloseableHttpClient client = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
       ApacheHttpClientEngine engine = ApacheHttpClientEngine.create(client);
 
-      ResteasyClient authorizedClient = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
+      QuarkusRestClient authorizedClient = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
       Response response = authorizedClient.target(generateURL("/secured/deny")).request().get();
       Assert.assertEquals(HttpResponseCodes.SC_FORBIDDEN, response.getStatus());
       Assert.assertEquals(ACCESS_FORBIDDEN_MESSAGE, response.readEntity(String.class));

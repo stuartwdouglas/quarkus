@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.response.resource;
+package io.quarkus.rest.test.response.resource;
 
-import org.jboss.resteasy.test.response.VariantAcceptTest;
+import io.quarkus.rest.test.response.VariantAcceptTest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

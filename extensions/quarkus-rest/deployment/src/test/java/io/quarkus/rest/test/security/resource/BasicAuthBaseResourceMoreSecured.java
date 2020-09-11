@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.security.resource;
+package io.quarkus.rest.test.security.resource;
 
 import org.jboss.logging.Logger;
 import javax.annotation.security.RolesAllowed;

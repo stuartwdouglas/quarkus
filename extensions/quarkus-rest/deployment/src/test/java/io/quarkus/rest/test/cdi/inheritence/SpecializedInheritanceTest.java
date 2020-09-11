@@ -1,23 +1,29 @@
-package org.jboss.resteasy.test.cdi.inheritence;
+package io.quarkus.rest.test.cdi.inheritence;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.cdi.inheritence.resource.CDIInheritenceBook;
-import org.jboss.resteasy.test.cdi.inheritence.resource.CDIInheritenceBookSpecialized;
-import org.jboss.resteasy.test.cdi.inheritence.resource.CDIInheritenceInheritanceResource;
-import org.jboss.resteasy.test.cdi.inheritence.resource.CDIInheritenceSelectBook;
-import org.jboss.resteasy.test.cdi.inheritence.resource.CDIInheritenceStereotypeAlternative;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.cdi.inheritence.resource.CDIInheritenceBook;
+import io.quarkus.rest.test.cdi.inheritence.resource.CDIInheritenceBookSpecialized;
+import io.quarkus.rest.test.cdi.inheritence.resource.CDIInheritenceInheritanceResource;
+import io.quarkus.rest.test.cdi.inheritence.resource.CDIInheritenceSelectBook;
+import io.quarkus.rest.test.cdi.inheritence.resource.CDIInheritenceStereotypeAlternative;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -35,15 +41,20 @@ import static org.junit.Assert.assertEquals;
 public class SpecializedInheritanceTest {
    protected static final Logger log = LogManager.getLogger(SpecializedInheritanceTest.class.getName());
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(SpecializedInheritanceTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(UtilityProducer.class)
             .addClasses(CDIInheritenceSelectBook.class, CDIInheritenceStereotypeAlternative.class)
             .addClasses(CDIInheritenceBook.class, CDIInheritenceBookSpecialized.class, CDIInheritenceInheritanceResource.class)
             .addAsWebInfResource(SpecializedInheritanceTest.class.getPackage(), "specializedBeans.xml", "beans.xml");
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-   }
+   }});
 
    /**
     * @tpTestDetails Client get request. Resource check inheritance bean on server.

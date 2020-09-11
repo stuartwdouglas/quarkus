@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.custom.resource;
+package io.quarkus.rest.test.providers.custom.resource;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.ext.Provider;

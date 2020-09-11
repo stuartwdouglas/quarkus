@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.jsonfilter;
+package io.quarkus.rest.test.providers.jackson2.jsonfilter;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -8,11 +8,11 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.providers.jackson2.jsonfilter.resource.Jackson2Person;
-import org.jboss.resteasy.test.providers.jackson2.jsonfilter.resource.Jackson2PersonResource;
-import org.jboss.resteasy.test.providers.jackson2.jsonfilter.resource.ObjectFilterModifierMultiple;
-import org.jboss.resteasy.test.providers.jackson2.jsonfilter.resource.ObjectWriterModifierMultipleFilter;
-import org.jboss.resteasy.test.providers.jackson2.jsonfilter.resource.PersonType;
+import io.quarkus.rest.test.providers.jackson2.jsonfilter.resource.Jackson2Person;
+import io.quarkus.rest.test.providers.jackson2.jsonfilter.resource.Jackson2PersonResource;
+import io.quarkus.rest.test.providers.jackson2.jsonfilter.resource.ObjectFilterModifierMultiple;
+import io.quarkus.rest.test.providers.jackson2.jsonfilter.resource.ObjectWriterModifierMultipleFilter;
+import io.quarkus.rest.test.providers.jackson2.jsonfilter.resource.PersonType;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -20,7 +20,13 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Jackson2 provider
@@ -31,14 +37,19 @@ import org.junit.runner.RunWith;
  * @tpSince RESTEasy 3.1.0
  */
 public class JsonFilterWithServletMultipleFiltersTest {
-   @Deployment(name = "default")
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(JsonFilterWithServletMultipleFiltersTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(Jackson2Person.class, PersonType.class, ObjectFilterModifierMultiple.class, ObjectWriterModifierMultipleFilter.class);
       war.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\n" + "Dependencies: com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider\n"), "MANIFEST.MF");
       war.addAsWebInfResource(JsonFilterWithServletMultipleFiltersTest.class.getPackage(), "web-filter-multiple.xml", "web.xml");
       return TestUtil.finishContainerPrepare(war, null, Jackson2PersonResource.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, JsonFilterWithServletMultipleFiltersTest.class.getSimpleName());

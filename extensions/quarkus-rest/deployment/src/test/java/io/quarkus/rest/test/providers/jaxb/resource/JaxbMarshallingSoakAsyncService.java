@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.providers.jaxb.resource;
+package io.quarkus.rest.test.providers.jaxb.resource;
 
-import org.jboss.resteasy.test.providers.jaxb.JaxbMarshallingSoakTest;
+import io.quarkus.rest.test.providers.jaxb.JaxbMarshallingSoakTest;
 import org.junit.Assert;
 
 import javax.ws.rs.Consumes;

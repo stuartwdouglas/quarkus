@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.resource.param.resource;
+package io.quarkus.rest.test.resource.param.resource;
 
-import org.jboss.resteasy.test.resource.param.HeaderDelegateTest;
+import io.quarkus.rest.test.resource.param.HeaderDelegateTest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

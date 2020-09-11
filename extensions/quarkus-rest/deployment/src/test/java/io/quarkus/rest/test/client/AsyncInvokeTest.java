@@ -1,11 +1,11 @@
-package org.jboss.resteasy.test.client;
+package io.quarkus.rest.test.client;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.client.resource.AsyncInvokeResource;
+import io.quarkus.rest.test.client.resource.AsyncInvokeResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -14,7 +14,13 @@ import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.Client;
@@ -44,19 +50,24 @@ public class AsyncInvokeTest extends ClientTestBase{
    static Client client;
    static Client nioClient;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(AsyncInvokeTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(AsyncInvokeTest.class);
       war.addClass(ClientTestBase.class);
       return TestUtil.finishContainerPrepare(war, null, AsyncInvokeResource.class);
-   }
+   }});
 
    @Before
    public void init() {
       client = ClientBuilder.newClient();
 
-      nioClient = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).useAsyncHttpEngine().build();
+      nioClient = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).useAsyncHttpEngine().build();
    }
 
    @After

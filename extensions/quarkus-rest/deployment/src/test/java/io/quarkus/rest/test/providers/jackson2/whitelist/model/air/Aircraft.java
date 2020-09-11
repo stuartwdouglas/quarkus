@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.providers.jackson2.whitelist.model.air;
+package io.quarkus.rest.test.providers.jackson2.whitelist.model.air;
 
-import org.jboss.resteasy.test.providers.jackson2.whitelist.model.AbstractVehicle;
+import io.quarkus.rest.test.providers.jackson2.whitelist.model.AbstractVehicle;
 
 /**
  * @author bmaxwell

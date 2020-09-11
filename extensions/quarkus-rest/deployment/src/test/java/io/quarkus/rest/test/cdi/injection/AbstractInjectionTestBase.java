@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.injection;
+package io.quarkus.rest.test.cdi.injection;
 
 import org.jboss.resteasy.utils.TestUtil;
 import org.junit.AfterClass;

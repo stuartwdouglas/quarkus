@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.tracing;
+package io.quarkus.rest.test.tracing;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,7 +18,13 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -26,8 +32,8 @@ import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.jboss.resteasy.test.ContainerConstants.TRACING_CONTAINER_PORT_OFFSET;
-import static org.jboss.resteasy.test.ContainerConstants.TRACING_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.TRACING_CONTAINER_PORT_OFFSET;
+import static io.quarkus.rest.test.ContainerConstants.TRACING_CONTAINER_QUALIFIER;
 
 public abstract class TracingTestBase {
    protected static final String WAR_BASIC_TRACING_FILE = "war_basic_tracing";

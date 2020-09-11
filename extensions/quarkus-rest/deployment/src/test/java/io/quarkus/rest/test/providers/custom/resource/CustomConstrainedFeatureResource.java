@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.custom.resource;
+package io.quarkus.rest.test.providers.custom.resource;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

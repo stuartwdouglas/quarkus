@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,37 +9,43 @@ import java.util.TreeSet;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.resource.param.resource.CookieParamWrapper;
-import org.jboss.resteasy.test.resource.param.resource.CookieParamWrapperArrayConverter;
-import org.jboss.resteasy.test.resource.param.resource.DateParamConverter;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedCookieParam;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedCookieParamConverter;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParam;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamConverter;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamConverterProvider;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamResource;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamResourceClient;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamResourceClient.CookieParamResourceClient;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamResourceClient.FormParamResourceClient;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamResourceClient.HeaderParamResourceClient;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamResourceClient.MatrixParamResourceClient;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamResourceClient.PathParamResourceClient;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamResourceClient.QueryParamResourceClient;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedPathParam;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedPathParamConverter;
-import org.jboss.resteasy.test.resource.param.resource.ParamWrapper;
-import org.jboss.resteasy.test.resource.param.resource.ParamWrapperArrayConverter;
-import org.jboss.resteasy.test.resource.param.resource.PathParamWrapper;
-import org.jboss.resteasy.test.resource.param.resource.PathParamWrapperArrayConverter;
+import io.quarkus.rest.test.resource.param.resource.CookieParamWrapper;
+import io.quarkus.rest.test.resource.param.resource.CookieParamWrapperArrayConverter;
+import io.quarkus.rest.test.resource.param.resource.DateParamConverter;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedCookieParam;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedCookieParamConverter;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParam;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamConverter;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamConverterProvider;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamResource;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamResourceClient;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamResourceClient.CookieParamResourceClient;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamResourceClient.FormParamResourceClient;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamResourceClient.HeaderParamResourceClient;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamResourceClient.MatrixParamResourceClient;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamResourceClient.PathParamResourceClient;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamResourceClient.QueryParamResourceClient;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedPathParam;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedPathParamConverter;
+import io.quarkus.rest.test.resource.param.resource.ParamWrapper;
+import io.quarkus.rest.test.resource.param.resource.ParamWrapperArrayConverter;
+import io.quarkus.rest.test.resource.param.resource.PathParamWrapper;
+import io.quarkus.rest.test.resource.param.resource.PathParamWrapperArrayConverter;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Parameters
@@ -51,9 +57,14 @@ import org.junit.runner.RunWith;
  */
 public class MultiValuedParamDateProxyTest {
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(MultiValuedParamDateProxyTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(MultiValuedParam.class);
       war.addClass(ParamWrapper.class);
       war.addClass(MultiValuedCookieParam.class);
@@ -72,7 +83,7 @@ public class MultiValuedParamDateProxyTest {
          MultiValuedParamResource.class,  MultiValuedParamResource.QueryParamResource.class, MultiValuedParamResource.HeaderParamResource.class,
          MultiValuedParamResource.PathParamResource.class, MultiValuedParamResource.CookieParamResource.class,
          MultiValuedParamResource.MatrixParamResource.class, MultiValuedParamResource.FormParamResource.class);
-   }
+   }});
 
    private String generateBaseUrl() {
       return PortProviderUtil.generateBaseUrl(MultiValuedParamDateProxyTest.class.getSimpleName());
@@ -90,7 +101,7 @@ public class MultiValuedParamDateProxyTest {
     */
    @Test
    public void testQueryParam() {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       try {
          QueryParamResourceClient queryParamResourceClient = client.target(generateBaseUrl()).proxy(MultiValuedParamResourceClient.class).queryParam();
 
@@ -119,7 +130,7 @@ public class MultiValuedParamDateProxyTest {
     */
    @Test
    public void testHeaderParam() {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       try {
          HeaderParamResourceClient headerParamResourceClient = client.target(generateBaseUrl()).proxy(MultiValuedParamResourceClient.class).headerParam();
 
@@ -147,7 +158,7 @@ public class MultiValuedParamDateProxyTest {
     */
    @Test
    public void testMatrixParam() {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       try {
          MatrixParamResourceClient matrixParamResourceClient = client.target(generateBaseUrl()).proxy(MultiValuedParamResourceClient.class).matrixParam();
 
@@ -175,7 +186,7 @@ public class MultiValuedParamDateProxyTest {
     */
    @Test
    public void testCookieParam() {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       try {
          CookieParamResourceClient cookieParamResourceClient = client.target(generateBaseUrl()).proxy(MultiValuedParamResourceClient.class).cookieParam();
 
@@ -203,7 +214,7 @@ public class MultiValuedParamDateProxyTest {
     */
    @Test
    public void testFormParam() {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       try {
          FormParamResourceClient formParamResourceClient = client.target(generateBaseUrl()).proxy(MultiValuedParamResourceClient.class).formParam();
 
@@ -232,7 +243,7 @@ public class MultiValuedParamDateProxyTest {
     */
    @Test
    public void testPathParam() {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       try {
          PathParamResourceClient pathParamResourceClient = client.target(generateBaseUrl()).proxy(MultiValuedParamResourceClient.class).pathParam();
 

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.util;
+package io.quarkus.rest.test.cdi.util;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;

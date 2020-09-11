@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.patch;
+package io.quarkus.rest.test.resource.patch;
 
 public class Student
 {

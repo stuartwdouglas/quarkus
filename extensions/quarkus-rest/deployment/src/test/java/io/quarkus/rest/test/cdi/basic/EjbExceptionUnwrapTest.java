@@ -1,16 +1,16 @@
-package org.jboss.resteasy.test.cdi.basic;
+package io.quarkus.rest.test.cdi.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.cdi.basic.resource.EjbExceptionUnwrapFooException;
-import org.jboss.resteasy.test.cdi.basic.resource.EjbExceptionUnwrapFooExceptionMapper;
-import org.jboss.resteasy.test.cdi.basic.resource.EjbExceptionUnwrapFooResource;
-import org.jboss.resteasy.test.cdi.basic.resource.EjbExceptionUnwrapFooResourceBean;
-import org.jboss.resteasy.test.cdi.basic.resource.EjbExceptionUnwrapLocatingResource;
-import org.jboss.resteasy.test.cdi.basic.resource.EjbExceptionUnwrapLocatingResourceBean;
-import org.jboss.resteasy.test.cdi.basic.resource.EjbExceptionUnwrapSimpleResource;
-import org.jboss.resteasy.test.cdi.basic.resource.EjbExceptionUnwrapSimpleResourceBean;
+import io.quarkus.rest.test.cdi.basic.resource.EjbExceptionUnwrapFooException;
+import io.quarkus.rest.test.cdi.basic.resource.EjbExceptionUnwrapFooExceptionMapper;
+import io.quarkus.rest.test.cdi.basic.resource.EjbExceptionUnwrapFooResource;
+import io.quarkus.rest.test.cdi.basic.resource.EjbExceptionUnwrapFooResourceBean;
+import io.quarkus.rest.test.cdi.basic.resource.EjbExceptionUnwrapLocatingResource;
+import io.quarkus.rest.test.cdi.basic.resource.EjbExceptionUnwrapLocatingResourceBean;
+import io.quarkus.rest.test.cdi.basic.resource.EjbExceptionUnwrapSimpleResource;
+import io.quarkus.rest.test.cdi.basic.resource.EjbExceptionUnwrapSimpleResourceBean;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -20,7 +20,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -47,15 +53,20 @@ public class EjbExceptionUnwrapTest {
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(EjbExceptionUnwrapTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(EjbExceptionUnwrapFooException.class, EjbExceptionUnwrapFooResource.class,
             EjbExceptionUnwrapLocatingResource.class, EjbExceptionUnwrapSimpleResource.class);
       return TestUtil.finishContainerPrepare(war, null, EjbExceptionUnwrapFooExceptionMapper.class,
             EjbExceptionUnwrapSimpleResourceBean.class,
             EjbExceptionUnwrapLocatingResourceBean.class, EjbExceptionUnwrapFooResourceBean.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, EjbExceptionUnwrapTest.class.getSimpleName());

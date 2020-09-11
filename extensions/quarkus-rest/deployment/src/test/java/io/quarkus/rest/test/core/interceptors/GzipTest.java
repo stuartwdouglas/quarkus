@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.interceptors;
+package io.quarkus.rest.test.core.interceptors;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,15 +21,15 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.interceptors.AcceptEncodingGZIPFilter;
 import org.jboss.resteasy.plugins.interceptors.GZIPDecodingInterceptor;
 import org.jboss.resteasy.plugins.interceptors.GZIPEncodingInterceptor;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.core.interceptors.resource.GzipIGZIP;
-import org.jboss.resteasy.test.core.interceptors.resource.GzipProxy;
-import org.jboss.resteasy.test.core.interceptors.resource.GzipResource;
-import org.jboss.resteasy.test.core.interceptors.resource.Pair;
+import io.quarkus.rest.test.core.interceptors.resource.GzipIGZIP;
+import io.quarkus.rest.test.core.interceptors.resource.GzipProxy;
+import io.quarkus.rest.test.core.interceptors.resource.GzipResource;
+import io.quarkus.rest.test.core.interceptors.resource.Pair;
 import org.jboss.resteasy.util.ReadFromStream;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -39,7 +39,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Interceptors
@@ -49,17 +55,22 @@ import org.junit.runner.RunWith;
  */
 public class GzipTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
    protected static final Logger logger = LogManager.getLogger(GzipTest.class.getName());
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(GzipTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(GzipIGZIP.class, Pair.class);
       // Activate gzip compression:
       war.addAsManifestResource("org/jboss/resteasy/test/client/javax.ws.rs.ext.Providers", "services/javax.ws.rs.ext.Providers");
       return TestUtil.finishContainerPrepare(war, null, GzipResource.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, GzipTest.class.getSimpleName());
@@ -67,7 +78,7 @@ public class GzipTest {
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newBuilder()
+      client = (QuarkusRestClient)ClientBuilder.newBuilder()
                .register(AcceptEncodingGZIPFilter.class)
                .register(GZIPDecodingInterceptor.class)
                .register(GZIPEncodingInterceptor.class)

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.asynch.resource;
+package io.quarkus.rest.test.asynch.resource;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.validation.resource;
+package io.quarkus.rest.test.cdi.validation.resource;
 
 import javax.validation.constraints.Size;
 

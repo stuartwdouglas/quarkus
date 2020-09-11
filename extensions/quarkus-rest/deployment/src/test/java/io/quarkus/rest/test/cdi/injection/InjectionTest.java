@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.injection;
+package io.quarkus.rest.test.cdi.injection;
 
 
 import static org.junit.Assert.assertEquals;
@@ -24,27 +24,27 @@ import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionBook;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionBookBag;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionBookBagLocal;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionBookCollection;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionBookReader;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionBookResource;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionBookWriter;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionDependentScoped;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionNewBean;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionResourceProducer;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionScopeInheritingStereotype;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionScopeStereotype;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionStatefulEJB;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionStereotypedApplicationScope;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionStereotypedDependentScope;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionUnscopedResource;
-import org.jboss.resteasy.test.cdi.util.Constants;
-import org.jboss.resteasy.test.cdi.util.Counter;
-import org.jboss.resteasy.test.cdi.util.PersistenceUnitProducer;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionBook;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionBookBag;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionBookBagLocal;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionBookCollection;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionBookReader;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionBookResource;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionBookWriter;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionDependentScoped;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionNewBean;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionResourceProducer;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionScopeInheritingStereotype;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionScopeStereotype;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionStatefulEJB;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionStereotypedApplicationScope;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionStereotypedDependentScope;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionUnscopedResource;
+import io.quarkus.rest.test.cdi.util.Constants;
+import io.quarkus.rest.test.cdi.util.Counter;
+import io.quarkus.rest.test.cdi.util.PersistenceUnitProducer;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -57,7 +57,13 @@ import org.junit.Test;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter CDI
@@ -275,7 +281,7 @@ public class InjectionTest extends AbstractInjectionTestBase {
    public void testSessionScope() throws Exception {
       log.info("starting testSessionScope()");
       client.close();
-      client = ((ResteasyClientBuilder) ClientBuilder.newBuilder()).enableCookieManagement().build();
+      client = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).enableCookieManagement().build();
 
       // Need to supply each ClientRequest with a single ClientExecutor to maintain a single
       // cookie cache, which keeps the session alive.

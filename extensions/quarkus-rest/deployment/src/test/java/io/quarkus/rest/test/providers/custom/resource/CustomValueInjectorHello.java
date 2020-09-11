@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.custom.resource;
+package io.quarkus.rest.test.providers.custom.resource;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

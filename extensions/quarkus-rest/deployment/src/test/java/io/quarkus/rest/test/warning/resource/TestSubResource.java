@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.warning.resource;
+package io.quarkus.rest.test.warning.resource;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.noproduces.resource;
+package io.quarkus.rest.test.providers.noproduces.resource;
 
 import java.io.IOException;
 import java.io.OutputStream;

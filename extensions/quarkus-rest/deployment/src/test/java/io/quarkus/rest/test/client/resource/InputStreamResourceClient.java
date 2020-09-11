@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.resource;
+package io.quarkus.rest.test.client.resource;
 
 import java.io.InputStream;
 

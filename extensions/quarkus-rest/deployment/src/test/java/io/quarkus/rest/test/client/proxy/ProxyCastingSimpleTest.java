@@ -1,17 +1,17 @@
-package org.jboss.resteasy.test.client.proxy;
+package io.quarkus.rest.test.client.proxy;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.client.jaxrs.internal.proxy.ResteasyClientProxy;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyCastingInterfaceB;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyCastingSimpleFooBar;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyCastingSimpleFooBarImpl;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyCastingSimpleInterfaceA;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyCastingSimpleInterfaceAorB;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyCastingSimpleInterfaceB;
+import org.jboss.resteasy.client.jaxrs.internal.proxy.QuarkusRestClientProxy;
+import io.quarkus.rest.test.client.proxy.resource.ProxyCastingInterfaceB;
+import io.quarkus.rest.test.client.proxy.resource.ProxyCastingSimpleFooBar;
+import io.quarkus.rest.test.client.proxy.resource.ProxyCastingSimpleFooBarImpl;
+import io.quarkus.rest.test.client.proxy.resource.ProxyCastingSimpleInterfaceA;
+import io.quarkus.rest.test.client.proxy.resource.ProxyCastingSimpleInterfaceAorB;
+import io.quarkus.rest.test.client.proxy.resource.ProxyCastingSimpleInterfaceB;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -19,7 +19,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -29,7 +35,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @tpSubChapter Configuration
  * @tpChapter Integration tests
- * @tpTestCaseDetails Any interface could be cast to ResteasyClientProxy.
+ * @tpTestCaseDetails Any interface could be cast to QuarkusRestClientProxy.
  *                JBEAP-3197, JBEAP-4700
  * @tpSince RESTEasy 3.0.17
  */
@@ -37,15 +43,20 @@ public class ProxyCastingSimpleTest {
    private static Client client;
    private static ResteasyWebTarget target;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(ProxyCastingSimpleTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(ProxyCastingSimpleFooBar.class,
             ProxyCastingSimpleFooBar.class, ProxyCastingInterfaceB.class,
             ProxyCastingSimpleInterfaceA.class, ProxyCastingSimpleInterfaceAorB.class,
             ProxyCastingSimpleInterfaceB.class);
       return TestUtil.finishContainerPrepare(war, null, ProxyCastingSimpleFooBarImpl.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ProxyCastingSimpleTest.class.getSimpleName());
@@ -70,9 +81,9 @@ public class ProxyCastingSimpleTest {
    public void testSubresourceProxy() throws Exception {
       ProxyCastingSimpleFooBar foobar = ProxyBuilder.builder(ProxyCastingSimpleFooBar.class, target).build();
       {
-         ProxyCastingSimpleInterfaceA a = ((ResteasyClientProxy) foobar.getThing("a")).as(ProxyCastingSimpleInterfaceA.class);
+         ProxyCastingSimpleInterfaceA a = ((QuarkusRestClientProxy) foobar.getThing("a")).as(ProxyCastingSimpleInterfaceA.class);
          assertEquals("Wrong body of response", "FOO", a.getFoo());
-         ProxyCastingSimpleInterfaceB b = ((ResteasyClientProxy) foobar.getThing("b")).as(ProxyCastingSimpleInterfaceB.class);
+         ProxyCastingSimpleInterfaceB b = ((QuarkusRestClientProxy) foobar.getThing("b")).as(ProxyCastingSimpleInterfaceB.class);
          assertEquals("Wrong body of response", "BAR", b.getBar());
       }
       {

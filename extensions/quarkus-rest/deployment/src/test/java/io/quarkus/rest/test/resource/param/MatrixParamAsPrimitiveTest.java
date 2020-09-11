@@ -1,26 +1,26 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveArray;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveArrayDefault;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveArrayDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveArrayDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveDefault;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveList;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveListDefault;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveListDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveListDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitivePrimitives;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveWrappers;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveWrappersDefault;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveWrappersDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.MatrixParamAsPrimitiveWrappersDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveArray;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveArrayDefault;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveArrayDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveArrayDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveDefault;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveList;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveListDefault;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveListDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveListDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitivePrimitives;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveWrappers;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveWrappersDefault;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveWrappersDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.MatrixParamAsPrimitiveWrappersDefaultOverride;
 import org.jboss.resteasy.util.HttpHeaderNames;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -29,7 +29,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.core.Response;
 
@@ -43,11 +49,16 @@ public class MatrixParamAsPrimitiveTest {
 
    public static final String ERROR_MESSAGE = "Wrong content of matrix parameter";
 
-   ResteasyClient client;
+   QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(MatrixParamAsPrimitiveTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(MatrixParamAsPrimitiveTest.class);
       return TestUtil.finishContainerPrepare(war, null,
             MatrixParamAsPrimitivePrimitives.class,
@@ -66,7 +77,7 @@ public class MatrixParamAsPrimitiveTest {
             MatrixParamAsPrimitiveArrayDefault.class,
             MatrixParamAsPrimitiveArrayDefaultNull.class,
             MatrixParamAsPrimitiveArrayDefaultOverride.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, MatrixParamAsPrimitiveTest.class.getSimpleName());
@@ -75,7 +86,7 @@ public class MatrixParamAsPrimitiveTest {
    public void basicTest(String type, String value) {
       String param = ";" + type + "=" + value;
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/" + param)).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .get();
@@ -85,7 +96,7 @@ public class MatrixParamAsPrimitiveTest {
       }
 
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/wrappers" + param)).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .get();
@@ -95,7 +106,7 @@ public class MatrixParamAsPrimitiveTest {
       }
 
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/list" + param + param + param)).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .get();
@@ -105,7 +116,7 @@ public class MatrixParamAsPrimitiveTest {
       }
 
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/array" + param + param + param)).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .get();
@@ -117,7 +128,7 @@ public class MatrixParamAsPrimitiveTest {
 
    public void testDefault(String base, String type, String value) {
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL(base + "default/null")).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .get();
@@ -127,7 +138,7 @@ public class MatrixParamAsPrimitiveTest {
       }
 
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL(base + "default")).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .get();
@@ -138,7 +149,7 @@ public class MatrixParamAsPrimitiveTest {
 
       String param = ";" + type + "=" + value;
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL(base + "default/override" + param)).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .get();
@@ -467,7 +478,7 @@ public class MatrixParamAsPrimitiveTest {
    @Test
    public void testBadPrimitiveValue() {
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/;int=abcdef")).request()
                .header(HttpHeaderNames.ACCEPT, "application/int")
                .get();
@@ -484,7 +495,7 @@ public class MatrixParamAsPrimitiveTest {
    @Test
    public void testBadPrimitiveWrapperValue() {
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/wrappers;int=abcdef")).request()
                .header(HttpHeaderNames.ACCEPT, "application/int")
                .get();
@@ -501,7 +512,7 @@ public class MatrixParamAsPrimitiveTest {
    @Test
    public void testBadPrimitiveListValue() {
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/list;int=abcdef;int=abcdef")).request()
                .header(HttpHeaderNames.ACCEPT, "application/int")
                .get();

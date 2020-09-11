@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.proxy.resource;
+package io.quarkus.rest.test.client.proxy.resource;
 
 import org.jboss.logging.Logger;
 import org.junit.Assert;

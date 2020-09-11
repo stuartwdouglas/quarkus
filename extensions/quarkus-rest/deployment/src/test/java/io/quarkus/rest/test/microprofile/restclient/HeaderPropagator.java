@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.microprofile.restclient;
+package io.quarkus.rest.test.microprofile.restclient;
 
 import java.util.List;
 

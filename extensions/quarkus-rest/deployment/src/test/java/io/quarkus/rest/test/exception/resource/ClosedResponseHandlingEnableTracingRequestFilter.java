@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.exception.resource;
+package io.quarkus.rest.test.exception.resource;
 
-import org.jboss.resteasy.test.exception.ClosedResponseHandlingTest;
+import io.quarkus.rest.test.exception.ClosedResponseHandlingTest;
 import org.jboss.resteasy.tracing.RESTEasyTracingLogger;
 import org.jboss.resteasy.tracing.api.RESTEasyTracing;
 import org.jboss.resteasy.tracing.api.RESTEasyTracingLevel;

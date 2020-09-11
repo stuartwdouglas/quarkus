@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.asynch;
+package io.quarkus.rest.test.asynch;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.asynch.resource.AsynchCounterResource;
+import io.quarkus.rest.test.asynch.resource.AsynchCounterResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -21,7 +21,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Asynchronous RESTEasy
@@ -43,14 +49,19 @@ public class AsynchCounterTest {
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(AsynchCounterTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       Map<String, String> contextParam = new HashMap<>();
       contextParam.put("resteasy.async.job.service.enabled", "true");
       contextParam.put("resteasy.secure.random.max.use", "2");
       return TestUtil.finishContainerPrepare(war, contextParam, AsynchCounterResource.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, AsynchCounterTest.class.getSimpleName());

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.asynch.resource;
+package io.quarkus.rest.test.asynch.resource;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;

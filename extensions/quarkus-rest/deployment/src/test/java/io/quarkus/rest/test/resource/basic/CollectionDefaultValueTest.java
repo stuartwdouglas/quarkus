@@ -36,7 +36,8 @@ public class CollectionDefaultValueTest {
                 @Override
                 public JavaArchive get() {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(CollectionDefaultValueResource.class, PortProviderUtil.class);
+                    war.addClasses(PortProviderUtil.class);
+                    war.addClasses(CollectionDefaultValueResource.class);
                     return war;
                 }
             });

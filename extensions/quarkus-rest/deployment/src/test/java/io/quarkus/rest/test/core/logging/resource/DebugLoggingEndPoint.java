@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.logging.resource;
+package io.quarkus.rest.test.core.logging.resource;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

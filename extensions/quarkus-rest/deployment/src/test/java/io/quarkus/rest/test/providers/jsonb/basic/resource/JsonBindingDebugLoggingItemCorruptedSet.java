@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jsonb.basic.resource;
+package io.quarkus.rest.test.providers.jsonb.basic.resource;
 
 public class JsonBindingDebugLoggingItemCorruptedSet {
     Integer a;

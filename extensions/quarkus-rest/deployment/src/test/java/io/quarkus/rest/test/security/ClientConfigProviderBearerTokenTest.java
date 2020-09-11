@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.security;
+package io.quarkus.rest.test.security;
 
 import org.junit.Assert;
 import org.junit.Test;

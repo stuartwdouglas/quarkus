@@ -1,14 +1,14 @@
-package org.jboss.resteasy.test.form;
+package io.quarkus.rest.test.form;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.form.resource.CollectionsFormAddress;
-import org.jboss.resteasy.test.form.resource.CollectionsFormPerson;
-import org.jboss.resteasy.test.form.resource.CollectionsFormResource;
-import org.jboss.resteasy.test.form.resource.CollectionsFormTelephoneNumber;
+import io.quarkus.rest.test.form.resource.CollectionsFormAddress;
+import io.quarkus.rest.test.form.resource.CollectionsFormPerson;
+import io.quarkus.rest.test.form.resource.CollectionsFormResource;
+import io.quarkus.rest.test.form.resource.CollectionsFormTelephoneNumber;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -16,7 +16,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -31,13 +37,18 @@ import javax.ws.rs.core.Response;
  */
 public class CollectionsFormTest {
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(CollectionsFormTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(CollectionsFormPerson.class, CollectionsFormTelephoneNumber.class,
             CollectionsFormAddress.class);
       return TestUtil.finishContainerPrepare(war, null, CollectionsFormResource.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Set all relevant parameters to form.
@@ -55,7 +66,7 @@ public class CollectionsFormTest {
          .param("address[SHIPPING].street", "Square One")
          .param("address[SHIPPING].houseNumber", "13");
 
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       WebTarget base = client.target(PortProviderUtil.generateURL("/person", CollectionsFormTest.class.getSimpleName()));
       Response response = base.request().accept(MediaType.TEXT_PLAIN).post(Entity.form(form));
 

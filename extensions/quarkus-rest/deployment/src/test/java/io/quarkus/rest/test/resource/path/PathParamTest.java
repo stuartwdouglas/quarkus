@@ -1,14 +1,14 @@
-package org.jboss.resteasy.test.resource.path;
+package io.quarkus.rest.test.resource.path;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.resource.path.resource.EmailResource;
-import org.jboss.resteasy.test.resource.path.resource.PathParamCarResource;
-import org.jboss.resteasy.test.resource.path.resource.PathParamDigits;
-import org.jboss.resteasy.test.resource.path.resource.PathParamResource;
+import io.quarkus.rest.test.resource.path.resource.EmailResource;
+import io.quarkus.rest.test.resource.path.resource.PathParamCarResource;
+import io.quarkus.rest.test.resource.path.resource.PathParamDigits;
+import io.quarkus.rest.test.resource.path.resource.PathParamResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -16,7 +16,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
@@ -29,12 +35,17 @@ import javax.ws.rs.core.Response;
  */
 public class PathParamTest {
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(PathLimitedTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, PathParamDigits.class, PathParamResource.class,
                      PathParamCarResource.class, EmailResource.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Check 6 parameters on path.
@@ -48,7 +59,7 @@ public class PathParamTest {
 
       String[] Headers = {"list=abcdef"};
 
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       for (String header : Headers) {
          Invocation.Builder request = client.target(PortProviderUtil.generateURL("/PathParamTest/a/b/c/d/e/f", PathLimitedTest.class.getSimpleName())).request();
          request.header("Accept", "text/plain");
@@ -65,7 +76,7 @@ public class PathParamTest {
     */
    @Test
    public void test178() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       {
          Invocation.Builder request = client.target(PortProviderUtil.generateURL("/digits/5150", PathLimitedTest.class.getSimpleName())).request();
          Response response = request.get();
@@ -88,7 +99,7 @@ public class PathParamTest {
     */
    @Test
    public void testCarResource() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       Invocation.Builder request = client.target(PortProviderUtil.generateURL("/cars/mercedes/matrixparam/e55;color=black/2006", PathLimitedTest.class.getSimpleName())).request();
       Response response = request.get();
       Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
@@ -118,7 +129,7 @@ public class PathParamTest {
     */
    @Test
    public void testEmail() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       Response response = client.target(PortProviderUtil.generateURL("/employeeinfo/employees/bill.burke@burkecentral.com", PathLimitedTest.class.getSimpleName())).request().get();
       String str = response.readEntity(String.class);
       Assert.assertEquals("burke", str);

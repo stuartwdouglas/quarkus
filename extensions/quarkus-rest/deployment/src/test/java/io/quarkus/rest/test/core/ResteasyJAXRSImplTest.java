@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core;
+package io.quarkus.rest.test.core;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.ext.RuntimeDelegate;
@@ -6,7 +6,7 @@ import javax.ws.rs.ext.RuntimeDelegate;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.utils.PermissionUtil;
@@ -17,7 +17,13 @@ import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
@@ -60,7 +66,7 @@ public class ResteasyJAXRSImplTest
    }
 
    /**
-    * @tpTestDetails Tests that ResteasyClientBuilder implementation corresponds to JAXRS spec ClientBuilder
+    * @tpTestDetails Tests that QuarkusRestClientBuilder implementation corresponds to JAXRS spec ClientBuilder
     * @tpSince RESTEasy 3.1.0
     */
    @Test
@@ -71,7 +77,7 @@ public class ResteasyJAXRSImplTest
    }
 
    /**
-    * @tpTestDetails Tests that ResteasyClientBuilder implementation corresponds to JAXRS spec ClientBuilder. Tested client
+    * @tpTestDetails Tests that QuarkusRestClientBuilder implementation corresponds to JAXRS spec ClientBuilder. Tested client
     * is bundled in the server.
     * @tpSince RESTEasy 3.1.0
     */
@@ -108,7 +114,7 @@ public class ResteasyJAXRSImplTest
 
    private void testClientBuilderNewBuilder() {
       ClientBuilder client = ClientBuilder.newBuilder();
-      Assert.assertTrue(client instanceof ResteasyClientBuilder);
+      Assert.assertTrue(client instanceof QuarkusRestClientBuilder);
    }
 
    private void testRuntimeDelegateGetInstance() {

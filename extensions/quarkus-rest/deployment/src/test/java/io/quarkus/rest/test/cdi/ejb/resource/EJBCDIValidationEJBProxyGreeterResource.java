@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.ejb.resource;
+package io.quarkus.rest.test.cdi.ejb.resource;
 
 import javax.ejb.Remote;
 import javax.ejb.Singleton;

@@ -1,48 +1,54 @@
-package org.jboss.resteasy.test.cdi.interceptors;
+package io.quarkus.rest.test.cdi.interceptors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorBook;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorBookReader;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorBookReaderInterceptor;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorBookReaderInterceptorInterceptor;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorBookWriter;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorBookWriterInterceptor;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorBookWriterInterceptorInterceptor;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorClassBinding;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorClassInterceptorStereotype;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorClassMethodInterceptorStereotype;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorFilterBinding;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorFour;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorLifecycleBinding;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorMethodBinding;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorOne;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorPostConstructInterceptor;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorPreDestroyInterceptor;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorReaderBinding;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorRequestFilter;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorRequestFilterInterceptor;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorRequestFilterInterceptorBinding;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorResource;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorResponseFilter;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorResponseFilterInterceptor;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorResponseFilterInterceptorBinding;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorStereotyped;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorThree;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorTwo;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorVisitList;
-import org.jboss.resteasy.test.cdi.interceptors.resource.InterceptorWriterBinding;
-import org.jboss.resteasy.test.cdi.util.Constants;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorBook;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorBookReader;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorBookReaderInterceptor;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorBookReaderInterceptorInterceptor;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorBookWriter;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorBookWriterInterceptor;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorBookWriterInterceptorInterceptor;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorClassBinding;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorClassInterceptorStereotype;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorClassMethodInterceptorStereotype;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorFilterBinding;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorFour;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorLifecycleBinding;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorMethodBinding;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorOne;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorPostConstructInterceptor;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorPreDestroyInterceptor;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorReaderBinding;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorRequestFilter;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorRequestFilterInterceptor;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorRequestFilterInterceptorBinding;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorResource;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorResponseFilter;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorResponseFilterInterceptor;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorResponseFilterInterceptorBinding;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorStereotyped;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorThree;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorTwo;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorVisitList;
+import io.quarkus.rest.test.cdi.interceptors.resource.InterceptorWriterBinding;
+import io.quarkus.rest.test.cdi.util.Constants;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.swing.text.Utilities;
 import javax.ws.rs.client.Client;
@@ -64,10 +70,14 @@ import static org.junit.Assert.assertThat;
 public class InterceptorTest {
    protected static final Logger log = LogManager.getLogger(InterceptorTest.class.getName());
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
 
-      WebArchive war = TestUtil.prepareArchive(InterceptorTest.class.getSimpleName());
       war.addClasses(Constants.class, UtilityProducer.class, Utilities.class, InterceptorVisitList.class)
             .addClasses(InterceptorResource.class, InterceptorOne.class, InterceptorTwo.class)
             .addClasses(InterceptorClassBinding.class, InterceptorMethodBinding.class, InterceptorThree.class, InterceptorFour.class)
@@ -82,7 +92,7 @@ public class InterceptorTest {
             .addClasses(InterceptorLifecycleBinding.class, InterceptorPostConstructInterceptor.class, InterceptorPreDestroyInterceptor.class)
             .addAsWebInfResource(InterceptorTest.class.getPackage(), "interceptorBeans.xml", "beans.xml");
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, InterceptorTest.class.getSimpleName());

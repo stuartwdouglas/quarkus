@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.security.testjar;
+package io.quarkus.rest.test.security.testjar;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 
 import javax.net.ssl.SSLContext;
@@ -28,8 +28,8 @@ public class ClientConfigTestMainClass {
         String testType = args[0];
         String result = null;
         URL url = new URL(args[1]);
-        ResteasyClientBuilder resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-        ResteasyClient client = resteasyClientBuilder.build();
+        QuarkusRestClientBuilder QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+        QuarkusRestClient client = QuarkusRestClientBuilder.build();
         Response response;
 
         if (testType.equals("TEST_CREDENTIALS_ARE_USED_FOR_BASIC") || testType.equals("TEST_SSLCONTEXT_USED")) {
@@ -44,7 +44,7 @@ public class ClientConfigTestMainClass {
         }
 
         if (testType.equals("TEST_CLIENTCONFIG_SSLCONTEXT_IGNORED_WHEN_DIFFERENT_SET")) {
-            ResteasyClient clientWithSSLContextSetByUser = resteasyClientBuilder.sslContext(SSLContext.getDefault()).build();
+            QuarkusRestClient clientWithSSLContextSetByUser = QuarkusRestClientBuilder.sslContext(SSLContext.getDefault()).build();
             try {
                 response = clientWithSSLContextSetByUser.target(url.toURI()).request().get();
                 result = Integer.toString(response.getStatus());

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.resource;
+package io.quarkus.rest.test.providers.jackson2.resource;
 
 public class ExceptionMapperMarshalMyCustomException extends RuntimeException {
    public ExceptionMapperMarshalMyCustomException(final String message) {

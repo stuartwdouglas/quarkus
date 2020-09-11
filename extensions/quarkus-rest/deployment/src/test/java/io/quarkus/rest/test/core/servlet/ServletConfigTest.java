@@ -1,14 +1,14 @@
-package org.jboss.resteasy.test.core.servlet;
+package io.quarkus.rest.test.core.servlet;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.core.servlet.resource.ServletConfigApplication;
-import org.jboss.resteasy.test.core.servlet.resource.ServletConfigException;
-import org.jboss.resteasy.test.core.servlet.resource.ServletConfigExceptionMapper;
-import org.jboss.resteasy.test.core.servlet.resource.ServletConfigResource;
+import io.quarkus.rest.test.core.servlet.resource.ServletConfigApplication;
+import io.quarkus.rest.test.core.servlet.resource.ServletConfigException;
+import io.quarkus.rest.test.core.servlet.resource.ServletConfigExceptionMapper;
+import io.quarkus.rest.test.core.servlet.resource.ServletConfigResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -18,7 +18,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
@@ -30,16 +36,21 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.16
  */
 public class ServletConfigTest {
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = ShrinkWrap.create(WebArchive.class, ServletConfigTest.class.getSimpleName() + ".war");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsWebInfResource(ServletConfigTest.class.getPackage(), "ServletConfigWeb.xml", "web.xml");
       war.addClasses(ServletConfigException.class, ServletConfigExceptionMapper.class,
             ServletConfigApplication.class, ServletConfigResource.class);
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ServletConfigTest.class.getSimpleName());
@@ -47,7 +58,7 @@ public class ServletConfigTest {
 
    @Before
    public void setup() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

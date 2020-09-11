@@ -1,15 +1,15 @@
-package org.jboss.resteasy.test.client.proxy;
+package io.quarkus.rest.test.client.proxy;
 
 import javax.ws.rs.core.Response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.test.client.proxy.resource.EncodedPathProxyInterface;
-import org.jboss.resteasy.test.client.proxy.resource.EncodedPathProxyResource;
+import io.quarkus.rest.test.client.proxy.resource.EncodedPathProxyInterface;
+import io.quarkus.rest.test.client.proxy.resource.EncodedPathProxyResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -18,7 +18,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Resteasy-client
@@ -27,11 +33,11 @@ import org.junit.runner.RunWith;
  * @tpSince RESTEasy 3.1.4
  */
 public class EncodedPathProxyTest {
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
    @BeforeClass
    public static void before() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass
@@ -39,12 +45,17 @@ public class EncodedPathProxyTest {
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> deployUriInfoSimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(EncodedPathProxyTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(EncodedPathProxyInterface.class);
       return TestUtil.finishContainerPrepare(war, null, EncodedPathProxyResource.class);
-   }
+   }});
 
    private static String generateBaseUrl() {
       return PortProviderUtil.generateBaseUrl(EncodedPathProxyTest.class.getSimpleName());

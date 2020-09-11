@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.security.testjar;
+package io.quarkus.rest.test.security.testjar;
 
 import org.jboss.resteasy.client.jaxrs.spi.ClientConfigException;
 import org.jboss.resteasy.client.jaxrs.spi.ClientConfigProvider;

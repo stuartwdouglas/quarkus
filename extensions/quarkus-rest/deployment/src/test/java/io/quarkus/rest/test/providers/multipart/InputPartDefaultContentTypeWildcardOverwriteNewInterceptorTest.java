@@ -1,12 +1,12 @@
-package org.jboss.resteasy.test.providers.multipart;
+package io.quarkus.rest.test.providers.multipart;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultContentTypeWildcardOverwriteContainerBean;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultContentTypeWildcardOverwriteNewInterceptor;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultContentTypeWildcardOverwriteService;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultContentTypeWildcardOverwriteXmlBean;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultContentTypeWildcardOverwriteContainerBean;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultContentTypeWildcardOverwriteNewInterceptor;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultContentTypeWildcardOverwriteService;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultContentTypeWildcardOverwriteXmlBean;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -15,7 +15,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -36,14 +42,19 @@ public class InputPartDefaultContentTypeWildcardOverwriteNewInterceptorTest {
    public static final String WILDCARD_WITH_CHARSET_UTF_8 = MediaType.APPLICATION_XML + "; charset=UTF-8";  // this mediatype works correctly
    private static Client client;
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(InputPartDefaultContentTypeWildcardOverwriteNewInterceptorTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(InputPartDefaultContentTypeWildcardOverwriteContainerBean.class);
       war.addClasses(InputPartDefaultContentTypeWildcardOverwriteXmlBean.class, InputPartDefaultContentTypeWildcardOverwriteNewInterceptorTest.class);
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultContentTypeWildcardOverwriteNewInterceptor.class,
             InputPartDefaultContentTypeWildcardOverwriteService.class);
-   }
+   }});
 
    @BeforeClass
    public static void before() throws Exception

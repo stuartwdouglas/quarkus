@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.basic;
+package io.quarkus.rest.test.core.basic;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -8,15 +8,21 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.core.basic.resource.NullHeaderFilter;
-import org.jboss.resteasy.test.core.basic.resource.NullHeaderResource;
+import io.quarkus.rest.test.core.basic.resource.NullHeaderFilter;
+import io.quarkus.rest.test.core.basic.resource.NullHeaderResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter RESTEASY-1565
@@ -25,12 +31,17 @@ import org.junit.runner.RunWith;
  */
 public class NullHeaderTest {
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(NullHeaderTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(NullHeaderFilter.class);
       return TestUtil.finishContainerPrepare(war, null, NullHeaderResource.class);
-   }
+   }});
 
    @Test
    public void testNullHeader() throws Exception {

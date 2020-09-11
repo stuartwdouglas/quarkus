@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.response;
+package io.quarkus.rest.test.response;
 
 import java.net.InetAddress;
 import java.util.concurrent.Future;
@@ -9,13 +9,13 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.response.resource.AsyncResponseCallback;
-import org.jboss.resteasy.test.response.resource.CompletionStageProxy;
-import org.jboss.resteasy.test.response.resource.CompletionStageResponseMessageBodyWriter;
-import org.jboss.resteasy.test.response.resource.CompletionStageResponseResource;
-import org.jboss.resteasy.test.response.resource.CompletionStageResponseTestClass;
+import io.quarkus.rest.test.response.resource.AsyncResponseCallback;
+import io.quarkus.rest.test.response.resource.CompletionStageProxy;
+import io.quarkus.rest.test.response.resource.CompletionStageResponseMessageBodyWriter;
+import io.quarkus.rest.test.response.resource.CompletionStageResponseResource;
+import io.quarkus.rest.test.response.resource.CompletionStageResponseTestClass;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -25,7 +25,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter CompletionStage response type
@@ -35,11 +41,16 @@ import org.junit.runner.RunWith;
 public class CompletionStageResponseTest {
 
    static boolean serverIsLocal;
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(CompletionStageResponseTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(CompletionStageResponseTestClass.class);
       war.addClass(CompletionStageProxy.class);
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
@@ -47,7 +58,7 @@ public class CompletionStageResponseTest {
       return TestUtil.finishContainerPrepare(war, null, CompletionStageResponseMessageBodyWriter.class,
             CompletionStageResponseResource.class, SingleProvider.class,
             AsyncResponseCallback.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, CompletionStageResponseTest.class.getSimpleName());
@@ -55,7 +66,7 @@ public class CompletionStageResponseTest {
 
    @BeforeClass
    public static void setup() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
 
       // Undertow's default behavior is to send an HTML error page only if the client and
       // server are communicating on a loopback connection. Otherwise, it returns "".

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client;
+package io.quarkus.rest.test.client;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -8,18 +8,24 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
-import org.jboss.resteasy.test.client.resource.ClientExecutorShutdownTestResource;
+import io.quarkus.rest.test.client.resource.ClientExecutorShutdownTestResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -42,13 +48,18 @@ public class ClientExecutorShutdownTest extends ClientTestBase{
       Response post();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(ClientExecutorShutdownTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(ClientExecutorShutdownTest.class);
       war.addClass(ClientTestBase.class);
       return TestUtil.finishContainerPrepare(war, null, ClientExecutorShutdownTestResource.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Verify that if ApacheHttpClient4Executor creates its own HttpClient,
@@ -60,7 +71,7 @@ public class ClientExecutorShutdownTest extends ClientTestBase{
    @Test
    public void testApacheHttpClient4ExecutorNonSharedHttpClientFinalize() throws Throwable {
       ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine();
-      ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
+      QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
       Response response = client.target(generateURL("/test")).request().post(null);
       Assert.assertEquals(HttpResponseCodes.SC_NO_CONTENT, response.getStatus());
       engine.finalize();
@@ -84,7 +95,7 @@ public class ClientExecutorShutdownTest extends ClientTestBase{
    @Test
    public void testApacheHttpClient4ExecutorNonSharedHttpClientClose() throws Throwable {
       ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine();
-      ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
+      QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
       Response response = client.target(generateURL("/test")).request().post(null);
       Assert.assertEquals(HttpResponseCodes.SC_NO_CONTENT, response.getStatus());
       engine.close();
@@ -109,7 +120,7 @@ public class ClientExecutorShutdownTest extends ClientTestBase{
    public void testApacheHttpClient4ExecutorSharedHttpClientFinalize() throws Throwable {
       HttpClient httpClient = HttpClientBuilder.create().build();
       ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(httpClient, false);
-      ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
+      QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
       Response response = client.target(generateURL("/test")).request().post(null);
       Assert.assertEquals(HttpResponseCodes.SC_NO_CONTENT, response.getStatus());
       engine.finalize();
@@ -132,7 +143,7 @@ public class ClientExecutorShutdownTest extends ClientTestBase{
    public void testApacheHttpClient4ExecutorSharedHttpClientClose() throws Throwable {
       HttpClient httpClient = HttpClientBuilder.create().build();
       ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(httpClient, false);
-      ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
+      QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
       Response response = client.target(generateURL("/test")).request().post(null);
       Assert.assertEquals("Original httpclient and engine httpclient are not the same instance",
             HttpResponseCodes.SC_NO_CONTENT, response.getStatus());

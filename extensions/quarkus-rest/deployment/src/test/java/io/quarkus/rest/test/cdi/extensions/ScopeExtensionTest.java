@@ -1,16 +1,16 @@
-package org.jboss.resteasy.test.cdi.extensions;
+package io.quarkus.rest.test.cdi.extensions;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.cdi.extensions.resource.ScopeExtensionResource;
-import org.jboss.resteasy.test.cdi.extensions.resource.ScopeExtensionObsolescent;
-import org.jboss.resteasy.test.cdi.extensions.resource.ScopeExtensionObsolescentAfterThreeUses;
-import org.jboss.resteasy.test.cdi.extensions.resource.ScopeExtensionObsolescentAfterTwoUses;
-import org.jboss.resteasy.test.cdi.extensions.resource.ScopeExtensionPlannedObsolescenceContext;
-import org.jboss.resteasy.test.cdi.extensions.resource.ScopeExtensionPlannedObsolescenceExtension;
-import org.jboss.resteasy.test.cdi.extensions.resource.ScopeExtensionPlannedObsolescenceScope;
-import org.jboss.resteasy.test.cdi.util.Utilities;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.cdi.extensions.resource.ScopeExtensionResource;
+import io.quarkus.rest.test.cdi.extensions.resource.ScopeExtensionObsolescent;
+import io.quarkus.rest.test.cdi.extensions.resource.ScopeExtensionObsolescentAfterThreeUses;
+import io.quarkus.rest.test.cdi.extensions.resource.ScopeExtensionObsolescentAfterTwoUses;
+import io.quarkus.rest.test.cdi.extensions.resource.ScopeExtensionPlannedObsolescenceContext;
+import io.quarkus.rest.test.cdi.extensions.resource.ScopeExtensionPlannedObsolescenceExtension;
+import io.quarkus.rest.test.cdi.extensions.resource.ScopeExtensionPlannedObsolescenceScope;
+import io.quarkus.rest.test.cdi.util.Utilities;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -19,7 +19,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.enterprise.inject.spi.Extension;
 import javax.inject.Inject;
@@ -50,9 +56,14 @@ public class ScopeExtensionTest {
 
    static Client client;
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(ScopeExtensionTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(UtilityProducer.class, Utilities.class, PortProviderUtil.class)
             .addClasses(ScopeExtensionPlannedObsolescenceExtension.class, ScopeExtensionPlannedObsolescenceScope.class)
             .addClasses(ScopeExtensionPlannedObsolescenceContext.class, ScopeExtensionResource.class)
@@ -72,7 +83,7 @@ public class ScopeExtensionTest {
             new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
       ), "permissions.xml");
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ScopeExtensionTest.class.getSimpleName());

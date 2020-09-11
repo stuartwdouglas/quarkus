@@ -1,14 +1,14 @@
-package org.jboss.resteasy.test.resource.path;
+package io.quarkus.rest.test.resource.path;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.resource.path.resource.LocatorWithClassHierarchyLocatorResource;
-import org.jboss.resteasy.test.resource.path.resource.LocatorWithClassHierarchyMiddleResource;
-import org.jboss.resteasy.test.resource.path.resource.LocatorWithClassHierarchyParamEntityPrototype;
-import org.jboss.resteasy.test.resource.path.resource.LocatorWithClassHierarchyParamEntityWithConstructor;
-import org.jboss.resteasy.test.resource.path.resource.LocatorWithClassHierarchyPathParamResource;
-import org.jboss.resteasy.test.resource.path.resource.LocatorWithClassHierarchyPathSegmentImpl;
+import io.quarkus.rest.test.resource.path.resource.LocatorWithClassHierarchyLocatorResource;
+import io.quarkus.rest.test.resource.path.resource.LocatorWithClassHierarchyMiddleResource;
+import io.quarkus.rest.test.resource.path.resource.LocatorWithClassHierarchyParamEntityPrototype;
+import io.quarkus.rest.test.resource.path.resource.LocatorWithClassHierarchyParamEntityWithConstructor;
+import io.quarkus.rest.test.resource.path.resource.LocatorWithClassHierarchyPathParamResource;
+import io.quarkus.rest.test.resource.path.resource.LocatorWithClassHierarchyPathSegmentImpl;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -17,7 +17,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -42,14 +48,19 @@ public class LocatorWithClassHierarchyTest {
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(LocatorWithClassHierarchyTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(LocatorWithClassHierarchyPathSegmentImpl.class, LocatorWithClassHierarchyMiddleResource.class,
             LocatorWithClassHierarchyPathParamResource.class, LocatorWithClassHierarchyParamEntityWithConstructor.class,
             LocatorWithClassHierarchyParamEntityPrototype.class);
       return TestUtil.finishContainerPrepare(war, null, LocatorWithClassHierarchyLocatorResource.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Client sends POST request with null entity for the resource Locator, which creates the targeted

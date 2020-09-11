@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.basic;
+package io.quarkus.rest.test.core.basic;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -7,10 +7,10 @@ import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.core.basic.resource.AppConfigApplication;
-import org.jboss.resteasy.test.core.basic.resource.AppConfigResources;
+import io.quarkus.rest.test.core.basic.resource.AppConfigApplication;
+import io.quarkus.rest.test.core.basic.resource.AppConfigResources;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -21,7 +21,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 
 /**
@@ -32,16 +38,21 @@ import org.junit.runner.RunWith;
  */
 public class AppConfigTest {
 
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = ShrinkWrap.create(WebArchive.class, AppConfigTest.class.getSimpleName() + ".war");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(AppConfigResources.class);
       war.addClass(AppConfigApplication.class);
       war.addAsWebInfResource(AppConfigTest.class.getPackage(), "AppConfigWeb.xml", "web.xml");
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, AppConfigTest.class.getSimpleName());
@@ -49,7 +60,7 @@ public class AppConfigTest {
 
    @Before
    public void setup() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

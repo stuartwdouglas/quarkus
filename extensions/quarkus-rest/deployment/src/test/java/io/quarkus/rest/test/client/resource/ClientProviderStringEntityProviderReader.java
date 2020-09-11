@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.client.resource;
+package io.quarkus.rest.test.client.resource;
 
-import org.jboss.resteasy.test.client.ClientProviderTest;
+import io.quarkus.rest.test.client.ClientProviderTest;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;

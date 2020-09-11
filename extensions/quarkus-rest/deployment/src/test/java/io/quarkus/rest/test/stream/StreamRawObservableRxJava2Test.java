@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.stream;
+package io.quarkus.rest.test.stream;
 
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
@@ -7,14 +7,14 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.stream.resource.StreamRawByteArrayMessageBodyReaderWriter;
-import org.jboss.resteasy.test.stream.resource.StreamRawByteMessageBodyReaderWriter;
-import org.jboss.resteasy.test.stream.resource.StreamRawCharArrayMessageBodyReaderWriter;
-import org.jboss.resteasy.test.stream.resource.StreamRawCharMessageBodyReaderWriter;
-import org.jboss.resteasy.test.stream.resource.StreamRawMediaTypes;
-import org.jboss.resteasy.test.stream.resource.StreamRawObservableRxJava2Resource;
+import io.quarkus.rest.test.stream.resource.StreamRawByteArrayMessageBodyReaderWriter;
+import io.quarkus.rest.test.stream.resource.StreamRawByteMessageBodyReaderWriter;
+import io.quarkus.rest.test.stream.resource.StreamRawCharArrayMessageBodyReaderWriter;
+import io.quarkus.rest.test.stream.resource.StreamRawCharMessageBodyReaderWriter;
+import io.quarkus.rest.test.stream.resource.StreamRawMediaTypes;
+import io.quarkus.rest.test.stream.resource.StreamRawObservableRxJava2Resource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -24,7 +24,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 
 /**
@@ -36,11 +42,16 @@ import org.junit.runner.RunWith;
  */
 public class StreamRawObservableRxJava2Test {
 
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(StreamRawObservableRxJava2Test.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
          + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services"));
       return TestUtil.finishContainerPrepare(war, null,
@@ -49,7 +60,7 @@ public class StreamRawObservableRxJava2Test {
          StreamRawByteArrayMessageBodyReaderWriter.class,
          StreamRawCharMessageBodyReaderWriter.class,
          StreamRawCharArrayMessageBodyReaderWriter.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, StreamRawObservableRxJava2Test.class.getSimpleName());
@@ -58,7 +69,7 @@ public class StreamRawObservableRxJava2Test {
    //////////////////////////////////////////////////////////////////////////////
    @BeforeClass
    public static void beforeClass() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass

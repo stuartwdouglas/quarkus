@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.modules.resource;
+package io.quarkus.rest.test.cdi.modules.resource;
 
 import javax.ejb.Local;
 

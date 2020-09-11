@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.jsonfilter.resource;
+package io.quarkus.rest.test.providers.jackson2.jsonfilter.resource;
 
 
 import javax.ws.rs.GET;

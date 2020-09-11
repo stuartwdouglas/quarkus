@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.basic.resource;
+package io.quarkus.rest.test.core.basic.resource;
 
 import org.jboss.resteasy.spi.HttpRequest;
 import org.junit.Assert;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.response.resource;
+package io.quarkus.rest.test.response.resource;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

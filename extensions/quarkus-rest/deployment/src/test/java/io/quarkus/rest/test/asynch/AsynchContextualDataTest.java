@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.asynch;
+package io.quarkus.rest.test.asynch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,11 +13,11 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-import org.jboss.resteasy.test.asynch.resource.AsynchContextualDataProduct;
-import org.jboss.resteasy.test.asynch.resource.AsynchContextualDataResource;
+import io.quarkus.rest.test.asynch.resource.AsynchContextualDataProduct;
+import io.quarkus.rest.test.asynch.resource.AsynchContextualDataResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -26,7 +26,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Asynchronous RESTEasy: RESTEASY-1225
@@ -38,16 +44,21 @@ public class AsynchContextualDataTest {
 
    public static Client client;
 
-   @Deployment()
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(AsynchContextualDataTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(AsynchContextualDataProduct.class);
       List<Class<?>> singletons = new ArrayList<Class<?>>();
       singletons.add(AsynchContextualDataResource.class);
       Map<String, String> contextParam = new HashMap<>();
       contextParam.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, "true");
       return TestUtil.finishContainerPrepare(war, contextParam, singletons);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, AsynchContextualDataTest.class.getSimpleName());
@@ -55,7 +66,7 @@ public class AsynchContextualDataTest {
 
    @BeforeClass
    public static void initClient() {
-      client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
    }
 
    @AfterClass

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.sse;
+package io.quarkus.rest.test.providers.sse;
 
 import org.jboss.resteasy.core.ResteasyContext;
 import org.jboss.resteasy.plugins.providers.sse.OutboundSseEventImpl;

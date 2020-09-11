@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.crypto;
+package io.quarkus.rest.test.crypto;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -13,11 +13,11 @@ import org.jboss.resteasy.security.smime.PKCS7SignatureInput;
 import org.jboss.resteasy.security.smime.SignedInput;
 import org.jboss.resteasy.security.smime.SignedOutput;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.test.crypto.resource.CryptoCertResource;
-import org.jboss.resteasy.test.crypto.resource.CryptoEncryptedResource;
-import org.jboss.resteasy.test.crypto.resource.CryptoEncryptedSignedResource;
-import org.jboss.resteasy.test.crypto.resource.CryptoPkcs7SignedResource;
-import org.jboss.resteasy.test.crypto.resource.CryptoSignedResource;
+import io.quarkus.rest.test.crypto.resource.CryptoCertResource;
+import io.quarkus.rest.test.crypto.resource.CryptoEncryptedResource;
+import io.quarkus.rest.test.crypto.resource.CryptoEncryptedSignedResource;
+import io.quarkus.rest.test.crypto.resource.CryptoPkcs7SignedResource;
+import io.quarkus.rest.test.crypto.resource.CryptoSignedResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -28,7 +28,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;

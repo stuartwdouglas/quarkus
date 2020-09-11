@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.jsonfilter.resource;
+package io.quarkus.rest.test.providers.jackson2.jsonfilter.resource;
 
 public class JsonFilterChild extends JsonFilterParent {
    protected PersonType personType;

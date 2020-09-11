@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.basic;
+package io.quarkus.rest.test.resource.basic;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -26,7 +26,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 public class MediaTypeNegotiationTest
 {

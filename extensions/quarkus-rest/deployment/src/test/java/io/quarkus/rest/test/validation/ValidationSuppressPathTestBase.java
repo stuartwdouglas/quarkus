@@ -1,14 +1,14 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
 import org.jboss.resteasy.api.validation.Validation;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
 
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFoo;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooReaderWriter;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFoo;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooReaderWriter;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -25,11 +25,11 @@ public class ValidationSuppressPathTestBase {
    static final String RESPONSE_ERROR_MSG = "Response has wrong content";
    static final String WRONG_ERROR_MSG = "Expected validation error is not in response";
 
-   ResteasyClient client;
+   QuarkusRestClient client;
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
+      client = (QuarkusRestClient)ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
    }
 
    @After

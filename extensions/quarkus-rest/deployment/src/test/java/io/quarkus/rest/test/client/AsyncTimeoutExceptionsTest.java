@@ -1,15 +1,15 @@
-package org.jboss.resteasy.test.client;
+package io.quarkus.rest.test.client;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
-import org.jboss.resteasy.test.client.resource.AsyncTimeoutExceptionsResource;
-import org.jboss.resteasy.test.client.resource.AsyncTimeoutExceptionsSticker;
+import io.quarkus.rest.test.client.resource.AsyncTimeoutExceptionsResource;
+import io.quarkus.rest.test.client.resource.AsyncTimeoutExceptionsSticker;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 
 import javax.ws.rs.client.Client;
@@ -30,7 +30,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @author <a href="mailto:kanovotn@redhat.com">Katerina Novotna</a>
@@ -50,12 +56,17 @@ public class AsyncTimeoutExceptionsTest extends ClientTestBase{
       client = ClientBuilder.newClient();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(AsyncTimeoutExceptionsTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, AsyncTimeoutExceptionsResource.class,
             AsyncTimeoutExceptionsSticker.class, StickerCallback.class, ResponseCallback.class);
-   }
+   }});
 
    @After
    public void close() {
@@ -109,7 +120,7 @@ public class AsyncTimeoutExceptionsTest extends ClientTestBase{
       CloseableHttpClient httpClient = HttpClientBuilder.create()
             .setDefaultRequestConfig(reqConfig)
             .build();
-      return ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(ApacheHttpClientEngine.create(httpClient, true)).build();  // RESTEasy specific
+      return ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(ApacheHttpClientEngine.create(httpClient, true)).build();  // RESTEasy specific
    }
 
    /**

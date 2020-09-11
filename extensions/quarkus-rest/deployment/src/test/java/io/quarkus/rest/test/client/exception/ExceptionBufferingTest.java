@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.exception;
+package io.quarkus.rest.test.client.exception;
 
 import static org.junit.Assert.fail;
 
@@ -17,11 +17,11 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
-import org.jboss.resteasy.test.client.exception.resource.ExceptionBufferingResource;
+import io.quarkus.rest.test.client.exception.resource.ExceptionBufferingResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -29,7 +29,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Resteasy-client
@@ -45,31 +51,46 @@ public class ExceptionBufferingTest {
    private static final String DEPLOYMENT_FALSE = "nobuffer";
    private static final String DEPLOYMENT_DEFAULT = "default";
 
-   protected static ResteasyClient client;
+   protected static QuarkusRestClient client;
 
 
-   @Deployment(name = DEPLOYMENT_TRUE)
-   public static Archive<?> deployTrue() {
-      WebArchive war = TestUtil.prepareArchive(DEPLOYMENT_TRUE);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       Map<String, String> params = new HashMap<>();
       params.put("resteasy.buffer.exception.entity", "true");
       return TestUtil.finishContainerPrepare(war, params, ExceptionBufferingResource.class);
-   }
+   }});
 
-   @Deployment(name = DEPLOYMENT_FALSE)
-   public static Archive<?> deployFalse() {
-      WebArchive war = TestUtil.prepareArchive(DEPLOYMENT_FALSE);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       Map<String, String> params = new HashMap<>();
       params.put("resteasy.buffer.exception.entity", "false");
       return TestUtil.finishContainerPrepare(war, params, ExceptionBufferingResource.class);
-   }
+   }});
 
-   @Deployment(name = DEPLOYMENT_DEFAULT)
-   public static Archive<?> deployDefault() {
-      WebArchive war = TestUtil.prepareArchive(DEPLOYMENT_DEFAULT);
-      client = (ResteasyClient)ClientBuilder.newClient();
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       return TestUtil.finishContainerPrepare(war, null, ExceptionBufferingResource.class);
-   }
+   }});
 
    @AfterClass
    public static void init() throws Exception {

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.custom;
+package io.quarkus.rest.test.providers.custom;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -12,17 +12,23 @@ import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.providers.custom.resource.CustomClientConstrainedFeature;
-import org.jboss.resteasy.test.providers.custom.resource.CustomConstrainedFeatureResource;
-import org.jboss.resteasy.test.providers.custom.resource.CustomServerConstrainedFeature;
+import io.quarkus.rest.test.providers.custom.resource.CustomClientConstrainedFeature;
+import io.quarkus.rest.test.providers.custom.resource.CustomConstrainedFeatureResource;
+import io.quarkus.rest.test.providers.custom.resource.CustomServerConstrainedFeature;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Core
@@ -36,12 +42,17 @@ public class CustomConstrainedFeatureTest {
    private static final Logger LOGGER = LogManager.getLogger(CustomConstrainedFeatureTest.class.getName());
    private static final String CUSTOM_PROVIDERS_FILENAME = "CustomConstrainedFeature.Providers";
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(CustomConstrainedFeatureTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsResource(CustomConstrainedFeatureTest.class.getPackage(), CUSTOM_PROVIDERS_FILENAME, "META-INF/services/javax.ws.rs.ext.Providers");
       return TestUtil.finishContainerPrepare(war, null, CustomConstrainedFeatureResource.class, CustomServerConstrainedFeature.class, CustomClientConstrainedFeature.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, CustomConstrainedFeatureTest.class.getSimpleName());
@@ -59,9 +70,9 @@ public class CustomConstrainedFeatureTest {
       // ResteasyProviderFactory providerFactory = ResteasyProviderFactory.newInstance();
       // providerFactory.register(CustomClientConstrainedFeature.class);
       // providerFactory.register(CustomServerConstrainedFeature.class);
-      // ResteasyClientImpl client = new ResteasyClientBuilderImpl().build();
+      // QuarkusRestClientImpl client = new QuarkusRestClientBuilderImpl().build();
       // the line below does the same as if there is providers file in META-INF/services/javax.ws.rs.ext.Providers
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newBuilder().register(CustomClientConstrainedFeature.class).register(CustomServerConstrainedFeature.class).build();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newBuilder().register(CustomClientConstrainedFeature.class).register(CustomServerConstrainedFeature.class).build();
       assertTrue(CustomConstrainedFeatureResource.ERROR_CLIENT_FEATURE, CustomClientConstrainedFeature.wasInvoked());
       assertFalse(CustomConstrainedFeatureResource.ERROR_SERVER_FEATURE, CustomServerConstrainedFeature.wasInvoked());
       Response response = client.target(TEST_URI).request().get();

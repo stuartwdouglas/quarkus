@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.security;
+package io.quarkus.rest.test.security;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -38,7 +38,7 @@ class ClientConfigProviderTestJarHelper {
         String mockedClientConfigProviderImplClassPath;
     }
 
-    private static final String PACKAGE_NAME = "org.jboss.resteasy.test.security.testjar";
+    private static final String PACKAGE_NAME = "io.quarkus.rest.test.security.testjar";
     private static final String PACKAGE_PATH = "org/jboss/resteasy/test/security/testjar/";
     private static final String JAR_NAME = "client-config-provider-test.jar";
 

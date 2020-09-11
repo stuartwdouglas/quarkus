@@ -1,22 +1,28 @@
-package org.jboss.resteasy.test.core.interceptors;
+package io.quarkus.rest.test.core.interceptors;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.core.interceptors.resource.PreProcessorExceptionMapperCandlepinException;
-import org.jboss.resteasy.test.core.interceptors.resource.PreProcessorExceptionMapperCandlepinUnauthorizedException;
-import org.jboss.resteasy.test.core.interceptors.resource.PreProcessorExceptionMapperPreProcessSecurityInterceptor;
-import org.jboss.resteasy.test.core.interceptors.resource.PreProcessorExceptionMapperResource;
-import org.jboss.resteasy.test.core.interceptors.resource.PreProcessorExceptionMapperRuntimeExceptionMapper;
+import io.quarkus.rest.test.core.interceptors.resource.PreProcessorExceptionMapperCandlepinException;
+import io.quarkus.rest.test.core.interceptors.resource.PreProcessorExceptionMapperCandlepinUnauthorizedException;
+import io.quarkus.rest.test.core.interceptors.resource.PreProcessorExceptionMapperPreProcessSecurityInterceptor;
+import io.quarkus.rest.test.core.interceptors.resource.PreProcessorExceptionMapperResource;
+import io.quarkus.rest.test.core.interceptors.resource.PreProcessorExceptionMapperRuntimeExceptionMapper;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.core.Response;
 
@@ -30,15 +36,20 @@ import static org.jboss.resteasy.utils.PortProviderUtil.generateURL;
  */
 public class PreProcessorExceptionMapperTest {
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(GzipTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(PreProcessorExceptionMapperCandlepinException.class);
       war.addClass(PreProcessorExceptionMapperCandlepinUnauthorizedException.class);
       return TestUtil.finishContainerPrepare(war, null, PreProcessorExceptionMapperPreProcessSecurityInterceptor.class,
                                                 PreProcessorExceptionMapperRuntimeExceptionMapper.class,
                                                 PreProcessorExceptionMapperResource.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Generate PreProcessorExceptionMapperCandlepinUnauthorizedException
@@ -47,7 +58,7 @@ public class PreProcessorExceptionMapperTest {
     */
    @Test
    public void testMapper() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       Response response = client.target(generateURL("/interception", GzipTest.class.getSimpleName())).request().get();
       Assert.assertEquals(HttpResponseCodes.SC_PRECONDITION_FAILED, response.getStatus());
       response.close();

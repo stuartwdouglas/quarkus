@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.basic.resource;
+package io.quarkus.rest.test.core.basic.resource;
 
 public class ApplicationConfigService implements ApplicationConfigInterface {
    public String hello() {

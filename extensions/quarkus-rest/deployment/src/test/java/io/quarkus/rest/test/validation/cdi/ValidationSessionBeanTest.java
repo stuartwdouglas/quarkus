@@ -1,18 +1,18 @@
-package org.jboss.resteasy.test.validation.cdi;
+package io.quarkus.rest.test.validation.cdi;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
 
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.validation.cdi.resource.SessionResourceImpl;
-import org.jboss.resteasy.test.validation.cdi.resource.SessionResourceLocal;
-import org.jboss.resteasy.test.validation.cdi.resource.SessionResourceParent;
-import org.jboss.resteasy.test.validation.cdi.resource.SessionResourceRemote;
+import io.quarkus.rest.test.validation.cdi.resource.SessionResourceImpl;
+import io.quarkus.rest.test.validation.cdi.resource.SessionResourceLocal;
+import io.quarkus.rest.test.validation.cdi.resource.SessionResourceParent;
+import io.quarkus.rest.test.validation.cdi.resource.SessionResourceRemote;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -22,7 +22,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.core.Response;
 
@@ -37,14 +43,16 @@ import static org.junit.Assert.assertEquals;
 @Ignore("RESTEASY-2601") //FIXME
 public class ValidationSessionBeanTest {
    @SuppressWarnings(value = "unchecked")
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(ValidationSessionBeanTest.class.getSimpleName())
-            .addClasses(SessionResourceParent.class)
-            .addClasses(SessionResourceLocal.class, SessionResourceRemote.class, SessionResourceImpl.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ValidationSessionBeanTest.class.getSimpleName());
@@ -52,7 +60,7 @@ public class ValidationSessionBeanTest {
 
    @Test
    public void testInvalidParam() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       Response response = client.target(generateURL("/test/resource")).queryParam("param", "abc").request().get();
       String answer = response.readEntity(String.class);
       assertEquals(HttpResponseCodes.SC_BAD_REQUEST, response.getStatus());

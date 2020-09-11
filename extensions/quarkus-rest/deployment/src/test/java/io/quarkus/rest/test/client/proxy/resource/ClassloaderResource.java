@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.proxy.resource;
+package io.quarkus.rest.test.client.proxy.resource;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -6,9 +6,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.client.jaxrs.internal.proxy.ProxyBuilderImpl;
-import org.jboss.resteasy.test.core.smoke.resource.ResourceWithInterfaceSimpleClient;
+import io.quarkus.rest.test.core.smoke.resource.ResourceWithInterfaceSimpleClient;
 
 @Path("/cl")
 public class ClassloaderResource
@@ -21,7 +21,7 @@ public class ClassloaderResource
    {
       ClassLoader orig = Thread.currentThread().getContextClassLoader();
       //create the client...
-      ResteasyClient client = (ResteasyClient) ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
       try
       {
          //replace the TCCL with the classloader from the resteasy-client module

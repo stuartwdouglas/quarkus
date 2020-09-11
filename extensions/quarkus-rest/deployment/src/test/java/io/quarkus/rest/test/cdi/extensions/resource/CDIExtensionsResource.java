@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.cdi.extensions.resource;
+package io.quarkus.rest.test.cdi.extensions.resource;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.test.cdi.util.Utilities;
+import io.quarkus.rest.test.cdi.util.Utilities;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;

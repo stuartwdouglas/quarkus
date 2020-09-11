@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.wadl;
+package io.quarkus.rest.test.wadl;
 
 import org.jboss.resteasy.utils.TestApplication;
 import org.jboss.resteasy.wadl.ResteasyWadlDefaultResource;

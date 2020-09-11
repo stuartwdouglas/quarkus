@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.interceptor.resource;
+package io.quarkus.rest.test.interceptor.resource;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.ext.WriterInterceptor;

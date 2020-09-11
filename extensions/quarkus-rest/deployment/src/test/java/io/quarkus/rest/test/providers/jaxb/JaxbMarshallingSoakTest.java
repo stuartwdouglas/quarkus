@@ -1,14 +1,14 @@
-package org.jboss.resteasy.test.providers.jaxb;
+package io.quarkus.rest.test.providers.jaxb;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.providers.jaxb.resource.JaxbMarshallingSoakAsyncService;
-import org.jboss.resteasy.test.providers.jaxb.resource.JaxbMarshallingSoakItem;
+import io.quarkus.rest.test.providers.jaxb.resource.JaxbMarshallingSoakAsyncService;
+import io.quarkus.rest.test.providers.jaxb.resource.JaxbMarshallingSoakItem;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -20,7 +20,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -60,7 +66,7 @@ public class JaxbMarshallingSoakTest {
 
    @Before
    public void init() {
-      client = ((ResteasyClientBuilder)ClientBuilder.newBuilder())
+      client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder())
             .connectTimeout(5000, TimeUnit.MILLISECONDS)
             .connectionCheckoutTimeout(5000, TimeUnit.MILLISECONDS)
             .readTimeout(5000, TimeUnit.MILLISECONDS)
@@ -73,9 +79,14 @@ public class JaxbMarshallingSoakTest {
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war =  TestUtil.prepareArchive(JaxbMarshallingSoakTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(JaxbMarshallingSoakItem.class, TestUtil.class, PortProviderUtil.class, TimeoutUtil.class);
       Map<String, String> contextParam = new HashMap<>();
       contextParam.put("resteasy.async.job.service.enabled", "true");
@@ -95,7 +106,7 @@ public class JaxbMarshallingSoakTest {
             new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, contextParam, JaxbMarshallingSoakAsyncService.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, JaxbMarshallingSoakTest.class.getSimpleName());

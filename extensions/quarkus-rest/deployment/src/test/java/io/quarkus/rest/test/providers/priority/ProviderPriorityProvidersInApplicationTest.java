@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.priority;
+package io.quarkus.rest.test.providers.priority;
 
 import static org.junit.Assert.assertEquals;
 
@@ -11,20 +11,20 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityExceptionMapperAAA;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityExceptionMapperBBB;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityExceptionMapperCCC;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityFoo;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityFooParamConverter;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityFooParamConverterProviderAAA;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityFooParamConverterProviderBBB;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityFooParamConverterProviderCCC;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityResource;
-import org.jboss.resteasy.test.providers.priority.resource.ProviderPriorityTestException;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityExceptionMapperAAA;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityExceptionMapperBBB;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityExceptionMapperCCC;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityFoo;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityFooParamConverter;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityFooParamConverterProviderAAA;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityFooParamConverterProviderBBB;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityFooParamConverterProviderCCC;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityResource;
+import io.quarkus.rest.test.providers.priority.resource.ProviderPriorityTestException;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -32,7 +32,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter ExceptionMappers and ParamConverterProviders
@@ -41,11 +47,16 @@ import org.junit.runner.RunWith;
  */
 public class ProviderPriorityProvidersInApplicationTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(ProviderPriorityProvidersInApplicationTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(ProviderPriorityFoo.class,
             ProviderPriorityFooParamConverter.class,
             ProviderPriorityTestException.class
@@ -62,7 +73,7 @@ public class ProviderPriorityProvidersInApplicationTest {
             ProviderPriorityFooParamConverterProviderBBB.class,
             ProviderPriorityFooParamConverterProviderCCC.class
             );
-   }
+   }});
 
    private ResteasyProviderFactory factory;
    @Before
@@ -71,7 +82,7 @@ public class ProviderPriorityProvidersInApplicationTest {
       RegisterBuiltin.register(factory);
       ResteasyProviderFactory.setInstance(factory);
 
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

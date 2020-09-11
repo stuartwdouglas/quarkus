@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jaxb.resource.parsing;
+package io.quarkus.rest.test.providers.jaxb.resource.parsing;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

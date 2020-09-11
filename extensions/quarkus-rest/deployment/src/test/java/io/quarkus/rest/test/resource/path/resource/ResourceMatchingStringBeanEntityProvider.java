@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.resource.path.resource;
+package io.quarkus.rest.test.resource.path.resource;
 
-import org.jboss.resteasy.test.resource.path.ResourceMatchingTest;
+import io.quarkus.rest.test.resource.path.ResourceMatchingTest;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;

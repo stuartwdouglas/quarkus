@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.extensions;
+package io.quarkus.rest.test.cdi.extensions;
 
 
 import static org.junit.Assert.assertEquals;
@@ -15,15 +15,15 @@ import org.apache.logging.log4j.LogManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsBoston;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsBostonBean;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsBostonBeanExtension;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsBostonHolder;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsBostonlLeaf;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsTestReader;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsResource;
-import org.jboss.resteasy.test.cdi.util.Utilities;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBoston;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBostonBean;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBostonBeanExtension;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBostonHolder;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBostonlLeaf;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsTestReader;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsResource;
+import io.quarkus.rest.test.cdi.util.Utilities;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -33,7 +33,13 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter CDI
@@ -47,9 +53,14 @@ public class BeanExtensionTest {
    protected static final Logger log = LogManager.getLogger(BeanExtensionTest.class.getName());
 
    @SuppressWarnings(value = "unchecked")
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(BeanExtensionTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(UtilityProducer.class, Utilities.class)
             .addClasses(CDIExtensionsBostonBeanExtension.class, CDIExtensionsBoston.class, CDIExtensionsBostonBean.class)
             .addClasses(CDIExtensionsResource.class, CDIExtensionsTestReader.class)
@@ -60,7 +71,7 @@ public class BeanExtensionTest {
       war.addAsLibrary(jar);
 
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-   }
+   }});
 
    /**
     * @tpTestDetails Client get request. Resource check extension bean on server.

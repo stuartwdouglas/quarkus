@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.resource.param.resource;
+package io.quarkus.rest.test.resource.param.resource;
 
-import org.jboss.resteasy.test.resource.param.MatrixParamAsPrimitiveTest;
+import io.quarkus.rest.test.resource.param.MatrixParamAsPrimitiveTest;
 import org.junit.Assert;
 
 import javax.ws.rs.GET;

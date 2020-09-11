@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.basic.resource;
+package io.quarkus.rest.test.resource.basic.resource;
 
 
 import org.jboss.logging.Logger;

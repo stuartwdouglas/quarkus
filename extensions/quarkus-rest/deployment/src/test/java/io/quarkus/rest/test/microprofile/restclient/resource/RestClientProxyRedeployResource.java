@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.microprofile.restclient.resource;
+package io.quarkus.rest.test.microprofile.restclient.resource;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;

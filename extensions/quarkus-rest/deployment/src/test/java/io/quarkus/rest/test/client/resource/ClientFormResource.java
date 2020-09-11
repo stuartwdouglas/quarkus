@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.client.resource;
+package io.quarkus.rest.test.client.resource;
 
-import org.jboss.resteasy.test.client.ClientFormParamTest;
+import io.quarkus.rest.test.client.ClientFormParamTest;
 
 import javax.ws.rs.core.Form;
 

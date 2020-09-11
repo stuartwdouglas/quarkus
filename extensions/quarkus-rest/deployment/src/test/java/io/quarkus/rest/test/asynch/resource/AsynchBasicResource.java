@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.asynch.resource;
+package io.quarkus.rest.test.asynch.resource;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.test.asynch.AsynchBasicTest;
+import io.quarkus.rest.test.asynch.AsynchBasicTest;
 import org.junit.Assert;
 
 import javax.servlet.ServletConfig;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.response;
+package io.quarkus.rest.test.response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -6,9 +6,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.plugins.delegates.LocaleDelegate;
-import org.jboss.resteasy.test.response.resource.VariantComplexResource;
-import org.jboss.resteasy.test.response.resource.VariantEncodingResource;
-import org.jboss.resteasy.test.response.resource.VariantLanguageResource;
+import io.quarkus.rest.test.response.resource.VariantComplexResource;
+import io.quarkus.rest.test.response.resource.VariantEncodingResource;
+import io.quarkus.rest.test.response.resource.VariantLanguageResource;
 import org.jboss.resteasy.util.HttpHeaderNames;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.TestUtil;
@@ -18,7 +18,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -40,12 +46,17 @@ public class VariantsTest {
 
    static Client client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(VariantsTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(VariantsTest.class);
       return TestUtil.finishContainerPrepare(war, null, VariantLanguageResource.class, VariantComplexResource.class, VariantEncodingResource.class);
-   }
+   }});
 
    @Before
    public void init() {

@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.cdi.injection.resource;
+package io.quarkus.rest.test.cdi.injection.resource;
 
-import org.jboss.resteasy.test.cdi.injection.WeldSubdeploymentTest;
+import io.quarkus.rest.test.cdi.injection.WeldSubdeploymentTest;
 import org.junit.Assert;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;

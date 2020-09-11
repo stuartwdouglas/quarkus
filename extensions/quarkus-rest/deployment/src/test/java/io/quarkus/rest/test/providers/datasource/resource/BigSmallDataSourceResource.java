@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.datasource.resource;
+package io.quarkus.rest.test.providers.datasource.resource;
 
 
 import javax.activation.DataSource;

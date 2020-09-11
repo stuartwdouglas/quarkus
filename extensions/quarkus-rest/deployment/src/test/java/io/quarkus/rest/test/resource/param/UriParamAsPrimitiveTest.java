@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 
 import javax.ws.rs.client.Invocation;
@@ -8,26 +8,26 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriBoolean;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriBooleanInterface;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriBooleanWrapper;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriByte;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriByteInterface;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriByteWrapper;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriChar;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriCharWrapper;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriDouble;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriDoubleWrapper;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriFloat;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriFloatWrapper;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriInt;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriIntWrapper;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriLong;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriLongWrapper;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriShort;
-import org.jboss.resteasy.test.resource.param.resource.UriParamAsPrimitiveResourceUriShortWrapper;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriBoolean;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriBooleanInterface;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriBooleanWrapper;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriByte;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriByteInterface;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriByteWrapper;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriChar;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriCharWrapper;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriDouble;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriDoubleWrapper;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriFloat;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriFloatWrapper;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriInt;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriIntWrapper;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriLong;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriLongWrapper;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriShort;
+import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriShortWrapper;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -37,7 +37,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Parameters
@@ -50,11 +56,11 @@ public class UriParamAsPrimitiveTest {
 
    private static UriParamAsPrimitiveResourceUriBooleanInterface resourceUriBoolean;
    private static UriParamAsPrimitiveResourceUriByteInterface resourceUriByte;
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
    @BeforeClass
    public static void before() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       resourceUriBoolean = ProxyBuilder.builder(UriParamAsPrimitiveResourceUriBooleanInterface.class, client.target(generateBaseUrl())).build();
       resourceUriByte = ProxyBuilder.builder(UriParamAsPrimitiveResourceUriByteInterface.class, client.target(generateBaseUrl())).build();
    }

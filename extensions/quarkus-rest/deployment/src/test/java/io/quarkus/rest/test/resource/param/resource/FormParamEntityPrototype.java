@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.param.resource;
+package io.quarkus.rest.test.resource.param.resource;
 
 public abstract class FormParamEntityPrototype {
    protected String value;

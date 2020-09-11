@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.tracing;
+package io.quarkus.rest.test.tracing;
 
 import org.jboss.resteasy.plugins.interceptors.GZIPDecodingInterceptor;
 import org.jboss.resteasy.plugins.interceptors.GZIPEncodingInterceptor;

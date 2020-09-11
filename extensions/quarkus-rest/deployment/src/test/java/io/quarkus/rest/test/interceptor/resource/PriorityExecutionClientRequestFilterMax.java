@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.interceptor.resource;
+package io.quarkus.rest.test.interceptor.resource;
 
-import org.jboss.resteasy.test.interceptor.PriorityExecutionTest;
+import io.quarkus.rest.test.interceptor.PriorityExecutionTest;
 
 import javax.annotation.Priority;
 import javax.ws.rs.client.ClientRequestContext;

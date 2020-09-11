@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.injection.resource;
+package io.quarkus.rest.test.cdi.injection.resource;
 
 public class ProviderFinalClassStringHandler {
    private String a;

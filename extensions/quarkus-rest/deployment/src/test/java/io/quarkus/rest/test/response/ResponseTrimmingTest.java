@@ -1,10 +1,10 @@
-package org.jboss.resteasy.test.response;
+package io.quarkus.rest.test.response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
-import org.jboss.resteasy.test.response.resource.ResponseTrimmingResource;
+import org.jboss.resteasy.client.jaxrs.internal.QuarkusRestClientBuilderImpl;
+import io.quarkus.rest.test.response.resource.ResponseTrimmingResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -13,7 +13,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -36,28 +42,38 @@ public class ResponseTrimmingTest {
    /**
     * Prepare deployment with default configuration. JSON-B will be used.
     */
-   @Deployment(name = DEFAULT)
-   public static Archive<?> deployDefault() {
-      WebArchive war = TestUtil.prepareArchive(DEFAULT);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, ResponseTrimmingResource.class);
-   }
+   }});
 
    /**
     * Prepare deployment with jboss-deployment-structure-no-json-b.xml. Jackson will be used.
     */
-   @Deployment(name = NO_JSON_B)
-   public static Archive<?> deployNoJsonB() {
-      WebArchive war = TestUtil.prepareArchive(NO_JSON_B);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsManifestResource("jboss-deployment-structure-no-json-b.xml", "jboss-deployment-structure.xml");
       return TestUtil.finishContainerPrepare(war, null, ResponseTrimmingResource.class);
-   }
+   }});
 
    /**
     * Prepare string for tests and its trimmed version.
     */
    @BeforeClass
    public static void init() {
-      client = new ResteasyClientBuilderImpl().build();
+      client = new QuarkusRestClientBuilderImpl().build();
 
       StringBuilder sb = new StringBuilder();
       for (int i = 1; i <= 1024; i++) {

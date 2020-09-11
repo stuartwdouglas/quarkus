@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.xxe.resource;
+package io.quarkus.rest.test.xxe.resource;
 
 import org.jboss.logging.Logger;
 import org.w3c.dom.Document;

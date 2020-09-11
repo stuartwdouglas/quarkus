@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import javax.validation.ValidationException;
 import javax.ws.rs.client.Entity;
@@ -14,23 +14,23 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
 
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionErrorOneLevel_Class;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionErrorOneLevel_Interface;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionErrorTwoLevels_Class;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionErrorTwoLevels_Interface;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionErrorWithGenericMethodSubClass;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionErrorWithGenericMethodSuperClass;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionErrorWithGenericSupermethod;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionInterface;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionInterfaceWithGenericSupermethod;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionResource;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionSubInterface;
-import org.jboss.resteasy.test.validation.resource.TestValidateOnExecutionSubResource;
-import org.jboss.resteasy.test.validation.resource.TestValidationOnExecuteSubInterface;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionErrorOneLevel_Class;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionErrorOneLevel_Interface;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionErrorTwoLevels_Class;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionErrorTwoLevels_Interface;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionErrorWithGenericMethodSubClass;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionErrorWithGenericMethodSuperClass;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionErrorWithGenericSupermethod;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionInterface;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionInterfaceWithGenericSupermethod;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionResource;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionSubInterface;
+import io.quarkus.rest.test.validation.resource.TestValidateOnExecutionSubResource;
+import io.quarkus.rest.test.validation.resource.TestValidationOnExecuteSubInterface;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -39,7 +39,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import static org.jboss.resteasy.utils.PortProviderUtil.generateURL;
 
@@ -50,7 +56,7 @@ import static org.jboss.resteasy.utils.PortProviderUtil.generateURL;
  */
 public class ValidateOnExecutionTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
    protected static final Logger logger = LogManager.getLogger(ValidateOnExecutionTest.class.getName());
 
@@ -114,7 +120,7 @@ public class ValidateOnExecutionTest {
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

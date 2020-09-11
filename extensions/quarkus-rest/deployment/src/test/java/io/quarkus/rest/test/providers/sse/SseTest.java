@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.sse;
+package io.quarkus.rest.test.providers.sse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,8 +26,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.plugins.providers.sse.client.SseEventSourceImpl;
 import org.jboss.resteasy.plugins.providers.sse.client.SseEventSourceImpl.SourceBuilder;
 import org.jboss.resteasy.utils.PermissionUtil;
@@ -38,7 +38,13 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 public class SseTest
 {
@@ -88,7 +94,7 @@ public class SseTest
                throw new RuntimeException(ex);
             }) ;
          eventSource.open();
-         Client messageClient = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+         Client messageClient = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
          WebTarget messageTarget = messageClient.target(generateURL("/service/server-sent-events"));
          for (int counter = 0; counter < 5; counter++)
          {
@@ -118,7 +124,7 @@ public class SseTest
    {
       final CountDownLatch missedEventLatch = new CountDownLatch(3);
       final List<String> missedEvents = new ArrayList<String>();
-      Client c = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      Client c = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
       WebTarget lastEventTarget = c.target(generateURL("/service/server-sent-events"));
       SseEventSourceImpl lastEventSource = (SseEventSourceImpl) SseEventSource.target(lastEventTarget).build();
       lastEventSource.register(event -> {
@@ -146,7 +152,7 @@ public class SseTest
       final List<String> results = new ArrayList<String>();
       final CountDownLatch latch = new CountDownLatch(6);
       final AtomicInteger errors = new AtomicInteger(0);
-      Client client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      Client client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
       WebTarget target = client.target(generateURL("/service/server-sent-events")).path("domains").path("1");
 
       SseEventSource eventSource = SseEventSource.target(target).build();
@@ -177,7 +183,7 @@ public class SseTest
    public void testBroadcast() throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(3);
-      Client client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).build();
+      Client client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).build();
       WebTarget target = client.target(generateURL("/service/server-sent-events/subscribe"));
       final String textMessage = "This is broadcast message";
       Consumer<InboundSseEvent> checkConsumer = insse -> {
@@ -267,7 +273,7 @@ public class SseTest
       final CountDownLatch latch = new CountDownLatch(10);
       final List<String> results = new ArrayList<String>();
       final AtomicInteger errors = new AtomicInteger(0);
-      ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
       String requestPath = PortProviderUtil.generateURL("/service/server-sent-events",
             SseTest.class.getSimpleName(), PortProviderUtil.getHost(), proxyPort);
       WebTarget target = client.target(requestPath);
@@ -325,7 +331,7 @@ public class SseTest
    public void testEventSourceConsumer() throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(1);
-      Client client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      Client client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
       WebTarget target = client.target(generateURL("/service/server-sent-events/error"));
       List<Throwable> errorList = new ArrayList<Throwable>();
       Thread t = new Thread(new Runnable()
@@ -379,7 +385,7 @@ public class SseTest
                throw new RuntimeException(ex);
             });
          eventSource.open();
-         Client messageClient = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+         Client messageClient = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
          WebTarget messageTarget = messageClient.target(generateURL("/service/server-sent-events"));
          messageTarget.request().post(Entity.text("data0a"));
          messageTarget.request().post(Entity.text("data1a\ndata1b\n\rdata1c"));
@@ -495,7 +501,7 @@ public class SseTest
    public void testNoReconnectAfterEventSinkClose() throws Exception
    {
       List<String> results = new ArrayList<String>();
-      Client client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
+      Client client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(10).build();
       WebTarget target = client.target(generateURL("/service/server-sent-events/closeAfterSent"));
       SourceBuilder builder = (SourceBuilder) SseEventSource.target(target);
       SseEventSource sourceImpl = builder.alwaysReconnect(false).build();

@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.resource.param.resource;
+package io.quarkus.rest.test.resource.param.resource;
 
-import org.jboss.resteasy.test.resource.param.ComplexPathParamTest;
+import io.quarkus.rest.test.resource.param.ComplexPathParamTest;
 import org.junit.Assert;
 
 import javax.ws.rs.GET;

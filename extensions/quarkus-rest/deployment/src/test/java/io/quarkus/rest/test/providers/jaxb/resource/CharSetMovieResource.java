@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jaxb.resource;
+package io.quarkus.rest.test.providers.jaxb.resource;
 
 import org.jboss.logging.Logger;
 
@@ -10,7 +10,7 @@ import javax.ws.rs.Produces;
 
 import java.nio.charset.Charset;
 
-import static org.jboss.resteasy.test.providers.jaxb.CharSetRE1066Test.APPLICATION_XML_UTF16;
+import static io.quarkus.rest.test.providers.jaxb.CharSetRE1066Test.APPLICATION_XML_UTF16;
 
 @Path("/")
 public class CharSetMovieResource {

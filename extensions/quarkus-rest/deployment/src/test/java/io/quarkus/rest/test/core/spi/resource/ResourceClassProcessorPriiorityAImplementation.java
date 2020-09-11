@@ -1,9 +1,9 @@
-package org.jboss.resteasy.test.core.spi.resource;
+package io.quarkus.rest.test.core.spi.resource;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.metadata.ResourceClass;
 import org.jboss.resteasy.spi.metadata.ResourceClassProcessor;
-import org.jboss.resteasy.test.core.spi.ResourceClassProcessorPriorityTest;
+import io.quarkus.rest.test.core.spi.ResourceClassProcessorPriorityTest;
 
 import javax.annotation.Priority;
 import javax.ws.rs.ext.Provider;

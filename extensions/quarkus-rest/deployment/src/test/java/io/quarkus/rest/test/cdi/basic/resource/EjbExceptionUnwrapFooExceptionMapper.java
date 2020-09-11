@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.basic.resource;
+package io.quarkus.rest.test.cdi.basic.resource;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;

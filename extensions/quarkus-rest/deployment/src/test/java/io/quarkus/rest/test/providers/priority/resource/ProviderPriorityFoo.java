@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.priority.resource;
+package io.quarkus.rest.test.providers.priority.resource;
 
 public class ProviderPriorityFoo {
    private String foo;

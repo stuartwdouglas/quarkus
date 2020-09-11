@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.providers.custom.resource;
+package io.quarkus.rest.test.providers.custom.resource;
 
-import org.jboss.resteasy.test.providers.custom.CollectionProviderTest;
+import io.quarkus.rest.test.providers.custom.CollectionProviderTest;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;

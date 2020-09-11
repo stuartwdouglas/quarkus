@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.client.proxy.resource;
+package io.quarkus.rest.test.client.proxy.resource;
 
 import org.jboss.resteasy.spi.NoLogWebApplicationException;
-import org.jboss.resteasy.test.client.proxy.ClientResponseFailureTest;
+import io.quarkus.rest.test.client.proxy.ClientResponseFailureTest;
 
 import javax.ws.rs.core.Response;
 

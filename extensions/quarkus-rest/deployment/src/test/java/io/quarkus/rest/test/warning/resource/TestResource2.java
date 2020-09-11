@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.warning.resource;
+package io.quarkus.rest.test.warning.resource;
 
-import org.jboss.resteasy.test.core.interceptors.resource.TestSubResource;
+import io.quarkus.rest.test.core.interceptors.resource.TestSubResource;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;

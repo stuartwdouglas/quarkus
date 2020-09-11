@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation.cdi.resource;
+package io.quarkus.rest.test.validation.cdi.resource;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.validation.ConstraintValidator;

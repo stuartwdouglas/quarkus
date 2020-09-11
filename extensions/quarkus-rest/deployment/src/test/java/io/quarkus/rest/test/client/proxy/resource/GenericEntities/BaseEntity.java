@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.proxy.resource.GenericEntities;
+package io.quarkus.rest.test.client.proxy.resource.GenericEntities;
 
 public class BaseEntity {
     private String name;

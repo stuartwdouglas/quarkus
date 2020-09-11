@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.file.resource;
+package io.quarkus.rest.test.providers.file.resource;
 
 import java.io.File;
 

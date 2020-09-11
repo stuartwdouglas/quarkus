@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation.cdi.resource;
+package io.quarkus.rest.test.validation.cdi.resource;
 
 import javax.ejb.Local;
 import javax.validation.constraints.Min;

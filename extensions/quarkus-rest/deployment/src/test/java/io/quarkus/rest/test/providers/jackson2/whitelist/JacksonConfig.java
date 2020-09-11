@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.whitelist;
+package io.quarkus.rest.test.providers.jackson2.whitelist;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -6,7 +6,7 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 
 import org.jboss.resteasy.plugins.providers.jackson.WhiteListPolymorphicTypeValidatorBuilder;
-import org.jboss.resteasy.test.providers.jackson2.whitelist.model.land.Automobile2;
+import io.quarkus.rest.test.providers.jackson2.whitelist.model.land.Automobile2;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;

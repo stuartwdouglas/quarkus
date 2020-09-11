@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.proxy.resource;
+package io.quarkus.rest.test.client.proxy.resource;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;

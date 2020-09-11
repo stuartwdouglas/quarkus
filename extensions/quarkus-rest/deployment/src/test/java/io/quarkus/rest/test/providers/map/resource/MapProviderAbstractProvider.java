@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.map.resource;
+package io.quarkus.rest.test.providers.map.resource;
 
 public abstract class MapProviderAbstractProvider {
    public long getLength() {

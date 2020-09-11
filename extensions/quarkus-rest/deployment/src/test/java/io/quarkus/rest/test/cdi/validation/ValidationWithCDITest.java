@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.validation;
+package io.quarkus.rest.test.cdi.validation;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -12,20 +12,20 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import org.jboss.resteasy.test.cdi.validation.resource.AbstractAsyncRootResource;
-import org.jboss.resteasy.test.cdi.validation.resource.AsyncRootResource;
-import org.jboss.resteasy.test.cdi.validation.resource.AsyncRootResourceImpl;
-import org.jboss.resteasy.test.cdi.validation.resource.AsyncSubResource;
-import org.jboss.resteasy.test.cdi.validation.resource.AsyncSubResourceImpl;
-import org.jboss.resteasy.test.cdi.validation.resource.AsyncValidResource;
-import org.jboss.resteasy.test.cdi.validation.resource.QueryBeanParam;
-import org.jboss.resteasy.test.cdi.validation.resource.QueryBeanParamImpl;
-import org.jboss.resteasy.test.cdi.validation.resource.RootResource;
-import org.jboss.resteasy.test.cdi.validation.resource.RootResourceImpl;
-import org.jboss.resteasy.test.cdi.validation.resource.SubResource;
-import org.jboss.resteasy.test.cdi.validation.resource.SubResourceImpl;
-import org.jboss.resteasy.test.cdi.validation.resource.TestApplication;
-import org.jboss.resteasy.test.cdi.validation.resource.ValidResource;
+import io.quarkus.rest.test.cdi.validation.resource.AbstractAsyncRootResource;
+import io.quarkus.rest.test.cdi.validation.resource.AsyncRootResource;
+import io.quarkus.rest.test.cdi.validation.resource.AsyncRootResourceImpl;
+import io.quarkus.rest.test.cdi.validation.resource.AsyncSubResource;
+import io.quarkus.rest.test.cdi.validation.resource.AsyncSubResourceImpl;
+import io.quarkus.rest.test.cdi.validation.resource.AsyncValidResource;
+import io.quarkus.rest.test.cdi.validation.resource.QueryBeanParam;
+import io.quarkus.rest.test.cdi.validation.resource.QueryBeanParamImpl;
+import io.quarkus.rest.test.cdi.validation.resource.RootResource;
+import io.quarkus.rest.test.cdi.validation.resource.RootResourceImpl;
+import io.quarkus.rest.test.cdi.validation.resource.SubResource;
+import io.quarkus.rest.test.cdi.validation.resource.SubResourceImpl;
+import io.quarkus.rest.test.cdi.validation.resource.TestApplication;
+import io.quarkus.rest.test.cdi.validation.resource.ValidResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -35,7 +35,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter CDI

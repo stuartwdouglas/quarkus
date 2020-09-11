@@ -1,14 +1,14 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.resource.param.resource.FormParamBasicResource;
-import org.jboss.resteasy.test.resource.param.resource.FormParamEntityPrototype;
-import org.jboss.resteasy.test.resource.param.resource.FormParamEntityThrowsIllegaArgumentException;
-import org.jboss.resteasy.test.resource.param.resource.FormParamEntityWithConstructor;
-import org.jboss.resteasy.test.resource.param.resource.FormParamEntityWithFromString;
-import org.jboss.resteasy.test.resource.param.resource.FormParamResource;
+import io.quarkus.rest.test.resource.param.resource.FormParamBasicResource;
+import io.quarkus.rest.test.resource.param.resource.FormParamEntityPrototype;
+import io.quarkus.rest.test.resource.param.resource.FormParamEntityThrowsIllegaArgumentException;
+import io.quarkus.rest.test.resource.param.resource.FormParamEntityWithConstructor;
+import io.quarkus.rest.test.resource.param.resource.FormParamEntityWithFromString;
+import io.quarkus.rest.test.resource.param.resource.FormParamResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -18,7 +18,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -41,16 +47,21 @@ public class FormParamTest {
       client = ClientBuilder.newClient();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(FormParamTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(FormParamEntityPrototype.class);
       war.addClass(FormParamEntityThrowsIllegaArgumentException.class);
       war.addClass(FormParamEntityWithConstructor.class);
       war.addClass(FormParamEntityWithFromString.class);
       return TestUtil.finishContainerPrepare(war, null, FormParamResource.class,
             FormParamBasicResource.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, FormParamTest.class.getSimpleName());

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.spi;
+package io.quarkus.rest.test.core.spi;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -6,8 +6,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorErrorImplementation;
-import org.jboss.resteasy.test.core.spi.resource.ResourceClassProcessorPureEndPoint;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorErrorImplementation;
+import io.quarkus.rest.test.core.spi.resource.ResourceClassProcessorPureEndPoint;
 import org.jboss.resteasy.utils.LogCounter;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -15,10 +15,16 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
 
 /**
  * @tpSubChapter ResourceClassProcessor SPI
@@ -35,16 +41,21 @@ public class ResourceClassProcessorErrorTest {
    @ArquillianResource
    private Deployer deployer;
 
-   @Deployment(name = DEPLOYMENT_NAME, managed = false)
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(ResourceClassProcessorErrorTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(ResourceClassProcessorErrorTest.class);
       war.addClass(PortProviderUtil.class);
 
       return TestUtil.finishContainerPrepare(war, null,
             ResourceClassProcessorPureEndPoint.class,
             ResourceClassProcessorErrorImplementation.class);
-   }
+   }});
 
 
    /**

@@ -1,9 +1,9 @@
-package org.jboss.resteasy.test.cdi.basic.resource;
+package io.quarkus.rest.test.cdi.basic.resource;
 
-import org.jboss.resteasy.test.cdi.util.Constants;
-import org.jboss.resteasy.test.cdi.util.Counter;
-import org.jboss.resteasy.test.cdi.util.CounterBinding;
-import org.jboss.resteasy.test.cdi.util.Utilities;
+import io.quarkus.rest.test.cdi.util.Constants;
+import io.quarkus.rest.test.cdi.util.Counter;
+import io.quarkus.rest.test.cdi.util.CounterBinding;
+import io.quarkus.rest.test.cdi.util.Utilities;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;

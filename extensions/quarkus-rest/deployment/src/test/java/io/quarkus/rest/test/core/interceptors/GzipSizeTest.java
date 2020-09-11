@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.interceptors;
+package io.quarkus.rest.test.core.interceptors;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +21,9 @@ import org.jboss.resteasy.plugins.interceptors.GZIPDecodingInterceptor;
 import org.jboss.resteasy.plugins.interceptors.GZIPEncodingInterceptor;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.core.interceptors.resource.GzipIGZIP;
-import org.jboss.resteasy.test.core.interceptors.resource.GzipResource;
-import org.jboss.resteasy.test.core.interceptors.resource.Pair;
+import io.quarkus.rest.test.core.interceptors.resource.GzipIGZIP;
+import io.quarkus.rest.test.core.interceptors.resource.GzipResource;
+import io.quarkus.rest.test.core.interceptors.resource.Pair;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -32,7 +32,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import com.google.common.net.HttpHeaders;
 
@@ -47,16 +53,21 @@ public class GzipSizeTest {
    static Client client;
    protected static final Logger logger = LogManager.getLogger(GzipSizeTest.class.getName());
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(GzipSizeTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(GzipIGZIP.class, Pair.class);
       // Activate gzip compression on server:
       war.addAsManifestResource("org/jboss/resteasy/test/client/javax.ws.rs.ext.Providers", "services/javax.ws.rs.ext.Providers");
       Map<String, String> contextParam = new HashMap<>();
       contextParam.put(ResteasyContextParameters.RESTEASY_GZIP_MAX_INPUT, "16");
       return TestUtil.finishContainerPrepare(war, contextParam, GzipResource.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, GzipSizeTest.class.getSimpleName());

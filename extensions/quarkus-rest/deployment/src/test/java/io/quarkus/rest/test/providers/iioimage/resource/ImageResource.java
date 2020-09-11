@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.iioimage.resource;
+package io.quarkus.rest.test.providers.iioimage.resource;
 
 import org.jboss.resteasy.annotations.providers.img.ImageWriterParams;
 

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.multipart;
+package io.quarkus.rest.test.providers.multipart;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -39,13 +39,13 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedOutput;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.providers.multipart.resource.ContextProvidersCustomer;
-import org.jboss.resteasy.test.providers.multipart.resource.ContextProvidersCustomerForm;
-import org.jboss.resteasy.test.providers.multipart.resource.ContextProvidersCustomerFormNewAnnotationOnField;
-import org.jboss.resteasy.test.providers.multipart.resource.ContextProvidersCustomerFormNewAnnotationOnSetter;
-import org.jboss.resteasy.test.providers.multipart.resource.ContextProvidersName;
-import org.jboss.resteasy.test.providers.multipart.resource.ContextProvidersResource;
-import org.jboss.resteasy.test.providers.multipart.resource.ContextProvidersXop;
+import io.quarkus.rest.test.providers.multipart.resource.ContextProvidersCustomer;
+import io.quarkus.rest.test.providers.multipart.resource.ContextProvidersCustomerForm;
+import io.quarkus.rest.test.providers.multipart.resource.ContextProvidersCustomerFormNewAnnotationOnField;
+import io.quarkus.rest.test.providers.multipart.resource.ContextProvidersCustomerFormNewAnnotationOnSetter;
+import io.quarkus.rest.test.providers.multipart.resource.ContextProvidersName;
+import io.quarkus.rest.test.providers.multipart.resource.ContextProvidersResource;
+import io.quarkus.rest.test.providers.multipart.resource.ContextProvidersXop;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -54,7 +54,13 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Multipart provider
@@ -88,9 +94,14 @@ public class ContextProvidersTest {
    static final javax.ws.rs.core.GenericType<List<ContextProvidersName>> LIST_NAME_TYPE = new javax.ws.rs.core.GenericType<List<ContextProvidersName>>() {
    };
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(ContextProvidersTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(ContextProvidersCustomer.class, ContextProvidersCustomerForm.class,
             ContextProvidersCustomerFormNewAnnotationOnField.class,
             ContextProvidersCustomerFormNewAnnotationOnSetter.class,
@@ -100,7 +111,7 @@ public class ContextProvidersTest {
             new ReflectPermission("suppressAccessChecks")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, ContextProvidersResource.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Form data in get request is used.

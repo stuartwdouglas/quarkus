@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.basic;
+package io.quarkus.rest.test.resource.basic;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -7,9 +7,9 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.resource.basic.resource.DefaultCharsetResource;
+import io.quarkus.rest.test.resource.basic.resource.DefaultCharsetResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -18,7 +18,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Resources
@@ -30,32 +36,47 @@ public class DefaultCharsetTest {
 
    protected enum ADD_CHARSET {TRUE, FALSE, DEFAULT};
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
-   @Deployment(name = "true") // "resteasy.add.charset" set to true
-   public static Archive<?> deploy_charset() {
-      WebArchive war = TestUtil.prepareArchive(DefaultCharsetTest.class.getSimpleName() + "_true");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_true.xml", "web.xml");
       return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
-   }
+   }});
 
-   @Deployment(name = "false") // "resteasy.add.charset" set to false
-   public static Archive<?> deploy_nocharset() {
-      WebArchive war = TestUtil.prepareArchive(DefaultCharsetTest.class.getSimpleName() + "_false");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_false.xml", "web.xml");
       return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
-   }
+   }});
 
-   @Deployment(name = "default") // "resteasy.add.charset" not set
-   public static Archive<?> deploy_default() {
-      WebArchive war = TestUtil.prepareArchive(DefaultCharsetTest.class.getSimpleName() + "_default");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_default.xml", "web.xml");
       return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

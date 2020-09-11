@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.core.encoding.resource;
+package io.quarkus.rest.test.core.encoding.resource;
 
-import org.jboss.resteasy.test.core.encoding.EncodedParamsTest;
+import io.quarkus.rest.test.core.encoding.EncodedParamsTest;
 import org.junit.Assert;
 
 import javax.ws.rs.Encoded;

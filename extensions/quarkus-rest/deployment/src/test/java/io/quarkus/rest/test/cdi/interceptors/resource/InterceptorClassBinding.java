@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.interceptors.resource;
+package io.quarkus.rest.test.cdi.interceptors.resource;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;

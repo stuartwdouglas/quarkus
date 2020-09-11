@@ -1,15 +1,15 @@
-package org.jboss.resteasy.test.providers.jackson2;
+package io.quarkus.rest.test.providers.jackson2;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestScannedApplication;
-import org.jboss.resteasy.test.providers.jackson2.resource.JacksonDatatypeEndPoint;
-import org.jboss.resteasy.test.providers.jackson2.resource.JacksonDatatypeJacksonProducer;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestScannedApplication;
+import io.quarkus.rest.test.providers.jackson2.resource.JacksonDatatypeEndPoint;
+import io.quarkus.rest.test.providers.jackson2.resource.JacksonDatatypeJacksonProducer;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -20,7 +20,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -44,12 +50,12 @@ public class JacksonDatatypeTest {
    private static final String DEPLOYMENT_WITH_DATATYPE = String.format("%sWithDatatypeSupport",
          JacksonDatatypeTest.class.getSimpleName());
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
    protected static final Logger logger = Logger.getLogger(JacksonDatatypeTest.class.getName());
 
    @BeforeClass
    public static void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass
@@ -57,23 +63,33 @@ public class JacksonDatatypeTest {
       client.close();
    }
 
-   @Deployment(name = "default")
-   public static Archive<?> deploy() {
-      WebArchive war = ShrinkWrap.create(WebArchive.class, DEFAULT_DEPLOYMENT + ".war");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       Map<String, String> contextParam = new HashMap<>();
       contextParam.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, "true");
       return TestUtil.finishContainerPrepare(war, contextParam, ApplicationTestScannedApplication.class,
               JacksonDatatypeEndPoint.class);
-   }
+   }});
 
-   @Deployment(name = "withDatatype")
-   public static Archive<?> deployJackson() {
-      WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_WITH_DATATYPE + ".war");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       Map<String, String> contextParam = new HashMap<>();
       contextParam.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, "true");
       return TestUtil.finishContainerPrepare(war, contextParam, JacksonDatatypeEndPoint.class,
             JacksonDatatypeJacksonProducer.class, ApplicationTestScannedApplication.class);
-   }
+   }});
 
    private String requestHelper(String endPath, String deployment) {
       String url = PortProviderUtil.generateURL(String.format("/scanned/%s", endPath), deployment);

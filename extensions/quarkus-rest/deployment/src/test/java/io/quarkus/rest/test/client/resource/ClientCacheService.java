@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.client.resource;
+package io.quarkus.rest.test.client.resource;
 
 import org.jboss.resteasy.annotations.cache.Cache;
-import org.jboss.resteasy.test.client.ClientCacheTest;
+import io.quarkus.rest.test.client.ClientCacheTest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

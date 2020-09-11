@@ -1,15 +1,15 @@
-package org.jboss.resteasy.test.providers.multipart;
+package io.quarkus.rest.test.providers.multipart;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8;
-import org.jboss.resteasy.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteService;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8;
+import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteService;
 import org.jboss.resteasy.util.Encode;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -20,7 +20,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -75,70 +81,105 @@ public class InputPartDefaultCharsetOverwriteTest {
       client = null;
    }
 
-   @Deployment(name = "InputPartDefaultCharsetOverwriteTest")
-   public static Archive<?> createTestArchiveBasic() {
-      WebArchive war = TestUtil.prepareArchive(InputPartDefaultCharsetOverwriteTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
             new ReflectPermission("suppressAccessChecks")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteService.class);
-   }
+   }});
 
-   @Deployment(name = "InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8")
-   public static Archive<?> createTestArchiveContentTypeCharsetUTF8() {
-      WebArchive war = TestUtil.prepareArchive(InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class,
             InputPartDefaultCharsetOverwriteService.class);
-   }
+   }});
 
-   @Deployment(name = "InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16")
-   public static Archive<?> createTestArchiveContentTypeCharsetUTF8ContentTypeCharsetUTF16() {
-      WebArchive war = TestUtil.prepareArchive(InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16.class,
             InputPartDefaultCharsetOverwriteService.class);
-   }
+   }});
 
-   @Deployment(name = "InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8")
-   public static Archive<?> createTestArchiveContentTypeNoCharsetUTF8() {
-      WebArchive war = TestUtil.prepareArchive(InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class,
             InputPartDefaultCharsetOverwriteService.class);
-   }
+   }});
 
-   @Deployment(name = "InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16")
-   public static Archive<?> createTestArchiveContentTypeNoCharsetUTF16() {
-      WebArchive war = TestUtil.prepareArchive(InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16.class,
             InputPartDefaultCharsetOverwriteService.class);
-   }
+   }});
 
-   @Deployment(name = "InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8")
-   public static Archive<?> createTestArchiveNoContentTypeCharsetUTF8() {
-      WebArchive war = TestUtil.prepareArchive(InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class,
             InputPartDefaultCharsetOverwriteService.class);
-   }
+   }});
 
-   @Deployment(name = "InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16")
-   public static Archive<?> createTestArchiveNoContentTypeCharsetUTF16() {
-      WebArchive war = TestUtil.prepareArchive(InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16.class,
             InputPartDefaultCharsetOverwriteService.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Test UTF8 content-type, no charset, preprocessor with no content-type

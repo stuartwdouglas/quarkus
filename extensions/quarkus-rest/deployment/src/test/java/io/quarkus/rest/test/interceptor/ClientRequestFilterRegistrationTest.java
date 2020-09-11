@@ -1,13 +1,13 @@
-package org.jboss.resteasy.test.interceptor;
+package io.quarkus.rest.test.interceptor;
 
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.client.ClientTestBase;
-import org.jboss.resteasy.test.interceptor.resource.ClientRequestFilterImpl;
-import org.jboss.resteasy.test.interceptor.resource.ClientResource;
-import org.jboss.resteasy.test.interceptor.resource.CustomTestApp;
+import io.quarkus.rest.test.client.ClientTestBase;
+import io.quarkus.rest.test.interceptor.resource.ClientRequestFilterImpl;
+import io.quarkus.rest.test.interceptor.resource.ClientResource;
+import io.quarkus.rest.test.interceptor.resource.CustomTestApp;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -15,7 +15,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -32,12 +38,17 @@ public class ClientRequestFilterRegistrationTest extends ClientTestBase {
 
    static Client client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = ShrinkWrap.create(WebArchive.class, ClientRequestFilterRegistrationTest.class.getSimpleName() + ".war");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(CustomTestApp.class, ClientRequestFilterImpl.class, ClientResource.class);
       return war;
-   }
+   }});
 
    @Before
    public void before() {

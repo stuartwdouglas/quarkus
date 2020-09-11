@@ -1,12 +1,12 @@
-package org.jboss.resteasy.test.asynch;
+package io.quarkus.rest.test.asynch;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.asynch.resource.AsynchBasicResource;
+import io.quarkus.rest.test.asynch.resource.AsynchBasicResource;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -14,7 +14,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Entity;
@@ -91,8 +97,8 @@ public class AsynchBasicTest {
       return deploy(TEN_MAX_DEPLOYMENT, "10");
    }
 
-   private ResteasyClient initClient() {
-      return ((ResteasyClientBuilder)ClientBuilder.newBuilder())
+   private QuarkusRestClient initClient() {
+      return ((QuarkusRestClientBuilder)ClientBuilder.newBuilder())
             .readTimeout(5, TimeUnit.SECONDS)
             .connectionCheckoutTimeout(5, TimeUnit.SECONDS)
             .connectTimeout(5, TimeUnit.SECONDS)
@@ -106,7 +112,7 @@ public class AsynchBasicTest {
    @Test
    @OperateOnDeployment(DEFAULT_DEPLOYMENT)
    public void testOneway() throws Exception {
-      ResteasyClient client = initClient();
+      QuarkusRestClient client = initClient();
       Response response = null;
       try {
          latch = new CountDownLatch(1);
@@ -132,7 +138,7 @@ public class AsynchBasicTest {
    @OperateOnDeployment(DEFAULT_DEPLOYMENT)
    public void testAsynchBasic() throws Exception {
       final int MAX = 4;
-      ResteasyClient client = initClient();
+      QuarkusRestClient client = initClient();
 
       latch = new CountDownLatch(1);
       long start = System.currentTimeMillis();
@@ -190,7 +196,7 @@ public class AsynchBasicTest {
    @Test
    @OperateOnDeployment(ONE_MAX_DEPLOYMENT)
    public void testAsynchOne() throws Exception {
-      ResteasyClient client = initClient();
+      QuarkusRestClient client = initClient();
 
       // test cache size
       latch = new CountDownLatch(1);
@@ -239,7 +245,7 @@ public class AsynchBasicTest {
    @Test
    @OperateOnDeployment(DEFAULT_DEPLOYMENT)
    public void testAsynchMaxSizeDefault() throws Exception {
-      ResteasyClient client = initClient();
+      QuarkusRestClient client = initClient();
 
       ArrayList<String> jobs = new ArrayList<>();
       for (int i = 0; i < 110; i++) {
@@ -283,7 +289,7 @@ public class AsynchBasicTest {
    @Test
    @OperateOnDeployment(TEN_MAX_DEPLOYMENT)
    public void testAsynchTen() throws Exception {
-      ResteasyClient client = initClient();
+      QuarkusRestClient client = initClient();
 
       // test readAndRemove
       latch = new CountDownLatch(1);

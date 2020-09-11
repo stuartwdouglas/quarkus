@@ -1,11 +1,11 @@
-package org.jboss.resteasy.test.cdi;
+package io.quarkus.rest.test.cdi;
 
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsBoston;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsBostonHolder;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsBostonlLeaf;
-import org.jboss.resteasy.test.cdi.extensions.resource.CDIExtensionsResource;
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionBookResource;
-import org.jboss.resteasy.test.cdi.util.Utilities;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBoston;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBostonHolder;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBostonlLeaf;
+import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsResource;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionBookResource;
+import io.quarkus.rest.test.cdi.util.Utilities;
 import org.junit.Test;
 
 import javax.enterprise.context.RequestScoped;

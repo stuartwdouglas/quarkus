@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.util;
+package io.quarkus.rest.test.util;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.resource;
+package io.quarkus.rest.test.providers.jackson2.resource;
 
 import org.jboss.resteasy.plugins.providers.jackson.ResteasyJackson2Provider;
 

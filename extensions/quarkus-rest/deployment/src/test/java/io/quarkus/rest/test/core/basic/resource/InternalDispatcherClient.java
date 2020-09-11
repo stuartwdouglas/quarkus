@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.core.basic.resource;
+package io.quarkus.rest.test.core.basic.resource;
 
-import org.jboss.resteasy.test.core.basic.InternalDispatcherTest;
+import io.quarkus.rest.test.core.basic.InternalDispatcherTest;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;

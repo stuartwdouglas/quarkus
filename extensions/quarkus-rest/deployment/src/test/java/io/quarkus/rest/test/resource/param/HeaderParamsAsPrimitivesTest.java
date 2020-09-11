@@ -1,46 +1,46 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesArrayDefaultNullProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesArrayDefaultOverrideProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesArrayDefaultProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesArrayProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesDefaultNullProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesDefaultOverrideProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesDefaultProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesListDefaultNullProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesListDefaultOverrideProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesListDefaultProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesListProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesPrimitivesProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceArray;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceArrayDefault;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceArrayDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceArrayDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceList;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceListDefault;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceListDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceListDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceSet;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceWrappers;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceWrappersDefault;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceWrappersDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceWrappersDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourcePrimitives;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceDefault;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesSetProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesSortedSetProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesWrappersDefaultNullProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesWrappersDefaultOverrideProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesWrappersDefaultProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesWrappersProxy;
-import org.jboss.resteasy.test.resource.param.resource.HeaderParamsAsPrimitivesResourceSortedSet;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesArrayDefaultNullProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesArrayDefaultOverrideProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesArrayDefaultProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesArrayProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesDefaultNullProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesDefaultOverrideProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesDefaultProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesListDefaultNullProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesListDefaultOverrideProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesListDefaultProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesListProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesPrimitivesProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceArray;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceArrayDefault;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceArrayDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceArrayDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceList;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceListDefault;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceListDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceListDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceSet;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceWrappers;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceWrappersDefault;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceWrappersDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceWrappersDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourcePrimitives;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceDefault;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesSetProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesSortedSetProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesWrappersDefaultNullProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesWrappersDefaultOverrideProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesWrappersDefaultProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesWrappersProxy;
+import io.quarkus.rest.test.resource.param.resource.HeaderParamsAsPrimitivesResourceSortedSet;
 import org.jboss.resteasy.util.HttpHeaderNames;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -51,7 +51,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 import javax.ws.rs.core.Response;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -89,12 +95,17 @@ public class HeaderParamsAsPrimitivesTest {
    private static HeaderParamsAsPrimitivesArrayDefaultOverrideProxy resourceHeaderPrimitiveArrayDefaultOverride;
    private static HeaderParamsAsPrimitivesArrayDefaultNullProxy resourceHeaderPrimitiveArrayDefaultNull;
 
-   private ResteasyClient client;
-   private static ResteasyClient proxyClient;
+   private QuarkusRestClient client;
+   private static QuarkusRestClient proxyClient;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(HeaderParamsAsPrimitivesTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(HeaderParamsAsPrimitivesPrimitivesProxy.class,
             HeaderParamsAsPrimitivesDefaultProxy.class,
             HeaderParamsAsPrimitivesDefaultOverrideProxy.class,
@@ -132,7 +143,7 @@ public class HeaderParamsAsPrimitivesTest {
             HeaderParamsAsPrimitivesResourceArrayDefault.class,
             HeaderParamsAsPrimitivesResourceArrayDefaultNull.class,
             HeaderParamsAsPrimitivesResourceArrayDefaultOverride.class);
-   }
+   }});
 
    private static String generateBaseUrl() {
       return PortProviderUtil.generateBaseUrl(HeaderParamsAsPrimitivesTest.class.getSimpleName());
@@ -144,7 +155,7 @@ public class HeaderParamsAsPrimitivesTest {
 
    @BeforeClass
    public static void before() throws Exception {
-      proxyClient = (ResteasyClient)ClientBuilder.newClient();
+      proxyClient = (QuarkusRestClient)ClientBuilder.newClient();
       resourceHeaderPrimitives = proxyClient.target(generateBaseUrl())
             .proxyBuilder(HeaderParamsAsPrimitivesPrimitivesProxy.class).build();
       resourceHeaderPrimitivesDefault = proxyClient.target(generateBaseUrl())
@@ -186,7 +197,7 @@ public class HeaderParamsAsPrimitivesTest {
 
    public void basicTest(String type, String value) {
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/")).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .header(type, value)
@@ -197,7 +208,7 @@ public class HeaderParamsAsPrimitivesTest {
       }
 
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/wrappers")).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .header(type, value)
@@ -208,7 +219,7 @@ public class HeaderParamsAsPrimitivesTest {
       }
 
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/list")).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .header(type, value)
@@ -223,7 +234,7 @@ public class HeaderParamsAsPrimitivesTest {
 
    public void testDefault(String base, String type, String value) {
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL(base + "default/null")).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .get();
@@ -233,7 +244,7 @@ public class HeaderParamsAsPrimitivesTest {
       }
 
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL(base + "default")).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .get();
@@ -243,7 +254,7 @@ public class HeaderParamsAsPrimitivesTest {
       }
 
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL(base + "default/override")).request()
                .header(HttpHeaderNames.ACCEPT, "application/" + type)
                .header(type, value)
@@ -273,7 +284,7 @@ public class HeaderParamsAsPrimitivesTest {
    @Test
    public void testSet() {
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/set")).request()
                .header(HttpHeaderNames.ACCEPT, "application/boolean")
                .header("header", "one")
@@ -285,7 +296,7 @@ public class HeaderParamsAsPrimitivesTest {
          response.close();
          client.close();
 
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          HeaderParamsAsPrimitivesSetProxy setClient = client.target(generateBaseUrl())
                .proxyBuilder(HeaderParamsAsPrimitivesSetProxy.class).build();
          HashSet<String> set = new HashSet<>();
@@ -296,7 +307,7 @@ public class HeaderParamsAsPrimitivesTest {
       }
 
       {
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          Response response = client.target(generateURL("/sortedset")).request()
                .header(HttpHeaderNames.ACCEPT, "application/boolean")
                .header("header", "one")
@@ -310,7 +321,7 @@ public class HeaderParamsAsPrimitivesTest {
          client.close();
 
 
-         client = (ResteasyClient)ClientBuilder.newClient();
+         client = (QuarkusRestClient)ClientBuilder.newClient();
          HeaderParamsAsPrimitivesSortedSetProxy setClient = client.target(generateBaseUrl())
                .proxyBuilder(HeaderParamsAsPrimitivesSortedSetProxy.class).build();
          TreeSet<String> set = new TreeSet<String>();
@@ -677,7 +688,7 @@ public class HeaderParamsAsPrimitivesTest {
     */
    @Test
    public void testBadPrimitiveValue() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       Response response = client.target(generateURL("/")).request()
             .header(HttpHeaderNames.ACCEPT, "application/int")
             .header("int", "abcdef")
@@ -693,7 +704,7 @@ public class HeaderParamsAsPrimitivesTest {
     */
    @Test
    public void testBadPrimitiveWrapperValue() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       Response response = client.target(generateURL("/wrappers")).request()
             .header(HttpHeaderNames.ACCEPT, "application/int")
             .header("int", "abcdef")
@@ -709,7 +720,7 @@ public class HeaderParamsAsPrimitivesTest {
     */
    @Test
    public void testBadPrimitiveListValue() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       Response response = client.target(generateURL("/list")).request()
             .header(HttpHeaderNames.ACCEPT, "application/int")
             .header("int", "abcdef")

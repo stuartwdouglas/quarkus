@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.rx.rxjava2.resource;
+package io.quarkus.rest.test.rx.rxjava2.resource;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

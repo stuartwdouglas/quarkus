@@ -1,19 +1,25 @@
-package org.jboss.resteasy.test.client.proxy;
+package io.quarkus.rest.test.client.proxy;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.client.proxy.resource.ClientSmokeResource;
-import org.jboss.resteasy.test.core.smoke.resource.ResourceWithInterfaceSimpleClient;
+import io.quarkus.rest.test.client.proxy.resource.ClientSmokeResource;
+import io.quarkus.rest.test.core.smoke.resource.ResourceWithInterfaceSimpleClient;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Smoke tests for jaxrs
@@ -23,11 +29,16 @@ import org.junit.runner.RunWith;
  */
 public class ClientSmokeTest {
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(ClientSmokeTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, ClientSmokeResource.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Check results from ResourceWithInterfaceSimpleClient.
@@ -35,7 +46,7 @@ public class ClientSmokeTest {
     */
    @Test
    public void testNoDefaultsResource() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       ResourceWithInterfaceSimpleClient proxy = client.target(
             PortProviderUtil.generateBaseUrl(ClientSmokeTest.class.getSimpleName()))
             .proxyBuilder(ResourceWithInterfaceSimpleClient.class).build();

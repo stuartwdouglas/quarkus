@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.rx.rxjava2;
+package io.quarkus.rest.test.rx.rxjava2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,18 +13,18 @@ import javax.ws.rs.InternalServerErrorException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.rxjava2.SingleRxInvokerProvider;
-import org.jboss.resteasy.test.rx.resource.RxScheduledExecutorService;
-import org.jboss.resteasy.test.rx.resource.TRACE;
-import org.jboss.resteasy.test.rx.resource.TestException;
-import org.jboss.resteasy.test.rx.resource.TestExceptionMapper;
-import org.jboss.resteasy.test.rx.resource.Thing;
-import org.jboss.resteasy.test.rx.resource.SimpleResourceImpl;
-import org.jboss.resteasy.test.rx.rxjava2.resource.Rx2SingleResource;
+import io.quarkus.rest.test.rx.resource.RxScheduledExecutorService;
+import io.quarkus.rest.test.rx.resource.TRACE;
+import io.quarkus.rest.test.rx.resource.TestException;
+import io.quarkus.rest.test.rx.resource.TestExceptionMapper;
+import io.quarkus.rest.test.rx.resource.Thing;
+import io.quarkus.rest.test.rx.resource.SimpleResourceImpl;
+import io.quarkus.rest.test.rx.rxjava2.resource.Rx2SingleResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -36,7 +36,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import io.reactivex.Single;
 
@@ -53,7 +59,7 @@ import io.reactivex.Single;
  */
 public class Rx2SingleProxyClientAsyncTest {
 
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
    private static Rx2SingleResource proxy;
    private static CountDownLatch latch;
    private static AtomicReference<Object> value = new AtomicReference<Object>();
@@ -66,9 +72,14 @@ public class Rx2SingleProxyClientAsyncTest {
       for (int i = 0; i < 3; i++) {aThingList.add(new Thing("a"));}
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(Rx2SingleProxyClientAsyncTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(Thing.class);
       war.addClass(TRACE.class);
       war.addClass(RxScheduledExecutorService.class);
@@ -76,7 +87,7 @@ public class Rx2SingleProxyClientAsyncTest {
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
          + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services\n"));
       return TestUtil.finishContainerPrepare(war, null, SimpleResourceImpl.class, TestExceptionMapper.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, Rx2SingleProxyClientAsyncTest.class.getSimpleName());
@@ -85,7 +96,7 @@ public class Rx2SingleProxyClientAsyncTest {
    //////////////////////////////////////////////////////////////////////////////
    @BeforeClass
    public static void beforeClass() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       proxy = client.target(generateURL("/")).proxy(Rx2SingleResource.class);
    }
 
@@ -291,7 +302,7 @@ public class Rx2SingleProxyClientAsyncTest {
          latch = new CountDownLatch(1);
          RxScheduledExecutorService.used = false;
          RxScheduledExecutorService executor = new RxScheduledExecutorService();
-         ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).executorService(executor).build();
+         QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).executorService(executor).build();
          client.register(SingleRxInvokerProvider.class);
          Rx2SingleResource proxy = client.target(generateURL("/")).proxy(Rx2SingleResource.class);
          Single<String> single = proxy.get();
@@ -335,12 +346,12 @@ public class Rx2SingleProxyClientAsyncTest {
       CountDownLatch cdl = new CountDownLatch(2);
       CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<String>();
 
-      ResteasyClient client1 = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client1 = (QuarkusRestClient)ClientBuilder.newClient();
       client1.register(SingleRxInvokerProvider.class);
       Rx2SingleResource proxy1 = client1.target(generateURL("/")).proxy(Rx2SingleResource.class);
       Single<String> single1 = proxy1.get();
 
-      ResteasyClient client2 = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client2 = (QuarkusRestClient)ClientBuilder.newClient();
       client2.register(SingleRxInvokerProvider.class);
       Rx2SingleResource proxy2 = client2.target(generateURL("/")).proxy(Rx2SingleResource.class);
       Single<String> single2 = proxy2.get();

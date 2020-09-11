@@ -1,25 +1,31 @@
-package org.jboss.resteasy.test.form;
+package io.quarkus.rest.test.form;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.test.form.resource.FormResource;
-import org.jboss.resteasy.test.form.resource.FormResourceSecond;
-import org.jboss.resteasy.test.form.resource.FormResourceClientForm;
-import org.jboss.resteasy.test.form.resource.FormResourceClientFormSecond;
-import org.jboss.resteasy.test.form.resource.FormResourceClientProxy;
-import org.jboss.resteasy.test.form.resource.FormResourceProxy;
-import org.jboss.resteasy.test.form.resource.FormResourceValueHolder;
+import io.quarkus.rest.test.form.resource.FormResource;
+import io.quarkus.rest.test.form.resource.FormResourceSecond;
+import io.quarkus.rest.test.form.resource.FormResourceClientForm;
+import io.quarkus.rest.test.form.resource.FormResourceClientFormSecond;
+import io.quarkus.rest.test.form.resource.FormResourceClientProxy;
+import io.quarkus.rest.test.form.resource.FormResourceProxy;
+import io.quarkus.rest.test.form.resource.FormResourceValueHolder;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.client.Entity;
@@ -57,13 +63,18 @@ public class FormResourceTest {
    private static final String TEST_URI = generateURL("/form/42?query=42");
 
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(FormResourceTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(FormResourceClientForm.class, FormResourceClientFormSecond.class,
             FormResourceClientProxy.class, FormResourceProxy.class, FormResourceValueHolder.class);
       return TestUtil.finishContainerPrepare(war, null, FormResourceSecond.class, FormResource.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, FormResourceTest.class.getSimpleName());
@@ -75,7 +86,7 @@ public class FormResourceTest {
     */
    @Test
    public void testMultiValueParam() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       ResteasyWebTarget target = client.target(generateURL("/myform/server"));
       Response response = target.request().get();
       int status = response.getStatus();
@@ -103,7 +114,7 @@ public class FormResourceTest {
     */
    @Test
    public void testProxy691() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       ResteasyWebTarget target = client.target(generateURL(""));
       FormResourceProxy proxy = target.proxy(FormResourceProxy.class);
       proxy.post(null);
@@ -116,7 +127,7 @@ public class FormResourceTest {
     */
    @Test
    public void testProxy() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       ResteasyWebTarget target = client.target(generateURL(""));
       FormResourceClientProxy proxy = target.proxy(FormResourceClientProxy.class);
       FormResourceClientForm form = new FormResourceClientForm();
@@ -161,7 +172,7 @@ public class FormResourceTest {
    @Test
    public void testFormResource() throws Exception {
       InputStream in = null;
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       try {
          ResteasyWebTarget target = client.target(TEST_URI);
          Invocation.Builder request = target.request();

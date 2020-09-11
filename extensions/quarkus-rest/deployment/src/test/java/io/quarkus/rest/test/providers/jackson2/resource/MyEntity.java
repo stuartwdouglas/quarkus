@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.resource;
+package io.quarkus.rest.test.providers.jackson2.resource;
 
 /**
  * A missing JSON annotation is intended.  This causes the needed exception

@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.client.resource;
+package io.quarkus.rest.test.client.resource;
 
-import org.jboss.resteasy.test.client.TimeoutTest;
+import io.quarkus.rest.test.client.TimeoutTest;
 
 import javax.ws.rs.QueryParam;
 

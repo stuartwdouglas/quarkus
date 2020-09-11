@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.xxe.resource;
+package io.quarkus.rest.test.xxe.resource;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;

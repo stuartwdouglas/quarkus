@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.crypto.resource;
+package io.quarkus.rest.test.crypto.resource;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;

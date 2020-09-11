@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.plain;
+package io.quarkus.rest.test.providers.plain;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -13,11 +13,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.providers.jaxb.CharSetTest;
-import org.jboss.resteasy.test.providers.plain.resource.CharsetFoo;
-import org.jboss.resteasy.test.providers.plain.resource.CharsetResource;
+import io.quarkus.rest.test.providers.jaxb.CharSetTest;
+import io.quarkus.rest.test.providers.plain.resource.CharsetFoo;
+import io.quarkus.rest.test.providers.plain.resource.CharsetResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -27,7 +27,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Plain provider
@@ -39,7 +45,7 @@ import org.junit.runner.RunWith;
 public class CharsetTest {
 
    protected static final Logger logger = Logger.getLogger(CharSetTest.class.getName());
-   static ResteasyClient client;
+   static QuarkusRestClient client;
    protected static final MediaType TEXT_PLAIN_UTF16_TYPE;
    protected static final MediaType WILDCARD_UTF16_TYPE;
    private static Map<String, String> params;
@@ -51,15 +57,20 @@ public class CharsetTest {
       WILDCARD_UTF16_TYPE = new MediaType("*", "*", params);
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(CharSetTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, params, CharsetResource.class, CharsetFoo.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

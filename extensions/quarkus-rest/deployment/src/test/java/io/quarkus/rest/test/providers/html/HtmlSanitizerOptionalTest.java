@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.html;
+package io.quarkus.rest.test.providers.html;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
@@ -6,8 +6,8 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.test.providers.html.resource.HtmlSanitizerOptionalResource;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.providers.html.resource.HtmlSanitizerOptionalResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -16,7 +16,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter
@@ -27,7 +33,7 @@ import org.junit.runner.RunWith;
  */
 public class HtmlSanitizerOptionalTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
    private static final String ENABLED  = "_enabled";
    private static final String DISABLED = "_disabled";
@@ -36,26 +42,41 @@ public class HtmlSanitizerOptionalTest {
    public static final String input = "<html &lt;\"abc\" 'xyz'&gt;/>";
    private static final String output = "&lt;html &amp;lt;&quot;abc&quot; &#x27;xyz&#x27;&amp;gt;&#x2F;&gt;";
 
-   @Deployment(name = ENABLED, order = 1)
-   public static Archive<?> createTestArchive1() {
-      WebArchive war = TestUtil.prepareArchive(HtmlSanitizerOptionalTest.class.getSimpleName() + ENABLED);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsWebInfResource(HtmlSanitizerOptionalTest.class.getPackage(), "HtmlSanitizerOptional_Enabled_web.xml", "web.xml");
       return TestUtil.finishContainerPrepare(war, null, HtmlSanitizerOptionalResource.class);
-   }
+   }});
 
-   @Deployment(name = DISABLED, order = 2)
-   public static Archive<?> createTestArchive2() {
-      WebArchive war = TestUtil.prepareArchive(HtmlSanitizerOptionalTest.class.getSimpleName() + DISABLED);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsWebInfResource(HtmlSanitizerOptionalTest.class.getPackage(), "HtmlSanitizerOptional_Disabled_web.xml", "web.xml");
       return TestUtil.finishContainerPrepare(war, null, HtmlSanitizerOptionalResource.class);
-   }
+   }});
 
-   @Deployment(name = DEFAULT, order = 3)
-   public static Archive<?> createTestArchive3() {
-      WebArchive war = TestUtil.prepareArchive(HtmlSanitizerOptionalTest.class.getSimpleName() + DEFAULT);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsWebInfResource(HtmlSanitizerOptionalTest.class.getPackage(), "HtmlSanitizerOptional_Default_web.xml", "web.xml");
       return TestUtil.finishContainerPrepare(war, null, HtmlSanitizerOptionalResource.class);
-   }
+   }});
 
    private String generateURL(String path, String version) {
       return PortProviderUtil.generateURL(path, HtmlSanitizerOptionalTest.class.getSimpleName() + version);
@@ -63,7 +84,7 @@ public class HtmlSanitizerOptionalTest {
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

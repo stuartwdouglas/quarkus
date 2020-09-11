@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.whitelist.model;
+package io.quarkus.rest.test.providers.jackson2.whitelist.model;
 
 import java.io.Serializable;
 

@@ -1,12 +1,12 @@
-package org.jboss.resteasy.test.resource.basic;
+package io.quarkus.rest.test.resource.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-import org.jboss.resteasy.test.ContainerConstants;
-import org.jboss.resteasy.test.resource.basic.resource.MultipleGetResource;
+import io.quarkus.rest.test.ContainerConstants;
+import io.quarkus.rest.test.resource.basic.resource.MultipleGetResource;
 import org.jboss.resteasy.utils.LogCounter;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -16,7 +16,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 import org.junit.Assert;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -31,7 +37,7 @@ import java.util.PropertyPermission;
 import java.util.logging.LoggingPermission;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
 
 /**
  * Verify that setting resteasy config flag, resteasy_fail_fast to 'true' causes
@@ -39,7 +45,7 @@ import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALI
  * This feature is provided for quarkus.
  */
 public class MultipleGetResourceTest {
-    static ResteasyClient client;
+    static QuarkusRestClient client;
 
     @Deployment
     public static Archive<?> testReturnValuesDeploy() throws Exception {
@@ -61,7 +67,7 @@ public class MultipleGetResourceTest {
 
     @BeforeClass
     public static void init() {
-        client = (ResteasyClient) ClientBuilder.newClient();
+        client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
     @AfterClass

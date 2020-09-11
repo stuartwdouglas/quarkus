@@ -1,25 +1,31 @@
-package org.jboss.resteasy.test.core.basic;
+package io.quarkus.rest.test.core.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestAExplicitApplication;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestBExplicitApplication;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestIgnoredApplication;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestMappedApplication;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestResourceA;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestResourceB;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestScannedApplication;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestSingletonA;
-import org.jboss.resteasy.test.core.basic.resource.ApplicationTestSingletonB;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestAExplicitApplication;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestBExplicitApplication;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestIgnoredApplication;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestMappedApplication;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestResourceA;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestResourceB;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestScannedApplication;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestSingletonA;
+import io.quarkus.rest.test.core.basic.resource.ApplicationTestSingletonB;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -36,9 +42,14 @@ public class ApplicationTest {
 
    private static final String CONTENT_ERROR_MESSAGE = "Wrong content of response";
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = ShrinkWrap.create(WebArchive.class, ApplicationTest.class.getSimpleName() + ".war");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsWebInfResource(ApplicationTest.class.getPackage(), "ApplicationWeb.xml", "web.xml");
       war.addClasses(ApplicationTestAExplicitApplication.class,
             ApplicationTestBExplicitApplication.class,
@@ -50,7 +61,7 @@ public class ApplicationTest {
             ApplicationTestSingletonB.class,
             ApplicationTestScannedApplication.class);
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ApplicationTest.class.getSimpleName());

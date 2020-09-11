@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.other;
+package io.quarkus.rest.test.client.other;
 
 import java.util.concurrent.atomic.AtomicLong;
 import javax.ws.rs.NotFoundException;
@@ -16,14 +16,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ClientHttpEngine;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpAsyncClient4Engine;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 import org.jboss.resteasy.client.jaxrs.engines.URLConnectionEngine;
-import org.jboss.resteasy.test.client.other.resource.ApacheHttpClient4Resource;
-import org.jboss.resteasy.test.client.other.resource.ApacheHttpClient4ResourceImpl;
+import io.quarkus.rest.test.client.other.resource.ApacheHttpClient4Resource;
+import io.quarkus.rest.test.client.other.resource.ApacheHttpClient4ResourceImpl;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -31,7 +31,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Resteasy-client
@@ -49,12 +55,17 @@ public class ApacheHttpClient43Test {
 
    private AtomicLong counter = new AtomicLong();
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(ApacheHttpClient43Test.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(ApacheHttpClient4Resource.class);
       return TestUtil.finishContainerPrepare(war, null, ApacheHttpClient4ResourceImpl.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Create 3 threads and test GC with correct request. System.gc is called directly. Proxy is not used.
@@ -145,7 +156,7 @@ public class ApacheHttpClient43Test {
    }
 
    protected void testConnectionCleanupProxy(Class<?> engine) throws Exception {
-      final ResteasyClient client = createEngine(engine);
+      final QuarkusRestClient client = createEngine(engine);
       final ApacheHttpClient4Resource proxy = client.target(PortProviderUtil.generateBaseUrl(ApacheHttpClient43Test.class.getSimpleName())).proxy(ApacheHttpClient4Resource.class);
       counter.set(0);
 
@@ -190,7 +201,7 @@ public class ApacheHttpClient43Test {
     * This is regression test for RESTEASY-1273
     */
    protected void testConnectionCleanupErrorGC(Class<?> engine) throws Exception {
-      final ResteasyClient client = createEngine(engine);
+      final QuarkusRestClient client = createEngine(engine);
       final ApacheHttpClient4Resource proxy = client.target(PortProviderUtil.generateBaseUrl(ApacheHttpClient43Test.class.getSimpleName())).proxy(ApacheHttpClient4Resource.class);
       counter.set(0);
 
@@ -234,7 +245,7 @@ public class ApacheHttpClient43Test {
     * This is regression test for RESTEASY-1273
     */
    protected void testConnectionCleanupErrorNoGC(Class<?> engine) throws Exception {
-      final ResteasyClient client = createEngine(engine);
+      final QuarkusRestClient client = createEngine(engine);
       final ApacheHttpClient4Resource proxy = client.target(PortProviderUtil.generateBaseUrl(ApacheHttpClient43Test.class.getSimpleName())).proxy(ApacheHttpClient4Resource.class);
       counter.set(0);
 
@@ -280,7 +291,7 @@ public class ApacheHttpClient43Test {
    }
 
    protected void testConnectionWithRequestBody(Class<?> engine) throws InterruptedException {
-      final ResteasyClient client = createEngine(engine);
+      final QuarkusRestClient client = createEngine(engine);
       final ApacheHttpClient4Resource proxy = client.target(PortProviderUtil.generateBaseUrl(ApacheHttpClient43Test.class.getSimpleName())).proxy(ApacheHttpClient4Resource.class);
       counter.set(0);
 
@@ -318,7 +329,7 @@ public class ApacheHttpClient43Test {
       }
    }
 
-   private ResteasyClient createEngine(Class<?> engine) {
+   private QuarkusRestClient createEngine(Class<?> engine) {
       RequestConfig reqConfig = RequestConfig.custom()   // apache HttpClient specific
             .setConnectTimeout(5000)
             .setSocketTimeout(5000)
@@ -344,7 +355,7 @@ public class ApacheHttpClient43Test {
       }
 
 
-      ResteasyClient client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(executor).build();
+      QuarkusRestClient client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(executor).build();
       return client;
    }
 

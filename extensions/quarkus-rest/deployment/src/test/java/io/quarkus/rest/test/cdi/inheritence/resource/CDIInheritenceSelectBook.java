@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.inheritence.resource;
+package io.quarkus.rest.test.cdi.inheritence.resource;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.Retention;

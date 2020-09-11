@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import java.util.Iterator;
 import javax.ws.rs.client.Client;
@@ -15,14 +15,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import org.jboss.resteasy.test.validation.resource.ValidationFoo;
-import org.jboss.resteasy.test.validation.resource.ValidationFooReaderWriter;
-import org.jboss.resteasy.test.validation.resource.ValidationResourceWithAllViolationTypes;
-import org.jboss.resteasy.test.validation.resource.ValidationResourceWithReturnValues;
-import org.jboss.resteasy.test.validation.resource.ValidationFooValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationFooConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationClassValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationClassConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationFoo;
+import io.quarkus.rest.test.validation.resource.ValidationFooReaderWriter;
+import io.quarkus.rest.test.validation.resource.ValidationResourceWithAllViolationTypes;
+import io.quarkus.rest.test.validation.resource.ValidationResourceWithReturnValues;
+import io.quarkus.rest.test.validation.resource.ValidationFooValidator;
+import io.quarkus.rest.test.validation.resource.ValidationFooConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationClassValidator;
+import io.quarkus.rest.test.validation.resource.ValidationClassConstraint;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -32,7 +32,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Validator provider
@@ -64,13 +70,18 @@ public class ValidationTest {
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(ValidationTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, ValidationResourceWithAllViolationTypes.class,
             ValidationResourceWithReturnValues.class, ValidationFooReaderWriter.class, ValidationFooValidator.class,
             ValidationFooConstraint.class, ValidationFoo.class, ValidationClassValidator.class, ValidationClassConstraint.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Tests for Valid native constraint, Valid imposed constraint, Valid native and imposed constraints,
@@ -200,7 +211,7 @@ public class ValidationTest {
       logger.info("violation: " + violation);
       Assert.assertEquals(ERR_CONSTRAINT_MESSAGE, "Concatenation of s and t must have length > 5", violation.getMessage());
       logger.info("violation value: " + violation.getValue());
-      Assert.assertTrue(violation.getValue().startsWith("org.jboss.resteasy.test.validation.resource.ValidationResourceWithAllViolationTypes@"));
+      Assert.assertTrue(violation.getValue().startsWith("io.quarkus.rest.test.validation.resource.ValidationResourceWithAllViolationTypes@"));
       violation = r.getParameterViolations().iterator().next();
       logger.info("violation: " + violation);
       Assert.assertEquals(ERR_CONSTRAINT_MESSAGE, "s must have length: 3 <= length <= 5", violation.getMessage());

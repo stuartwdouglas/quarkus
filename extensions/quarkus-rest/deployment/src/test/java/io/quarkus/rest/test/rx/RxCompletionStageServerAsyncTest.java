@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.rx;
+package io.quarkus.rest.test.rx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,16 +13,16 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.CompletionStageRxInvokerProvider;
-import org.jboss.resteasy.test.rx.resource.ExceptionThrowingFilter;
-import org.jboss.resteasy.test.rx.resource.FilterException;
-import org.jboss.resteasy.test.rx.resource.RxCompletionStageResourceImpl;
-import org.jboss.resteasy.test.rx.resource.RxScheduledExecutorService;
-import org.jboss.resteasy.test.rx.resource.TestException;
-import org.jboss.resteasy.test.rx.resource.TestExceptionMapper;
-import org.jboss.resteasy.test.rx.resource.Thing;
+import io.quarkus.rest.test.rx.resource.ExceptionThrowingFilter;
+import io.quarkus.rest.test.rx.resource.FilterException;
+import io.quarkus.rest.test.rx.resource.RxCompletionStageResourceImpl;
+import io.quarkus.rest.test.rx.resource.RxScheduledExecutorService;
+import io.quarkus.rest.test.rx.resource.TestException;
+import io.quarkus.rest.test.rx.resource.TestExceptionMapper;
+import io.quarkus.rest.test.rx.resource.Thing;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -33,7 +33,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 
 /**
@@ -46,7 +52,7 @@ import org.junit.runner.RunWith;
  */
 public class RxCompletionStageServerAsyncTest {
 
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
    private static List<Thing>  xThingList =  new ArrayList<Thing>();
    private static List<Thing>  aThingList =  new ArrayList<Thing>();
@@ -58,9 +64,14 @@ public class RxCompletionStageServerAsyncTest {
       for (int i = 0; i < 3; i++) {aThingList.add(new Thing("a"));}
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(RxCompletionStageServerAsyncTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(Thing.class);
       war.addClass(RxScheduledExecutorService.class);
       war.addClass(TestException.class);
@@ -68,7 +79,7 @@ public class RxCompletionStageServerAsyncTest {
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
               + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services\n"));
       return TestUtil.finishContainerPrepare(war, null, RxCompletionStageResourceImpl.class, TestExceptionMapper.class, ExceptionThrowingFilter.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, RxCompletionStageServerAsyncTest.class.getSimpleName());
@@ -77,7 +88,7 @@ public class RxCompletionStageServerAsyncTest {
    //////////////////////////////////////////////////////////////////////////////
    @BeforeClass
    public static void beforeClass() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass
@@ -319,12 +330,12 @@ public class RxCompletionStageServerAsyncTest {
    public void testGetTwoClients() throws Exception {
       CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<String>();
 
-      ResteasyClient client1 = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client1 = (QuarkusRestClient)ClientBuilder.newClient();
       client1.register(CompletionStageRxInvokerProvider.class);
       Builder request1 = client1.target(generateURL("/get/string")).request();
       Response response1 = request1.get();
 
-      ResteasyClient client2 = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client2 = (QuarkusRestClient)ClientBuilder.newClient();
       client2.register(CompletionStageRxInvokerProvider.class);
       Builder request2 = client2.target(generateURL("/get/string")).request();
       Response response2 = request2.get();

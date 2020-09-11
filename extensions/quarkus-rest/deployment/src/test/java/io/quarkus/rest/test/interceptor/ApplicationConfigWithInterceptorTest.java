@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.interceptor;
+package io.quarkus.rest.test.interceptor;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Invocation.Builder;
@@ -7,9 +7,9 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.test.interceptor.resource.AddHeaderContainerResponseFilter;
-import org.jboss.resteasy.test.interceptor.resource.ApplicationConfigWithInterceptorResource;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.test.interceptor.resource.AddHeaderContainerResponseFilter;
+import io.quarkus.rest.test.interceptor.resource.ApplicationConfigWithInterceptorResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -18,7 +18,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Interceptors
@@ -29,12 +35,17 @@ public class ApplicationConfigWithInterceptorTest
 {
    private static Client client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(ApplicationConfigWithInterceptorTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, ApplicationConfigWithInterceptorResource.class, AddHeaderContainerResponseFilter.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ApplicationConfigWithInterceptorTest.class.getSimpleName());
@@ -43,7 +54,7 @@ public class ApplicationConfigWithInterceptorTest
    @BeforeClass
    public static void before() throws Exception
    {
-      client = ResteasyClientBuilder.newClient();
+      client = QuarkusRestClientBuilder.newClient();
    }
 
    @AfterClass

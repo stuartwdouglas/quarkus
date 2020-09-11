@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.providers.jaxb.resource;
+package io.quarkus.rest.test.providers.jaxb.resource;
 
-import org.jboss.resteasy.test.providers.jaxb.resource.homecontrol.ObjectFactory;
-import org.jboss.resteasy.test.providers.jaxb.resource.homecontrol.UserType;
+import io.quarkus.rest.test.providers.jaxb.resource.homecontrol.ObjectFactory;
+import io.quarkus.rest.test.providers.jaxb.resource.homecontrol.UserType;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

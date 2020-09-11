@@ -1,8 +1,8 @@
-package org.jboss.resteasy.test.cdi.basic.resource;
+package io.quarkus.rest.test.cdi.basic.resource;
 
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.test.cdi.util.Constants;
+import io.quarkus.rest.test.cdi.util.Constants;
 
 import javax.ejb.LocalBean;
 import javax.ejb.Stateful;

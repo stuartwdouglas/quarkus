@@ -1,13 +1,13 @@
-package org.jboss.resteasy.test.client.proxy;
+package io.quarkus.rest.test.client.proxy;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyWithGenericReturnTypeMessageBodyWriter;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyWithGenericReturnTypeResource;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyWithGenericReturnTypeSubResourceIntf;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyWithGenericReturnTypeSubResourceSubIntf;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyWithGenericReturnTypeInvocationHandler;
+import io.quarkus.rest.test.client.proxy.resource.ProxyWithGenericReturnTypeMessageBodyWriter;
+import io.quarkus.rest.test.client.proxy.resource.ProxyWithGenericReturnTypeResource;
+import io.quarkus.rest.test.client.proxy.resource.ProxyWithGenericReturnTypeSubResourceIntf;
+import io.quarkus.rest.test.client.proxy.resource.ProxyWithGenericReturnTypeSubResourceSubIntf;
+import io.quarkus.rest.test.client.proxy.resource.ProxyWithGenericReturnTypeInvocationHandler;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -15,7 +15,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -32,9 +38,14 @@ import java.util.List;
  */
 public class ProxyWithGenericReturnTypeTest {
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(ProxyWithGenericReturnTypeTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
 
       war.addClass(ProxyWithGenericReturnTypeInvocationHandler.class);
       war.addClass(ProxyWithGenericReturnTypeSubResourceIntf.class);
@@ -43,7 +54,7 @@ public class ProxyWithGenericReturnTypeTest {
       List<Class<?>> singletons = new ArrayList<>();
       singletons.add(ProxyWithGenericReturnTypeMessageBodyWriter.class);
       return TestUtil.finishContainerPrepare(war, null, singletons, ProxyWithGenericReturnTypeResource.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Test for new client

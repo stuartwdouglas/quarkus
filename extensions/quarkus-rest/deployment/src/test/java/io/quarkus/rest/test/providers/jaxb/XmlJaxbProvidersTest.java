@@ -1,22 +1,22 @@
-package org.jboss.resteasy.test.providers.jaxb;
+package io.quarkus.rest.test.providers.jaxb;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.providers.jaxb.resource.Order;
-import org.jboss.resteasy.test.providers.jaxb.resource.Ordertype;
-import org.jboss.resteasy.test.providers.jaxb.resource.XmlJaxbProvidersOrderClient;
-import org.jboss.resteasy.test.providers.jaxb.resource.XmlJaxbProvidersOrderResource;
-import org.jboss.resteasy.test.providers.jaxb.resource.ShipTo;
-import org.jboss.resteasy.test.providers.jaxb.resource.Shiptotype;
-import org.jboss.resteasy.test.providers.jaxb.resource.Item;
-import org.jboss.resteasy.test.providers.jaxb.resource.Itemtype;
-import org.jboss.resteasy.test.providers.jaxb.resource.JAXBCache;
-import org.jboss.resteasy.test.providers.jaxb.resource.XmlJaxbProvidersHelper;
-import org.jboss.resteasy.test.providers.jaxb.resource.XmlStreamFactory;
+import io.quarkus.rest.test.providers.jaxb.resource.Order;
+import io.quarkus.rest.test.providers.jaxb.resource.Ordertype;
+import io.quarkus.rest.test.providers.jaxb.resource.XmlJaxbProvidersOrderClient;
+import io.quarkus.rest.test.providers.jaxb.resource.XmlJaxbProvidersOrderResource;
+import io.quarkus.rest.test.providers.jaxb.resource.ShipTo;
+import io.quarkus.rest.test.providers.jaxb.resource.Shiptotype;
+import io.quarkus.rest.test.providers.jaxb.resource.Item;
+import io.quarkus.rest.test.providers.jaxb.resource.Itemtype;
+import io.quarkus.rest.test.providers.jaxb.resource.JAXBCache;
+import io.quarkus.rest.test.providers.jaxb.resource.XmlJaxbProvidersHelper;
+import io.quarkus.rest.test.providers.jaxb.resource.XmlStreamFactory;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -28,7 +28,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBContext;
@@ -46,14 +52,19 @@ import java.lang.reflect.ReflectPermission;
 public class XmlJaxbProvidersTest {
 
    private XmlJaxbProvidersOrderClient proxy;
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
    private static final String ERR_NULL_ENTITY = "The entity returned from the server was null";
    private static final String ERR_CONTENT = "Unexpected content of the Order";
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(XmlJaxbProvidersTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(XmlJaxbProvidersTest.class);
       war.addAsResource(XmlJaxbProvidersTest.class.getPackage(), "orders/order_123.xml");
       war.as(ZipExporter.class).exportTo(new File("target", XmlJaxbProvidersTest.class.getSimpleName() + ".war"), true);
@@ -67,11 +78,11 @@ public class XmlJaxbProvidersTest {
 
       return TestUtil.finishContainerPrepare(war, null, XmlJaxbProvidersOrderResource.class, Order.class, Ordertype.class,
             ShipTo.class, Shiptotype.class, Item.class, Itemtype.class, JAXBCache.class, XmlJaxbProvidersHelper.class, XmlStreamFactory.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       proxy = ProxyBuilder.builder(XmlJaxbProvidersOrderClient.class, client.target(generateURL("/"))).build();
    }
 

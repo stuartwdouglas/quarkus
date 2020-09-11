@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.resource;
+package io.quarkus.rest.test.providers.jackson2.resource;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

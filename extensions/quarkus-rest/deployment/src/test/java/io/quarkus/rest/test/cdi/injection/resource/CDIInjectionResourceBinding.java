@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.injection.resource;
+package io.quarkus.rest.test.cdi.injection.resource;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.Retention;

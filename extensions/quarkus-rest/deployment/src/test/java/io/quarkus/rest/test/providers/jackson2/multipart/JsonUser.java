@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.multipart;
+package io.quarkus.rest.test.providers.jackson2.multipart;
 
 public class JsonUser {
    private String name;

@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.providers.multipart.resource;
+package io.quarkus.rest.test.providers.multipart.resource;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.test.providers.multipart.InputPartDefaultContentTypeWildcardOverwriteNewInterceptorTest;
+import io.quarkus.rest.test.providers.multipart.InputPartDefaultContentTypeWildcardOverwriteNewInterceptorTest;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.ext.Provider;

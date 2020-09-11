@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.multipart.resource;
+package io.quarkus.rest.test.providers.multipart.resource;
 
 import java.io.IOException;
 
@@ -7,7 +7,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.test.providers.multipart.InputPartDefaultCharsetOverwriteTest;
+import io.quarkus.rest.test.providers.multipart.InputPartDefaultCharsetOverwriteTest;
 
 @Provider
 public class InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16 implements ContainerRequestFilter {

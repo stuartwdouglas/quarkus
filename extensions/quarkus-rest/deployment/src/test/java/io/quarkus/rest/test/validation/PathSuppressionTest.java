@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -6,13 +6,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
 
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.validation.resource.PathSuppressionClassConstraint;
-import org.jboss.resteasy.test.validation.resource.PathSuppressionClassValidator;
-import org.jboss.resteasy.test.validation.resource.PathSuppressionResource;
+import io.quarkus.rest.test.validation.resource.PathSuppressionClassConstraint;
+import io.quarkus.rest.test.validation.resource.PathSuppressionClassValidator;
+import io.quarkus.rest.test.validation.resource.PathSuppressionResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -22,7 +22,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.core.Response;
 
@@ -40,7 +46,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class PathSuppressionTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
    public static Archive<?> generateArchive(String deploymentName, String suppressPath) {
       WebArchive war = TestUtil.prepareArchive(deploymentName)
@@ -55,7 +61,7 @@ public class PathSuppressionTest {
 
    @BeforeClass
    public static void before() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass

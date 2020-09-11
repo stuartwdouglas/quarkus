@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.generic.resource;
+package io.quarkus.rest.test.cdi.generic.resource;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

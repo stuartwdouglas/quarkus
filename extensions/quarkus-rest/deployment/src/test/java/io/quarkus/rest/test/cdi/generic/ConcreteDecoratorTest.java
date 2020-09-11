@@ -1,30 +1,36 @@
-package org.jboss.resteasy.test.cdi.generic;
+package io.quarkus.rest.test.cdi.generic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.cdi.generic.resource.Animal;
-import org.jboss.resteasy.test.cdi.generic.resource.Australopithecus;
-import org.jboss.resteasy.test.cdi.generic.resource.ConcreteDecorator;
-import org.jboss.resteasy.test.cdi.generic.resource.ConcreteResource;
-import org.jboss.resteasy.test.cdi.generic.resource.ConcreteResourceIntf;
-import org.jboss.resteasy.test.cdi.generic.resource.GenericsProducer;
-import org.jboss.resteasy.test.cdi.generic.resource.HierarchyHolder;
-import org.jboss.resteasy.test.cdi.generic.resource.HolderBinding;
-import org.jboss.resteasy.test.cdi.generic.resource.LowerBoundHierarchyHolder;
-import org.jboss.resteasy.test.cdi.generic.resource.NestedHierarchyHolder;
-import org.jboss.resteasy.test.cdi.generic.resource.ObjectHolder;
-import org.jboss.resteasy.test.cdi.generic.resource.Primate;
-import org.jboss.resteasy.test.cdi.generic.resource.UpperBoundHierarchyHolder;
-import org.jboss.resteasy.test.cdi.generic.resource.VisitList;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.cdi.generic.resource.Animal;
+import io.quarkus.rest.test.cdi.generic.resource.Australopithecus;
+import io.quarkus.rest.test.cdi.generic.resource.ConcreteDecorator;
+import io.quarkus.rest.test.cdi.generic.resource.ConcreteResource;
+import io.quarkus.rest.test.cdi.generic.resource.ConcreteResourceIntf;
+import io.quarkus.rest.test.cdi.generic.resource.GenericsProducer;
+import io.quarkus.rest.test.cdi.generic.resource.HierarchyHolder;
+import io.quarkus.rest.test.cdi.generic.resource.HolderBinding;
+import io.quarkus.rest.test.cdi.generic.resource.LowerBoundHierarchyHolder;
+import io.quarkus.rest.test.cdi.generic.resource.NestedHierarchyHolder;
+import io.quarkus.rest.test.cdi.generic.resource.ObjectHolder;
+import io.quarkus.rest.test.cdi.generic.resource.Primate;
+import io.quarkus.rest.test.cdi.generic.resource.UpperBoundHierarchyHolder;
+import io.quarkus.rest.test.cdi.generic.resource.VisitList;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 
 import javax.ws.rs.client.Client;
@@ -41,9 +47,14 @@ import static org.junit.Assert.assertEquals;
  * @tpSince RESTEasy 3.0.16
  */
 public class ConcreteDecoratorTest {
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive("resteasy-cdi-ejb-test");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(UtilityProducer.class, VisitList.class);
       war.addClasses(ObjectHolder.class, ConcreteResourceIntf.class);
       war.addClasses(HolderBinding.class, HierarchyHolder.class);
@@ -55,7 +66,7 @@ public class ConcreteDecoratorTest {
       war.addClasses(ConcreteDecorator.class);
       war.addAsWebInfResource(ConcreteDecoratorTest.class.getPackage(), "concrete_beans.xml", "beans.xml");
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, "resteasy-cdi-ejb-test");

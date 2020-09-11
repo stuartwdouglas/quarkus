@@ -1,10 +1,10 @@
-package org.jboss.resteasy.test.providers.plain;
+package io.quarkus.rest.test.providers.plain;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.test.providers.plain.resource.DefaultNumberWriterCustom;
-import org.jboss.resteasy.test.providers.plain.resource.DefaultNumberWriterResource;
+import io.quarkus.rest.test.providers.plain.resource.DefaultNumberWriterCustom;
+import io.quarkus.rest.test.providers.plain.resource.DefaultNumberWriterResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -15,7 +15,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -37,9 +43,14 @@ public class DefaultNumberWriterTest {
    private static final String WRONG_RESPONSE_ERROR_MSG = "Response contains wrong response";
    private static final String WRONG_PROVIDER_USED_ERROR_MSG = "Wrong provider was used";
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(DefaultNumberWriterTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       // Arquillian in the deployment
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
@@ -54,7 +65,7 @@ public class DefaultNumberWriterTest {
             new PropertyPermission("arquillian.*", "read")), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, DefaultNumberWriterResource.class,
             DefaultNumberWriterCustom.class);
-   }
+   }});
 
    protected Client client;
 

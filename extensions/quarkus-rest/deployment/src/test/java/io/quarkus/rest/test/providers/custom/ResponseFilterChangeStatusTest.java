@@ -1,12 +1,12 @@
-package org.jboss.resteasy.test.providers.custom;
+package io.quarkus.rest.test.providers.custom;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.providers.custom.resource.ResponseFilterChangeStatusResource;
-import org.jboss.resteasy.test.providers.custom.resource.ResponseFilterChangeStatusResponseFilter;
+import io.quarkus.rest.test.providers.custom.resource.ResponseFilterChangeStatusResource;
+import io.quarkus.rest.test.providers.custom.resource.ResponseFilterChangeStatusResponseFilter;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -18,7 +18,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Assert;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -45,11 +51,16 @@ public class ResponseFilterChangeStatusTest {
       client = ClientBuilder.newClient();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(ResponseFilterChangeStatusTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, ResponseFilterChangeStatusResource.class, ResponseFilterChangeStatusResponseFilter.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ResponseFilterChangeStatusTest.class.getSimpleName());

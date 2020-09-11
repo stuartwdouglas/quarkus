@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.basic.resource;
+package io.quarkus.rest.test.resource.basic.resource;
 
 import java.util.Map;
 
@@ -8,7 +8,7 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.resteasy.core.ResteasyContext;
 import org.jboss.resteasy.spi.HttpResponse;
-import org.jboss.resteasy.test.resource.basic.ResponseCommittedTest;
+import io.quarkus.rest.test.resource.basic.ResponseCommittedTest;
 
 @Path("")
 public class ResponseCommittedResource {

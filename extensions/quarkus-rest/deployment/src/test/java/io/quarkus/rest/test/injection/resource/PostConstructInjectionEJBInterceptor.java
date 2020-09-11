@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.injection.resource;
+package io.quarkus.rest.test.injection.resource;
 
 import javax.annotation.PostConstruct;
 import javax.interceptor.Interceptor;

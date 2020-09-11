@@ -1,11 +1,11 @@
-package org.jboss.resteasy.test.security;
+package io.quarkus.rest.test.security;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.wildfly.extras.creaper.core.online.OnlineManagementClient;
@@ -24,7 +24,7 @@ public abstract class SslTestBase {
    private static final Logger LOG = LogManager.getLogger(SslTestBase.class);
 
    protected static Client client;
-   protected static ResteasyClientBuilder resteasyClientBuilder;
+   protected static QuarkusRestClientBuilder QuarkusRestClientBuilder;
 
    protected static String RESOURCES = "src/test/resources/org/jboss/resteasy/test/security/";
    protected static final String PASSWORD = "123456";

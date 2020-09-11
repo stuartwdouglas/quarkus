@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jaxb;
+package io.quarkus.rest.test.providers.jaxb;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,19 +8,19 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 
 import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-import org.jboss.resteasy.test.providers.jaxb.resource.JaxbElementClient;
-import org.jboss.resteasy.test.providers.jaxb.resource.JaxbJsonXmlRootElementClient;
-import org.jboss.resteasy.test.providers.jaxb.resource.JaxbXmlRootElementClient;
-import org.jboss.resteasy.test.providers.jaxb.resource.Parent;
-import org.jboss.resteasy.test.providers.jaxb.resource.Child;
-import org.jboss.resteasy.test.providers.jaxb.resource.JaxbJsonElementClient;
-import org.jboss.resteasy.test.providers.jaxb.resource.JaxbJunkXmlOrderClient;
-import org.jboss.resteasy.test.providers.jaxb.resource.JaxbXmlRootElementProviderResource;
+import io.quarkus.rest.test.providers.jaxb.resource.JaxbElementClient;
+import io.quarkus.rest.test.providers.jaxb.resource.JaxbJsonXmlRootElementClient;
+import io.quarkus.rest.test.providers.jaxb.resource.JaxbXmlRootElementClient;
+import io.quarkus.rest.test.providers.jaxb.resource.Parent;
+import io.quarkus.rest.test.providers.jaxb.resource.Child;
+import io.quarkus.rest.test.providers.jaxb.resource.JaxbJsonElementClient;
+import io.quarkus.rest.test.providers.jaxb.resource.JaxbJunkXmlOrderClient;
+import io.quarkus.rest.test.providers.jaxb.resource.JaxbXmlRootElementProviderResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -29,7 +29,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.ResponseProcessingException;
 import javax.xml.bind.JAXBElement;
@@ -50,26 +56,31 @@ public class JaxbXmlRootElementProviderTest {
    private static final String ERR_PARENT_NULL = "Parent is null";
    private static final String ERR_PARENT_NAME = "The name of the parent is not the expected one";
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
    private JaxbXmlRootElementClient jaxbClient;
    private JaxbElementClient jaxbElementClient;
    private JaxbJsonXmlRootElementClient jsonClient;
    private JaxbJsonElementClient jsonElementClient;
    private JaxbJunkXmlOrderClient junkClient;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(JaxbXmlRootElementProviderTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(Parent.class);
       war.addClass(Child.class);
       Map<String, String> contextParams = new HashMap<>();
       contextParams.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, "true");
       return TestUtil.finishContainerPrepare(war, contextParams, JaxbXmlRootElementProviderResource.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       jaxbClient = ProxyBuilder.builder(JaxbXmlRootElementClient.class, client.target(JAXB_URL)).build();
       jaxbElementClient = ProxyBuilder.builder(JaxbElementClient.class, client.target(JAXB_URL)).build();
       jsonClient = ProxyBuilder.builder(JaxbJsonXmlRootElementClient.class, client.target(JAXB_URL)).build();

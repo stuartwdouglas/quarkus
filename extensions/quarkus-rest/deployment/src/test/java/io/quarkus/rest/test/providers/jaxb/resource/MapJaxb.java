@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jaxb.resource;
+package io.quarkus.rest.test.providers.jaxb.resource;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessorType;

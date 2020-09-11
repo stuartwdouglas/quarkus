@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.servlet;
+package io.quarkus.rest.test.core.servlet;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -7,12 +7,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.test.core.servlet.resource.ServletMappingProxy;
-import org.jboss.resteasy.test.core.basic.resource.MyFilter;
-import org.jboss.resteasy.test.core.servlet.resource.ServletMappingResource;
+import io.quarkus.rest.test.core.servlet.resource.ServletMappingProxy;
+import io.quarkus.rest.test.core.basic.resource.MyFilter;
+import io.quarkus.rest.test.core.servlet.resource.ServletMappingResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -23,7 +23,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -38,11 +44,16 @@ import java.lang.reflect.ReflectPermission;
 public class ServletMappingTest {
    public static final String WRONG_RESPONSE_ERROR_MSG = "Wrong content of response";
 
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(ServletMappingTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addAsWebInfResource(ServletMappingTest.class.getPackage(), "ServletMappingWeb.xml", "web.xml");
       war.addAsWebInfResource(ServletMappingTest.class.getPackage(), "ServletMappingJbossWeb.xml", "jboss-web.xml");
       war.addClass(MyFilter.class);
@@ -50,7 +61,7 @@ public class ServletMappingTest {
             new ReflectPermission("suppressAccessChecks")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, ServletMappingResource.class, ServletMappingProxy.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, "");
@@ -58,7 +69,7 @@ public class ServletMappingTest {
 
    @Before
    public void setup() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After
@@ -71,7 +82,7 @@ public class ServletMappingTest {
     * @tpSince RESTEasy 3.0.16
     */
    @Test
-   public void testNoDefaultsResourceNewRESTEasyClient() throws Exception {
+   public void testNoDefaultsResourceNewQuarkusRestClient() throws Exception {
       WebTarget target = client.target(generateURL("/resteasy/rest/basic"));
       Response response = target.request().get();
       Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
@@ -102,7 +113,7 @@ public class ServletMappingTest {
     * @tpSince RESTEasy 3.0.16
     */
    @Test
-   public void testFormParamNewRESTEasyClient() {
+   public void testFormParamNewQuarkusRestClient() {
       ResteasyWebTarget target = client.target(generateURL("/resteasy/rest"));
       ServletMappingProxy client = target.proxyBuilder(ServletMappingProxy.class).build();
       final String result = client.postForm("value");

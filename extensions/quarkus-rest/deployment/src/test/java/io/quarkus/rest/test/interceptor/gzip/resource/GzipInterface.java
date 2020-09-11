@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.interceptor.gzip.resource;
+package io.quarkus.rest.test.interceptor.gzip.resource;
 
 import org.jboss.resteasy.annotations.GZIP;
 

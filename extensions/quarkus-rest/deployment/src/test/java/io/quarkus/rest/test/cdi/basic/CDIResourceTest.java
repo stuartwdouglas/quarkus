@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.basic;
+package io.quarkus.rest.test.cdi.basic;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.ContainerConstants;
+import io.quarkus.rest.test.ContainerConstants;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -21,7 +21,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,9 +38,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import org.jboss.resteasy.test.cdi.basic.resource.resteasy1082.FooResource;
-import org.jboss.resteasy.test.cdi.basic.resource.resteasy1082.TestApplication;
-import org.jboss.resteasy.test.cdi.basic.resource.resteasy1082.TestServlet;
+import io.quarkus.rest.test.cdi.basic.resource.resteasy1082.FooResource;
+import io.quarkus.rest.test.cdi.basic.resource.resteasy1082.TestApplication;
+import io.quarkus.rest.test.cdi.basic.resource.resteasy1082.TestServlet;
 
 
 /**

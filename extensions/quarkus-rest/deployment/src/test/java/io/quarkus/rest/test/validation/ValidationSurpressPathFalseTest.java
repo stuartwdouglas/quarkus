@@ -1,21 +1,27 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFoo;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooReaderWriter;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreClassConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreClassValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreResourceWithAllViolationTypes;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreResourceWithReturnValues;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFoo;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooReaderWriter;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooValidator;
+import io.quarkus.rest.test.validation.resource.ValidationCoreClassConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationCoreClassValidator;
+import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithAllViolationTypes;
+import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithReturnValues;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,18 +34,18 @@ import java.util.Map;
  */
 public class ValidationSurpressPathFalseTest extends ValidationSuppressPathTestBase {
    @SuppressWarnings(value = "unchecked")
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive("Validation-test")
-            .addClasses(ValidationCoreFoo.class, ValidationCoreFooConstraint.class, ValidationCoreFooReaderWriter.class, ValidationCoreFooValidator.class)
-            .addClasses(ValidationCoreClassConstraint.class, ValidationCoreClassValidator.class)
-            .addClasses(ValidationCoreResourceWithAllViolationTypes.class, ValidationCoreResourceWithReturnValues.class)
-            .addClass(ValidationSuppressPathTestBase.class)
-            .addAsResource("META-INF/services/javax.ws.rs.ext.Providers");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       Map<String, String> contextParams = new HashMap<>();
       contextParams.put("resteasy.validation.suppress.path", "false");
       return TestUtil.finishContainerPrepare(war, contextParams, (Class<?>[]) null);
-   }
+   }});
 
    /**
     * @tpTestDetails Test input violations.

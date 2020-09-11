@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation.resource;
+package io.quarkus.rest.test.validation.resource;
 
 import javax.ejb.Stateless;
 import javax.validation.constraints.Min;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.exception.resource;
+package io.quarkus.rest.test.exception.resource;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;

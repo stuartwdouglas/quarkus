@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.injection.resource;
+package io.quarkus.rest.test.cdi.injection.resource;
 
 
 import javax.annotation.PostConstruct;
@@ -9,7 +9,7 @@ import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import static org.jboss.resteasy.test.cdi.injection.resource.ReverseInjectionResource.NON_CONTEXTUAL;
+import static io.quarkus.rest.test.cdi.injection.resource.ReverseInjectionResource.NON_CONTEXTUAL;
 
 @Stateful
 @ApplicationScoped

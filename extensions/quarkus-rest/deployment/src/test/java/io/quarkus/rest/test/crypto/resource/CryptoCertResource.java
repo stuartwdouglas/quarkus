@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.crypto.resource;
+package io.quarkus.rest.test.crypto.resource;
 
 import org.jboss.resteasy.utils.TestApplication;
 import javax.ws.rs.Path;

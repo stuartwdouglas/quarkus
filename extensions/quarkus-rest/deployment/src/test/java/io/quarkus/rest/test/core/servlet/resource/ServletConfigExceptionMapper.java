@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.servlet.resource;
+package io.quarkus.rest.test.core.servlet.resource;
 
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.junit.Assert;

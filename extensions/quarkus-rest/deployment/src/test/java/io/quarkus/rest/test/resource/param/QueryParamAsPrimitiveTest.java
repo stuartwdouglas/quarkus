@@ -1,33 +1,33 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResource;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceArray;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceArrayDefault;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceArrayDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceArrayDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceDefault;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceList;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceListDefault;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceListDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceListDefaultOverride;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceQueryPrimitivesInterface;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceResourceArray;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceResourceListInterface;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceResourceWrappersInterface;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceWrappers;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceWrappersDefault;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceWrappersDefaultNull;
-import org.jboss.resteasy.test.resource.param.resource.QueryParamAsPrimitiveResourceWrappersDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResource;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceArray;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceArrayDefault;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceArrayDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceArrayDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceDefault;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceList;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceListDefault;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceListDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceListDefaultOverride;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceQueryPrimitivesInterface;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceResourceArray;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceResourceListInterface;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceResourceWrappersInterface;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceWrappers;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceWrappersDefault;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceWrappersDefaultNull;
+import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceWrappersDefaultOverride;
 import org.jboss.resteasy.util.HttpHeaderNames;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -38,7 +38,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
@@ -65,7 +71,7 @@ public class QueryParamAsPrimitiveTest {
    private static QueryParamAsPrimitiveResourceResourceListInterface resourceQueryPrimitiveList;
 
    private static QueryParamAsPrimitiveResourceResourceArray resourceQueryPrimitiveArray;
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
    @Deployment
    public static Archive<?> deploy() throws Exception {
@@ -96,7 +102,7 @@ public class QueryParamAsPrimitiveTest {
 
    @BeforeClass
    public static void before() throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
       resourceQueryPrimitives = ProxyBuilder.builder(QueryParamAsPrimitiveResourceQueryPrimitivesInterface.class, client.target(generateBaseUrl())).build();
       resourceQueryPrimitiveWrappers = ProxyBuilder.builder(QueryParamAsPrimitiveResourceResourceWrappersInterface.class, client.target(generateBaseUrl())).build();
       resourceQueryPrimitiveList = ProxyBuilder.builder(QueryParamAsPrimitiveResourceResourceListInterface.class, client.target(generateBaseUrl())).build();

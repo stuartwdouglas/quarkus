@@ -1,18 +1,18 @@
-package org.jboss.resteasy.test.providers.jackson2;
+package io.quarkus.rest.test.providers.jackson2;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.providers.jackson2.resource.Jackson2JAXBResource;
-import org.jboss.resteasy.test.providers.jackson2.resource.Jackson2Product;
-import org.jboss.resteasy.test.providers.jackson2.resource.Jackson2Resource;
-import org.jboss.resteasy.test.providers.jackson2.resource.Jackson2XmlProduct;
-import org.jboss.resteasy.test.providers.jackson2.resource.Jackson2XmlResource;
-import org.jboss.resteasy.test.providers.jackson2.resource.Jackson2XmlResourceWithJacksonAnnotation;
-import org.jboss.resteasy.test.providers.jackson2.resource.Jackson2XmlResourceWithJAXB;
+import io.quarkus.rest.test.providers.jackson2.resource.Jackson2JAXBResource;
+import io.quarkus.rest.test.providers.jackson2.resource.Jackson2Product;
+import io.quarkus.rest.test.providers.jackson2.resource.Jackson2Resource;
+import io.quarkus.rest.test.providers.jackson2.resource.Jackson2XmlProduct;
+import io.quarkus.rest.test.providers.jackson2.resource.Jackson2XmlResource;
+import io.quarkus.rest.test.providers.jackson2.resource.Jackson2XmlResourceWithJacksonAnnotation;
+import io.quarkus.rest.test.providers.jackson2.resource.Jackson2XmlResourceWithJAXB;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -23,7 +23,13 @@ import org.junit.Test;
 import org.junit.Before;
 import org.junit.After;
 
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,22 +74,32 @@ public class Jackson2Test {
       Jackson2Product post(@PathParam("id") int id, Jackson2Product p);
    }
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
 
-   @Deployment(name = "default")
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(Jackson2Test.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(Jackson2Test.class);
       war.addAsResource(Jackson2Test.class.getPackage(), "javax.ws.rs.ext.Providers", "META-INF/services/javax.ws.rs.ext.Providers");
       return TestUtil.finishContainerPrepare(war, null, Jackson2Resource.class, Jackson2Product.class,
             Jackson2XmlResource.class, Jackson2XmlProduct.class, Jackson2JAXBResource.class,
             Jackson2XmlResourceWithJacksonAnnotation.class, Jackson2XmlResourceWithJAXB.class);
-   }
+   }});
 
-   @Deployment(name = "JSONPenabled")
-   public static Archive<?> deployJSONPenabled() {
-      WebArchive war = TestUtil.prepareArchive(JSONP_ENABLED);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(Jackson2Test.class);
       war.addAsResource(Jackson2Test.class.getPackage(), "javax.ws.rs.ext.Providers", "META-INF/services/javax.ws.rs.ext.Providers");
       Map<String, String> contextParam = new HashMap<>();
@@ -91,11 +107,16 @@ public class Jackson2Test {
       return TestUtil.finishContainerPrepare(war, contextParam, Jackson2Resource.class, Jackson2Product.class,
             Jackson2XmlResource.class, Jackson2XmlProduct.class, Jackson2JAXBResource.class,
             Jackson2XmlResourceWithJacksonAnnotation.class, Jackson2XmlResourceWithJAXB.class);
-   }
+   }});
 
-   @Deployment(name = "JSONPdisabled")
-   public static Archive<?> deployJSONPdisabled() {
-      WebArchive war = TestUtil.prepareArchive(JSONP_DISABLED);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(Jackson2Test.class);
       war.addAsResource(Jackson2Test.class.getPackage(), "javax.ws.rs.ext.Providers", "META-INF/services/javax.ws.rs.ext.Providers");
       Map<String, String> contextParam = new HashMap<>();
@@ -103,11 +124,11 @@ public class Jackson2Test {
       return TestUtil.finishContainerPrepare(war, contextParam, Jackson2Resource.class, Jackson2Product.class,
             Jackson2XmlResource.class, Jackson2XmlProduct.class, Jackson2JAXBResource.class,
             Jackson2XmlResourceWithJacksonAnnotation.class, Jackson2XmlResourceWithJAXB.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

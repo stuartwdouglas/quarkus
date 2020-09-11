@@ -1,22 +1,28 @@
-package org.jboss.resteasy.test.cdi.injection;
+package io.quarkus.rest.test.cdi.injection;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.cdi.injection.resource.ApplicationUser;
-import org.jboss.resteasy.test.cdi.injection.resource.UserManager;
-import org.jboss.resteasy.test.cdi.injection.resource.UserRepository;
-import org.jboss.resteasy.test.cdi.injection.resource.UserResource;
-import org.jboss.resteasy.test.cdi.injection.resource.UserType;
+import io.quarkus.rest.test.cdi.injection.resource.ApplicationUser;
+import io.quarkus.rest.test.cdi.injection.resource.UserManager;
+import io.quarkus.rest.test.cdi.injection.resource.UserRepository;
+import io.quarkus.rest.test.cdi.injection.resource.UserResource;
+import io.quarkus.rest.test.cdi.injection.resource.UserType;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -32,16 +38,21 @@ import javax.ws.rs.core.MediaType;
  */
 public class InjectionJpaEnumTypeTest {
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(InjectionJpaEnumTypeTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(UserManager.class, UserRepository.class, UserResource.class,
             UserType.class, ApplicationUser.class);
       war.addAsResource(InjectionJpaEnumTypeTest.class.getPackage(), "injectionJpaEnumType/persistence.xml", "META-INF/persistence.xml");
       war.addAsResource(InjectionJpaEnumTypeTest.class.getPackage(), "injectionJpaEnumType/create.sql", "META-INF/create.sql");
       war.addAsResource(InjectionJpaEnumTypeTest.class.getPackage(), "injectionJpaEnumType/load.sql", "META-INF/load.sql");
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, InjectionJpaEnumTypeTest.class.getSimpleName());
@@ -53,7 +64,7 @@ public class InjectionJpaEnumTypeTest {
     */
    @Test
    public void testEnumJackson() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       WebTarget base = client.target(generateURL("/user"));
       String val = base.request().accept(MediaType.APPLICATION_JSON_TYPE).get().readEntity(String.class);
       Assert.assertEquals("{\"id\":1,\"userType\":\"TYPE_ONE\"}", val);
@@ -66,7 +77,7 @@ public class InjectionJpaEnumTypeTest {
     */
    @Test
    public void testEnumJaxb() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       WebTarget base = client.target(generateURL("/user"));
       String val = base.request().accept(MediaType.APPLICATION_XML_TYPE).get().readEntity(String.class);
       Assert.assertTrue(val.contains("<applicationUser><id>1</id><userType>TYPE_ONE</userType></applicationUser>"));

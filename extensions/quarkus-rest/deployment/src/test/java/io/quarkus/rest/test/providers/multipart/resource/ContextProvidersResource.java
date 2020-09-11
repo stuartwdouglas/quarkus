@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.multipart.resource;
+package io.quarkus.rest.test.providers.multipart.resource;
 
 
 import java.io.IOException;

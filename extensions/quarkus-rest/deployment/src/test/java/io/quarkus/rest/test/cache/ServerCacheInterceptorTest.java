@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cache;
+package io.quarkus.rest.test.cache;
 
 import java.security.AllPermission;
 import java.util.ArrayList;
@@ -8,14 +8,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.category.ExpectedFailingOnWildFly19;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.plugins.cache.server.InfinispanCache;
 import org.jboss.resteasy.plugins.cache.server.ServerCache;
 import org.jboss.resteasy.plugins.cache.server.ServerCacheFeature;
 import org.jboss.resteasy.plugins.cache.server.ServerCacheHitFilter;
 import org.jboss.resteasy.plugins.cache.server.ServerCacheInterceptor;
-import org.jboss.resteasy.test.cache.resource.ServerCacheInterceptorResource;
+import io.quarkus.rest.test.cache.resource.ServerCacheInterceptorResource;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -27,7 +27,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 
 /**
@@ -39,8 +45,8 @@ import org.junit.runner.RunWith;
 @Category({ExpectedFailingOnWildFly19.class})
 public class ServerCacheInterceptorTest {
 
-   private static ResteasyClient clientA;
-   private static ResteasyClient clientB;
+   private static QuarkusRestClient clientA;
+   private static QuarkusRestClient clientB;
 
    @Deployment
    public static Archive<?> deploySimpleResource() {
@@ -60,8 +66,8 @@ public class ServerCacheInterceptorTest {
 
    @Before
    public void setup() {
-      clientA = (ResteasyClient)ClientBuilder.newClient();
-      clientB = (ResteasyClient)ClientBuilder.newClient();
+      clientA = (QuarkusRestClient)ClientBuilder.newClient();
+      clientB = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

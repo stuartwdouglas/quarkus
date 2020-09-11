@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.html.resource;
+package io.quarkus.rest.test.providers.html.resource;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

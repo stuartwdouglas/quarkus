@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.resource.basic.resource;
+package io.quarkus.rest.test.resource.basic.resource;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.test.TestPortProvider;
+import io.quarkus.rest.test.TestPortProvider;
 import org.junit.Assert;
 
 import javax.ws.rs.GET;

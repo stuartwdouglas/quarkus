@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.xxe.resource.xxeJackson;
+package io.quarkus.rest.test.xxe.resource.xxeJackson;
 
 import javax.xml.bind.annotation.XmlRootElement;
 

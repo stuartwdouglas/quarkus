@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.param.resource;
+package io.quarkus.rest.test.resource.param.resource;
 
 import org.jboss.logging.Logger;
 import javax.ws.rs.core.Response;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client;
+package io.quarkus.rest.test.client;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -12,9 +12,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.client.resource.AsyncInvokeResource;
+import io.quarkus.rest.test.client.resource.AsyncInvokeResource;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -22,7 +22,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpChapter Client tests
@@ -65,7 +71,7 @@ public class AsyncBenchTest extends ClientTestBase
       long start = System.currentTimeMillis();
       final String oldProp = System.getProperty("http.maxConnections");
       System.setProperty("http.maxConnections", String.valueOf(MAX_CONNECTIONS));
-      nioClient = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).useAsyncHttpEngine().build();
+      nioClient = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).useAsyncHttpEngine().build();
       WebTarget wt = nioClient.target(generateURL("/test"));
       runCallback(wt, "NIO");
       long end = System.currentTimeMillis() - start;
@@ -84,7 +90,7 @@ public class AsyncBenchTest extends ClientTestBase
    public void testPost() throws Exception
    {
       long start = System.currentTimeMillis();
-      client = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(MAX_CONNECTIONS).maxPooledPerRoute(MAX_CONNECTIONS).build();
+      client = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).connectionPoolSize(MAX_CONNECTIONS).maxPooledPerRoute(MAX_CONNECTIONS).build();
       WebTarget wt2 = client.target(generateURL("/test"));
       runCallback(wt2, "BIO");
       long end = System.currentTimeMillis() - start;

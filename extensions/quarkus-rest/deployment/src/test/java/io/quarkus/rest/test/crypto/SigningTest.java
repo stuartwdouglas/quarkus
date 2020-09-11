@@ -1,11 +1,11 @@
-package org.jboss.resteasy.test.crypto;
+package io.quarkus.rest.test.crypto;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.security.doseta.DKIMSignature;
 import org.jboss.resteasy.security.doseta.DosetaKeyRepository;
@@ -14,8 +14,8 @@ import org.jboss.resteasy.security.doseta.UnauthorizedSignatureException;
 import org.jboss.resteasy.security.doseta.Verification;
 import org.jboss.resteasy.security.doseta.Verifier;
 import org.jboss.resteasy.spi.MarshalledEntity;
-import org.jboss.resteasy.test.crypto.resource.SigningResource;
-import org.jboss.resteasy.test.crypto.resource.SigningProxy;
+import io.quarkus.rest.test.crypto.resource.SigningResource;
+import io.quarkus.rest.test.crypto.resource.SigningProxy;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -28,7 +28,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.ClientBuilder;
@@ -59,7 +65,7 @@ public class SigningTest {
    public static KeyPair keys;
    public static DosetaKeyRepository repository;
    public static PrivateKey badKey;
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
 
    protected final Logger logger = LogManager.getLogger(PKCS7SignatureSmokeTest.class.getName());
 
@@ -72,7 +78,7 @@ public class SigningTest {
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After
@@ -80,9 +86,14 @@ public class SigningTest {
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(SigningTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(SigningProxy.class);
       war.addAsResource(SigningTest.class.getPackage(), "SigningTest.jks", "test.jks");
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
@@ -94,7 +105,7 @@ public class SigningTest {
       contextParams.put("resteasy.context.objects", "org.jboss.resteasy.security.doseta.KeyRepository : org.jboss.resteasy.security.doseta.ConfiguredDosetaKeyRepository");
       contextParams.put("resteasy.doseta.use.dns", "false");
       return TestUtil.finishContainerPrepare(war, contextParams, SigningResource.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, SigningTest.class.getSimpleName());

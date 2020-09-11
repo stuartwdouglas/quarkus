@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.plain.resource;
+package io.quarkus.rest.test.providers.plain.resource;
 
 import org.jboss.logging.Logger;
 import org.junit.Assert;

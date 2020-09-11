@@ -1,12 +1,12 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.resource.param.resource.CookieInjectionResource;
+import io.quarkus.rest.test.resource.param.resource.CookieInjectionResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -15,7 +15,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
@@ -63,7 +69,7 @@ public class CookieInjectionTest {
 
    @BeforeClass
    public static void init() {
-      client = ((ResteasyClientBuilder) ClientBuilder.newBuilder()).enableCookieManagement().build();
+      client = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).enableCookieManagement().build();
    }
 
    @AfterClass

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jackson2.multipart;
+package io.quarkus.rest.test.providers.jackson2.multipart;
 
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;

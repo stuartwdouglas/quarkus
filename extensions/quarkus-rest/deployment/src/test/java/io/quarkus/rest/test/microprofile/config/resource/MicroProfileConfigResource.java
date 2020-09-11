@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.microprofile.config.resource;
+package io.quarkus.rest.test.microprofile.config.resource;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;

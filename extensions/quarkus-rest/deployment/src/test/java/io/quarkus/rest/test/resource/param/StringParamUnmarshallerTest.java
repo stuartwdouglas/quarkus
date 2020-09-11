@@ -1,22 +1,28 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.annotations.StringParameterUnmarshallerBinder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.resource.param.resource.StringParamUnmarshallerDateFormatter;
-import org.jboss.resteasy.test.resource.param.resource.StringParamUnmarshallerFruit;
-import org.jboss.resteasy.test.resource.param.resource.StringParamUnmarshallerService;
-import org.jboss.resteasy.test.resource.param.resource.StringParamUnmarshallerSport;
+import io.quarkus.rest.test.resource.param.resource.StringParamUnmarshallerDateFormatter;
+import io.quarkus.rest.test.resource.param.resource.StringParamUnmarshallerFruit;
+import io.quarkus.rest.test.resource.param.resource.StringParamUnmarshallerService;
+import io.quarkus.rest.test.resource.param.resource.StringParamUnmarshallerSport;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Invocation;
 import java.lang.annotation.Retention;
@@ -35,15 +41,20 @@ public class StringParamUnmarshallerTest {
    public @interface StringParamUnmarshallerDateFormat {
       String value();
    }
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(StringParamUnmarshallerTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(StringParamUnmarshallerDateFormatter.class);
       war.addClass(StringParamUnmarshallerFruit.class);
       war.addClass(StringParamUnmarshallerSport.class);
       war.addClass(StringParamUnmarshallerDateFormat.class);
       return TestUtil.finishContainerPrepare(war, null, StringParamUnmarshallerService.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, StringParamUnmarshallerTest.class.getSimpleName());
@@ -52,7 +63,7 @@ public class StringParamUnmarshallerTest {
 
    @Test
    public void testDate() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       Invocation.Builder request = client.target(generateURL("/datetest/04-23-1977")).request();
       String date = request.get(String.class);
       Assert.assertTrue("Received wrong date", date.contains("Sat Apr 23 00:00:00"));
@@ -62,7 +73,7 @@ public class StringParamUnmarshallerTest {
 
    @Test
    public void testFruitAndSport() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       Invocation.Builder request = client.target(generateURL("/fromstring/ORANGE/football")).request();
       Assert.assertEquals("Received wrong response", "footballORANGE", request.get(String.class));
       client.close();

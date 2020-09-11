@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.generic.resource;
+package io.quarkus.rest.test.cdi.generic.resource;
 
 public class Animal {
 }

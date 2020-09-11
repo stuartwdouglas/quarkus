@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,19 +8,19 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 
 import io.restassured.path.json.JsonPath;
 
 import javax.ws.rs.client.ClientBuilder;
 
-import org.jboss.resteasy.test.validation.resource.ValidationXMLClassConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationXMLClassValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationXMLFoo;
-import org.jboss.resteasy.test.validation.resource.ValidationXMLFooConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationXMLFooReaderWriter;
-import org.jboss.resteasy.test.validation.resource.ValidationXMLFooValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations;
+import io.quarkus.rest.test.validation.resource.ValidationXMLClassConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationXMLClassValidator;
+import io.quarkus.rest.test.validation.resource.ValidationXMLFoo;
+import io.quarkus.rest.test.validation.resource.ValidationXMLFooConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationXMLFooReaderWriter;
+import io.quarkus.rest.test.validation.resource.ValidationXMLFooValidator;
+import io.quarkus.rest.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -31,7 +31,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -50,21 +56,24 @@ import java.util.Map;
 public class ValidationXMLTest {
    static final String WRONG_ERROR_MSG = "Expected validation error is not in response";
    protected static final Logger logger = LogManager.getLogger(ValidationXMLTest.class.getName());
-   ResteasyClient client;
+   QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(ValidationXMLTest.class.getSimpleName())
-            .addClasses(ValidationXMLFoo.class, ValidationXMLFooValidator.class, ValidationXMLFooConstraint.class,
-                  ValidationXMLClassValidator.class, ValidationXMLClassConstraint.class);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       Map<String, String> contextParams = new HashMap<>();
       contextParams.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, "true");
       return TestUtil.finishContainerPrepare(war, contextParams, ValidationXMLFooReaderWriter.class, ValidationXMLResourceWithAllFivePotentialViolations.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient().register(ValidationXMLFooReaderWriter.class);
+      client = (QuarkusRestClient)ClientBuilder.newClient().register(ValidationXMLFooReaderWriter.class);
    }
 
    @After
@@ -175,7 +184,7 @@ public class ValidationXMLTest {
          String propertyViolation1 = "<propertyViolations><constraintType>PROPERTY</constraintType><path>s</path><message>size must be between 2 and 4</message><value>a</value></propertyViolations>";
          String propertyViolation2 = "<propertyViolations><constraintType>PROPERTY</constraintType><path>t</path><message>size must be between 2 and 4</message><value>b</value></propertyViolations>";
          String propertyViolation3 = "<propertyViolations><constraintType>PROPERTY</constraintType><path>u</path><message>size must be between 3 and 5</message><value>c</value></propertyViolations>";
-         String classViolationStart = "<classViolations><constraintType>CLASS</constraintType><path></path><message>Concatenation of s and u must have length &gt; 5</message><value>org.jboss.resteasy.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations";
+         String classViolationStart = "<classViolations><constraintType>CLASS</constraintType><path></path><message>Concatenation of s and u must have length &gt; 5</message><value>io.quarkus.rest.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations";
          String classViolationEnd = "</value></classViolations>";
          String parameterViolationP1 = "<parameterViolations><constraintType>PARAMETER</constraintType><path>post.";
          String parameterViolationP2 = "</path><message>s must have length: 3 &lt;= length &lt;= 5</message><value>ValidationXMLFoo[p]</value></parameterViolations>";
@@ -210,7 +219,7 @@ public class ValidationXMLTest {
          cv = report.getClassViolations().iterator().next();
          Assert.assertEquals(WRONG_ERROR_MSG, "Concatenation of s and u must have length > 5", cv.getMessage());
          logger.info("value: " + cv.getValue());
-         Assert.assertTrue(cv.getValue().startsWith("org.jboss.resteasy.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations@"));
+         Assert.assertTrue(cv.getValue().startsWith("io.quarkus.rest.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations@"));
          cv = report.getParameterViolations().iterator().next();
          Assert.assertEquals(WRONG_ERROR_MSG, "s must have length: 3 <= length <= 5", cv.getMessage());
          Assert.assertEquals(WRONG_ERROR_MSG, "ValidationXMLFoo[p]", cv.getValue());
@@ -291,7 +300,7 @@ public class ValidationXMLTest {
          cv = report.getClassViolations().iterator().next();
          Assert.assertEquals(WRONG_ERROR_MSG, "Concatenation of s and u must have length > 5", cv.getMessage());
          logger.info("value: " + cv.getValue());
-         Assert.assertTrue(WRONG_ERROR_MSG, cv.getValue().startsWith("org.jboss.resteasy.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations@"));
+         Assert.assertTrue(WRONG_ERROR_MSG, cv.getValue().startsWith("io.quarkus.rest.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations@"));
          cv = report.getParameterViolations().iterator().next();
          Assert.assertEquals(WRONG_ERROR_MSG, "s must have length: 3 <= length <= 5", cv.getMessage());
          Assert.assertEquals(WRONG_ERROR_MSG, "ValidationXMLFoo[p]", cv.getValue());
@@ -361,7 +370,7 @@ public class ValidationXMLTest {
             "[CLASS]\r" +
                   "[]\r" +
                   "[Concatenation of s and u must have length > 5]\r" +
-                  "[org.jboss.resteasy.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations";
+                  "[io.quarkus.rest.test.validation.resource.ValidationXMLResourceWithAllFivePotentialViolations";
       String parameterViolationP1 =
             "[PARAMETER]\r" +
                   "[post.";

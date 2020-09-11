@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
@@ -9,20 +9,20 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.client.proxy.resource.Params;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyBeanParam;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyBeanParamResource;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyParameterAnotations;
-import org.jboss.resteasy.test.client.proxy.resource.ProxyParameterAnotationsResource;
-import org.jboss.resteasy.test.resource.param.resource.RESTEasyParamBasicCustomValuesResource;
-import org.jboss.resteasy.test.resource.param.resource.RESTEasyParamBasicJaxRsParamDifferentResource;
-import org.jboss.resteasy.test.resource.param.resource.RESTEasyParamBasicJaxRsParamSameResource;
-import org.jboss.resteasy.test.resource.param.resource.RESTEasyParamBasicProxy;
-import org.jboss.resteasy.test.resource.param.resource.RESTEasyParamBasicProxyResource;
-import org.jboss.resteasy.test.resource.param.resource.RESTEasyParamBasicResource;
-import org.jboss.resteasy.test.providers.jsonb.basic.JsonBindingTest;
+import io.quarkus.rest.test.client.proxy.resource.Params;
+import io.quarkus.rest.test.client.proxy.resource.ProxyBeanParam;
+import io.quarkus.rest.test.client.proxy.resource.ProxyBeanParamResource;
+import io.quarkus.rest.test.client.proxy.resource.ProxyParameterAnotations;
+import io.quarkus.rest.test.client.proxy.resource.ProxyParameterAnotationsResource;
+import io.quarkus.rest.test.resource.param.resource.RESTEasyParamBasicCustomValuesResource;
+import io.quarkus.rest.test.resource.param.resource.RESTEasyParamBasicJaxRsParamDifferentResource;
+import io.quarkus.rest.test.resource.param.resource.RESTEasyParamBasicJaxRsParamSameResource;
+import io.quarkus.rest.test.resource.param.resource.RESTEasyParamBasicProxy;
+import io.quarkus.rest.test.resource.param.resource.RESTEasyParamBasicProxyResource;
+import io.quarkus.rest.test.resource.param.resource.RESTEasyParamBasicResource;
+import io.quarkus.rest.test.providers.jsonb.basic.JsonBindingTest;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -31,7 +31,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -46,11 +52,16 @@ import java.net.URL;
 public class RESTEasyParamBasicTest {
    protected static final Logger logger = Logger.getLogger(JsonBindingTest.class.getName());
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploySimpleResource() {
-      WebArchive war = TestUtil.prepareArchive(RESTEasyParamBasicTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(RESTEasyParamBasicProxy.class);
       return TestUtil.finishContainerPrepare(war, null,
             RESTEasyParamBasicResource.class,
@@ -61,11 +72,11 @@ public class RESTEasyParamBasicTest {
             RESTEasyParamBasicJaxRsParamSameResource.class,
             RESTEasyParamBasicCustomValuesResource.class,
             RESTEasyParamBasicProxyResource.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.smoke.resource;
+package io.quarkus.rest.test.core.smoke.resource;
 
 
 import javax.ws.rs.Path;

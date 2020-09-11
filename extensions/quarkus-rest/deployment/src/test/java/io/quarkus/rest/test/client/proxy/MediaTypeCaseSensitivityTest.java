@@ -1,15 +1,15 @@
-package org.jboss.resteasy.test.client.proxy;
+package io.quarkus.rest.test.client.proxy;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.test.client.proxy.resource.MediaTypeCaseSensitivityStuff;
-import org.jboss.resteasy.test.client.proxy.resource.MediaTypeCaseSensitivityStuffProvider;
-import org.jboss.resteasy.test.client.proxy.resource.MediaTypeCaseSensitivityStuffResource;
+import io.quarkus.rest.test.client.proxy.resource.MediaTypeCaseSensitivityStuff;
+import io.quarkus.rest.test.client.proxy.resource.MediaTypeCaseSensitivityStuffProvider;
+import io.quarkus.rest.test.client.proxy.resource.MediaTypeCaseSensitivityStuffResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -19,7 +19,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.After;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -63,7 +69,7 @@ public class MediaTypeCaseSensitivityTest {
     */
    @Test
    public void testItPost() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       WebTarget base = client.target(PortProviderUtil.generateURL("/stuff", MediaTypeCaseSensitivityTest.class.getSimpleName()));
       Response response = base.request().post(Entity.entity("bill", "Application/Stuff"));
       Assert.assertEquals(HttpResponseCodes.SC_NO_CONTENT, response.getStatus());
@@ -78,7 +84,7 @@ public class MediaTypeCaseSensitivityTest {
     */
    @Test
    public void testItGet() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       WebTarget base = client.target(PortProviderUtil.generateURL("/stuff", MediaTypeCaseSensitivityTest.class.getSimpleName()));
       Response response = base.request().get();
       Assert.assertEquals(HttpResponseCodes.SC_NO_CONTENT, response.getStatus());

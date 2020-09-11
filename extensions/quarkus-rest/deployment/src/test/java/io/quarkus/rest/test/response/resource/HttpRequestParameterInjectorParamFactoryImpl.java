@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.response.resource;
+package io.quarkus.rest.test.response.resource;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;

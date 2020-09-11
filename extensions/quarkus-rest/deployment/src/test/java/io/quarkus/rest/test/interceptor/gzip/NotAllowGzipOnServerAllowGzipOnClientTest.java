@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.interceptor.gzip;
+package io.quarkus.rest.test.interceptor.gzip;
 
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;

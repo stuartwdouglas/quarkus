@@ -1,18 +1,18 @@
-package org.jboss.resteasy.test.validation.cdi;
+package io.quarkus.rest.test.validation.cdi;
 
 import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
 
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.validation.cdi.resource.MultipleWarSumConstraint;
-import org.jboss.resteasy.test.validation.cdi.resource.MultipleWarSumValidator;
-import org.jboss.resteasy.test.validation.cdi.resource.MultipleWarResource;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooReaderWriter;
+import io.quarkus.rest.test.validation.cdi.resource.MultipleWarSumConstraint;
+import io.quarkus.rest.test.validation.cdi.resource.MultipleWarSumValidator;
+import io.quarkus.rest.test.validation.cdi.resource.MultipleWarResource;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooReaderWriter;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -24,7 +24,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -41,35 +47,39 @@ import static org.junit.Assert.assertEquals;
 public class MultipleWarTest {
    static final String RESPONSE_ERROR_MSG = "Response has wrong content";
    static final String WRONG_ERROR_MSG = "Expected validation error is not in response";
-   ResteasyClient client;
+   QuarkusRestClient client;
 
-   @Deployment(name = "war1", order = 1)
-   public static Archive<?> createTestArchive1() {
-      WebArchive war1 = TestUtil.prepareArchive(MultipleWarTest.class.getSimpleName() + "1")
-            .addClasses(MultipleWarResource.class)
-            .addClasses(MultipleWarSumConstraint.class, MultipleWarSumValidator.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war1.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
             new HibernateValidatorPermission("accessPrivateMembers")
       ), "permissions.xml");
       return war1;
-   }
+   }});
 
-   @Deployment(name = "war2", order = 2)
-   public static Archive<?> createTestArchive2() {
-      WebArchive war2 = TestUtil.prepareArchive(MultipleWarTest.class.getSimpleName() + "2")
-            .addClasses(MultipleWarResource.class)
-            .addClasses(MultipleWarSumConstraint.class, MultipleWarSumValidator.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war2.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
             new HibernateValidatorPermission("accessPrivateMembers")
       ), "permissions.xml");
       return war2;
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
+      client = (QuarkusRestClient)ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
    }
 
    @After

@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.client;
+package io.quarkus.rest.test.client;
 
-import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
 
 import java.io.File;
 import java.io.FilePermission;
@@ -21,7 +21,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Resteasy-client
@@ -32,9 +38,14 @@ import org.junit.runner.RunWith;
 public class ClientBuilderTest {
 
    @SuppressWarnings(value = "unchecked")
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(ClientBuilderTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(TestUtil.class);
       // Arquillian in the deployment and use of TestUtil
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
@@ -47,7 +58,7 @@ public class ClientBuilderTest {
             new RuntimePermission("accessDeclaredMembers")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-   }
+   }});
 
 
    public static class FeatureReturningFalse implements Feature {

@@ -1,18 +1,24 @@
-package org.jboss.resteasy.test.providers.custom;
+package io.quarkus.rest.test.providers.custom;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.ContainerConstants;
-import org.jboss.resteasy.test.providers.custom.resource.DuplicateProviderRegistrationFeature;
-import org.jboss.resteasy.test.providers.custom.resource.DuplicateProviderRegistrationFilter;
-import org.jboss.resteasy.test.providers.custom.resource.DuplicateProviderRegistrationInterceptor;
+import io.quarkus.rest.test.ContainerConstants;
+import io.quarkus.rest.test.providers.custom.resource.DuplicateProviderRegistrationFeature;
+import io.quarkus.rest.test.providers.custom.resource.DuplicateProviderRegistrationFilter;
+import io.quarkus.rest.test.providers.custom.resource.DuplicateProviderRegistrationInterceptor;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -25,7 +31,7 @@ import java.lang.reflect.ReflectPermission;
 import java.util.PropertyPermission;
 import java.util.logging.LoggingPermission;
 
-import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
 
 /**
  * @tpSubChapter Providers
@@ -40,9 +46,14 @@ public class DuplicateProviderRegistrationTest {
    private static final String RESTEASY_002160_ERR_MSG = "Wrong count of RESTEASY002160 warning message";
 
    @SuppressWarnings(value = "unchecked")
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(DuplicateProviderRegistrationTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(DuplicateProviderRegistrationFeature.class, DuplicateProviderRegistrationFilter.class,
             TestUtil.class, DuplicateProviderRegistrationInterceptor.class, ContainerConstants.class);
       // Arquillian in the deployment, test reads the server.log
@@ -57,7 +68,7 @@ public class DuplicateProviderRegistrationTest {
             new RuntimePermission("accessDeclaredMembers")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-   }
+   }});
 
    private static int getRESTEASY002155WarningCount() {
       return TestUtil.getWarningCount("RESTEASY002155", true, DEFAULT_CONTAINER_QUALIFIER);

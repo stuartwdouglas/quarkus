@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.security;
+package io.quarkus.rest.test.security;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -11,12 +11,12 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.resteasy.category.ExpectedFailingOnWildFly18;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
 import org.jboss.resteasy.setup.AbstractUsersRolesSecurityDomainSetup;
-import org.jboss.resteasy.test.security.resource.BasicAuthBaseResource;
+import io.quarkus.rest.test.security.resource.BasicAuthBaseResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -27,7 +27,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -48,14 +54,19 @@ import java.util.Hashtable;
 @Category({ExpectedFailingOnWildFly18.class}) //WFLY-12655
 public class TwoSecurityDomainsTest {
 
-   private static ResteasyClient authorizedClient;
+   private static QuarkusRestClient authorizedClient;
    private static final String SECURITY_DOMAIN_DEPLOYMENT_1 = "jaxrsSecDomain";
    private static final String SECURITY_DOMAIN_DEPLOYMENT_2 = "jaxrsSecDomain2";
    private static final String WRONG_RESPONSE = "Wrong response content.";
 
-   @Deployment(name= "SECURITY_DOMAIN_DEPLOYMENT_1")
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(TwoSecurityDomainsTest.class.getSimpleName() + SECURITY_DOMAIN_DEPLOYMENT_1);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
 
       Hashtable<String, String> contextParams = new Hashtable<String, String>();
       contextParams.put("resteasy.role.based.security", "true");
@@ -64,11 +75,16 @@ public class TwoSecurityDomainsTest {
             .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
 
       return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
-   }
+   }});
 
-   @Deployment(name= "SECURITY_DOMAIN_DEPLOYMENT_2")
-   public static Archive<?> deploy2() {
-      WebArchive war = TestUtil.prepareArchive(TwoSecurityDomainsTest.class.getSimpleName() + SECURITY_DOMAIN_DEPLOYMENT_2);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
 
       Hashtable<String, String> contextParams = new Hashtable<String, String>();
       contextParams.put("resteasy.role.based.security", "true");
@@ -77,7 +93,7 @@ public class TwoSecurityDomainsTest {
             .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
 
       return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
-   }
+   }});
 
    @BeforeClass
    public static void init() {
@@ -88,7 +104,7 @@ public class TwoSecurityDomainsTest {
          credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY), credentials);
          CloseableHttpClient client = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
          ApacheHttpClientEngine engine = ApacheHttpClientEngine.create(client);
-         authorizedClient = ((ResteasyClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
+         authorizedClient = ((QuarkusRestClientBuilder)ClientBuilder.newBuilder()).httpEngine(engine).build();
       }
    }
 

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.tracing;
+package io.quarkus.rest.test.tracing;
 
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.apache.logging.log4j.LogManager;

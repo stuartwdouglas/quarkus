@@ -1,20 +1,20 @@
-package org.jboss.resteasy.test.resource.constructor;
+package io.quarkus.rest.test.resource.constructor;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.test.resource.constructor.resource.ConstructorCookieParamWAEResource;
-import org.jboss.resteasy.test.resource.constructor.resource.ConstructorNoParamsResource;
-import org.jboss.resteasy.test.resource.constructor.resource.ConstructorParams400Resource;
-import org.jboss.resteasy.test.resource.constructor.resource.ConstructorParams404Resource;
-import org.jboss.resteasy.test.resource.constructor.resource.ConstructorParamsMixedResource;
-import org.jboss.resteasy.test.resource.constructor.resource.ConstructorQueryParamWAEResource;
-import org.jboss.resteasy.test.resource.constructor.resource.Item;
-import org.jboss.resteasy.test.resource.constructor.resource.Item2;
-import org.jboss.resteasy.test.resource.constructor.resource.Item2ParamConverterProvider;
-import org.jboss.resteasy.test.resource.constructor.resource.ItemParamConverterProvider;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.resource.constructor.resource.ConstructorCookieParamWAEResource;
+import io.quarkus.rest.test.resource.constructor.resource.ConstructorNoParamsResource;
+import io.quarkus.rest.test.resource.constructor.resource.ConstructorParams400Resource;
+import io.quarkus.rest.test.resource.constructor.resource.ConstructorParams404Resource;
+import io.quarkus.rest.test.resource.constructor.resource.ConstructorParamsMixedResource;
+import io.quarkus.rest.test.resource.constructor.resource.ConstructorQueryParamWAEResource;
+import io.quarkus.rest.test.resource.constructor.resource.Item;
+import io.quarkus.rest.test.resource.constructor.resource.Item2;
+import io.quarkus.rest.test.resource.constructor.resource.Item2ParamConverterProvider;
+import io.quarkus.rest.test.resource.constructor.resource.ItemParamConverterProvider;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -23,7 +23,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
@@ -33,12 +39,16 @@ public class ResourceConstructorParamsTest {
     protected static final Logger logger = Logger.getLogger(
             ResourceConstructorParamsTest.class.getName());
 
-    static ResteasyClient client;
+    static QuarkusRestClient client;
 
-    @Deployment
-    public static Archive<?> deploySimpleResource() {
-        WebArchive war = TestUtil.prepareArchive(
-                ResourceConstructorParamsTest.class.getSimpleName());
+     @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
         war.addClass(ConstructorParamsMixedResource.class);
         war.addClass(ConstructorNoParamsResource.class);
         war.addClass(ItemParamConverterProvider.class);
@@ -50,11 +60,11 @@ public class ResourceConstructorParamsTest {
         war.addClass(ConstructorCookieParamWAEResource.class);
         war.addClass(ConstructorQueryParamWAEResource.class);
         return TestUtil.finishContainerPrepare(war, null);
-    }
+    }});
 
     @Before
     public void init() {
-        client = (ResteasyClient)ClientBuilder.newClient();
+        client = (QuarkusRestClient)ClientBuilder.newClient();
     }
 
     @After

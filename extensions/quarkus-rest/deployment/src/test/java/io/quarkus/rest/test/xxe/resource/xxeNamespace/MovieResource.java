@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.xxe.resource.xxeNamespace;
+package io.quarkus.rest.test.xxe.resource.xxeNamespace;
 
 import org.jboss.logging.Logger;
 

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jaxb.link;
+package io.quarkus.rest.test.providers.jaxb.link;
 
 import javax.ws.rs.core.Link;
 import javax.xml.bind.annotation.XmlAccessType;

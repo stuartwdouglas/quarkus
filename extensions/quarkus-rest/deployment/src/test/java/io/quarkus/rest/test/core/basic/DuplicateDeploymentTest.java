@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.basic;
+package io.quarkus.rest.test.core.basic;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,17 +7,23 @@ import java.util.List;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.core.basic.resource.DuplicateDeploymentReader;
-import org.jboss.resteasy.test.core.basic.resource.DuplicateDeploymentResource;
+import io.quarkus.rest.test.core.basic.resource.DuplicateDeploymentReader;
+import io.quarkus.rest.test.core.basic.resource.DuplicateDeploymentResource;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
-import static org.jboss.resteasy.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIER;
 
 /**
  * @tpSubChapter Response

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.sse;
+package io.quarkus.rest.test.providers.sse;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Consumes;

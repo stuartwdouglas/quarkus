@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.core.encoding.resource;
+package io.quarkus.rest.test.core.encoding.resource;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

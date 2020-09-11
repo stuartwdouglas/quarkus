@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.basic;
+package io.quarkus.rest.test.cdi.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -6,29 +6,29 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsBookReader;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsBookReaderDecorator;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsBookReaderInterceptor;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsBookReaderInterceptorDecorator;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsBookWriter;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsBookWriterDecorator;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsBookWriterInterceptor;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsBookWriterInterceptorDecorator;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsResource;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsResourceDecorator;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBBook;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsFilterBinding;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsRequestFilterDecorator;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsResourceBinding;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsResourceInterceptor;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsResponseFilterDecorator;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsTestRequestFilter;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsResourceIntf;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsResponseFilter;
-import org.jboss.resteasy.test.cdi.basic.resource.DecoratorsVisitList;
-import org.jboss.resteasy.test.cdi.util.Constants;
-import org.jboss.resteasy.test.cdi.util.Utilities;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookReader;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookReaderDecorator;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookReaderInterceptor;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookReaderInterceptorDecorator;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookWriter;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookWriterDecorator;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookWriterInterceptor;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookWriterInterceptorDecorator;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResource;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResourceDecorator;
+import io.quarkus.rest.test.cdi.basic.resource.EJBBook;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsFilterBinding;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsRequestFilterDecorator;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResourceBinding;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResourceInterceptor;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResponseFilterDecorator;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsTestRequestFilter;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResourceIntf;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResponseFilter;
+import io.quarkus.rest.test.cdi.basic.resource.DecoratorsVisitList;
+import io.quarkus.rest.test.cdi.util.Constants;
+import io.quarkus.rest.test.cdi.util.Utilities;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -37,7 +37,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -57,21 +63,16 @@ public class DecoratorsTest {
 
    private static Logger log = Logger.getLogger(DecoratorsTest.class);
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(DecoratorsTest.class.getSimpleName())
-         .addClasses(Constants.class, UtilityProducer.class, Utilities.class, DecoratorsVisitList.class, PortProviderUtil.class)
-         .addClasses(DecoratorsResourceIntf.class, DecoratorsResource.class, EJBBook.class)
-         .addClasses(DecoratorsBookReaderInterceptorDecorator.class, DecoratorsBookReaderInterceptor.class)
-         .addClasses(DecoratorsBookReaderDecorator.class, DecoratorsBookReader.class)
-         .addClasses(DecoratorsBookWriterInterceptorDecorator.class, DecoratorsBookWriterInterceptor.class)
-         .addClasses(DecoratorsBookWriterDecorator.class, DecoratorsBookWriter.class)
-         .addClasses(DecoratorsResourceBinding.class, DecoratorsResourceInterceptor.class, DecoratorsResourceDecorator.class)
-         .addClasses(DecoratorsFilterBinding.class, DecoratorsTestRequestFilter.class, DecoratorsRequestFilterDecorator.class)
-         .addClasses(DecoratorsResponseFilter.class, DecoratorsResponseFilterDecorator.class)
-         .addAsWebInfResource(DecoratorsTest.class.getPackage(), "decoratorBeans.xml", "beans.xml");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return war;
-   }
+   }});
 
    private ResteasyProviderFactory factory;
    @Before

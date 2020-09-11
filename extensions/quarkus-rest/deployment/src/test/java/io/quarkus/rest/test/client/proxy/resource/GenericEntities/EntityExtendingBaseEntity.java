@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.proxy.resource.GenericEntities;
+package io.quarkus.rest.test.client.proxy.resource.GenericEntities;
 
 public class EntityExtendingBaseEntity extends BaseEntity {
     private String lastName;

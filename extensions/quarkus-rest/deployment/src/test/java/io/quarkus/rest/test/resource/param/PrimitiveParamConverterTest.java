@@ -1,22 +1,28 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
-import org.jboss.resteasy.test.resource.param.resource.ParamConverterClient;
-import org.jboss.resteasy.test.resource.param.resource.ParamConverterDefaultClient;
-import org.jboss.resteasy.test.resource.param.resource.ParamConverterDefaultIntegerResource;
-import org.jboss.resteasy.test.resource.param.resource.ParamConverterIntegerConverter;
-import org.jboss.resteasy.test.resource.param.resource.ParamConverterIntegerConverterProvider;
-import org.jboss.resteasy.test.resource.param.resource.ParamConverterIntegerResource;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import org.jboss.resteasy.client.jaxrs.internal.QuarkusRestClientBuilderImpl;
+import io.quarkus.rest.test.resource.param.resource.ParamConverterClient;
+import io.quarkus.rest.test.resource.param.resource.ParamConverterDefaultClient;
+import io.quarkus.rest.test.resource.param.resource.ParamConverterDefaultIntegerResource;
+import io.quarkus.rest.test.resource.param.resource.ParamConverterIntegerConverter;
+import io.quarkus.rest.test.resource.param.resource.ParamConverterIntegerConverterProvider;
+import io.quarkus.rest.test.resource.param.resource.ParamConverterIntegerResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Parameters
@@ -26,15 +32,20 @@ import org.junit.runner.RunWith;
  */
 public class PrimitiveParamConverterTest {
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(PrimitiveParamConverterTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(ParamConverterIntegerConverter.class);
       war.addClass(ParamConverterDefaultClient.class);
       war.addClass(ParamConverterClient.class);
       return TestUtil.finishContainerPrepare(war, null, ParamConverterIntegerConverterProvider.class,
             ParamConverterIntegerResource.class, ParamConverterDefaultIntegerResource.class);
-   }
+   }});
 
    private String generateBaseUrl() {
       return PortProviderUtil.generateBaseUrl(PrimitiveParamConverterTest.class.getSimpleName());
@@ -46,7 +57,7 @@ public class PrimitiveParamConverterTest {
     */
    @Test
    public void testIt() throws Exception {
-      ResteasyClient client = new ResteasyClientBuilderImpl().build();
+      QuarkusRestClient client = new QuarkusRestClientBuilderImpl().build();
       ParamConverterClient proxy = client.target(generateBaseUrl()).proxy(ParamConverterClient.class);
       proxy.put("4", "4", "4", "4");
       client.close();
@@ -58,7 +69,7 @@ public class PrimitiveParamConverterTest {
     */
    @Test
    public void testDefault() throws Exception {
-      ResteasyClient client = new ResteasyClientBuilderImpl().build();
+      QuarkusRestClient client = new QuarkusRestClientBuilderImpl().build();
       ParamConverterDefaultClient proxy = client.target(generateBaseUrl()).proxy(ParamConverterDefaultClient.class);
       proxy.put();
       client.close();

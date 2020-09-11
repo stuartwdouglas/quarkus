@@ -1,7 +1,7 @@
-package org.jboss.resteasy.test.cdi.injection.resource;
+package io.quarkus.rest.test.cdi.injection.resource;
 
 
-import org.jboss.resteasy.test.cdi.util.Counter;
+import io.quarkus.rest.test.cdi.util.Counter;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.wadl;
+package io.quarkus.rest.test.wadl;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

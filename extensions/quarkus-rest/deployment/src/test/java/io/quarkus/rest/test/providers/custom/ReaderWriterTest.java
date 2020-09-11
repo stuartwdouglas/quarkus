@@ -1,22 +1,22 @@
-package org.jboss.resteasy.test.providers.custom;
+package io.quarkus.rest.test.providers.custom;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterLowPriorityCustomerWriter;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterHignPriorityCustomerWriter;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterClient;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterCurlyBraces;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterCustomer;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterCustomerWriter;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterNowhereClient;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterResource;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterSpaces;
-import org.jboss.resteasy.test.providers.custom.resource.ReaderWriterSub;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterLowPriorityCustomerWriter;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterHignPriorityCustomerWriter;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterClient;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterCurlyBraces;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterCustomer;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterCustomerWriter;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterNowhereClient;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterResource;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterSpaces;
+import io.quarkus.rest.test.providers.custom.resource.ReaderWriterSub;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -26,7 +26,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -41,50 +47,75 @@ import java.net.URL;
  * @tpSince RESTEasy 3.0.16
  */
 public class ReaderWriterTest {
-   static ResteasyClient client;
+   static QuarkusRestClient client;
    static final String PriorityDeploymenetName = "ReaderWriterCustomerWriterWithPriority";
-   @Deployment(name = "ReaderWriterCustomerWriter")
-   public static Archive<?> deployCustomWriter() {
-      WebArchive war = TestUtil.prepareArchive(ReaderWriterCustomerWriter.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(ReaderWriterCustomer.class);
       war.addClass(PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, ReaderWriterCustomerWriter.class, ReaderWriterResource.class);
-   }
+   }});
 
-   @Deployment(name = "ReaderWriterResource")
-   public static Archive<?> deployReaderWriterClass() {
-      WebArchive war = TestUtil.prepareArchive(ReaderWriterResource.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, ReaderWriterResource.class);
-   }
+   }});
 
-   @Deployment(name = "ReaderWriterSpaces")
-   public static Archive<?> deployReaderWriterSpaces() {
-      WebArchive war = TestUtil.prepareArchive(ReaderWriterSpaces.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(ReaderWriterSub.class);
       war.addClass(PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, ReaderWriterSpaces.class);
-   }
+   }});
 
-   @Deployment(name = "ReaderWriterCurlyBraces")
-   public static Archive<?> deployReaderWriterCurlyBraces() {
-      WebArchive war = TestUtil.prepareArchive(ReaderWriterCurlyBraces.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, ReaderWriterCurlyBraces.class);
-   }
+   }});
 
-   @Deployment(name = PriorityDeploymenetName)
-   public static Archive<?> deployCustomWriterWithPriority() {
-      WebArchive war = TestUtil.prepareArchive(PriorityDeploymenetName);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(ReaderWriterCustomer.class);
       war.addClass(PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, ReaderWriterLowPriorityCustomerWriter.class,
          ReaderWriterCustomerWriter.class, ReaderWriterHignPriorityCustomerWriter.class, ReaderWriterResource.class);
-   }
+   }});
 
    @BeforeClass
    public static void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @AfterClass

@@ -1,19 +1,19 @@
-package org.jboss.resteasy.test.asynch;
+package io.quarkus.rest.test.asynch;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.plugins.providers.jaxb.JAXBXmlRootElementProvider;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletAsyncResponseBlockingQueue;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletJaxrsResource;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletApp;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletResource;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletTimeoutHandler;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletServiceUnavailableExceptionMapper;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletXmlData;
-import org.jboss.resteasy.test.asynch.resource.JaxrsAsyncServletPrintingErrorHandler;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletAsyncResponseBlockingQueue;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletJaxrsResource;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletApp;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletResource;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletTimeoutHandler;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletServiceUnavailableExceptionMapper;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletXmlData;
+import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletPrintingErrorHandler;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TimeoutUtil;
@@ -24,7 +24,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
@@ -39,11 +45,11 @@ import javax.ws.rs.core.Response;
  */
 public class JaxrsAsyncServletTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After
@@ -51,16 +57,21 @@ public class JaxrsAsyncServletTest {
       client.close();
    }
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = ShrinkWrap.create(WebArchive.class, AsyncServletTest.class.getSimpleName() + ".war");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(JaxrsAsyncServletXmlData.class, JaxrsAsyncServletAsyncResponseBlockingQueue.class, JaxrsAsyncServletJaxrsResource.class,
             JaxrsAsyncServletApp.class,
             JaxrsAsyncServletTimeoutHandler.class, JaxrsAsyncServletResource.class, JaxrsAsyncServletPrintingErrorHandler.class,
             JaxrsAsyncServletServiceUnavailableExceptionMapper.class, JaxrsAsyncServletXmlData.class);
       war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, AsyncServletTest.class.getSimpleName());

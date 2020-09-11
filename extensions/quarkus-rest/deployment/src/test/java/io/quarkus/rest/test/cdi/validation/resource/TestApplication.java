@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.validation.resource;
+package io.quarkus.rest.test.cdi.validation.resource;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.basic.resource.resteasy1082;
+package io.quarkus.rest.test.cdi.basic.resource.resteasy1082;
 
 import java.io.IOException;
 import javax.inject.Inject;

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.response;
+package io.quarkus.rest.test.response;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;

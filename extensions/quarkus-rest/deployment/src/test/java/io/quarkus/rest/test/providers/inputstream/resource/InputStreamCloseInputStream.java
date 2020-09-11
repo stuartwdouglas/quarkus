@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.inputstream.resource;
+package io.quarkus.rest.test.providers.inputstream.resource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

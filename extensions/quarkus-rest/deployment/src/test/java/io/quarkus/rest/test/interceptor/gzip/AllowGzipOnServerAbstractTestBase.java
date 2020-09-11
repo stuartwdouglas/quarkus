@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.interceptor.gzip;
+package io.quarkus.rest.test.interceptor.gzip;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -10,8 +10,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.junit.After;
 import org.junit.Before;
 
-import static org.jboss.resteasy.test.ContainerConstants.GZIP_CONTAINER_PORT_OFFSET;
-import static org.jboss.resteasy.test.ContainerConstants.GZIP_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.GZIP_CONTAINER_PORT_OFFSET;
+import static io.quarkus.rest.test.ContainerConstants.GZIP_CONTAINER_QUALIFIER;
 
 /**
  * Abstract base class for tests with gzip enabled on server side.

@@ -1,21 +1,27 @@
-package org.jboss.resteasy.test.interceptor.gzip;
+package io.quarkus.rest.test.interceptor.gzip;
 
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.interceptor.gzip.resource.GzipResource;
-import org.jboss.resteasy.test.interceptor.gzip.resource.GzipInterface;
+import io.quarkus.rest.test.interceptor.gzip.resource.GzipResource;
+import io.quarkus.rest.test.interceptor.gzip.resource.GzipInterface;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -67,7 +73,7 @@ public abstract class GzipAbstractTestBase {
       return TestUtil.finishContainerPrepare(war, null, GzipResource.class);
    }
 
-   private ResteasyClient client;
+   private QuarkusRestClient client;
 
    /**
     * Perform gzip test
@@ -81,7 +87,7 @@ public abstract class GzipAbstractTestBase {
     */
    protected void testNormalClient(URL deploymentUrl, boolean manuallyUseGzipOnClient, String assertAllowGzipOnServer, boolean assertAllowGzipOnClient,
                            boolean assertServerReturnGzip) throws Exception {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
 
       if (manuallyUseGzipOnClient) {
          client.register(org.jboss.resteasy.plugins.interceptors.AcceptEncodingGZIPFilter.class);

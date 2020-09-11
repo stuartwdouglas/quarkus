@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.asynch;
+package io.quarkus.rest.test.asynch;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,26 +12,32 @@ import org.jboss.logging.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.asynch.resource.AsyncFilterException;
-import org.jboss.resteasy.test.asynch.resource.AsyncFilterExceptionMapper;
-import org.jboss.resteasy.test.asynch.resource.AsyncPreMatchRequestFilter1;
-import org.jboss.resteasy.test.asynch.resource.AsyncPreMatchRequestFilter2;
-import org.jboss.resteasy.test.asynch.resource.AsyncPreMatchRequestFilter3;
-import org.jboss.resteasy.test.asynch.resource.AsyncRequestFilter;
-import org.jboss.resteasy.test.asynch.resource.AsyncRequestFilter1;
-import org.jboss.resteasy.test.asynch.resource.AsyncRequestFilter2;
-import org.jboss.resteasy.test.asynch.resource.AsyncRequestFilter3;
-import org.jboss.resteasy.test.asynch.resource.AsyncRequestFilterResource;
-import org.jboss.resteasy.test.asynch.resource.AsyncResponseFilter;
-import org.jboss.resteasy.test.asynch.resource.AsyncResponseFilter1;
-import org.jboss.resteasy.test.asynch.resource.AsyncResponseFilter2;
-import org.jboss.resteasy.test.asynch.resource.AsyncResponseFilter3;
+import io.quarkus.rest.test.asynch.resource.AsyncFilterException;
+import io.quarkus.rest.test.asynch.resource.AsyncFilterExceptionMapper;
+import io.quarkus.rest.test.asynch.resource.AsyncPreMatchRequestFilter1;
+import io.quarkus.rest.test.asynch.resource.AsyncPreMatchRequestFilter2;
+import io.quarkus.rest.test.asynch.resource.AsyncPreMatchRequestFilter3;
+import io.quarkus.rest.test.asynch.resource.AsyncRequestFilter;
+import io.quarkus.rest.test.asynch.resource.AsyncRequestFilter1;
+import io.quarkus.rest.test.asynch.resource.AsyncRequestFilter2;
+import io.quarkus.rest.test.asynch.resource.AsyncRequestFilter3;
+import io.quarkus.rest.test.asynch.resource.AsyncRequestFilterResource;
+import io.quarkus.rest.test.asynch.resource.AsyncResponseFilter;
+import io.quarkus.rest.test.asynch.resource.AsyncResponseFilter1;
+import io.quarkus.rest.test.asynch.resource.AsyncResponseFilter2;
+import io.quarkus.rest.test.asynch.resource.AsyncResponseFilter3;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter CDI
@@ -42,17 +48,21 @@ import org.junit.runner.RunWith;
 public class AsyncRequestFilterTest {
    protected static final Logger log = Logger.getLogger(AsyncRequestFilterTest.class.getName());
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
 
-      WebArchive war = TestUtil.prepareArchive(AsyncRequestFilterTest.class.getSimpleName());
       war.addClasses(AsyncRequestFilterResource.class, AsyncRequestFilter.class, AsyncResponseFilter.class,
               AsyncRequestFilter1.class, AsyncRequestFilter2.class, AsyncRequestFilter3.class,
               AsyncPreMatchRequestFilter1.class, AsyncPreMatchRequestFilter2.class, AsyncPreMatchRequestFilter3.class,
               AsyncResponseFilter1.class, AsyncResponseFilter2.class, AsyncResponseFilter3.class,
               AsyncFilterException.class, AsyncFilterExceptionMapper.class);
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, AsyncRequestFilterTest.class.getSimpleName());
@@ -502,7 +512,7 @@ public class AsyncRequestFilterTest {
       response = base.request().get();
       assertEquals(200, response.getStatus());
       if(useExceptionMapper)
-         assertEquals("org.jboss.resteasy.test.asynch.resource.AsyncFilterException: ouch", response.getHeaders().getFirst("ResponseFilterCallbackResponseFilter3"));
+         assertEquals("io.quarkus.rest.test.asynch.resource.AsyncFilterException: ouch", response.getHeaders().getFirst("ResponseFilterCallbackResponseFilter3"));
       else
          assertEquals("java.lang.Throwable: ouch", response.getHeaders().getFirst("ResponseFilterCallbackResponseFilter3"));
 
@@ -536,7 +546,7 @@ public class AsyncRequestFilterTest {
       response = base.request().get();
       assertEquals(200, response.getStatus());
       if(useExceptionMapper)
-         assertEquals("org.jboss.resteasy.test.asynch.resource.AsyncFilterException: ouch", response.getHeaders().getFirst("RequestFilterCallbackFilter3"));
+         assertEquals("io.quarkus.rest.test.asynch.resource.AsyncFilterException: ouch", response.getHeaders().getFirst("RequestFilterCallbackFilter3"));
       else
          assertEquals("java.lang.Throwable: ouch", response.getHeaders().getFirst("RequestFilterCallbackFilter3"));
 

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.extensions.resource;
+package io.quarkus.rest.test.cdi.extensions.resource;
 
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;

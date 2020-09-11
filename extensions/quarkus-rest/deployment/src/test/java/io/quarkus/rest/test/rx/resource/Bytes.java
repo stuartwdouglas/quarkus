@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.rx.resource;
+package io.quarkus.rest.test.rx.resource;
 
 public class Bytes {
    public static final byte[] BYTES = new byte[256];

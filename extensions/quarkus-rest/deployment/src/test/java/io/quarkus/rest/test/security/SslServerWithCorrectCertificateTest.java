@@ -1,13 +1,13 @@
-package org.jboss.resteasy.test.security;
+package io.quarkus.rest.test.security;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.test.security.resource.CustomTrustManager;
-import org.jboss.resteasy.test.security.resource.SslResource;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.test.security.resource.CustomTrustManager;
+import io.quarkus.rest.test.security.resource.SslResource;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -16,7 +16,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,8 +38,8 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
-import static org.jboss.resteasy.test.ContainerConstants.SSL_CONTAINER_PORT_OFFSET;
-import static org.jboss.resteasy.test.ContainerConstants.SSL_CONTAINER_QUALIFIER;
+import static io.quarkus.rest.test.ContainerConstants.SSL_CONTAINER_PORT_OFFSET;
+import static io.quarkus.rest.test.ContainerConstants.SSL_CONTAINER_QUALIFIER;
 
 /**
  * @tpSubChapter Security
@@ -54,11 +60,16 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
    private static final String URL = generateHttpsURL(SSL_CONTAINER_PORT_OFFSET);
 
    @TargetsContainer(SSL_CONTAINER_QUALIFIER)
-   @Deployment(managed=false, name=DEPLOYMENT_NAME)
-   public static Archive<?> createDeployment() {
-      WebArchive war = TestUtil.prepareArchive(DEPLOYMENT_NAME);
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, SslResource.class);
-   }
+   }});
 
    @BeforeClass
    public static void prepareTruststores() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
@@ -90,10 +101,10 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
     */
    @Test
    public void testTrustedServer() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(false);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      client = resteasyClientBuilder.trustStore(correctTruststore).build();
+      client = QuarkusRestClientBuilder.trustStore(correctTruststore).build();
       Response response = client.target(URL).request().get();
       Assert.assertEquals("Hello World!", response.readEntity(String.class));
       Assert.assertEquals(200, response.getStatus());
@@ -107,10 +118,10 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
     */
    @Test(expected = ProcessingException.class)
    public void testUntrustedServer() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(false);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      client = resteasyClientBuilder.trustStore(differentTruststore).build();
+      client = QuarkusRestClientBuilder.trustStore(differentTruststore).build();
       client.target(URL).request().get();
    }
 
@@ -122,10 +133,10 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
     */
    @Test(expected = ProcessingException.class)
    public void testClientWithoutTruststore() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(false);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      client = resteasyClientBuilder.build();
+      client = QuarkusRestClientBuilder.build();
       client.target(URL).request().get();
    }
 
@@ -137,13 +148,13 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
     */
    @Test
    public void testCustomSSLContext() throws Exception {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(false);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
       SSLContext sslContext = SSLContext.getInstance("TLS");
       sslContext.init(null, new TrustManager[] { new CustomTrustManager(correctTruststore) }, null);
 
-      client = resteasyClientBuilder.sslContext(sslContext).build();
+      client = QuarkusRestClientBuilder.sslContext(sslContext).build();
       Response response = client.target(URL).request().get();
       Assert.assertEquals("Hello World!", response.readEntity(String.class));
       Assert.assertEquals(200, response.getStatus());
@@ -158,12 +169,12 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
     */
    @Test
    public void testHostnameVerificationPolicyStrict() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(false);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      resteasyClientBuilder.hostnameVerification(ResteasyClientBuilder.HostnameVerificationPolicy.STRICT);
+      QuarkusRestClientBuilder.hostnameVerification(QuarkusRestClientBuilder.HostnameVerificationPolicy.STRICT);
 
-      client = resteasyClientBuilder.trustStore(correctTruststore).build();
+      client = QuarkusRestClientBuilder.trustStore(correctTruststore).build();
       Response response = client.target(URL).request().get();
       Assert.assertEquals("Hello World!", response.readEntity(String.class));
       Assert.assertEquals(200, response.getStatus());
@@ -178,12 +189,12 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
     */
    @Test(expected = ProcessingException.class)
    public void testHostnameVerificationPolicyAny() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(false);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      resteasyClientBuilder.hostnameVerification(ResteasyClientBuilder.HostnameVerificationPolicy.ANY);
+      QuarkusRestClientBuilder.hostnameVerification(QuarkusRestClientBuilder.HostnameVerificationPolicy.ANY);
 
-      client = resteasyClientBuilder.trustStore(differentTruststore).build();
+      client = QuarkusRestClientBuilder.trustStore(differentTruststore).build();
       client.target(URL).request().get();
    }
 
@@ -196,12 +207,12 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
     */
    @Test
    public void testDisableTrustManager() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(false);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      resteasyClientBuilder = resteasyClientBuilder.disableTrustManager();
+      QuarkusRestClientBuilder = QuarkusRestClientBuilder.disableTrustManager();
 
-      client = resteasyClientBuilder.trustStore(differentTruststore).build();
+      client = QuarkusRestClientBuilder.trustStore(differentTruststore).build();
       Response response = client.target(URL).request().get();
       Assert.assertEquals("Hello World!", response.readEntity(String.class));
       Assert.assertEquals(200, response.getStatus());
@@ -215,9 +226,9 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
     */
    @Test
    public void testIsTrustSelfSignedCertificatesDefault() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
 
-      client = resteasyClientBuilder.trustStore(differentTruststore).build();
+      client = QuarkusRestClientBuilder.trustStore(differentTruststore).build();
       Response response = client.target(URL).request().get();
       Assert.assertEquals("Hello World!", response.readEntity(String.class));
       Assert.assertEquals(200, response.getStatus());
@@ -231,10 +242,10 @@ public class SslServerWithCorrectCertificateTest extends SslTestBase {
     */
    @Test
    public void testIsTrustSelfSignedCertificatesTrue() {
-      resteasyClientBuilder = (ResteasyClientBuilder) ClientBuilder.newBuilder();
-      resteasyClientBuilder.setIsTrustSelfSignedCertificates(true);
+      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(true);
 
-      client = resteasyClientBuilder.trustStore(differentTruststore).build();
+      client = QuarkusRestClientBuilder.trustStore(differentTruststore).build();
       Response response = client.target(URL).request().get();
       Assert.assertEquals("Hello World!", response.readEntity(String.class));
       Assert.assertEquals(200, response.getStatus());

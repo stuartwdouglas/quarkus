@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.form.resource;
+package io.quarkus.rest.test.form.resource;
 
 import javax.ws.rs.BeanParam;
 import javax.ws.rs.POST;

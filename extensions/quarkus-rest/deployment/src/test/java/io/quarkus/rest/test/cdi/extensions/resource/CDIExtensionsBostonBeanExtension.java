@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.extensions.resource;
+package io.quarkus.rest.test.cdi.extensions.resource;
 
 import org.jboss.logging.Logger;
 

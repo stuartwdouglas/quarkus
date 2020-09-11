@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.cdi.util;
+package io.quarkus.rest.test.cdi.util;
 
 import org.jboss.logging.Logger;
 

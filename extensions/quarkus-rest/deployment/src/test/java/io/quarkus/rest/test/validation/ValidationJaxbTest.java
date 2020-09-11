@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import static org.hamcrest.CoreMatchers.containsString;
 
@@ -20,17 +20,17 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreClassConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreClassValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFoo;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooReaderWriter;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreResourceWithAllViolationTypes;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreResourceWithReturnValues;
+import io.quarkus.rest.test.validation.resource.ValidationCoreClassConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationCoreClassValidator;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFoo;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooReaderWriter;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooValidator;
+import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithAllViolationTypes;
+import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithReturnValues;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -41,7 +41,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import io.restassured.path.json.JsonPath;
 
@@ -52,7 +58,7 @@ import io.restassured.path.json.JsonPath;
  * @tpSince RESTEasy 3.0.16
  */
 public class ValidationJaxbTest {
-   ResteasyClient client;
+   QuarkusRestClient client;
    private static final String UNEXPECTED_VALIDATION_ERROR_MSG = "Unexpected validation error";
    private static final String WAR_WITH_JSONB = "ValidationJaxbTest";
    private static final String WAR_WITH_JACKSON2 = "ValidationJaxbTestJackson2";
@@ -76,7 +82,7 @@ public class ValidationJaxbTest {
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
+      client = (QuarkusRestClient)ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
    }
 
    @After

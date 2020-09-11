@@ -1,20 +1,26 @@
-package org.jboss.resteasy.test.client;
+package io.quarkus.rest.test.client;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.test.client.resource.GenericReturnTypeInterface;
-import org.jboss.resteasy.test.client.resource.GenericReturnTypeReader;
-import org.jboss.resteasy.test.client.resource.GenericReturnTypeResource;
+import io.quarkus.rest.test.client.resource.GenericReturnTypeInterface;
+import io.quarkus.rest.test.client.resource.GenericReturnTypeReader;
+import io.quarkus.rest.test.client.resource.GenericReturnTypeResource;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 
@@ -26,12 +32,17 @@ import javax.ws.rs.client.Client;
  */
 public class GenericReturnTypeTest extends ClientTestBase{
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(GenericReturnTypeTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(GenericReturnTypeInterface.class);
       return TestUtil.finishContainerPrepare(war, null, GenericReturnTypeResource.class, GenericReturnTypeReader.class);
-   }
+   }});
 
    /**
     * @tpTestDetails Test generic type of proxy
@@ -39,7 +50,7 @@ public class GenericReturnTypeTest extends ClientTestBase{
     */
    @Test
    public void testGenericReturnType() {
-      Client client = ResteasyClientBuilder.newClient();
+      Client client = QuarkusRestClientBuilder.newClient();
       ResteasyWebTarget target = (ResteasyWebTarget) client.target(generateURL("")).register(GenericReturnTypeReader.class);
       GenericReturnTypeInterface<?> server = ProxyBuilder.builder(GenericReturnTypeInterface.class, target).build();
       Object result = server.t();

@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jaxb.resource;
+package io.quarkus.rest.test.providers.jaxb.resource;
 
 import org.jboss.resteasy.annotations.providers.jaxb.Stylesheet;
 import org.jboss.resteasy.annotations.providers.jaxb.XmlHeader;

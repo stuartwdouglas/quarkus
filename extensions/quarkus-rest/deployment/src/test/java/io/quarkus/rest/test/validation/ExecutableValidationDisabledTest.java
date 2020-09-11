@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -6,18 +6,18 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
 import org.jboss.resteasy.api.validation.Validation;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
 
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreClassConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreClassValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFoo;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooConstraint;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooReaderWriter;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreFooValidator;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreResourceWithAllViolationTypes;
-import org.jboss.resteasy.test.validation.resource.ValidationCoreResourceWithReturnValues;
+import io.quarkus.rest.test.validation.resource.ValidationCoreClassConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationCoreClassValidator;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFoo;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooReaderWriter;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooValidator;
+import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithAllViolationTypes;
+import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithReturnValues;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -27,7 +27,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
@@ -41,22 +47,22 @@ import javax.ws.rs.core.Response;
 public class ExecutableValidationDisabledTest {
    static final String RESPONSE_ERROR_MSG = "Response has wrong content";
    static final String WRONG_ERROR_MSG = "Expected validation error is not in response";
-   ResteasyClient client;
+   QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(ExecutableValidationDisabledTest.class.getSimpleName())
-            .addClasses(ValidationCoreFoo.class, ValidationCoreFooConstraint.class, ValidationCoreFooReaderWriter.class, ValidationCoreFooValidator.class)
-            .addClasses(ValidationCoreClassConstraint.class, ValidationCoreClassValidator.class)
-            .addClasses(ValidationCoreResourceWithAllViolationTypes.class, ValidationCoreResourceWithReturnValues.class)
-            .addAsResource("META-INF/services/javax.ws.rs.ext.Providers")
-            .addAsResource(ExecutableValidationDisabledTest.class.getPackage(), "ExecutableValidationDisabledValidationDisabled.xml", "META-INF/validation.xml");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
+      client = (QuarkusRestClient)ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
    }
 
    @After
@@ -158,7 +164,7 @@ public class ExecutableValidationDisabledTest {
       Assert.assertEquals(WRONG_ERROR_MSG, "z", violation.getValue());
       violation = e.getClassViolations().iterator().next();
       Assert.assertEquals(WRONG_ERROR_MSG, "Concatenation of s and t must have length > 5", violation.getMessage());
-      Assert.assertTrue(WRONG_ERROR_MSG, violation.getValue().startsWith("org.jboss.resteasy.test.validation.resource.ValidationCoreResourceWithAllViolationTypes@"));
+      Assert.assertTrue(WRONG_ERROR_MSG, violation.getValue().startsWith("io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithAllViolationTypes@"));
       response.close();
    }
 }

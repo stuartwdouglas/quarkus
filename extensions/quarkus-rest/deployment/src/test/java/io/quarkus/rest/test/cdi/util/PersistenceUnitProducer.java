@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.cdi.util;
+package io.quarkus.rest.test.cdi.util;
 
-import org.jboss.resteasy.test.cdi.injection.resource.CDIInjectionResourceBinding;
+import io.quarkus.rest.test.cdi.injection.resource.CDIInjectionResourceBinding;
 
 import javax.enterprise.inject.Produces;
 import javax.persistence.EntityManager;

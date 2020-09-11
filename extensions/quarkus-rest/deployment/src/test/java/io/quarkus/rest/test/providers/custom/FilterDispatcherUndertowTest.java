@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.custom;
+package io.quarkus.rest.test.providers.custom;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -6,8 +6,8 @@ import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.providers.custom.resource.FilterDispatcherForwardServlet;
-import org.jboss.resteasy.test.providers.custom.resource.FilterDispatcherServlet;
+import io.quarkus.rest.test.providers.custom.resource.FilterDispatcherForwardServlet;
+import io.quarkus.rest.test.providers.custom.resource.FilterDispatcherServlet;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -15,7 +15,13 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,15 +34,20 @@ import org.apache.logging.log4j.Logger;
 public class FilterDispatcherUndertowTest {
    private static final Logger logger = LogManager.getLogger(FilterDispatcherUndertowTest.class.getName());
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(FilterDispatcherUndertowTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(FilterDispatcherForwardServlet.class);
       war.addClass(FilterDispatcherServlet.class);
       war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifestWeb.xml", "web.xml");
       war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifest.MF", "MANIFEST.MF");
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-   }
+   }});
 
    /**
     * @tpTestDetails Server should be able to forward a HttpServletRequest/HttpServletResponse captured

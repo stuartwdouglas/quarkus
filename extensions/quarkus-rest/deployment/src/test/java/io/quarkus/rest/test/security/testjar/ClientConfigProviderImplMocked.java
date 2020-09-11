@@ -1,8 +1,8 @@
-package org.jboss.resteasy.test.security.testjar;
+package io.quarkus.rest.test.security.testjar;
 
 import org.jboss.resteasy.client.jaxrs.spi.ClientConfigException;
 import org.jboss.resteasy.client.jaxrs.spi.ClientConfigProvider;
-import org.jboss.resteasy.test.security.resource.CustomTrustManager;
+import io.quarkus.rest.test.security.resource.CustomTrustManager;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;

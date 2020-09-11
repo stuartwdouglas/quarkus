@@ -1,6 +1,6 @@
-package org.jboss.resteasy.test.cdi.basic.resource;
+package io.quarkus.rest.test.cdi.basic.resource;
 
-import org.jboss.resteasy.test.cdi.util.Constants;
+import io.quarkus.rest.test.cdi.util.Constants;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.event.Event;

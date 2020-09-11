@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation.resource;
+package io.quarkus.rest.test.validation.resource;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

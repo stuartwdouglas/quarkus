@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.jaxb.resource;
+package io.quarkus.rest.test.providers.jaxb.resource;
 
 import org.jboss.logging.Logger;
 
@@ -8,7 +8,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import static org.jboss.resteasy.test.providers.jaxb.CharSetRE1066Test.APPLICATION_XML_UTF16;
+import static io.quarkus.rest.test.providers.jaxb.CharSetRE1066Test.APPLICATION_XML_UTF16;
 
 @Path("/")
 public class CharSetRE1066Resource

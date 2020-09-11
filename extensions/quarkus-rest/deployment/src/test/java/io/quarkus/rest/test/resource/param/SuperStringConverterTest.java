@@ -1,27 +1,33 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterCompany;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterCompanyConverter;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterCompanyConverterProvider;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterMyClient;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterObjectConverter;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterPerson;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterPersonConverter;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterPersonConverterProvider;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterResource;
-import org.jboss.resteasy.test.resource.param.resource.SuperStringConverterSuperPersonConverter;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterCompany;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterCompanyConverter;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterCompanyConverterProvider;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterMyClient;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterObjectConverter;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterPerson;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterPersonConverter;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterPersonConverterProvider;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterResource;
+import io.quarkus.rest.test.resource.param.resource.SuperStringConverterSuperPersonConverter;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 
 /**
@@ -31,12 +37,17 @@ import org.junit.runner.RunWith;
  * @tpTestCaseDetails Test for org.jboss.resteasy.spi.StringConverter class
  *                    StringConverter is deprecated.
  *                    See javax.ws.rs.ext.ParamConverter
- *                    See org.jboss.resteasy.test.resource.param.ParamConverterTest
+ *                    See io.quarkus.rest.test.resource.param.ParamConverterTest
  */
 public class SuperStringConverterTest {
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(SuperStringConverterTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(SuperStringConverterPerson.class);
       war.addClass(SuperStringConverterObjectConverter.class);
       war.addClass(SuperStringConverterSuperPersonConverter.class);
@@ -47,7 +58,7 @@ public class SuperStringConverterTest {
       return TestUtil.finishContainerPrepare(war, null, SuperStringConverterPersonConverter.class,
             SuperStringConverterCompanyConverter.class, SuperStringConverterCompanyConverterProvider.class,
             SuperStringConverterResource.class);
-   }
+   }});
 
    private String generateBaseUrl() {
       return PortProviderUtil.generateBaseUrl(SuperStringConverterTest.class.getSimpleName());
@@ -59,7 +70,7 @@ public class SuperStringConverterTest {
     */
    @Test
    public void testPerson() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       client.register(SuperStringConverterPersonConverterProvider.class);
       client.register(SuperStringConverterCompanyConverterProvider.class);
 
@@ -75,7 +86,7 @@ public class SuperStringConverterTest {
     */
    @Test
    public void testCompany() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       client.register(SuperStringConverterPersonConverterProvider.class);
       client.register(SuperStringConverterCompanyConverterProvider.class);
       SuperStringConverterMyClient proxy = ProxyBuilder.builder(SuperStringConverterMyClient.class, client.target(generateBaseUrl())).build();

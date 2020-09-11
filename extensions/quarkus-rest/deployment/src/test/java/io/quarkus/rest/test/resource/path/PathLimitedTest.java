@@ -1,13 +1,13 @@
-package org.jboss.resteasy.test.resource.path;
+package io.quarkus.rest.test.resource.path;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.resource.path.resource.PathLimitedBasicResource;
-import org.jboss.resteasy.test.resource.path.resource.PathLimitedLocatorResource;
-import org.jboss.resteasy.test.resource.path.resource.PathLimitedLocatorUriResource;
-import org.jboss.resteasy.test.resource.path.resource.PathLimitedUnlimitedOnPathResource;
-import org.jboss.resteasy.test.resource.path.resource.PathLimitedUnlimitedResource;
+import io.quarkus.rest.test.resource.path.resource.PathLimitedBasicResource;
+import io.quarkus.rest.test.resource.path.resource.PathLimitedLocatorResource;
+import io.quarkus.rest.test.resource.path.resource.PathLimitedLocatorUriResource;
+import io.quarkus.rest.test.resource.path.resource.PathLimitedUnlimitedOnPathResource;
+import io.quarkus.rest.test.resource.path.resource.PathLimitedUnlimitedResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -17,7 +17,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -33,12 +39,17 @@ public class PathLimitedTest {
 
    static Client client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(PathLimitedTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, PathLimitedUnlimitedOnPathResource.class, PathLimitedUnlimitedResource.class,
             PathLimitedLocatorResource.class, PathLimitedLocatorUriResource.class, PathLimitedBasicResource.class);
-   }
+   }});
 
    @BeforeClass
    public static void init() {

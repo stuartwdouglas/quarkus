@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation.resource;
+package io.quarkus.rest.test.validation.resource;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;

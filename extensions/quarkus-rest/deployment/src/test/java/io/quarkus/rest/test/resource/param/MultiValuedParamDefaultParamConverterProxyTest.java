@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.resource.param;
+package io.quarkus.rest.test.resource.param;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,29 +12,29 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.ClientConfiguration;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterConstructorClass;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterCookieResource;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterCookieResourceIntf;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterFromStringClass;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterHeaderDelegate;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterHeaderDelegateClass;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterHeaderResource;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterHeaderResourceIntf;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterMatrixResource;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterMatrixResourceIntf;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterMiscResource;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterMiscResourceIntf;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterParamConverter;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterParamConverterClass;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterParamConverterProvider;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterPathResource;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterPathResourceIntf;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterQueryResource;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterQueryResourceIntf;
-import org.jboss.resteasy.test.resource.param.resource.MultiValuedParamDefaultParamConverterValueOfClass;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterConstructorClass;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterCookieResource;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterCookieResourceIntf;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterFromStringClass;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterHeaderDelegate;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterHeaderDelegateClass;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterHeaderResource;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterHeaderResourceIntf;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterMatrixResource;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterMatrixResourceIntf;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterMiscResource;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterMiscResourceIntf;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterParamConverter;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterParamConverterClass;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterParamConverterProvider;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterPathResource;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterPathResourceIntf;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterQueryResource;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterQueryResourceIntf;
+import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterValueOfClass;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -43,7 +43,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 /**
  * @tpSubChapter Parameters
@@ -55,7 +61,7 @@ import org.junit.runner.RunWith;
  */
 public class MultiValuedParamDefaultParamConverterProxyTest {
 
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
    private static MultiValuedParamDefaultParamConverterCookieResourceIntf cookieProxy;
    private static MultiValuedParamDefaultParamConverterHeaderResourceIntf headerProxy;
    private static MultiValuedParamDefaultParamConverterMatrixResourceIntf matrixProxy;
@@ -95,9 +101,14 @@ public class MultiValuedParamDefaultParamConverterProxyTest {
    private static float[]   floatArray   = new float[2];
    private static double[]  doubleArray  = new double[2];
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(MultiValuedParamDefaultParamConverterProxyTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClass(MultiValuedParamDefaultParamConverterConstructorClass.class);
       war.addClass(MultiValuedParamDefaultParamConverterFromStringClass.class);
       war.addClass(MultiValuedParamDefaultParamConverterParamConverterClass.class);
@@ -115,7 +126,7 @@ public class MultiValuedParamDefaultParamConverterProxyTest {
          MultiValuedParamDefaultParamConverterCookieResource.class, MultiValuedParamDefaultParamConverterHeaderResource.class,
          MultiValuedParamDefaultParamConverterMatrixResource.class, MultiValuedParamDefaultParamConverterMiscResource.class,
          MultiValuedParamDefaultParamConverterPathResource.class, MultiValuedParamDefaultParamConverterQueryResource.class);
-   }
+   }});
 
    private static String generateURL(String path) {
       return PortProviderUtil.generateURL(path, MultiValuedParamDefaultParamConverterProxyTest.class.getSimpleName());
@@ -123,7 +134,7 @@ public class MultiValuedParamDefaultParamConverterProxyTest {
 
    @BeforeClass
    public static void beforeClass() throws Exception {
-      client = (ResteasyClient) ClientBuilder.newClient();
+      client = (QuarkusRestClient) ClientBuilder.newClient();
       client.register(MultiValuedParamDefaultParamConverterParamConverterProvider.class);
       ClientConfiguration config = ((ClientConfiguration)client.getConfiguration());
       config.addHeaderDelegate(MultiValuedParamDefaultParamConverterHeaderDelegateClass.class, new MultiValuedParamDefaultParamConverterHeaderDelegate());

@@ -1,23 +1,23 @@
-package org.jboss.resteasy.test.cdi.basic;
+package io.quarkus.rest.test.cdi.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.test.cdi.basic.resource.EventsBookReaderInterceptor;
-import org.jboss.resteasy.test.cdi.basic.resource.EventsBookWriterInterceptor;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBBook;
-import org.jboss.resteasy.test.cdi.basic.resource.EventResource;
-import org.jboss.resteasy.test.cdi.basic.resource.EventsBookReader;
-import org.jboss.resteasy.test.cdi.basic.resource.EventsBookWriter;
-import org.jboss.resteasy.test.cdi.basic.resource.EventsRead;
-import org.jboss.resteasy.test.cdi.basic.resource.EventsUnused;
-import org.jboss.resteasy.test.cdi.basic.resource.EventsWrite;
-import org.jboss.resteasy.test.cdi.basic.resource.EventsReadIntercept;
-import org.jboss.resteasy.test.cdi.basic.resource.EventsWriteIntercept;
-import org.jboss.resteasy.test.cdi.util.Constants;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.cdi.basic.resource.EventsBookReaderInterceptor;
+import io.quarkus.rest.test.cdi.basic.resource.EventsBookWriterInterceptor;
+import io.quarkus.rest.test.cdi.basic.resource.EJBBook;
+import io.quarkus.rest.test.cdi.basic.resource.EventResource;
+import io.quarkus.rest.test.cdi.basic.resource.EventsBookReader;
+import io.quarkus.rest.test.cdi.basic.resource.EventsBookWriter;
+import io.quarkus.rest.test.cdi.basic.resource.EventsRead;
+import io.quarkus.rest.test.cdi.basic.resource.EventsUnused;
+import io.quarkus.rest.test.cdi.basic.resource.EventsWrite;
+import io.quarkus.rest.test.cdi.basic.resource.EventsReadIntercept;
+import io.quarkus.rest.test.cdi.basic.resource.EventsWriteIntercept;
+import io.quarkus.rest.test.cdi.util.Constants;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -27,7 +27,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.swing.text.Utilities;
 import javax.ws.rs.client.Client;
@@ -47,19 +53,16 @@ import static org.junit.Assert.assertEquals;
  */
 public class EventsTest {
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(EventsTest.class.getSimpleName())
-            .addClass(PortProviderUtil.class)
-            .addClasses(Constants.class, UtilityProducer.class, Utilities.class)
-            .addClasses(EJBBook.class, EventsBookReader.class, EventsBookWriter.class)
-            .addClasses(EventsBookReaderInterceptor.class, EventsBookWriterInterceptor.class)
-            .addClasses(EventResource.class)
-            .addClasses(EventsRead.class, EventsReadIntercept.class)
-            .addClasses(EventsUnused.class, EventsWrite.class, EventsWriteIntercept.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, EventsTest.class.getSimpleName());

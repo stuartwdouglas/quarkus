@@ -1,21 +1,21 @@
-package org.jboss.resteasy.test.cdi.basic;
+package io.quarkus.rest.test.cdi.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBApplication;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBBook;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBBookReader;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBBookReaderImpl;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBBookResource;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBBookWriterImpl;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBLocalResource;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBRemoteResource;
-import org.jboss.resteasy.test.cdi.basic.resource.EJBResourceParent;
-import org.jboss.resteasy.test.cdi.util.Constants;
-import org.jboss.resteasy.test.cdi.util.Counter;
-import org.jboss.resteasy.test.cdi.util.Utilities;
-import org.jboss.resteasy.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.cdi.basic.resource.EJBApplication;
+import io.quarkus.rest.test.cdi.basic.resource.EJBBook;
+import io.quarkus.rest.test.cdi.basic.resource.EJBBookReader;
+import io.quarkus.rest.test.cdi.basic.resource.EJBBookReaderImpl;
+import io.quarkus.rest.test.cdi.basic.resource.EJBBookResource;
+import io.quarkus.rest.test.cdi.basic.resource.EJBBookWriterImpl;
+import io.quarkus.rest.test.cdi.basic.resource.EJBLocalResource;
+import io.quarkus.rest.test.cdi.basic.resource.EJBRemoteResource;
+import io.quarkus.rest.test.cdi.basic.resource.EJBResourceParent;
+import io.quarkus.rest.test.cdi.util.Constants;
+import io.quarkus.rest.test.cdi.util.Counter;
+import io.quarkus.rest.test.cdi.util.Utilities;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
@@ -26,7 +26,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.inject.Inject;
 import javax.naming.Context;
@@ -66,9 +72,14 @@ public class EJBTest {
 
    private Client client;
 
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       // test needs to use special annotations in Application class, TestApplication class could not be used
       war.addClass(EJBApplication.class);
       war.addClass(PortProviderUtil.class);
@@ -91,7 +102,7 @@ public class EJBTest {
             new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
       ), "permissions.xml");
       return war;
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, DEPLOYMENT_NAME);

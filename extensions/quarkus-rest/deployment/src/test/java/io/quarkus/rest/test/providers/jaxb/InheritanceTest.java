@@ -1,16 +1,16 @@
-package org.jboss.resteasy.test.providers.jaxb;
+package io.quarkus.rest.test.providers.jaxb;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.test.providers.jaxb.resource.InheritanceAnimal;
-import org.jboss.resteasy.test.providers.jaxb.resource.InheritanceZoo;
-import org.jboss.resteasy.test.providers.jaxb.resource.InheritanceCat;
-import org.jboss.resteasy.test.providers.jaxb.resource.InheritanceDog;
-import org.jboss.resteasy.test.providers.jaxb.resource.InheritanceResource;
+import io.quarkus.rest.test.providers.jaxb.resource.InheritanceAnimal;
+import io.quarkus.rest.test.providers.jaxb.resource.InheritanceZoo;
+import io.quarkus.rest.test.providers.jaxb.resource.InheritanceCat;
+import io.quarkus.rest.test.providers.jaxb.resource.InheritanceDog;
+import io.quarkus.rest.test.providers.jaxb.resource.InheritanceResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -20,7 +20,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.core.Response;
 
@@ -31,18 +37,23 @@ import javax.ws.rs.core.Response;
  */
 public class InheritanceTest {
 
-   static ResteasyClient client;
+   static QuarkusRestClient client;
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(InheritanceTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, InheritanceAnimal.class, InheritanceCat.class, InheritanceDog.class,
             InheritanceZoo.class, InheritanceResource.class);
-   }
+   }});
 
    @Before
    public void init() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
    }
 
    @After

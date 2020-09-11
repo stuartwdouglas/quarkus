@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.atom.resource;
+package io.quarkus.rest.test.providers.atom.resource;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;

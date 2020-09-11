@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.other.resource;
+package io.quarkus.rest.test.client.other.resource;
 
 import org.jboss.resteasy.spi.NoLogWebApplicationException;
 import org.jboss.resteasy.spi.HttpResponseCodes;

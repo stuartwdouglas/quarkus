@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.providers.noproduces.resource;
+package io.quarkus.rest.test.providers.noproduces.resource;
 
 public class Foo {
    private String s;

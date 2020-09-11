@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.validation;
+package io.quarkus.rest.test.validation;
 
 import java.util.Iterator;
 
@@ -12,14 +12,14 @@ import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
-import org.jboss.resteasy.test.validation.resource.ViolationExceptionConstraint;
-import org.jboss.resteasy.test.validation.resource.ViolationExceptionLengthConstraint;
-import org.jboss.resteasy.test.validation.resource.ViolationExceptionLengthValidator;
-import org.jboss.resteasy.test.validation.resource.ViolationExceptionMinMaxValidator;
-import org.jboss.resteasy.test.validation.resource.ViolationExceptionObject;
-import org.jboss.resteasy.test.validation.resource.ViolationExceptionReaderWriter;
-import org.jboss.resteasy.test.validation.resource.ViolationExceptionResourceWithFiveViolations;
-import org.jboss.resteasy.test.validation.resource.ViolationExceptionResourceWithReturnValues;
+import io.quarkus.rest.test.validation.resource.ViolationExceptionConstraint;
+import io.quarkus.rest.test.validation.resource.ViolationExceptionLengthConstraint;
+import io.quarkus.rest.test.validation.resource.ViolationExceptionLengthValidator;
+import io.quarkus.rest.test.validation.resource.ViolationExceptionMinMaxValidator;
+import io.quarkus.rest.test.validation.resource.ViolationExceptionObject;
+import io.quarkus.rest.test.validation.resource.ViolationExceptionReaderWriter;
+import io.quarkus.rest.test.validation.resource.ViolationExceptionResourceWithFiveViolations;
+import io.quarkus.rest.test.validation.resource.ViolationExceptionResourceWithReturnValues;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -28,7 +28,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -206,7 +212,7 @@ public class ResteasyViolationExceptionRepresentationTest {
       ResteasyConstraintViolation cv = e.getClassViolations().iterator().next();
       Assert.assertEquals("Exception has wrong message", "Concatenation of s and t must have length > 5", cv.getMessage());
       logger.info("value: " + cv.getValue());
-      Assert.assertTrue("Exception has wrong value", cv.getValue().startsWith("org.jboss.resteasy.test.validation.resource.ViolationExceptionResourceWithFiveViolations@"));
+      Assert.assertTrue("Exception has wrong value", cv.getValue().startsWith("io.quarkus.rest.test.validation.resource.ViolationExceptionResourceWithFiveViolations@"));
       cv = e.getParameterViolations().iterator().next();
       Assert.assertEquals("Exception has wrong message", "s must have length: 3 <= length <= 5", cv.getMessage());
       Assert.assertEquals("Exception has wrong value", "Foo[p]", cv.getValue());

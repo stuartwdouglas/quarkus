@@ -1,4 +1,4 @@
-package org.jboss.resteasy.test.client.resource;
+package io.quarkus.rest.test.client.resource;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

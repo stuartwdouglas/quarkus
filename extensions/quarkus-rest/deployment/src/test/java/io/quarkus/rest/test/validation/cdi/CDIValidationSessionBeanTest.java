@@ -1,16 +1,16 @@
-package org.jboss.resteasy.test.validation.cdi;
+package io.quarkus.rest.test.validation.cdi;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.ClientResponse;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
-import org.jboss.resteasy.test.validation.cdi.resource.CDIValidationSessionBeanProxy;
-import org.jboss.resteasy.test.validation.cdi.resource.CDIValidationSessionBeanResource;
+import io.quarkus.rest.test.validation.cdi.resource.CDIValidationSessionBeanProxy;
+import io.quarkus.rest.test.validation.cdi.resource.CDIValidationSessionBeanResource;
 import org.jboss.resteasy.spi.HttpResponseCodes;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
@@ -19,7 +19,13 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Invocation;
 
@@ -33,13 +39,16 @@ import static org.junit.Assert.assertEquals;
  * @tpSince RESTEasy 3.0.16
  */
 public class CDIValidationSessionBeanTest {
-   @Deployment
-   public static Archive<?> createTestArchive() {
-      WebArchive war = TestUtil.prepareArchive(CDIValidationSessionBeanTest.class.getSimpleName())
-            .addClass(CDIValidationSessionBeanProxy.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       return TestUtil.finishContainerPrepare(war, null, CDIValidationSessionBeanResource.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, CDIValidationSessionBeanTest.class.getSimpleName());
@@ -51,7 +60,7 @@ public class CDIValidationSessionBeanTest {
     */
    @Test
    public void testInvalidParam() throws Exception {
-      ResteasyClient client = (ResteasyClient)ClientBuilder.newClient();
+      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
       Invocation.Builder request = client.target(generateURL("/test/resource/0")).request();
       ClientResponse response = (ClientResponse) request.get();
       String answer = response.readEntity(String.class);

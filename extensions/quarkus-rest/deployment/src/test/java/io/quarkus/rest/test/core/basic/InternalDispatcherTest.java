@@ -1,12 +1,12 @@
-package org.jboss.resteasy.test.core.basic;
+package io.quarkus.rest.test.core.basic;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import org.jboss.resteasy.test.core.basic.resource.InternalDispatcherForwardingResource;
-import org.jboss.resteasy.test.core.basic.resource.InternalDispatcherClient;
+import io.quarkus.rest.test.core.basic.resource.InternalDispatcherForwardingResource;
+import io.quarkus.rest.test.core.basic.resource.InternalDispatcherClient;
 import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestApplication;
@@ -17,7 +17,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.core.Response;
 
@@ -40,13 +46,17 @@ public class InternalDispatcherTest {
    private static Logger logger = Logger.getLogger(InternalDispatcherTest.class);
 
    private static InternalDispatcherForwardingResource forwardingResource;
-   private static ResteasyClient client;
+   private static QuarkusRestClient client;
    public static final String PATH = "/foo/bar";
 
-   @Deployment
-   public static Archive<?> deploy() {
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
 
-      WebArchive war = TestUtil.prepareArchive(InternalDispatcherTest.class.getSimpleName());
       war.addClasses(InternalDispatcherClient.class, InternalDispatcherForwardingResource.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
@@ -67,7 +77,7 @@ public class InternalDispatcherTest {
             new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
       ), "permissions.xml");
       return TestUtil.finishContainerPrepare(war, null, singletons, (Class<?>[]) null);
-   }
+   }});
 
    private String generateBaseUrl() {
       return PortProviderUtil.generateBaseUrl(InternalDispatcherTest.class.getSimpleName());
@@ -75,7 +85,7 @@ public class InternalDispatcherTest {
 
    @Before
    public void setup() {
-      client = (ResteasyClient)ClientBuilder.newClient();
+      client = (QuarkusRestClient)ClientBuilder.newClient();
 
       Assert.assertTrue("No singleton founded", TestApplication.singletons.iterator().hasNext());
       Object objectResource = TestApplication.singletons.iterator().next();

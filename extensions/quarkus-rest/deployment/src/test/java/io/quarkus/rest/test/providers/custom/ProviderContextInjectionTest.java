@@ -1,14 +1,14 @@
-package org.jboss.resteasy.test.providers.custom;
+package io.quarkus.rest.test.providers.custom;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.test.providers.custom.resource.ProviderContextInjectionAnyExceptionExceptionMapper;
-import org.jboss.resteasy.test.providers.custom.resource.ProviderContextInjectionEnumContextResolver;
-import org.jboss.resteasy.test.providers.custom.resource.ProviderContextInjectionEnumProvider;
-import org.jboss.resteasy.test.providers.custom.resource.ProviderContextInjectionIOExceptionExceptionMapper;
-import org.jboss.resteasy.test.providers.custom.resource.ProviderContextInjectionResource;
-import org.jboss.resteasy.test.providers.custom.resource.ProviderContextInjectionTextPlainEnumContextResolver;
+import io.quarkus.rest.test.providers.custom.resource.ProviderContextInjectionAnyExceptionExceptionMapper;
+import io.quarkus.rest.test.providers.custom.resource.ProviderContextInjectionEnumContextResolver;
+import io.quarkus.rest.test.providers.custom.resource.ProviderContextInjectionEnumProvider;
+import io.quarkus.rest.test.providers.custom.resource.ProviderContextInjectionIOExceptionExceptionMapper;
+import io.quarkus.rest.test.providers.custom.resource.ProviderContextInjectionResource;
+import io.quarkus.rest.test.providers.custom.resource.ProviderContextInjectionTextPlainEnumContextResolver;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -17,7 +17,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import io.quarkus.test.QuarkusUnitTest;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -37,14 +43,19 @@ public class ProviderContextInjectionTest {
       client = ClientBuilder.newClient();
    }
 
-   @Deployment
-   public static Archive<?> deploy() {
-      WebArchive war = TestUtil.prepareArchive(ProviderContextInjectionTest.class.getSimpleName());
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
+
       war.addClasses(ProviderContextInjectionEnumProvider.class);
       return TestUtil.finishContainerPrepare(war, null, ProviderContextInjectionResource.class,
             ProviderContextInjectionAnyExceptionExceptionMapper.class, ProviderContextInjectionIOExceptionExceptionMapper.class,
             ProviderContextInjectionEnumContextResolver.class, ProviderContextInjectionTextPlainEnumContextResolver.class);
-   }
+   }});
 
    private String generateURL(String path) {
       return PortProviderUtil.generateURL(path, ProviderContextInjectionTest.class.getSimpleName());
