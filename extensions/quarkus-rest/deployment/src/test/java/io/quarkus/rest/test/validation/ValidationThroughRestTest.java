@@ -52,9 +52,7 @@ public class ValidationThroughRestTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new HibernateValidatorPermission("accessPrivateMembers")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, ValidationThroughRestResource.class);
    }});
 

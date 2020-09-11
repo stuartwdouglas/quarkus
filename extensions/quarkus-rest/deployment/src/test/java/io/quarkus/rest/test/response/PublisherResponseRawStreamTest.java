@@ -56,11 +56,7 @@ public class PublisherResponseRawStreamTest {
 
       war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
               + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.reactivestreams\n"));
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new PropertyPermission("*", "read"),
-              new PropertyPermission("*", "write"),
-              new RuntimePermission("modifyThread")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, PublisherResponseRawStreamResource.class,
             SlowStringWriter.class, SlowString.class,
             AsyncResponseCallback.class, AsyncResponseExceptionMapper.class, AsyncResponseException.class);

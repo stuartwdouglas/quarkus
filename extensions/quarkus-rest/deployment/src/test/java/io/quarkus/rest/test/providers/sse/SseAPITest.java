@@ -42,8 +42,7 @@ public class SseAPITest {
                     war.addClasses(PortProviderUtil.class);
 
         war.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-        war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new RuntimePermission("modifyThread")),
-                "permissions.xml");
+
         List<Class<?>> singletons = new ArrayList<Class<?>>();
         singletons.add(SseAPIImpl.class);
         return TestUtil.finishContainerPrepare(war, null, singletons, SseAPI.class);

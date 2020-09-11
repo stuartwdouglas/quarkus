@@ -62,10 +62,7 @@ public class CleanFilesDataSourceProviderTest {
                     war.addClasses(PortProviderUtil.class);
 
       // DataSource provider creates tmp file in the filesystem
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new PropertyPermission("java.io.tmpdir", "read"),
-            new FilePermission("/tmp/-", "read"),
-            new FilePermission("/tmp", "read")), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, CleanFilesDataSourceProviderResource.class);
    }});
 

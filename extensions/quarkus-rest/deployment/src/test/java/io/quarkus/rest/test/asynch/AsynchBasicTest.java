@@ -59,9 +59,7 @@ public class AsynchBasicTest {
       WebArchive war = TestUtil.prepareArchive(deploymentName);
       war.addClass(PortProviderUtil.class);
       war.addClass(TestUtil.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new ReflectPermission("suppressAccessChecks")
-      ), "permissions.xml");
+
 
       Map<String, String> contextParam = new HashMap<>();
       contextParam.put("resteasy.async.job.service.enabled", "true");
@@ -69,16 +67,7 @@ public class AsynchBasicTest {
          contextParam.put("resteasy.async.job.service.max.job.results", maxSize);
       }
       // Arquillian in the deployment
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
-            new LoggingPermission("control", ""),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("ipv6", "read"),
-            new PropertyPermission("node", "read"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, contextParam, AsynchBasicResource.class);
    }
 

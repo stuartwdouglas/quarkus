@@ -59,9 +59,7 @@ public class ComplexMultipartOutputTest {
                     war.addClasses(PortProviderUtil.class);
 
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-                new ReflectPermission("suppressAccessChecks")
-        ), "permissions.xml");
+
         return TestUtil.finishContainerPrepare(war, null,
                 ComplexMultipartOutputResource.class);
     }});

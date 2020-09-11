@@ -54,29 +54,11 @@ public class CorsFiltersTest {
                     war.addClasses(PortProviderUtil.class);
 
       war.addClass(PortProviderUtil.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
-            new LoggingPermission("control", ""),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("node", "read"),
-            new PropertyPermission("ipv6", "read"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
-      ), "permissions.xml");
+
       List<Class<?>> singletons = new ArrayList<>();
       singletons.add(CorsFilter.class);
       // Arquillian in the deployment and use of PortProviderUtil
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
-            new LoggingPermission("control", ""),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("node", "read"),
-            new PropertyPermission("ipv6", "read"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, singletons, CorsFiltersResource.class);
    }});
 

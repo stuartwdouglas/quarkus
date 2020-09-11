@@ -54,10 +54,7 @@ public class XmlJAXBContextFinderTest {
                     war.addClasses(PortProviderUtil.class);
 
 
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-         new FilePermission("<<ALL FILES>>", "read"),
-         new ReflectPermission("suppressAccessChecks"),
-         new RuntimePermission("accessDeclaredMembers")), "permissions.xml");
+
 
       return TestUtil.finishContainerPrepare(war, null, BeanWrapper.class,
             FirstBean.class, SecondBean.class,

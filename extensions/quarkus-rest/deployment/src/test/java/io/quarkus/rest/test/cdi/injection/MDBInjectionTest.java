@@ -90,10 +90,7 @@ public class MDBInjectionTest extends AbstractInjectionTestBase {
       if (PortProviderUtil.isIpv6()) {
          host = String.format("[%s]", host);
       }
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new HibernateValidatorPermission("accessPrivateMembers"),
-            new SocketPermission(host, "resolve")),
-            "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
    }
 

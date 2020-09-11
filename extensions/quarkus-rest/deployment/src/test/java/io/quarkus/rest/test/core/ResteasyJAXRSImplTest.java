@@ -42,11 +42,7 @@ public class ResteasyJAXRSImplTest
    public static Archive<?> deploy()
    {
       WebArchive war = TestUtil.prepareArchive(ResteasyJAXRSImplTest.class.getSimpleName());
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new PropertyPermission("arquillian.*", "read"),
-              new RuntimePermission("accessDeclaredMembers"),
-              new ReflectPermission("suppressAccessChecks")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
    }
 

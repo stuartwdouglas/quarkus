@@ -71,10 +71,7 @@ public class HomecontrolCustomJAXBContextTest {
               IDType.class,
               ErrorMessageType.class
       );
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new ReflectPermission("suppressAccessChecks"),
-              new RuntimePermission("accessDeclaredMembers")
-      ), "permissions.xml");
+
       war.addAsWebInfResource(HomecontrolCustomJAXBContextTest.class.getPackage(), "homecontrol/web.xml");
       return TestUtil.finishContainerPrepare(war, null, HomecontrolCustomJAXBContextTest.class);
    }});

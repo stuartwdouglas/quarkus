@@ -60,11 +60,7 @@ public class Resteasy1405Test
       WebArchive war = TestUtil.prepareArchive(Resteasy1405Test.class.getSimpleName());
       war.addClasses(ByFieldForm.class, BySetterForm.class, InputData.class, OutputData.class);
 
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-         new FilePermission("<<ALL FILES>>", "read"),
-         new RuntimePermission("accessDeclaredMembers"),
-         new RuntimePermission("getClassLoader")),
-         "permissions.xml");
+
 
       return TestUtil.finishContainerPrepare(war, null, MyResource.class);
    }

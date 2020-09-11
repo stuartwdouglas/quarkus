@@ -99,9 +99,7 @@ public class ValidationJaxbTest {
             .addClasses(ValidationCoreClassConstraint.class, ValidationCoreClassValidator.class)
             .addClasses(ValidationCoreResourceWithAllViolationTypes.class, ValidationCoreResourceWithReturnValues.class)
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new HibernateValidatorPermission("accessPrivateMembers")
-      ), "permissions.xml");
+
       Map<String, String> contextParams = new HashMap<>();
       contextParams.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, useJackson.toString());
       return TestUtil.finishContainerPrepare(war, contextParams, (Class<?>[]) null);

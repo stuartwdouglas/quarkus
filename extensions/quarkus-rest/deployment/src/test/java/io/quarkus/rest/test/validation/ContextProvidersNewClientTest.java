@@ -51,9 +51,7 @@ public class ContextProvidersNewClientTest extends ContextProvidersTestBase {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new ReflectPermission("suppressAccessChecks")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, ContextProvidersResource.class);
    }});
 

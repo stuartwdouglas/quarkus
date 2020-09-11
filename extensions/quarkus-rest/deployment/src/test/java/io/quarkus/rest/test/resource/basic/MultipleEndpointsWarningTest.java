@@ -48,11 +48,9 @@ public class MultipleEndpointsWarningTest
                     war.addClasses(PortProviderUtil.class);
 
       war.addClass(LogHandler.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new LoggingPermission("control", "")
-      ), "permissions.xml");
+
       // Test registers it's own LogHandler
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new LoggingPermission("control", "")), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, MultipleEndpointsWarningResource.class);
    }});
 

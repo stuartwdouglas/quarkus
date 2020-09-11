@@ -96,9 +96,7 @@ public class SigningTest {
 
       war.addClass(SigningProxy.class);
       war.addAsResource(SigningTest.class.getPackage(), "SigningTest.jks", "test.jks");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new ReflectPermission("suppressAccessChecks")
-      ), "permissions.xml");
+
       Map<String, String> contextParams = new HashMap<>();
       contextParams.put("resteasy.doseta.keystore.classpath", "test.jks");
       contextParams.put("resteasy.doseta.keystore.password", "password");

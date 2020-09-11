@@ -77,11 +77,7 @@ public class VerifyDecryptTest {
       WebArchive war = TestUtil.prepareArchive(VerifyDecryptTest.class.getSimpleName());
       war.addAsResource(VerifyDecryptTest.class.getPackage(), "VerifyDecryptMycert.pem", "mycert.pem");
       war.addAsResource(VerifyDecryptTest.class.getPackage(), "VerifyDecryptMycertPrivate.pem", "mycert-private.pem");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new RuntimePermission("getenv.org.apache.james.mime4j.defaultStorageProvider"),
-            new ReflectPermission("suppressAccessChecks"),
-            new RuntimePermission("accessDeclaredMembers")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, VerifyDecryptResource.class);
    }
 

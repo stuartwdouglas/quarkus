@@ -71,17 +71,7 @@ public class ScopeExtensionTest {
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
             .addAsServiceProvider(Extension.class, ScopeExtensionPlannedObsolescenceExtension.class);
       // Arquillian in the deployment
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new LoggingPermission("control", ""),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("ipv6", "read"),
-            new PropertyPermission("node", "read"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new ReflectPermission("suppressAccessChecks"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
-      ), "permissions.xml");
+
       return war;
    }});
 

@@ -91,9 +91,7 @@ public class InputPartDefaultCharsetOverwriteTest {
 
       war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new ReflectPermission("suppressAccessChecks")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteService.class);
    }});
 

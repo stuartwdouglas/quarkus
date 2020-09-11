@@ -60,9 +60,7 @@ public class ReadDataSourceTwiceCountTempFileTest {
                     war.addClasses(PortProviderUtil.class);
 
       // DataSource provider creates tmp file in the filesystem
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new FilePermission("/tmp/-", "read"),
-            new PropertyPermission("java.io.tmpdir", "read"),
-            new FilePermission("/tmp", "read")), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, ReadDataSourceTwiceCountTempFileResource.class);
    }});
 

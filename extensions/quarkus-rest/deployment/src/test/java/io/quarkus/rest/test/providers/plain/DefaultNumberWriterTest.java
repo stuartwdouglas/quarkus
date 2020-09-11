@@ -53,16 +53,7 @@ public class DefaultNumberWriterTest {
 
       war.addClasses(TestUtil.class, PortProviderUtil.class);
       // Arquillian in the deployment
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new SocketPermission(PortProviderUtil.getHost(), "connect,resolve"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new PropertyPermission("ipv6", "read"),
-            new PropertyPermission("node", "read"),
-            new ReflectPermission("suppressAccessChecks"),
-            new ReflectPermission("suppressAccessChecks"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new PropertyPermission("arquillian.*", "read")), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, DefaultNumberWriterResource.class,
             DefaultNumberWriterCustom.class);
    }});

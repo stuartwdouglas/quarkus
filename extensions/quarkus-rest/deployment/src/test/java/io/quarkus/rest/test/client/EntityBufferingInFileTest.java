@@ -95,11 +95,9 @@ public class EntityBufferingInFileTest extends ClientTestBase{
                     war.addClasses(PortProviderUtil.class);
 
       war.addClass(EntityBufferingInFileTest.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new FilePermission("/tmp/*", "read")
-            ), "permissions.xml");
+
       // DataSource provider creates tmp file in the filesystem
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new FilePermission("/tmp/-", "read")), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, EntityBufferingInFileResource.class);
    }});
 

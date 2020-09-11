@@ -130,10 +130,7 @@ public class InjectionTest extends AbstractInjectionTestBase {
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
             .addAsResource(InjectionTest.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
 
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new HibernateValidatorPermission("accessPrivateMembers"),
-            new SocketPermission(PortProviderUtil.getHost(), "resolve")),
-         "permissions.xml");
+
 
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
    }

@@ -54,9 +54,7 @@ public class ContextTest {
       war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextIndex.html", "index.html");
       war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextWeb.xml", "web.xml");
       // undertow requires read permission in order to perform forward request.
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new FilePermission("<<ALL FILES>>", "read")
-         ), "permissions.xml");
+
       return war;
    }});
 

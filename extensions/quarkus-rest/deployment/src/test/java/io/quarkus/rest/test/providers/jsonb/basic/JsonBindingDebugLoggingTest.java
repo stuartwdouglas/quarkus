@@ -70,18 +70,7 @@ public class JsonBindingDebugLoggingTest {
       war.addClass(JsonBindingDebugLoggingItemCorruptedGet.class);
       war.addClass(JsonBindingDebugLoggingItemCorruptedSet.class);
       war.addClasses(LogCounter.class, PortProviderUtil.class, TestUtil.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new ReflectPermission("suppressAccessChecks"),
-              new RuntimePermission("accessDeclaredMembers"),
-              new PropertyPermission("arquillian.debug", "read"),
-              new PropertyPermission("user.dir", "read"),
-              new FilePermission("<<ALL FILES>>", "read"), // required to read jbossas-managed/log/server.log file
-              new PropertyPermission("node", "read"),
-              new PropertyPermission("ipv6", "read"),
-              new RuntimePermission("getenv.RESTEASY_PORT"),
-              new PropertyPermission("org.jboss.resteasy.port", "read"),
-              new PropertyPermission("jboss.server.base.dir", "read")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, JsonBindingDebugLoggingEndPoint.class);
    }});
 

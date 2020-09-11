@@ -46,9 +46,7 @@ public class MicroProfileConfigServletTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new PropertyPermission("system", "write")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, MicroProfileConfigResource.class);
    }});
 

@@ -57,16 +57,7 @@ public class DuplicateProviderRegistrationTest {
       war.addClasses(DuplicateProviderRegistrationFeature.class, DuplicateProviderRegistrationFilter.class,
             TestUtil.class, DuplicateProviderRegistrationInterceptor.class, ContainerConstants.class);
       // Arquillian in the deployment, test reads the server.log
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new ReflectPermission("suppressAccessChecks"),
-            new FilePermission(TestUtil.getStandaloneDir(DEFAULT_CONTAINER_QUALIFIER) + File.separator + "log" +
-                  File.separator + "server.log", "read"),
-            new LoggingPermission("control", ""),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("jboss.home.dir", "read"),
-              new PropertyPermission("jboss.server.base.dir", "read"),
-            new RuntimePermission("accessDeclaredMembers")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
    }});
 

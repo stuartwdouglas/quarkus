@@ -155,16 +155,7 @@ public class ReverseInjectionTest extends AbstractInjectionTestBase {
             .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
             .addAsResource(ReverseInjectionTest.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
       // Arquillian in the deployment
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
-            new LoggingPermission("control", ""),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("ipv6", "read"),
-            new PropertyPermission("node", "read"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
-      ), "permissions.xml");
+
       return war;
    }
 

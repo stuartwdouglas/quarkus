@@ -42,11 +42,7 @@ public class DeploymentTest {
                     war.addClasses(PortProviderUtil.class);
 
       war.addPackages(true, "org.jboss.resteasy.wadl");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new RuntimePermission("getClassLoader"),
-              new ReflectPermission("suppressAccessChecks"),
-              new RuntimePermission("accessDeclaredMembers")
-      ), "permissions.xml");
+
       TestUtil.finishContainerPrepare(war, null, ExtendedResource.class, ListType.class);
       return war;
    }});

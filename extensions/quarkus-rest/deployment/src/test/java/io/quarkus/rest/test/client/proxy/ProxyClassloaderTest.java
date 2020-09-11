@@ -33,11 +33,7 @@ public class ProxyClassloaderTest
    {
       WebArchive war = TestUtil.prepareArchive(ProxyClassloaderTest.class.getSimpleName());
       war.addClass(ResourceWithInterfaceSimpleClient.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new RuntimePermission("setContextClassLoader"),
-              new RuntimePermission("createClassLoader"),
-              new RuntimePermission("getClassLoader")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, ClientSmokeResource.class, ClassloaderResource.class);
    }
 

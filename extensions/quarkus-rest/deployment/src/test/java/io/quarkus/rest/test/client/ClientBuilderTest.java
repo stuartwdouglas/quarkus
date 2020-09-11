@@ -48,15 +48,7 @@ public class ClientBuilderTest {
 
       war.addClass(TestUtil.class);
       // Arquillian in the deployment and use of TestUtil
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
-            new FilePermission(TestUtil.getStandaloneDir(DEFAULT_CONTAINER_QUALIFIER) + File.separator + "log" +
-                  File.separator + "server.log", "read"),
-            new LoggingPermission("control", ""),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("jboss.home.dir", "read"),
-            new PropertyPermission("jboss.server.base.dir", "read"),
-            new RuntimePermission("accessDeclaredMembers")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
    }});
 

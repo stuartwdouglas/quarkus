@@ -45,14 +45,7 @@ public class UndertowTest {
                     war.addClasses(PortProviderUtil.class);
 
       // Arquillian in the deployment and use of PortProviderUtil
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("node", "read"),
-            new PropertyPermission("ipv6", "read"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new SocketPermission("[" + PortProviderUtil.getHost() + "]", "connect,resolve")), "permissions.xml");
+
       return war;
    }});
 

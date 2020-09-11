@@ -52,16 +52,7 @@ public class MultipleGetResourceTest {
         WebArchive war = TestUtil.prepareArchive(MultipleGetResourceTest.class.getSimpleName());
         Map<String, String> contextParam = new HashMap<>();
         contextParam.put(ResteasyContextParameters.RESTEASY_FAIL_FAST_ON_MULTIPLE_RESOURCES_MATCHING, "true");
-        war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-                new ReflectPermission("suppressAccessChecks"),
-                new FilePermission(TestUtil.getStandaloneDir(DEFAULT_CONTAINER_QUALIFIER) + File.separator + "log" +
-                        File.separator + "server.log", "read"),
-                new LoggingPermission("control", ""),
-                new PropertyPermission("arquillian.*", "read"),
-                new PropertyPermission("jboss.home.dir", "read"),
-                new PropertyPermission("jboss.server.base.dir", "read"),
-                new RuntimePermission("accessDeclaredMembers")
-        ), "permissions.xml");
+
         return TestUtil.finishContainerPrepare(war, contextParam, MultipleGetResource.class);
     }
 

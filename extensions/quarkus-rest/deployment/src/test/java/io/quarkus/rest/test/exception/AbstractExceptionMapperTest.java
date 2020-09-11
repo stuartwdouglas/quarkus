@@ -54,9 +54,7 @@ public class AbstractExceptionMapperTest {
 
       war.addClass(PortProviderUtil.class);
       war.addClasses(AbstractMapper.class, AbstractMapperException.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new ReflectPermission("suppressAccessChecks")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, AbstractMapperDefault.class,
             AbstractMapperMyCustom.class, AbstractMapperResource.class);
    }});

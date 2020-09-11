@@ -78,9 +78,7 @@ public class CDIResourceTest {
       war.addAsWebInfResource(CDIResourceTest.class.getPackage(),
             "web-resteasy1082.xml", "web.xml");
 
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new RuntimePermission("accessDeclaredMembers")
-      ), "permissions.xml");
+
       //write file to disk
       war.as(ZipExporter.class).exportTo(exportFile, true);
    }

@@ -64,9 +64,7 @@ public abstract class GzipAbstractTestBase {
       WebArchive war = TestUtil.prepareArchive(name);
       war = war.addClass(GzipInterface.class);
       war = war.addAsWebInfResource(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new PropertyPermission("resteasy.allowGzip", "read")
-      ), "permissions.xml");
+
       if (addProvidersFileWithGzipInterceptors) {
          war.addAsManifestResource(GzipAbstractTestBase.class.getPackage(), "GzipAbstractTest-javax.ws.rs.ext.Providers", "services/javax.ws.rs.ext.Providers");
       }

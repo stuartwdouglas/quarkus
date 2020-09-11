@@ -63,11 +63,7 @@ public class ExceptionMapperMarshalTest {
                     war.addClasses(PortProviderUtil.class);
 
       war.addClass(Jackson2Test.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new RuntimePermission("getProtectionDomain"),
-            new ReflectPermission("suppressAccessChecks"),
-            new PropertyPermission("resteasy.server.tracing.*", "read")
-      ), "permissions.xml");
+
       Map<String, String> contextParam = new HashMap<>();
       contextParam.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, "true");
       return TestUtil.finishContainerPrepare(war, contextParam, ExceptionMapperMarshalErrorMessage.class, ExceptionMapperMarshalMyCustomException.class,

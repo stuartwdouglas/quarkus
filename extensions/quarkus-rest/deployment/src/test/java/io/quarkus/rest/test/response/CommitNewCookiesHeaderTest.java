@@ -92,11 +92,7 @@ public class CommitNewCookiesHeaderTest {
                     war.addClasses(PortProviderUtil.class);
 
       war.addClass(EchoResource.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new ReflectPermission("suppressAccessChecks"),
-              new PropertyPermission("ipv6", "read"),
-              new PropertyPermission("node", "read")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, EchoResource.class);
    }});
 

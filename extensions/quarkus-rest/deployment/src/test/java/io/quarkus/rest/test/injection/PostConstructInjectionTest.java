@@ -58,9 +58,7 @@ public class PostConstructInjectionTest {
 
       war.addClass(PostConstructInjectionEJBInterceptor.class);
       war.addAsWebInfResource(PostConstructInjectionTest.class.getPackage(), "PostConstructInjection_beans_cdi_on.xml", "beans.xml");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new HibernateValidatorPermission("accessPrivateMembers")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, PostConstructInjectionResource.class, PostConstructInjectionEJBResource.class);
    }});
 
@@ -77,9 +75,7 @@ public class PostConstructInjectionTest {
 
       war.addClass(PostConstructInjectionEJBInterceptor.class);
       war.addAsWebInfResource(PostConstructInjectionTest.class.getPackage(), "PostConstructInjection_beans_cdi_off.xml", "beans.xml");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new HibernateValidatorPermission("accessPrivateMembers")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, PostConstructInjectionResource.class);
    }});
 

@@ -58,9 +58,7 @@ public class EJBCDIValidationTest {
       .addClasses(EJBCDIValidationStatefulResource.class)
       .addClasses(EJBCDIValidationSingletonResource.class)
       .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new HibernateValidatorPermission("accessPrivateMembers")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null);
    }});
 

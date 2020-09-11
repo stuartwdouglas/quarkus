@@ -57,10 +57,7 @@ public class AbortMessageTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-               new LoggingPermission("control", ""),
-               new RuntimePermission("accessDeclaredMembers")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, AbortMessageResourceFilter.class);
    }});
 

@@ -51,9 +51,7 @@ public class ClosedResponseHandlingTest {
        war.addClass(ClosedResponseHandlingTest.class);
        war.addPackage(ClosedResponseHandlingResource.class.getPackage());
        war.addClass(PortProviderUtil.class);
-       war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-             new ReflectPermission("suppressAccessChecks")
-       ), "permissions.xml");
+
 
        Map<String, String> params = new HashMap<>();
        params.put(ResteasyContextParameters.RESTEASY_TRACING_TYPE, ResteasyContextParameters.RESTEASY_TRACING_TYPE_ALL);

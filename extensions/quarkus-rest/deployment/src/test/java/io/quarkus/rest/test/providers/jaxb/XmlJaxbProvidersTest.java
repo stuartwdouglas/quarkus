@@ -69,12 +69,7 @@ public class XmlJaxbProvidersTest {
       war.addAsResource(XmlJaxbProvidersTest.class.getPackage(), "orders/order_123.xml");
       war.as(ZipExporter.class).exportTo(new File("target", XmlJaxbProvidersTest.class.getSimpleName() + ".war"), true);
 
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new FilePermission("<<ALL FILES>>", "read"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new ReflectPermission("suppressAccessChecks"),
-            new RuntimePermission("getClassLoader")),
-            "permissions.xml");
+
 
       return TestUtil.finishContainerPrepare(war, null, XmlJaxbProvidersOrderResource.class, Order.class, Ordertype.class,
             ShipTo.class, Shiptotype.class, Item.class, Itemtype.class, JAXBCache.class, XmlJaxbProvidersHelper.class, XmlStreamFactory.class);

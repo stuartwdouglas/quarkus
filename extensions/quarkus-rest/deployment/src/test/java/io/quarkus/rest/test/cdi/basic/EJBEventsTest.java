@@ -54,9 +54,7 @@ public class EJBEventsTest {
                     war.addClasses(PortProviderUtil.class);
 
       // Arquillian in the deployment
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new PropertyPermission("arquillian.*", "read")), "permissions.xml");
+
       return war;
    }});
 

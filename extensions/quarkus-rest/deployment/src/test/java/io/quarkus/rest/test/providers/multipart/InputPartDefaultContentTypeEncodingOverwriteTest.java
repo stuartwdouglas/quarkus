@@ -50,9 +50,7 @@ public class InputPartDefaultContentTypeEncodingOverwriteTest {
 
       war.addClasses(InputPartDefaultContentTypeEncodingOverwriteTest.class);
       war.addClasses(TestUtil.class, PortProviderUtil.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new ReflectPermission("suppressAccessChecks")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, InputPartDefaultContentTypeEncodingOverwriteSetterContainerRequestFilter.class,
             InputPartDefaultContentTypeEncodingOverwriteService.class);
    }});

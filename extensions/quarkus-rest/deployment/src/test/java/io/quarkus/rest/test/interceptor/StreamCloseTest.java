@@ -43,16 +43,7 @@ public class StreamCloseTest
    public static Archive<?> deploy()
    {
       WebArchive war = TestUtil.prepareArchive(StreamCloseTest.class.getSimpleName());
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new SocketPermission(PortProviderUtil.getHost(), "connect,resolve"),
-              new PropertyPermission("arquillian.*", "read"),
-              new RuntimePermission("accessDeclaredMembers"),
-              new ReflectPermission("suppressAccessChecks"),
-              new PropertyPermission("org.jboss.resteasy.port", "read"),
-              new RuntimePermission("getenv.RESTEASY_PORT"),
-              new PropertyPermission("ipv6", "read"),
-              new PropertyPermission("node", "read")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, InterceptorStreamResource.class, TestInterceptor.class, PortProviderUtil.class);
    }
 

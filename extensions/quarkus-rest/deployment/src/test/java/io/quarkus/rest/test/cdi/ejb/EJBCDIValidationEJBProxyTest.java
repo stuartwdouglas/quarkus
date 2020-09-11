@@ -61,9 +61,7 @@ public class EJBCDIValidationEJBProxyTest {
       war.addClass(EJBCDIValidationEJBProxyGreeting.class);
       war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
       war.setWebXML(EJBCDIValidationEJBProxyTest.class.getPackage(), "web.xml");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new HibernateValidatorPermission("accessPrivateMembers")
-            ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null,
             EJBCDIValidationEJBProxyGreeterResource.class);
    }});

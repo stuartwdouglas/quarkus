@@ -62,16 +62,7 @@ public class ResourceClassProcessorNotAppliedTest {
       war.addClass(ResourceClassProcessorNotAppliedTest.class);
       war.addClass(PortProviderUtil.class);
       war.addClass(ResourceClassProcessorNotAppliedImplementation.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new SocketPermission(PortProviderUtil.getHost(), "connect,resolve"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new PropertyPermission("ipv6", "read"),
-            new PropertyPermission("node", "read"),
-            new PropertyPermission("arquillian.*", "read"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new ReflectPermission("suppressAccessChecks")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null,
             ResourceClassProcessorPureEndPoint.class);
    }});

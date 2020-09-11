@@ -59,9 +59,7 @@ public class SseTest
       war.addAsWebInfResource("org/jboss/resteasy/test/providers/sse/web.xml", "web.xml");
       war.addAsWebResource("org/jboss/resteasy/test/providers/sse/index.html", "index.html");
       war.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-              new RuntimePermission("modifyThread")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, SseApplication.class, GreenHouse.class, SseResource.class,
             AnotherSseResource.class, EscapingSseResource.class, ExecutorServletContextListener.class);
    }

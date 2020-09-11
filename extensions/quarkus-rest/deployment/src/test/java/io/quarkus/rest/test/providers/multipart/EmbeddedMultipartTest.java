@@ -50,9 +50,7 @@ public class EmbeddedMultipartTest {
                     war.addClasses(PortProviderUtil.class);
 
       war.addClass(EmbeddedMultipartCustomer.class);
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new ReflectPermission("suppressAccessChecks")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, EmbeddedMultipartResource.class);
    }});
 

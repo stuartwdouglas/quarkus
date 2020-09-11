@@ -38,9 +38,7 @@ public class ApplicationInjectionTest {
                     war.addClasses(PortProviderUtil.class);
 
       // Arquillian in the deployment
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
-            new RuntimePermission("accessDeclaredMembers"),
-               new PropertyPermission("arquillian.*", "read")), "permissions.xml");
+
       war.addClass(ApplicationInjection.class);
       return war;
    }});

@@ -61,16 +61,7 @@ public class ClientCacheTest {
 
       war.addClasses(ClientCacheProxy.class, ClientCacheTest.class, TestUtil.class, PortProviderUtil.class);
       // Arquillian in the deployment and use of PortProviderUtil and Test util in the deployment
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(new ReflectPermission("suppressAccessChecks"),
-            new LoggingPermission("control", ""),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("ipv6", "read"),
-            new PropertyPermission("node", "read"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
-      ), "permissions.xml");
+
       war.addClasses(ClientCacheProxy.class, ClientCacheTest.class, TestUtil.class, PortProviderUtil.class);
       return TestUtil.finishContainerPrepare(war, null, ClientCacheService.class);
    }});

@@ -61,8 +61,7 @@ public class RangeTest {
                     war.addClasses(PortProviderUtil.class);
 
       // Deployment creates file in the filesystem
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new FilePermission(File.separator + "tmp" + File.separator + "-", "read,write,delete")), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, RangeResource.class);
    }});
 

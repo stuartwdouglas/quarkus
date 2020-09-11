@@ -44,22 +44,22 @@ public class QuarkusRestClient implements Client {
     }
 
     @Override
-    public WebTarget target(String uri) {
+    public QuarkusRestWebTarget target(String uri) {
         return new QuarkusRestWebTarget(httpClient, UriBuilder.fromUri(uri), configuration, serialisers, clientProxies);
     }
 
     @Override
-    public WebTarget target(URI uri) {
+    public QuarkusRestWebTarget target(URI uri) {
         return new QuarkusRestWebTarget(httpClient, UriBuilder.fromUri(uri), configuration, serialisers, clientProxies);
     }
 
     @Override
-    public WebTarget target(UriBuilder uriBuilder) {
+    public QuarkusRestWebTarget target(UriBuilder uriBuilder) {
         return new QuarkusRestWebTarget(httpClient, uriBuilder, configuration, serialisers, clientProxies);
     }
 
     @Override
-    public WebTarget target(Link link) {
+    public QuarkusRestWebTarget target(Link link) {
         return new QuarkusRestWebTarget(httpClient, UriBuilder.fromLink(link), configuration, serialisers, clientProxies);
     }
 

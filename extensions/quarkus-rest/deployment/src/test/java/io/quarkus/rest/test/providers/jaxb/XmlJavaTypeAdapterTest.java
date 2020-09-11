@@ -64,17 +64,7 @@ public class XmlJavaTypeAdapterTest {
 
       war.addClass(XmlJavaTypeAdapterTest.class);
       // Arquillian in the deployment and use of PortProviderUtil in the deployment
-      war.addAsManifestResource(PermissionUtil.createPermissionsXmlAsset(
-            new PropertyPermission("node", "read"),
-            new LoggingPermission("control", ""),
-            new PropertyPermission("arquillian.*", "read"),
-            new PropertyPermission("ipv6", "read"),
-            new PropertyPermission("org.jboss.resteasy.port", "read"),
-            new ReflectPermission("suppressAccessChecks"),
-            new RuntimePermission("accessDeclaredMembers"),
-            new RuntimePermission("getenv.RESTEASY_PORT"),
-            new SocketPermission(PortProviderUtil.getHost(), "connect,resolve")
-      ), "permissions.xml");
+
       return TestUtil.finishContainerPrepare(war, null, XmlJavaTypeAdapterAlien.class, XmlJavaTypeAdapterAlienAdapter.class,
             XmlJavaTypeAdapterFoo.class, XmlJavaTypeAdapterHuman.class, XmlJavaTypeAdapterResource.class, PortProviderUtil.class);
    }});
