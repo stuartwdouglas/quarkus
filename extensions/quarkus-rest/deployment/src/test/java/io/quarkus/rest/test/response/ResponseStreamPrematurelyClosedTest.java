@@ -17,109 +17,103 @@ import javax.ws.rs.client.Invocation.Builder;
 
 import org.apache.commons.io.IOUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.test.response.resource.TestResourceImpl;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import io.quarkus.rest.test.response.resource.TestResourceImpl;
 import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.rest.test.simple.TestUtil;
-import org.junit.Assert;
 
 public class ResponseStreamPrematurelyClosedTest {
 
-   static Client client;
+    static Client client;
 
-   @Deployment
-   public static Archive<?> deploy() throws Exception {
-      WebArchive war = TestUtil.prepareArchive(ResponseStreamPrematurelyClosedTest.class.getSimpleName());
-      return TestUtil.finishContainerPrepare(war, null, TestResourceImpl.class);
-   }
+    @Deployment
+    public static Archive<?> deploy() throws Exception {
+        WebArchive war = TestUtil.prepareArchive(ResponseStreamPrematurelyClosedTest.class.getSimpleName());
+        return TestUtil.finishContainerPrepare(war, null, TestResourceImpl.class);
+    }
 
-   @BeforeClass
-   public static void init() {
-      client = ClientBuilder.newClient();
-   }
+    @BeforeClass
+    public static void init() {
+        client = ClientBuilder.newClient();
+    }
 
-   @AfterClass
-   public static void after() throws Exception {
-      client.close();
-   }
+    @AfterClass
+    public static void after() throws Exception {
+        client.close();
+    }
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, ResponseStreamPrematurelyClosedTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, ResponseStreamPrematurelyClosedTest.class.getSimpleName());
+    }
 
-   @Test
-   public void testStream() throws Exception {
-      Builder builder = client.target(generateURL("/test/document/abc/content")).request();
+    @Test
+    public void testStream() throws Exception {
+        Builder builder = client.target(generateURL("/test/document/abc/content")).request();
 
-      try (MyByteArrayOutputStream baos = new MyByteArrayOutputStream()) {
+        try (MyByteArrayOutputStream baos = new MyByteArrayOutputStream()) {
 
-         if (! TestUtil.isIbmJdk()) {
-            //builder.get().readEntity explicitly on the same line below and not saved in any temp variable
-            //to let the JVM try finalizing the ClientResponse object
-            InputStream ins = builder.get().readEntity(InputStream.class);
-            //suggest jvm to do gc and wait the gc notification
-            final CountDownLatch coutDown = new CountDownLatch(1);
+            if (!TestUtil.isIbmJdk()) {
+                //builder.get().readEntity explicitly on the same line below and not saved in any temp variable
+                //to let the JVM try finalizing the ClientResponse object
+                InputStream ins = builder.get().readEntity(InputStream.class);
+                //suggest jvm to do gc and wait the gc notification
+                final CountDownLatch coutDown = new CountDownLatch(1);
 
-            List<GarbageCollectorMXBean> gcbeans = ManagementFactory.getGarbageCollectorMXBeans();
-            NotificationListener listener = new NotificationListener() {
-               public void handleNotification(Notification notification, Object handback) {
-                  coutDown.countDown();
-               }
-            };
-            try {
-               for (GarbageCollectorMXBean gcbean : gcbeans) {
-                  NotificationEmitter emitter = (NotificationEmitter) gcbean;
-                  emitter.addNotificationListener(listener, null, null);
-               }
-               System.gc();
-               coutDown.await(10, TimeUnit.SECONDS);
+                List<GarbageCollectorMXBean> gcbeans = ManagementFactory.getGarbageCollectorMXBeans();
+                NotificationListener listener = new NotificationListener() {
+                    public void handleNotification(Notification notification, Object handback) {
+                        coutDown.countDown();
+                    }
+                };
+                try {
+                    for (GarbageCollectorMXBean gcbean : gcbeans) {
+                        NotificationEmitter emitter = (NotificationEmitter) gcbean;
+                        emitter.addNotificationListener(listener, null, null);
+                    }
+                    System.gc();
+                    coutDown.await(10, TimeUnit.SECONDS);
 
-               IOUtils.copy(ins, baos);
-               Assert.assertEquals("Received string: " + baos.toShortString(), 10000000, baos.size());
-            } finally {
-               //remove the listener
-               for (GarbageCollectorMXBean gcbean : gcbeans) {
-                  ((NotificationEmitter) gcbean).removeNotificationListener(listener);
-               }
+                    IOUtils.copy(ins, baos);
+                    Assert.assertEquals("Received string: " + baos.toShortString(), 10000000, baos.size());
+                } finally {
+                    //remove the listener
+                    for (GarbageCollectorMXBean gcbean : gcbeans) {
+                        ((NotificationEmitter) gcbean).removeNotificationListener(listener);
+                    }
+                }
+            } else { // workaround for Ibm jdk - doesn't allow to use NotificationEmitter with GarbageCollectorMXBean
+                //builder.get().readEntity explicitly on the same line below and not saved in any temp variable
+                //to let the JVM try finalizing the ClientResponse object
+                IOUtils.copy(builder.get().readEntity(InputStream.class), baos);
+                Assert.assertEquals(100000000, baos.size());
             }
-         } else { // workaround for Ibm jdk - doesn't allow to use NotificationEmitter with GarbageCollectorMXBean
-            //builder.get().readEntity explicitly on the same line below and not saved in any temp variable
-            //to let the JVM try finalizing the ClientResponse object
-            IOUtils.copy(builder.get().readEntity(InputStream.class), baos);
-            Assert.assertEquals(100000000, baos.size());
-         }
-      }
-   }
+        }
+    }
 
-   private static class MyByteArrayOutputStream extends ByteArrayOutputStream {
+    private static class MyByteArrayOutputStream extends ByteArrayOutputStream {
 
-      public String getSubstring(int from, int to) {
-         if (from < 0 || to > count) {
-            throw new IllegalArgumentException();
-         }
-         return new String(buf, from, to);
-      }
+        public String getSubstring(int from, int to) {
+            if (from < 0 || to > count) {
+                throw new IllegalArgumentException();
+            }
+            return new String(buf, from, to);
+        }
 
-      public String toShortString() {
-         int s = size();
-         if (s <= 14000) {
-            return toString();
-         } else {
-            return getSubstring(0, 1000) + "..." + getSubstring(s - 13000, 13000);
-         }
-      }
-   }
+        public String toShortString() {
+            int s = size();
+            if (s <= 14000) {
+                return toString();
+            } else {
+                return getSubstring(0, 1000) + "..." + getSubstring(s - 13000, 13000);
+            }
+        }
+    }
 }

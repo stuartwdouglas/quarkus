@@ -69,7 +69,7 @@ public class HttpHeadersTest {
         Response response = client.target(generateURL("/HeadersTest/headers")).request()
                 .header("Accept", "text/plain, text/html, text/html;level=1, */*")
                 .header("Content-Type", "application/xml;charset=utf8").get();
-        Assertions.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assertions.assertEquals(Status.OK, response.getStatus());
         String content = response.readEntity(String.class);
         Assertions.assertTrue(-1 < content.indexOf("Accept:"));
         Assertions.assertTrue(-1 < content.indexOf("Content-Type:"));

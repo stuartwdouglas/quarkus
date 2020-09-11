@@ -1,15 +1,22 @@
 package io.quarkus.rest.test.resource.param;
 
-
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
+import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import javax.ws.rs.client.ClientBuilder;
 import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriBoolean;
 import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriBooleanInterface;
 import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriBooleanWrapper;
@@ -28,21 +35,7 @@ import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceU
 import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriLongWrapper;
 import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriShort;
 import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriShortWrapper;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.rest.test.simple.TestUtil;
 
 /**
@@ -52,153 +45,154 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpSince RESTEasy 3.0.16
  */
 public class UriParamAsPrimitiveTest {
-   public static final String ERROR_CODE = "Wrong parameter";
+    public static final String ERROR_CODE = "Wrong parameter";
 
-   private static UriParamAsPrimitiveResourceUriBooleanInterface resourceUriBoolean;
-   private static UriParamAsPrimitiveResourceUriByteInterface resourceUriByte;
-   private static QuarkusRestClient client;
+    private static UriParamAsPrimitiveResourceUriBooleanInterface resourceUriBoolean;
+    private static UriParamAsPrimitiveResourceUriByteInterface resourceUriByte;
+    private static QuarkusRestClient client;
 
-   @BeforeClass
-   public static void before() throws Exception {
-      client = (QuarkusRestClient)ClientBuilder.newClient();
-      resourceUriBoolean = ProxyBuilder.builder(UriParamAsPrimitiveResourceUriBooleanInterface.class, client.target(generateBaseUrl())).build();
-      resourceUriByte = ProxyBuilder.builder(UriParamAsPrimitiveResourceUriByteInterface.class, client.target(generateBaseUrl())).build();
-   }
+    @BeforeClass
+    public static void before() throws Exception {
+        client = (QuarkusRestClient) ClientBuilder.newClient();
+        resourceUriBoolean = ProxyBuilder
+                .builder(UriParamAsPrimitiveResourceUriBooleanInterface.class, client.target(generateBaseUrl())).build();
+        resourceUriByte = ProxyBuilder
+                .builder(UriParamAsPrimitiveResourceUriByteInterface.class, client.target(generateBaseUrl())).build();
+    }
 
-   @Deployment
-   public static Archive<?> deploy() throws Exception {
-      WebArchive war = TestUtil.prepareArchive(UriParamAsPrimitiveTest.class.getSimpleName());
-      war.addClass(UriParamAsPrimitiveResourceUriBooleanInterface.class);
-      war.addClass(UriParamAsPrimitiveResourceUriByteInterface.class);
-      war.addClass(UriParamAsPrimitiveTest.class);
-      return TestUtil.finishContainerPrepare(war, null,
-            UriParamAsPrimitiveResourceUriBoolean.class,
-            UriParamAsPrimitiveResourceUriByte.class,
-            UriParamAsPrimitiveResourceUriShort.class,
-            UriParamAsPrimitiveResourceUriInt.class,
-            UriParamAsPrimitiveResourceUriLong.class,
-            UriParamAsPrimitiveResourceUriFloat.class,
-            UriParamAsPrimitiveResourceUriDouble.class,
-            UriParamAsPrimitiveResourceUriChar.class,
-            UriParamAsPrimitiveResourceUriBooleanWrapper.class,
-            UriParamAsPrimitiveResourceUriByteWrapper.class,
-            UriParamAsPrimitiveResourceUriShortWrapper.class,
-            UriParamAsPrimitiveResourceUriIntWrapper.class,
-            UriParamAsPrimitiveResourceUriLongWrapper.class,
-            UriParamAsPrimitiveResourceUriFloatWrapper.class,
-            UriParamAsPrimitiveResourceUriDoubleWrapper.class,
-            UriParamAsPrimitiveResourceUriCharWrapper.class);
-   }
+    @Deployment
+    public static Archive<?> deploy() throws Exception {
+        WebArchive war = TestUtil.prepareArchive(UriParamAsPrimitiveTest.class.getSimpleName());
+        war.addClass(UriParamAsPrimitiveResourceUriBooleanInterface.class);
+        war.addClass(UriParamAsPrimitiveResourceUriByteInterface.class);
+        war.addClass(UriParamAsPrimitiveTest.class);
+        return TestUtil.finishContainerPrepare(war, null,
+                UriParamAsPrimitiveResourceUriBoolean.class,
+                UriParamAsPrimitiveResourceUriByte.class,
+                UriParamAsPrimitiveResourceUriShort.class,
+                UriParamAsPrimitiveResourceUriInt.class,
+                UriParamAsPrimitiveResourceUriLong.class,
+                UriParamAsPrimitiveResourceUriFloat.class,
+                UriParamAsPrimitiveResourceUriDouble.class,
+                UriParamAsPrimitiveResourceUriChar.class,
+                UriParamAsPrimitiveResourceUriBooleanWrapper.class,
+                UriParamAsPrimitiveResourceUriByteWrapper.class,
+                UriParamAsPrimitiveResourceUriShortWrapper.class,
+                UriParamAsPrimitiveResourceUriIntWrapper.class,
+                UriParamAsPrimitiveResourceUriLongWrapper.class,
+                UriParamAsPrimitiveResourceUriFloatWrapper.class,
+                UriParamAsPrimitiveResourceUriDoubleWrapper.class,
+                UriParamAsPrimitiveResourceUriCharWrapper.class);
+    }
 
-   private static String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, UriParamAsPrimitiveTest.class.getSimpleName());
-   }
+    private static String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, UriParamAsPrimitiveTest.class.getSimpleName());
+    }
 
-   private static String generateBaseUrl() {
-      return PortProviderUtil.generateBaseUrl(UriParamAsPrimitiveTest.class.getSimpleName());
-   }
+    private static String generateBaseUrl() {
+        return PortProviderUtil.generateBaseUrl(UriParamAsPrimitiveTest.class.getSimpleName());
+    }
 
+    @AfterClass
+    public static void after() throws Exception {
+        client.close();
+    }
 
-   @AfterClass
-   public static void after() throws Exception {
-      client.close();
-   }
+    void basicTest(String type, String value) {
+        {
+            Invocation.Builder request = client.target(generateURL("/" + type + "/" + value)).request();
+            try {
+                Response response = request.get();
+                Assert.assertEquals(Status.OK, response.getStatus());
+                response.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-   void basicTest(String type, String value) {
-      {
-         Invocation.Builder request = client.target(generateURL("/" + type + "/" + value)).request();
-         try {
-            Response response = request.get();
-            Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-            response.close();
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
-      }
+        {
+            Invocation.Builder request = client.target(generateURL("/" + type + "/wrapper/" + value)).request();
+            try {
+                Response response = request.get();
+                Assert.assertEquals(Status.OK, response.getStatus());
+                response.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
-      {
-         Invocation.Builder request = client.target(generateURL("/" + type + "/wrapper/" + value)).request();
-         try {
-            Response response = request.get();
-            Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-            response.close();
-         } catch (Exception e) {
-            throw new RuntimeException(e);
-         }
-      }
-   }
+    /**
+     * @tpTestDetails Test boolean primitive object
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testGetBoolean() {
+        basicTest("boolean", "true");
+        resourceUriBoolean.doGet(true);
+    }
 
-   /**
-    * @tpTestDetails Test boolean primitive object
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testGetBoolean() {
-      basicTest("boolean", "true");
-      resourceUriBoolean.doGet(true);
-   }
+    /**
+     * @tpTestDetails Test byte primitive object
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testGetByte() {
+        basicTest("byte", "127");
+        resourceUriByte.doGet((byte) 127);
+    }
 
-   /**
-    * @tpTestDetails Test byte primitive object
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testGetByte() {
-      basicTest("byte", "127");
-      resourceUriByte.doGet((byte) 127);
-   }
+    /**
+     * @tpTestDetails Test short primitive object
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testGetShort() {
+        basicTest("short", "32767");
+    }
 
-   /**
-    * @tpTestDetails Test short primitive object
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testGetShort() {
-      basicTest("short", "32767");
-   }
+    /**
+     * @tpTestDetails Test int primitive object
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testGetInt() {
+        basicTest("int", "2147483647");
+    }
 
-   /**
-    * @tpTestDetails Test int primitive object
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testGetInt() {
-      basicTest("int", "2147483647");
-   }
+    /**
+     * @tpTestDetails Test long primitive object
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testGetLong() {
+        basicTest("long", "9223372036854775807");
+    }
 
-   /**
-    * @tpTestDetails Test long primitive object
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testGetLong() {
-      basicTest("long", "9223372036854775807");
-   }
+    /**
+     * @tpTestDetails Test float primitive object
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testGetFloat() {
+        basicTest("float", "3.14159265");
+    }
 
-   /**
-    * @tpTestDetails Test float primitive object
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testGetFloat() {
-      basicTest("float", "3.14159265");
-   }
+    /**
+     * @tpTestDetails Test double primitive object
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testGetDouble() {
+        basicTest("double", "3.14159265358979");
+    }
 
-   /**
-    * @tpTestDetails Test double primitive object
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testGetDouble() {
-      basicTest("double", "3.14159265358979");
-   }
-
-   /**
-    * @tpTestDetails Test char primitive object
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testGetChar() {
-      basicTest("char", "a");
-   }
+    /**
+     * @tpTestDetails Test char primitive object
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testGetChar() {
+        basicTest("char", "a");
+    }
 }

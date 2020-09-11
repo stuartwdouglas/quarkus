@@ -1,34 +1,32 @@
 package io.quarkus.rest.test.providers.jackson2;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import javax.ws.rs.client.ClientBuilder;
-import io.quarkus.rest.test.providers.jackson2.resource.JacksonViewService;
-import io.quarkus.rest.test.providers.jackson2.resource.Something;
-import io.quarkus.rest.test.providers.jackson2.resource.TestJsonView;
-import io.quarkus.rest.test.providers.jackson2.resource.TestJsonView2;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.client.ClientBuilder;
+
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import com.fasterxml.jackson.annotation.JsonView;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.providers.jackson2.resource.JacksonViewService;
+import io.quarkus.rest.test.providers.jackson2.resource.Something;
+import io.quarkus.rest.test.providers.jackson2.resource.TestJsonView;
+import io.quarkus.rest.test.providers.jackson2.resource.TestJsonView2;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Jackson2 provider
@@ -37,44 +35,44 @@ import javax.ws.rs.Produces;
  */
 public class JacksonJsonViewTest {
 
-   private final String ERROR_MESSAGE = "The response entity doesn't contain correctly serialized value";
+    private final String ERROR_MESSAGE = "The response entity doesn't contain correctly serialized value";
 
-   @Path("/json_view")
-   public interface JacksonViewProxy {
+    @Path("/json_view")
+    public interface JacksonViewProxy {
 
-      @GET
-      @Produces("application/json")
-      @Path("/something")
-      Something getSomething();
+        @GET
+        @Produces("application/json")
+        @Path("/something")
+        Something getSomething();
 
-      @GET
-      @Produces("application/json")
-      @JsonView(TestJsonView.class)
-      @Path("/something_w_view")
-      Something getSomethingWithView();
+        @GET
+        @Produces("application/json")
+        @JsonView(TestJsonView.class)
+        @Path("/something_w_view")
+        Something getSomethingWithView();
 
-      @GET
-      @Produces("application/json")
-      @JsonView(TestJsonView2.class)
-      @Path("/something_w_view2")
-      Something getSomethingWithView2();
+        @GET
+        @Produces("application/json")
+        @JsonView(TestJsonView2.class)
+        @Path("/something_w_view2")
+        Something getSomethingWithView2();
 
-   }
+    }
 
-   @Before
-   public void init() {
-      client = (QuarkusRestClient)ClientBuilder.newClient();
-   }
+    @Before
+    public void init() {
+        client = (QuarkusRestClient) ClientBuilder.newClient();
+    }
 
-   @After
-   public void after() throws Exception {
-      client.close();
-      client = null;
-   }
+    @After
+    public void after() throws Exception {
+        client.close();
+        client = null;
+    }
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, JacksonJsonViewTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, JacksonJsonViewTest.class.getSimpleName());
+    }
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -84,56 +82,57 @@ public class JacksonJsonViewTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addClass(JacksonJsonViewTest.class);
-      return TestUtil.finishContainerPrepare(war, null, Something.class, TestJsonView.class, TestJsonView2.class, JacksonViewService.class);
-   }});
+                    war.addClass(JacksonJsonViewTest.class);
+                    return TestUtil.finishContainerPrepare(war, null, Something.class, TestJsonView.class, TestJsonView2.class,
+                            JacksonViewService.class);
+                }
+            });
 
+    private static QuarkusRestClient client;
 
-   private static QuarkusRestClient client;
+    /**
+     * @tpTestDetails Tests Jackson JsonView with jaxr-rs
+     * @tpPassCrit The response entity contains correctly serialized values. Jax-rs resource doesn't contain JsonView annotation
+     * @tpInfo RESTEASY-1366, JBEAP-5435
+     * @tpSince RESTEasy 3.1.0
+     */
+    @Test
+    public void testJacksonProxyJsonViewTest() throws Exception {
+        JacksonViewProxy proxy = client.target(generateURL("")).proxy(JacksonViewProxy.class);
+        Something p = proxy.getSomething();
+        Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue(), p.getAnnotatedValue());
+        Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue2(), p.getAnnotatedValue2());
+        Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getNotAnnotatedValue(), p.getNotAnnotatedValue());
+    }
 
-   /**
-    * @tpTestDetails Tests Jackson JsonView with jaxr-rs
-    * @tpPassCrit The response entity contains correctly serialized values. Jax-rs resource doesn't contain JsonView annotation
-    * @tpInfo RESTEASY-1366, JBEAP-5435
-    * @tpSince RESTEasy 3.1.0
-    */
-   @Test
-   public void testJacksonProxyJsonViewTest() throws Exception {
-      JacksonViewProxy proxy = client.target(generateURL("")).proxy(JacksonViewProxy.class);
-      Something p = proxy.getSomething();
-      Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue(), p.getAnnotatedValue());
-      Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue2(), p.getAnnotatedValue2());
-      Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getNotAnnotatedValue(), p.getNotAnnotatedValue());
-   }
+    /**
+     * @tpTestDetails Tests Jackson JsonView with jaxr-rs
+     * @tpPassCrit The response entity contains correctly serialized values. Jax-rs resource contains JsonView annotation
+     *             with TestJsonView interface
+     * @tpSince RESTEasy 3.1.0
+     */
+    @Test
+    public void testJacksonProxyJsonViewWithJasonViewTest() throws Exception {
+        JacksonViewProxy proxy = client.target(generateURL("")).proxy(JacksonViewProxy.class);
+        Something p = proxy.getSomethingWithView();
+        Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue(), p.getAnnotatedValue());
+        Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue2(), p.getAnnotatedValue2());
+        Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getNotAnnotatedValue(), p.getNotAnnotatedValue());
+    }
 
-   /**
-    * @tpTestDetails Tests Jackson JsonView with jaxr-rs
-    * @tpPassCrit The response entity contains correctly serialized values. Jax-rs resource contains JsonView annotation
-    * with TestJsonView interface
-    * @tpSince RESTEasy 3.1.0
-    */
-   @Test
-   public void testJacksonProxyJsonViewWithJasonViewTest() throws Exception {
-      JacksonViewProxy proxy = client.target(generateURL("")).proxy(JacksonViewProxy.class);
-      Something p = proxy.getSomethingWithView();
-      Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue(), p.getAnnotatedValue());
-      Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue2(), p.getAnnotatedValue2());
-      Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getNotAnnotatedValue(), p.getNotAnnotatedValue());
-   }
-
-   /**
-    * @tpTestDetails Tests Jackson JsonView with jaxr-rs
-    * @tpPassCrit The response entity contains correctly serialized values. Jax-rs resource contains JsonView annotation
-    * with TestJsonView2 interface
-    * @tpSince RESTEasy 3.1.0
-    */
-   @Test
-   public void testJacksonProxyJsonView2WithJasonViewTest() throws Exception {
-      JacksonViewProxy proxy = client.target(generateURL("")).proxy(JacksonViewProxy.class);
-      Something p = proxy.getSomethingWithView2();
-      Assert.assertNull(ERROR_MESSAGE, p.getAnnotatedValue());
-      Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue2(), p.getAnnotatedValue2());
-      Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getNotAnnotatedValue(), p.getNotAnnotatedValue());
-   }
+    /**
+     * @tpTestDetails Tests Jackson JsonView with jaxr-rs
+     * @tpPassCrit The response entity contains correctly serialized values. Jax-rs resource contains JsonView annotation
+     *             with TestJsonView2 interface
+     * @tpSince RESTEasy 3.1.0
+     */
+    @Test
+    public void testJacksonProxyJsonView2WithJasonViewTest() throws Exception {
+        JacksonViewProxy proxy = client.target(generateURL("")).proxy(JacksonViewProxy.class);
+        Something p = proxy.getSomethingWithView2();
+        Assert.assertNull(ERROR_MESSAGE, p.getAnnotatedValue());
+        Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getAnnotatedValue2(), p.getAnnotatedValue2());
+        Assert.assertEquals(ERROR_MESSAGE, JacksonViewService.SOMETHING.getNotAnnotatedValue(), p.getNotAnnotatedValue());
+    }
 
 }

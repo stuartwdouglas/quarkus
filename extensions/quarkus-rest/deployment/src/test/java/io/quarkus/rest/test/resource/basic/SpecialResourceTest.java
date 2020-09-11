@@ -81,7 +81,7 @@ public class SpecialResourceTest {
     public void test631() throws Exception {
         WebTarget base = client.target(generateURL("/delete"));
         Response response = base.request().method("DELETE", Entity.entity("hello", "text/plain"));
-        Assertions.assertEquals(HttpResponseCodes.SC_NO_CONTENT, response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT, response.getStatus());
         response.close();
     }
 
@@ -94,7 +94,7 @@ public class SpecialResourceTest {
     public void test534() throws Exception {
         WebTarget base = client.target(generateURL("/inputstream/test/json"));
         Response response = base.request().post(Entity.entity("hello world".getBytes(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(HttpResponseCodes.SC_NO_CONTENT, response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT, response.getStatus());
         response.close();
     }
 
@@ -107,7 +107,7 @@ public class SpecialResourceTest {
     public void test624() throws Exception {
         WebTarget base = client.target(generateURL("/ApI/FuNc"));
         Response response = base.request().get();
-        Assertions.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assertions.assertEquals(Status.OK, response.getStatus());
         response.close();
     }
 
@@ -125,7 +125,7 @@ public class SpecialResourceTest {
             method.setEntity(
                     new StringEntity("hello", ContentType.create("vnd.net.juniper.space.target-management.targets+xml")));
             response = client.execute(method);
-            Assertions.assertEquals(response.getStatusLine().getStatusCode(), HttpResponseCodes.SC_BAD_REQUEST);
+            Assertions.assertEquals(response.getStatusLine().getStatusCode(), Status.BAD_REQUEST);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {

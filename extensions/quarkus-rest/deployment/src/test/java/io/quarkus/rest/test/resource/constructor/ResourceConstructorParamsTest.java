@@ -1,9 +1,21 @@
 package io.quarkus.rest.test.resource.constructor;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import java.util.function.Supplier;
+
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.Response;
+
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.resource.constructor.resource.ConstructorCookieParamWAEResource;
 import io.quarkus.rest.test.resource.constructor.resource.ConstructorNoParamsResource;
@@ -15,25 +27,9 @@ import io.quarkus.rest.test.resource.constructor.resource.Item;
 import io.quarkus.rest.test.resource.constructor.resource.Item2;
 import io.quarkus.rest.test.resource.constructor.resource.Item2ParamConverterProvider;
 import io.quarkus.rest.test.resource.constructor.resource.ItemParamConverterProvider;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.rest.test.simple.TestUtil;
-
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Response;
-
+import io.quarkus.test.QuarkusUnitTest;
 
 public class ResourceConstructorParamsTest {
     protected static final Logger logger = Logger.getLogger(
@@ -41,7 +37,7 @@ public class ResourceConstructorParamsTest {
 
     static QuarkusRestClient client;
 
-     @RegisterExtension
+    @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
             .setArchiveProducer(new Supplier<JavaArchive>() {
                 @Override
@@ -49,22 +45,23 @@ public class ResourceConstructorParamsTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-        war.addClass(ConstructorParamsMixedResource.class);
-        war.addClass(ConstructorNoParamsResource.class);
-        war.addClass(ItemParamConverterProvider.class);
-        war.addClass(Item.class);
-        war.addClass(Item2ParamConverterProvider.class);
-        war.addClass(Item2.class);
-        war.addClass(ConstructorParams404Resource.class);
-        war.addClass(ConstructorParams400Resource.class);
-        war.addClass(ConstructorCookieParamWAEResource.class);
-        war.addClass(ConstructorQueryParamWAEResource.class);
-        return TestUtil.finishContainerPrepare(war, null);
-    }});
+                    war.addClass(ConstructorParamsMixedResource.class);
+                    war.addClass(ConstructorNoParamsResource.class);
+                    war.addClass(ItemParamConverterProvider.class);
+                    war.addClass(Item.class);
+                    war.addClass(Item2ParamConverterProvider.class);
+                    war.addClass(Item2.class);
+                    war.addClass(ConstructorParams404Resource.class);
+                    war.addClass(ConstructorParams400Resource.class);
+                    war.addClass(ConstructorCookieParamWAEResource.class);
+                    war.addClass(ConstructorQueryParamWAEResource.class);
+                    return TestUtil.finishContainerPrepare(war, null);
+                }
+            });
 
     @Before
     public void init() {
-        client = (QuarkusRestClient)ClientBuilder.newClient();
+        client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
     @After

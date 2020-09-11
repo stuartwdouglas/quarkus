@@ -1,17 +1,18 @@
 package io.quarkus.rest.test.interceptor.resource;
 
-import io.quarkus.rest.test.interceptor.PriorityExecutionTest;
+import java.io.IOException;
 
 import javax.annotation.Priority;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
-import java.io.IOException;
+
+import io.quarkus.rest.test.interceptor.PriorityExecutionTest;
 
 @Priority(-100)
 public class PriorityExecutionClientRequestFilter1 implements ClientRequestFilter {
-   @Override
-   public void filter(ClientRequestContext requestContext) throws IOException {
-      PriorityExecutionTest.logger.info(this);
-      PriorityExecutionTest.interceptors.add("PriorityExecutionClientRequestFilter1");
-   }
+    @Override
+    public void filter(ClientRequestContext requestContext) throws IOException {
+        PriorityExecutionTest.logger.info(this);
+        PriorityExecutionTest.interceptors.add("PriorityExecutionClientRequestFilter1");
+    }
 }

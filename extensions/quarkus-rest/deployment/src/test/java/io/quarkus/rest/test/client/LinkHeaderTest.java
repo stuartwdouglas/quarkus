@@ -1,28 +1,25 @@
 package io.quarkus.rest.test.client;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import java.util.function.Supplier;
+
 import javax.ws.rs.client.ClientBuilder;
-import io.quarkus.rest.test.client.resource.LinkHeaderService;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Response;
+
 import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Response;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.client.resource.LinkHeaderService;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Resteasy-client
@@ -30,14 +27,14 @@ import javax.ws.rs.core.Response;
  * @tpTestCaseDetails Test for new Link provided by jax-rs 2.0 spec
  * @tpSince RESTEasy 3.0.16
  */
-public class LinkHeaderTest extends ClientTestBase{
+public class LinkHeaderTest extends ClientTestBase {
 
-   protected static QuarkusRestClient client;
+    protected static QuarkusRestClient client;
 
-   @Before
-   public void setup() throws Exception {
-      client = (QuarkusRestClient)ClientBuilder.newClient();
-   }
+    @Before
+    public void setup() throws Exception {
+        client = (QuarkusRestClient) ClientBuilder.newClient();
+    }
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -47,29 +44,31 @@ public class LinkHeaderTest extends ClientTestBase{
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      return TestUtil.finishContainerPrepare(war, null, LinkHeaderService.class);
-   }});
+                    return TestUtil.finishContainerPrepare(war, null, LinkHeaderService.class);
+                }
+            });
 
-   @After
-   public void shutdown() throws Exception {
-      client.close();
-   }
+    @After
+    public void shutdown() throws Exception {
+        client.close();
+    }
 
-   /**
-    * @tpTestDetails Test new client without API
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testLinkheader() throws Exception {
+    /**
+     * @tpTestDetails Test new client without API
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testLinkheader() throws Exception {
 
-      // new client testing
-      {
-         Response response = client.target(generateURL("/linkheader/str")).request().header("Link",
-            "<http://example.com/TheBook/chapter2>; rel=\"previous\"; title=\"previous chapter\"").post(Entity.text(new String()));
-         javax.ws.rs.core.Link link = response.getLink("previous");
-         Assert.assertNotNull(link);
-         Assert.assertEquals("Wrong link", "previous chapter", link.getTitle());
-         Assert.assertEquals("Wrong link", "http://example.com/TheBook/chapter2", link.getUri().toString());
-      }
-   }
+        // new client testing
+        {
+            Response response = client.target(generateURL("/linkheader/str")).request().header("Link",
+                    "<http://example.com/TheBook/chapter2>; rel=\"previous\"; title=\"previous chapter\"")
+                    .post(Entity.text(new String()));
+            javax.ws.rs.core.Link link = response.getLink("previous");
+            Assert.assertNotNull(link);
+            Assert.assertEquals("Wrong link", "previous chapter", link.getTitle());
+            Assert.assertEquals("Wrong link", "http://example.com/TheBook/chapter2", link.getUri().toString());
+        }
+    }
 }

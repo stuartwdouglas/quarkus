@@ -9,13 +9,13 @@ import javax.ws.rs.Produces;
 @Path("/dynamic-feature")
 public class DynamicFeatureResource {
 
-   @Path("/hello")
-   @GET
-   @POST
-   @Produces("text/plain")
-   @Consumes("text/plain")
-   public String hello(String name) {
-      return name;
-   }
+    @Path("/hello")
+    @GET
+    @POST
+    @Produces("text/plain")
+    @Consumes("text/plain")
+    public String hello(String name) {
+        return name;
+    }
 
 }

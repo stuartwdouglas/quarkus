@@ -1,8 +1,27 @@
 package io.quarkus.rest.test.core.interceptors;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
 import io.quarkus.rest.test.core.interceptors.resource.ReaderContextArrayListEntityProvider;
 import io.quarkus.rest.test.core.interceptors.resource.ReaderContextFirstReaderInterceptor;
 import io.quarkus.rest.test.core.interceptors.resource.ReaderContextFirstWriterInterceptor;
@@ -10,31 +29,9 @@ import io.quarkus.rest.test.core.interceptors.resource.ReaderContextLinkedListEn
 import io.quarkus.rest.test.core.interceptors.resource.ReaderContextResource;
 import io.quarkus.rest.test.core.interceptors.resource.ReaderContextSecondReaderInterceptor;
 import io.quarkus.rest.test.core.interceptors.resource.ReaderContextSecondWriterInterceptor;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
 import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.rest.test.simple.TestUtil;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Interceptors
@@ -44,15 +41,14 @@ import java.util.List;
  */
 public class ReaderContextTest {
 
-   public static final String readFromReader(Reader reader) throws IOException {
-      BufferedReader br = new BufferedReader(reader);
-      String entity = br.readLine();
-      br.close();
-      return entity;
-   }
+    public static final String readFromReader(Reader reader) throws IOException {
+        BufferedReader br = new BufferedReader(reader);
+        String entity = br.readLine();
+        br.close();
+        return entity;
+    }
 
-
-   static Client client;
+    static Client client;
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -62,48 +58,51 @@ public class ReaderContextTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      return TestUtil.finishContainerPrepare(war, null, ReaderContextResource.class,
-            ReaderContextArrayListEntityProvider.class,
-            ReaderContextLinkedListEntityProvider.class,
-            ReaderContextFirstReaderInterceptor.class,
-            ReaderContextFirstWriterInterceptor.class,
-            ReaderContextSecondReaderInterceptor.class,
-            ReaderContextSecondWriterInterceptor.class);
-   }});
+                    return TestUtil.finishContainerPrepare(war, null, ReaderContextResource.class,
+                            ReaderContextArrayListEntityProvider.class,
+                            ReaderContextLinkedListEntityProvider.class,
+                            ReaderContextFirstReaderInterceptor.class,
+                            ReaderContextFirstWriterInterceptor.class,
+                            ReaderContextSecondReaderInterceptor.class,
+                            ReaderContextSecondWriterInterceptor.class);
+                }
+            });
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, ReaderContextTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, ReaderContextTest.class.getSimpleName());
+    }
 
-   @AfterClass
-   public static void cleanup() {
-      client.close();
-   }
+    @AfterClass
+    public static void cleanup() {
+        client.close();
+    }
 
-   /**
-    * @tpTestDetails Check post request.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void readerContextOnClientTest() {
-      client = ClientBuilder.newClient();
+    /**
+     * @tpTestDetails Check post request.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void readerContextOnClientTest() {
+        client = ClientBuilder.newClient();
 
-      WebTarget target = client.target(generateURL("/resource/poststring"));
-      target.register(ReaderContextFirstReaderInterceptor.class);
-      target.register(ReaderContextSecondReaderInterceptor.class);
-      target.register(ReaderContextArrayListEntityProvider.class);
-      target.register(ReaderContextLinkedListEntityProvider.class);
-      Response response = target.request().post(Entity.text("plaintext"));
-      response.getHeaders().add(ReaderContextResource.HEADERNAME,
-            ReaderContextFirstReaderInterceptor.class.getName());
-      @SuppressWarnings("unchecked")
-      List<String> list = response.readEntity(List.class);
-      Assert.assertTrue("Returned list in not instance of ArrayList", ArrayList.class.isInstance(list));
-      String entity = list.get(0);
-      Assert.assertTrue("Wrong interceptor type in response", entity.contains(ReaderContextSecondReaderInterceptor.class.getName()));
-      Assert.assertTrue("Wrong interceptor annotation in response", entity.contains(ReaderContextSecondReaderInterceptor.class.getAnnotations()[0]
-            .annotationType().getName()));
+        WebTarget target = client.target(generateURL("/resource/poststring"));
+        target.register(ReaderContextFirstReaderInterceptor.class);
+        target.register(ReaderContextSecondReaderInterceptor.class);
+        target.register(ReaderContextArrayListEntityProvider.class);
+        target.register(ReaderContextLinkedListEntityProvider.class);
+        Response response = target.request().post(Entity.text("plaintext"));
+        response.getHeaders().add(ReaderContextResource.HEADERNAME,
+                ReaderContextFirstReaderInterceptor.class.getName());
+        @SuppressWarnings("unchecked")
+        List<String> list = response.readEntity(List.class);
+        Assert.assertTrue("Returned list in not instance of ArrayList", ArrayList.class.isInstance(list));
+        String entity = list.get(0);
+        Assert.assertTrue("Wrong interceptor type in response",
+                entity.contains(ReaderContextSecondReaderInterceptor.class.getName()));
+        Assert.assertTrue("Wrong interceptor annotation in response",
+                entity.contains(ReaderContextSecondReaderInterceptor.class.getAnnotations()[0]
+                        .annotationType().getName()));
 
-      client.close();
-   }
+        client.close();
+    }
 }

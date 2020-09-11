@@ -10,15 +10,15 @@ import javax.ws.rs.core.Application;
 @NameBoundProxiesAnnotation
 public class NameBoundCDIProxiesApplication extends Application {
 
-   public Set<Class<?>> getClasses() {
-      Set<Class<?>> set = new HashSet<Class<?>>();
-      set.add(NameBoundCDIProxiesResource.class);
-      return set;
-   }
+    public Set<Class<?>> getClasses() {
+        Set<Class<?>> set = new HashSet<Class<?>>();
+        set.add(NameBoundCDIProxiesResource.class);
+        return set;
+    }
 
-   public Set<Object> getSingletons() {
-      Set<Object> set = new HashSet<Object>();
-      set.add(new NameBoundCDIProxiesInterceptor());
-      return set;
-   }
+    public Set<Object> getSingletons() {
+        Set<Object> set = new HashSet<Object>();
+        set.add(new NameBoundCDIProxiesInterceptor());
+        return set;
+    }
 }

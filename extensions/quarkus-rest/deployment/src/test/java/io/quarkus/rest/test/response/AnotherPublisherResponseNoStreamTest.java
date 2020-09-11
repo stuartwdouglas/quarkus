@@ -1,41 +1,34 @@
 package io.quarkus.rest.test.response;
 
-import java.lang.reflect.ReflectPermission;
-import java.net.SocketPermission;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PropertyPermission;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.sse.SseEventSource;
 
-
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
 import io.quarkus.rest.test.response.resource.AsyncResponseCallback;
 import io.quarkus.rest.test.response.resource.AsyncResponseException;
 import io.quarkus.rest.test.response.resource.AsyncResponseExceptionMapper;
 import io.quarkus.rest.test.response.resource.PublisherResponseNoStreamResource;
-import org.jboss.resteasy.utils.PermissionUtil;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
 import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Publisher response type
@@ -44,7 +37,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  */
 @RunWith(Arquillian.class)
 public class AnotherPublisherResponseNoStreamTest {
-   private static final Logger logger = Logger.getLogger(AnotherPublisherResponseNoStreamTest.class);
+    private static final Logger logger = Logger.getLogger(AnotherPublisherResponseNoStreamTest.class);
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -54,58 +47,57 @@ public class AnotherPublisherResponseNoStreamTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
-         + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.reactivestreams\n"));
+                    war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
+                            + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.reactivestreams\n"));
 
-      return TestUtil.finishContainerPrepare(war, null, PublisherResponseNoStreamResource.class,
-            AsyncResponseCallback.class, AsyncResponseExceptionMapper.class, AsyncResponseException.class, PortProviderUtil.class);
-   }});
-
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, AnotherPublisherResponseNoStreamTest.class.getSimpleName());
-   }
-
-   /**
-    * @tpTestDetails Resource method returns Publisher<String>.
-    * @tpSince RESTEasy 4.0
-    */
-   @Test
-   public void testSse() throws Exception
-   {
-      for (int i=0; i < 40; i++) {
-         internalTestSse(i);
-      }
-   }
-   public void internalTestSse(int i) throws Exception
-   {
-      Client client = ClientBuilder.newClient();
-      WebTarget target = client.target(generateURL("/sse"));
-      List<String> collector = new ArrayList<>();
-      List<Throwable> errors = new ArrayList<>();
-      CompletableFuture<Void> future = new CompletableFuture<Void>();
-      try (SseEventSource source = SseEventSource.target(target).build())
-      {
-         source.register(evt -> {
-            String data = evt.readData(String.class);
-            collector.add(data);
-            if (collector.size() >= 2)
-            {
-               future.complete(null);
-            }
-         }, t -> {
-               logger.error(t.getMessage(), t);
-               errors.add(t);
-            }, () -> {
-               // bah, never called
-               future.complete(null);
+                    return TestUtil.finishContainerPrepare(war, null, PublisherResponseNoStreamResource.class,
+                            AsyncResponseCallback.class, AsyncResponseExceptionMapper.class, AsyncResponseException.class,
+                            PortProviderUtil.class);
+                }
             });
-         source.open();
-         future.get(5000, TimeUnit.SECONDS);
-         Assert.assertEquals(2, collector.size());
-         Assert.assertEquals(0, errors.size());
-         Assert.assertTrue(collector.contains("one"));
-         Assert.assertTrue(collector.contains("two"));
-      }
-      client.close();
-   }
+
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, AnotherPublisherResponseNoStreamTest.class.getSimpleName());
+    }
+
+    /**
+     * @tpTestDetails Resource method returns Publisher<String>.
+     * @tpSince RESTEasy 4.0
+     */
+    @Test
+    public void testSse() throws Exception {
+        for (int i = 0; i < 40; i++) {
+            internalTestSse(i);
+        }
+    }
+
+    public void internalTestSse(int i) throws Exception {
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target(generateURL("/sse"));
+        List<String> collector = new ArrayList<>();
+        List<Throwable> errors = new ArrayList<>();
+        CompletableFuture<Void> future = new CompletableFuture<Void>();
+        try (SseEventSource source = SseEventSource.target(target).build()) {
+            source.register(evt -> {
+                String data = evt.readData(String.class);
+                collector.add(data);
+                if (collector.size() >= 2) {
+                    future.complete(null);
+                }
+            }, t -> {
+                logger.error(t.getMessage(), t);
+                errors.add(t);
+            }, () -> {
+                // bah, never called
+                future.complete(null);
+            });
+            source.open();
+            future.get(5000, TimeUnit.SECONDS);
+            Assert.assertEquals(2, collector.size());
+            Assert.assertEquals(0, errors.size());
+            Assert.assertTrue(collector.contains("one"));
+            Assert.assertTrue(collector.contains("two"));
+        }
+        client.close();
+    }
 }

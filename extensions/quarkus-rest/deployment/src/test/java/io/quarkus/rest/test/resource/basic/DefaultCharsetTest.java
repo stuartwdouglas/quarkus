@@ -1,30 +1,27 @@
 package io.quarkus.rest.test.resource.basic;
 
+import java.util.function.Supplier;
+
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import javax.ws.rs.client.ClientBuilder;
-import io.quarkus.rest.test.resource.basic.resource.DefaultCharsetResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.resource.basic.resource.DefaultCharsetResource;
+import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Resources
@@ -34,21 +31,13 @@ import io.quarkus.rest.test.simple.TestUtil;
  */
 public class DefaultCharsetTest {
 
-   protected enum ADD_CHARSET {TRUE, FALSE, DEFAULT};
+    protected enum ADD_CHARSET {
+        TRUE,
+        FALSE,
+        DEFAULT
+    };
 
-   static QuarkusRestClient client;
-
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
-
-      war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_true.xml", "web.xml");
-      return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
-   }});
+    static QuarkusRestClient client;
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -58,9 +47,10 @@ public class DefaultCharsetTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_false.xml", "web.xml");
-      return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
-   }});
+                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_true.xml", "web.xml");
+                    return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
+                }
+            });
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -70,57 +60,73 @@ public class DefaultCharsetTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_default.xml", "web.xml");
-      return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
-   }});
+                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_false.xml",
+                            "web.xml");
+                    return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
+                }
+            });
 
-   @Before
-   public void init() {
-      client = (QuarkusRestClient)ClientBuilder.newClient();
-   }
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
+            .setArchiveProducer(new Supplier<JavaArchive>() {
+                @Override
+                public JavaArchive get() {
+                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+                    war.addClasses(PortProviderUtil.class);
 
-   @After
-   public void after() throws Exception {
-      client.close();
-      client = null;
-   }
+                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_default.xml",
+                            "web.xml");
+                    return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
+                }
+            });
 
-   private String generateURL(String suffix, String context, String path) {
-      return PortProviderUtil.generateURL(context + path, DefaultCharsetTest.class.getSimpleName() + suffix);
-   }
+    @Before
+    public void init() {
+        client = (QuarkusRestClient) ClientBuilder.newClient();
+    }
 
-   @Test
-   public void testCharset() throws Exception {
-      doTest("_true",    "/true",    "/nocharset",     "UTF-8");  // "resteasy.add.charset" set to true, text media type, charset not set
-      doTest("_true",    "/true",    "/charset",       "UTF-16"); // "resteasy.add.charset" set to true, text media type, charset already set
-      doTest("_true",    "/true",    "/nomediatype",   null);     // "resteasy.add.charset" set to true, no mediatype set in response
-      doTest("_true",    "/true",    "/xml_nocharset", "UTF-8");  // "resteasy.add.charset" set to true, application/xml media type, charset not set
-      doTest("_true",    "/true",    "/xml_charset",   "UTF-16"); // "resteasy.add.charset" set to true, application/xml media type, charset already set
-      doTest("_true",    "/true",    "/external",      "UTF-8");  // "resteasy.add.charset" set to true, application/xml-... media type, charset not set
-      doTest("_true",    "/true",    "/json",          null);     // "resteasy.add.charset" set to true, application/json media type, charset not set
+    @After
+    public void after() throws Exception {
+        client.close();
+        client = null;
+    }
 
-      doTest("_false",   "/false",   "/nocharset",     null);     // "resteasy.add.charset" set to false, text media type, charset not set
-      doTest("_false",   "/false",   "/charset",       "UTF-16"); // "resteasy.add.charset" set to false, text media type, charset already set
-      doTest("_false",   "/false",   "/nomediatype",   null);     // "resteasy.add.charset" set to false, no media type set in response
-      doTest("_false",   "/false",   "/xml_nocharset", null);     // "resteasy.add.charset" set to false, application/xml media type, charset not set
-      doTest("_false",   "/false",   "/xml_charset",   "UTF-16"); // "resteasy.add.charset" set to false, application/xml media type, charset already set
-      doTest("_false",   "/false",   "/external",      null);     // "resteasy.add.charset" set to false, application/xml-... media type, charset not set
-      doTest("_false",   "/false",   "/json",          null);     // "resteasy.add.charset" set to false, application/json media type, charset not set
+    private String generateURL(String suffix, String context, String path) {
+        return PortProviderUtil.generateURL(context + path, DefaultCharsetTest.class.getSimpleName() + suffix);
+    }
 
-      doTest("_default", "/default",  "/nocharset",     "UTF-8");  // "resteasy.add.charset" not set, text media type, charset not set
-      doTest("_default", "/default",  "/charset",       "UTF-16"); // "resteasy.add.charset" not set, text media type, charset already set
-      doTest("_default", "/default",  "/nomediatype",   null);     // "resteasy.add.charset" not set, no mediatype set in response
-      doTest("_default", "/default",  "/xml_nocharset", "UTF-8");  // "resteasy.add.charset" not set, application/xml media type, charset not set
-      doTest("_default", "/default",  "/xml_charset",   "UTF-16"); // "resteasy.add.charset" not set, application/xml media type, charset already set
-      doTest("_default", "/default",  "/external",      "UTF-8");  // "resteasy.add.charset" not set, application/xml-... media type, charset not set
-      doTest("_default", "/default",  "/json",          null);     // "resteasy.add.charset" not set, application/json media type, charset not set
-   }
+    @Test
+    public void testCharset() throws Exception {
+        doTest("_true", "/true", "/nocharset", "UTF-8"); // "resteasy.add.charset" set to true, text media type, charset not set
+        doTest("_true", "/true", "/charset", "UTF-16"); // "resteasy.add.charset" set to true, text media type, charset already set
+        doTest("_true", "/true", "/nomediatype", null); // "resteasy.add.charset" set to true, no mediatype set in response
+        doTest("_true", "/true", "/xml_nocharset", "UTF-8"); // "resteasy.add.charset" set to true, application/xml media type, charset not set
+        doTest("_true", "/true", "/xml_charset", "UTF-16"); // "resteasy.add.charset" set to true, application/xml media type, charset already set
+        doTest("_true", "/true", "/external", "UTF-8"); // "resteasy.add.charset" set to true, application/xml-... media type, charset not set
+        doTest("_true", "/true", "/json", null); // "resteasy.add.charset" set to true, application/json media type, charset not set
 
-   void doTest(String suffix, String mapping, String path, String expectedMediaType) throws Exception {
-      WebTarget target = client.target(generateURL(suffix, mapping, path));
-      Response response = target.request().get();
-      Assert.assertEquals(200, response.getStatus());
-      Assert.assertEquals(expectedMediaType, response.getMediaType().getParameters().get(MediaType.CHARSET_PARAMETER));
-      response.close();
-   }
+        doTest("_false", "/false", "/nocharset", null); // "resteasy.add.charset" set to false, text media type, charset not set
+        doTest("_false", "/false", "/charset", "UTF-16"); // "resteasy.add.charset" set to false, text media type, charset already set
+        doTest("_false", "/false", "/nomediatype", null); // "resteasy.add.charset" set to false, no media type set in response
+        doTest("_false", "/false", "/xml_nocharset", null); // "resteasy.add.charset" set to false, application/xml media type, charset not set
+        doTest("_false", "/false", "/xml_charset", "UTF-16"); // "resteasy.add.charset" set to false, application/xml media type, charset already set
+        doTest("_false", "/false", "/external", null); // "resteasy.add.charset" set to false, application/xml-... media type, charset not set
+        doTest("_false", "/false", "/json", null); // "resteasy.add.charset" set to false, application/json media type, charset not set
+
+        doTest("_default", "/default", "/nocharset", "UTF-8"); // "resteasy.add.charset" not set, text media type, charset not set
+        doTest("_default", "/default", "/charset", "UTF-16"); // "resteasy.add.charset" not set, text media type, charset already set
+        doTest("_default", "/default", "/nomediatype", null); // "resteasy.add.charset" not set, no mediatype set in response
+        doTest("_default", "/default", "/xml_nocharset", "UTF-8"); // "resteasy.add.charset" not set, application/xml media type, charset not set
+        doTest("_default", "/default", "/xml_charset", "UTF-16"); // "resteasy.add.charset" not set, application/xml media type, charset already set
+        doTest("_default", "/default", "/external", "UTF-8"); // "resteasy.add.charset" not set, application/xml-... media type, charset not set
+        doTest("_default", "/default", "/json", null); // "resteasy.add.charset" not set, application/json media type, charset not set
+    }
+
+    void doTest(String suffix, String mapping, String path, String expectedMediaType) throws Exception {
+        WebTarget target = client.target(generateURL(suffix, mapping, path));
+        Response response = target.request().get();
+        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals(expectedMediaType, response.getMediaType().getParameters().get(MediaType.CHARSET_PARAMETER));
+        response.close();
+    }
 }

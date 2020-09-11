@@ -3,7 +3,7 @@ package io.quarkus.rest.test.resource.param.resource;
 public class HeaderParamMyClass {
     private String header = "badValue";
 
-    public HeaderParamMyClass(){
+    public HeaderParamMyClass() {
 
     }
 

@@ -1,28 +1,26 @@
 package io.quarkus.rest.test.providers.custom;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import java.util.function.Supplier;
+
 import javax.ws.rs.client.ClientBuilder;
-import io.quarkus.rest.test.providers.custom.resource.CustomValueInjectorHello;
-import io.quarkus.rest.test.providers.custom.resource.CustomValueInjectorHelloResource;
-import io.quarkus.rest.test.providers.custom.resource.CustomValueInjectorInjectorFactoryImpl;
+
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.providers.custom.resource.CustomValueInjectorHello;
+import io.quarkus.rest.test.providers.custom.resource.CustomValueInjectorHelloResource;
+import io.quarkus.rest.test.providers.custom.resource.CustomValueInjectorInjectorFactoryImpl;
+import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Providers
@@ -32,7 +30,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  */
 public class CustomValueInjectorTest {
 
-   static QuarkusRestClient client;
+    static QuarkusRestClient client;
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -42,33 +40,34 @@ public class CustomValueInjectorTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addClass(CustomValueInjectorHello.class);
-      return TestUtil.finishContainerPrepare(war, null, CustomValueInjectorHelloResource.class,
-            CustomValueInjectorInjectorFactoryImpl.class);
-   }});
+                    war.addClass(CustomValueInjectorHello.class);
+                    return TestUtil.finishContainerPrepare(war, null, CustomValueInjectorHelloResource.class,
+                            CustomValueInjectorInjectorFactoryImpl.class);
+                }
+            });
 
-   @Before
-   public void init() {
-      client = (QuarkusRestClient)ClientBuilder.newClient();
-   }
+    @Before
+    public void init() {
+        client = (QuarkusRestClient) ClientBuilder.newClient();
+    }
 
-   @After
-   public void after() throws Exception {
-      client.close();
-   }
+    @After
+    public void after() throws Exception {
+        client.close();
+    }
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, CustomValueInjectorTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, CustomValueInjectorTest.class.getSimpleName());
+    }
 
-   /**
-    * @tpTestDetails Client test.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testCustomInjectorFactory() throws Exception {
-      String result = client.target(generateURL("/")).request().get(String.class);
-      Assert.assertEquals("Response has wrong content", "world", result);
-   }
+    /**
+     * @tpTestDetails Client test.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testCustomInjectorFactory() throws Exception {
+        String result = client.target(generateURL("/")).request().get(String.class);
+        Assert.assertEquals("Response has wrong content", "world", result);
+    }
 
 }

@@ -1,37 +1,32 @@
 package io.quarkus.rest.test.cdi.basic;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.test.cdi.basic.resource.AsynchronousResource;
-import io.quarkus.rest.test.cdi.basic.resource.AsynchronousStateless;
-import io.quarkus.rest.test.cdi.basic.resource.AsynchronousStatelessLocal;
-import io.quarkus.rest.test.cdi.util.UtilityProducer;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.test.cdi.basic.resource.AsynchronousResource;
+import io.quarkus.rest.test.cdi.basic.resource.AsynchronousStateless;
+import io.quarkus.rest.test.cdi.basic.resource.AsynchronousStatelessLocal;
+import io.quarkus.rest.test.cdi.util.UtilityProducer;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter CDI
@@ -41,13 +36,13 @@ import static org.junit.Assert.assertThat;
  */
 public class AsynchronousCdiTest {
 
-   public static final Long DELAY = 5000L;
+    public static final Long DELAY = 5000L;
 
-   protected static final Logger log = LogManager.getLogger(AsynchronousCdiTest.class.getName());
+    protected static final Logger log = LogManager.getLogger(AsynchronousCdiTest.class.getName());
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, AsynchronousCdiTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, AsynchronousCdiTest.class.getSimpleName());
+    }
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -57,44 +52,45 @@ public class AsynchronousCdiTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addClasses(UtilityProducer.class)
-            .addClasses(AsynchronousStatelessLocal.class, AsynchronousStateless.class)
-            .addClasses(AsynchronousResource.class, AsynchronousCdiTest.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-      return war;
-   }});
+                    war.addClasses(UtilityProducer.class)
+                            .addClasses(AsynchronousStatelessLocal.class, AsynchronousStateless.class)
+                            .addClasses(AsynchronousResource.class, AsynchronousCdiTest.class)
+                            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                    return war;
+                }
+            });
 
-   /**
-    * @tpTestDetails Delay is in stateless bean.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testAsynchJaxRs() throws Exception {
-      Client client = ClientBuilder.newClient();
-      WebTarget base = client.target(generateURL("/asynch/simple"));
+    /**
+     * @tpTestDetails Delay is in stateless bean.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testAsynchJaxRs() throws Exception {
+        Client client = ClientBuilder.newClient();
+        WebTarget base = client.target(generateURL("/asynch/simple"));
 
-      long start = System.currentTimeMillis();
-      Response response = base.request().get();
+        long start = System.currentTimeMillis();
+        Response response = base.request().get();
 
-      assertThat("Response was sent before delay elapsed", System.currentTimeMillis() - start, is(greaterThan(DELAY)));
-      assertEquals(200, response.getStatus());
-      client.close();
-   }
+        assertThat("Response was sent before delay elapsed", System.currentTimeMillis() - start, is(greaterThan(DELAY)));
+        assertEquals(200, response.getStatus());
+        client.close();
+    }
 
-   /**
-    * @tpTestDetails Delay is in RESTEasy resource.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testAsynchResourceAsynchEJB() throws Exception {
-      Client client = ClientBuilder.newClient();
-      WebTarget base = client.target(generateURL("/asynch/ejb"));
+    /**
+     * @tpTestDetails Delay is in RESTEasy resource.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testAsynchResourceAsynchEJB() throws Exception {
+        Client client = ClientBuilder.newClient();
+        WebTarget base = client.target(generateURL("/asynch/ejb"));
 
-      long start = System.currentTimeMillis();
-      Response response = base.request().get();
+        long start = System.currentTimeMillis();
+        Response response = base.request().get();
 
-      assertThat("Response was sent before delay elapsed", System.currentTimeMillis() - start, is(greaterThan(DELAY)));
-      assertEquals(200, response.getStatus());
-      client.close();
-   }
+        assertThat("Response was sent before delay elapsed", System.currentTimeMillis() - start, is(greaterThan(DELAY)));
+        assertEquals(200, response.getStatus());
+        client.close();
+    }
 }

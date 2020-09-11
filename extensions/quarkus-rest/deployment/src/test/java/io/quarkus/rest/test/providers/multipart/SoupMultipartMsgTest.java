@@ -1,50 +1,45 @@
 package io.quarkus.rest.test.providers.multipart;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import io.quarkus.rest.test.providers.multipart.resource.Soup;
-import io.quarkus.rest.test.providers.multipart.resource.SoupVendorResource;
-import org.jboss.resteasy.utils.PermissionUtil;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.lang.reflect.ReflectPermission;
-import java.util.Iterator;
-import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
+import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.providers.multipart.resource.Soup;
+import io.quarkus.rest.test.providers.multipart.resource.SoupVendorResource;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 public class SoupMultipartMsgTest {
     protected final Logger logger = LogManager.getLogger(SoupMultipartMsgTest.class.getName());
-    static QuarkusRestClient  client;
+    static QuarkusRestClient client;
 
-     @RegisterExtension
+    @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
             .setArchiveProducer(new Supplier<JavaArchive>() {
                 @Override
@@ -52,15 +47,16 @@ public class SoupMultipartMsgTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-        war.addClasses(Soup.class);
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                    war.addClasses(Soup.class);
+                    war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
-        return TestUtil.finishContainerPrepare(war, null, SoupVendorResource.class);
-    }});
+                    return TestUtil.finishContainerPrepare(war, null, SoupVendorResource.class);
+                }
+            });
 
     @BeforeClass
     public static void before() throws Exception {
-        client = (QuarkusRestClient)ClientBuilder.newClient();
+        client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
     @AfterClass
@@ -87,7 +83,7 @@ public class SoupMultipartMsgTest {
                 new MediaType("multipart", "mixed"));
         Response response = target.request().post(entity);
 
-        Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assert.assertEquals(Status.OK, response.getStatus());
         String result = response.readEntity(String.class);
 
         if (result.startsWith("Failed")) {
@@ -110,7 +106,7 @@ public class SoupMultipartMsgTest {
         Response response = target.request().get();
 
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
-        Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assert.assertEquals(Status.OK, response.getStatus());
 
         List<String> controlList = SoupVendorResource.getControlList();
 
@@ -133,12 +129,11 @@ public class SoupMultipartMsgTest {
         StringBuilder sb = new StringBuilder();
         if (!controlList.isEmpty()) {
             sb.append("Failed: parts not found: ");
-            for (Iterator<String> it = controlList.iterator(); it.hasNext(); ) {
+            for (Iterator<String> it = controlList.iterator(); it.hasNext();) {
                 sb.append(it.next() + " ");
             }
             Assert.fail(sb.toString());
         }
-
 
     }
 
@@ -157,15 +152,16 @@ public class SoupMultipartMsgTest {
         Response response = target.request().get();
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
 
-        Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assert.assertEquals(Status.OK, response.getStatus());
         List<String> controlList = SoupVendorResource.getControlList();
 
-        GenericType<List<Soup>> gType = new GenericType<List<Soup>>(){};
+        GenericType<List<Soup>> gType = new GenericType<List<Soup>>() {
+        };
         for (InputPart inputPart : multipartInput.getParts()) {
             if (MediaType.APPLICATION_XML_TYPE.equals(inputPart.getMediaType())) {
                 // List<Soup> soupList = inputPart.getBody(gType.getRawType(), gType.getType());
                 List<Soup> soupList = inputPart.getBody(gType);
-                for(Soup soup : soupList) {
+                for (Soup soup : soupList) {
                     String name = soup.getId();
                     if (controlList.contains(name)) {
                         controlList.remove(name);
@@ -184,7 +180,7 @@ public class SoupMultipartMsgTest {
         StringBuilder sb = new StringBuilder();
         if (!controlList.isEmpty()) {
             sb.append("Failed: parts not found: ");
-            for (Iterator<String> it = controlList.iterator(); it.hasNext(); ) {
+            for (Iterator<String> it = controlList.iterator(); it.hasNext();) {
                 sb.append(it.next() + " ");
             }
             Assert.fail(sb.toString());
@@ -197,7 +193,7 @@ public class SoupMultipartMsgTest {
 
         ResteasyWebTarget target = client.target(generateURL("/vendor/soupfile"));
         Response response = target.request().get();
-        Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assert.assertEquals(Status.OK, response.getStatus());
 
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
         InputPart inputPart = multipartInput.getParts().get(0);

@@ -6,7 +6,6 @@ import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA_TYPE;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.junit.Assert.assertEquals;
 
-import java.io.FilePermission;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 
@@ -21,15 +20,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
-import io.quarkus.rest.test.form.resteasy1405.ByFieldForm;
-import io.quarkus.rest.test.form.resteasy1405.BySetterForm;
-import io.quarkus.rest.test.form.resteasy1405.InputData;
-import io.quarkus.rest.test.form.resteasy1405.MyResource;
-import io.quarkus.rest.test.form.resteasy1405.OutputData;
-import org.jboss.resteasy.utils.PermissionUtil;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -37,12 +28,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import io.quarkus.rest.test.form.resteasy1405.ByFieldForm;
+import io.quarkus.rest.test.form.resteasy1405.BySetterForm;
+import io.quarkus.rest.test.form.resteasy1405.InputData;
+import io.quarkus.rest.test.form.resteasy1405.MyResource;
+import io.quarkus.rest.test.form.resteasy1405.OutputData;
 import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.rest.test.simple.TestUtil;
 
 /**
@@ -51,112 +43,95 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpTestCaseDetails Injection of @FormParam InputPart fields in @MultipartForm parameters
  * @tpSince RESTEasy 3.1.0
  */
-public class Resteasy1405Test
-{
+public class Resteasy1405Test {
 
-   @Deployment(testable = false)
-   public static Archive<?> createTestArchive()
-   {
-      WebArchive war = TestUtil.prepareArchive(Resteasy1405Test.class.getSimpleName());
-      war.addClasses(ByFieldForm.class, BySetterForm.class, InputData.class, OutputData.class);
+    @Deployment(testable = false)
+    public static Archive<?> createTestArchive() {
+        WebArchive war = TestUtil.prepareArchive(Resteasy1405Test.class.getSimpleName());
+        war.addClasses(ByFieldForm.class, BySetterForm.class, InputData.class, OutputData.class);
 
+        return TestUtil.finishContainerPrepare(war, null, MyResource.class);
+    }
 
+    private JAXBContext jaxbc;
 
-      return TestUtil.finishContainerPrepare(war, null, MyResource.class);
-   }
+    private Client client;
 
-   private JAXBContext jaxbc;
+    @Before
+    public void setup() throws JAXBException {
+        jaxbc = JAXBContext.newInstance(InputData.class);
+        client = ClientBuilder.newClient();
+    }
 
-   private Client client;
+    @After
+    public void done() {
+        client.close();
+    }
 
-   @Before
-   public void setup() throws JAXBException
-   {
-      jaxbc = JAXBContext.newInstance(InputData.class);
-      client = ClientBuilder.newClient();
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, Resteasy1405Test.class.getSimpleName());
+    }
 
-   @After
-   public void done()
-   {
-      client.close();
-   }
+    /**
+     * @tpTestDetails Injection of Content-type into MultiPartForm with annotated form fields
+     * @tpSince RESTEasy 3.1.0
+     */
+    @Test
+    public void testInputPartByField() throws Exception {
+        WebTarget post = client.target(generateURL("/field"));
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, Resteasy1405Test.class.getSimpleName());
-   }
+        InputData data = new InputData();
+        data.setItems(asList("value1", "value2"));
 
-   /**
-    * @tpTestDetails Injection of Content-type into MultiPartForm with annotated form fields
-    * @tpSince RESTEasy 3.1.0
-    */
-   @Test
-   public void testInputPartByField() throws Exception
-   {
-      WebTarget post = client.target(generateURL("/field"));
+        MultipartFormDataOutput multipart = new MultipartFormDataOutput();
+        multipart.addFormData("name", "Test by field", TEXT_PLAIN_TYPE);
+        multipart.addFormData("data", asXml(data), APPLICATION_XML_TYPE);
+        GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(multipart) {
+        };
 
-      InputData data = new InputData();
-      data.setItems(asList("value1", "value2"));
+        Response response = post.request().post(Entity.entity(entity, MULTIPART_FORM_DATA_TYPE));
+        try {
+            assertEquals(200, response.getStatus());
+            assertEquals("OutputData[name='Test by field', contentType='application/xml', items={value1,value2}]",
+                    response.readEntity(String.class));
+        } finally {
+            response.close();
+        }
+    }
 
-      MultipartFormDataOutput multipart = new MultipartFormDataOutput();
-      multipart.addFormData("name", "Test by field", TEXT_PLAIN_TYPE);
-      multipart.addFormData("data", asXml(data), APPLICATION_XML_TYPE);
-      GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(multipart)
-      {
-      };
+    /**
+     * @tpTestDetails Injection of Content-type into MultiPartForm with annotated form setters
+     * @tpSince RESTEasy 3.1.0
+     */
+    @Test
+    public void testInputPartBySetter() throws Exception {
+        WebTarget post = client.target(generateURL("/setter"));
 
-      Response response = post.request().post(Entity.entity(entity, MULTIPART_FORM_DATA_TYPE));
-      try
-      {
-         assertEquals(200, response.getStatus());
-         assertEquals("OutputData[name='Test by field', contentType='application/xml', items={value1,value2}]",
-               response.readEntity(String.class));
-      }
-      finally
-      {
-         response.close();
-      }
-   }
+        InputData data = new InputData();
+        data.setItems(asList("value1", "value2"));
 
-   /**
-    * @tpTestDetails Injection of Content-type into MultiPartForm with annotated form setters
-    * @tpSince RESTEasy 3.1.0
-    */
-   @Test
-   public void testInputPartBySetter() throws Exception
-   {
-      WebTarget post = client.target(generateURL("/setter"));
+        MultipartFormDataOutput multipart = new MultipartFormDataOutput();
+        multipart.addFormData("name", "Test by setter", TEXT_PLAIN_TYPE);
+        multipart.addFormData("data", asXml(data), APPLICATION_XML_TYPE);
+        GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(multipart) {
+        };
 
-      InputData data = new InputData();
-      data.setItems(asList("value1", "value2"));
+        Response response = post.request().post(Entity.entity(entity, MULTIPART_FORM_DATA_TYPE));
+        try {
+            assertEquals(200, response.getStatus());
+            assertEquals("OutputData[name='Test by setter', contentType='application/xml', items={value1,value2}]",
+                    response.readEntity(String.class));
+        } finally {
+            response.close();
+        }
+    }
 
-      MultipartFormDataOutput multipart = new MultipartFormDataOutput();
-      multipart.addFormData("name", "Test by setter", TEXT_PLAIN_TYPE);
-      multipart.addFormData("data", asXml(data), APPLICATION_XML_TYPE);
-      GenericEntity<MultipartFormDataOutput> entity = new GenericEntity<MultipartFormDataOutput>(multipart)
-      {
-      };
+    private String asXml(Object obj) throws JAXBException {
+        Marshaller m = jaxbc.createMarshaller();
+        m.setProperty(Marshaller.JAXB_ENCODING, StandardCharsets.UTF_8.name());
 
-      Response response = post.request().post(Entity.entity(entity, MULTIPART_FORM_DATA_TYPE));
-      try
-      {
-         assertEquals(200, response.getStatus());
-         assertEquals("OutputData[name='Test by setter', contentType='application/xml', items={value1,value2}]",
-               response.readEntity(String.class));
-      }
-      finally
-      {
-         response.close();
-      }
-   }
-
-   private String asXml(Object obj) throws JAXBException
-   {
-      Marshaller m = jaxbc.createMarshaller();
-      m.setProperty(Marshaller.JAXB_ENCODING, StandardCharsets.UTF_8.name());
-
-      StringWriter writer = new StringWriter();
-      m.marshal(obj, writer);
-      return writer.toString();
-   }
+        StringWriter writer = new StringWriter();
+        m.marshal(obj, writer);
+        return writer.toString();
+    }
 }

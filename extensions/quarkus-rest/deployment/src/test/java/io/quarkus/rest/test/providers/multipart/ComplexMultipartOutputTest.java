@@ -1,48 +1,43 @@
 package io.quarkus.rest.test.providers.multipart;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartInputImpl;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedInput;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedOutput;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import io.quarkus.rest.test.providers.multipart.resource.ComplexMultipartOutputResource;
-import org.jboss.resteasy.utils.PermissionUtil;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.InputStream;
-import java.lang.reflect.ReflectPermission;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartInputImpl;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedInput;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedOutput;
+import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.providers.multipart.resource.ComplexMultipartOutputResource;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 public class ComplexMultipartOutputTest {
     protected final Logger logger = LogManager.getLogger(
@@ -50,7 +45,7 @@ public class ComplexMultipartOutputTest {
 
     static QuarkusRestClient client;
 
-     @RegisterExtension
+    @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
             .setArchiveProducer(new Supplier<JavaArchive>() {
                 @Override
@@ -58,11 +53,12 @@ public class ComplexMultipartOutputTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                    war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
-        return TestUtil.finishContainerPrepare(war, null,
-                ComplexMultipartOutputResource.class);
-    }});
+                    return TestUtil.finishContainerPrepare(war, null,
+                            ComplexMultipartOutputResource.class);
+                }
+            });
 
     @BeforeClass
     public static void before() throws Exception {
@@ -89,9 +85,9 @@ public class ComplexMultipartOutputTest {
         ResteasyWebTarget target = client.target(generateURL("/mpart/test"));
         Response response = target.request().get();
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
-        Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assert.assertEquals(Status.OK, response.getStatus());
 
-        List<InputPart> parts = multipartInput.getParts();  // debug
+        List<InputPart> parts = multipartInput.getParts(); // debug
         Assert.assertEquals(2, parts.size());
 
         for (InputPart inputPart : multipartInput.getParts()) {
@@ -110,8 +106,7 @@ public class ComplexMultipartOutputTest {
                 }
 
                 if (iPart instanceof MultipartInputImpl.PartImpl) {
-                    MultipartInputImpl.PartImpl miPart =
-                            (MultipartInputImpl.PartImpl) iPart;
+                    MultipartInputImpl.PartImpl miPart = (MultipartInputImpl.PartImpl) iPart;
                     InputStream inStream = miPart.getBody();
                     Assert.assertNotNull(
                             "InputStream should not be null.", inStream);
@@ -138,7 +133,7 @@ public class ComplexMultipartOutputTest {
         Entity<MultipartRelatedOutput> entity = Entity.entity(mRelatedOutput,
                 new MediaType("multipart", "related"));
         Response response = target.request().post(entity);
-        Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assert.assertEquals(Status.OK, response.getStatus());
 
         MultipartRelatedInput result = response.readEntity(MultipartRelatedInput.class);
         Set<String> keys = result.getRelatedMap().keySet();

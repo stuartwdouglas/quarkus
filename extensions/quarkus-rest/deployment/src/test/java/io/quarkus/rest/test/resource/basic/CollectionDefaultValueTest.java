@@ -64,7 +64,7 @@ public class CollectionDefaultValueTest {
     @DisplayName("Test Empty")
     public void testEmpty() throws Exception {
         Response response = client.target(generateURL("/collection")).request().get();
-        Assertions.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assertions.assertEquals(Status.OK, response.getStatus());
         response.close();
     }
 }

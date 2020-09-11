@@ -1,16 +1,17 @@
 package io.quarkus.rest.test.security.testjar;
 
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
-import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
+import javax.ws.rs.core.Response.Status;
+import org.junit.Assert;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 
 /**
  * Main class used in jar that is meant to test ClientConfigProvider functionality regarding Bearer token.
@@ -29,7 +30,7 @@ public class ClientConfigBearerTokenTestMainClass {
             Response response = client.target(dummyUrl)
                     .register(ClientConfigProviderBearerTokenAbortFilter.class).request().get();
             // ClientConfigProviderBearerTokenAbortFilter will succeed since bearer token was used from ClientConfigProvider
-            Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+            Assert.assertEquals(Status.OK, response.getStatus());
             result = String.valueOf(response.getStatus());
         }
 

@@ -1,27 +1,16 @@
 package io.quarkus.rest.test.validation;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.test.validation.resource.ValidationCoreFoo;
-import io.quarkus.rest.test.validation.resource.ValidationCoreFooConstraint;
-import io.quarkus.rest.test.validation.resource.ValidationCoreFooReaderWriter;
-import io.quarkus.rest.test.validation.resource.ValidationCoreFooValidator;
-import io.quarkus.rest.test.validation.resource.ValidationCoreClassConstraint;
-import io.quarkus.rest.test.validation.resource.ValidationCoreClassValidator;
-import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithAllViolationTypes;
-import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithReturnValues;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import java.util.function.Supplier;
+
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Response
@@ -30,7 +19,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpSince RESTEasy 3.0.16
  */
 public class ValidationSurpressPathDefaultTest extends ValidationSuppressPathTestBase {
-   @SuppressWarnings(value = "unchecked")
+    @SuppressWarnings(value = "unchecked")
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
             .setArchiveProducer(new Supplier<JavaArchive>() {
@@ -39,24 +28,25 @@ public class ValidationSurpressPathDefaultTest extends ValidationSuppressPathTes
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-   }});
+                    return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
+                }
+            });
 
-   /**
-    * @tpTestDetails Test input violations.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testInputViolations() throws Exception {
-      doTestInputViolations("s", "t", "", new String[]{"post.arg0", "post.foo"});
-   }
+    /**
+     * @tpTestDetails Test input violations.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testInputViolations() throws Exception {
+        doTestInputViolations("s", "t", "", new String[] { "post.arg0", "post.foo" });
+    }
 
-   /**
-    * @tpTestDetails Test return value violations.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testReturnValues() throws Exception {
-      doTestReturnValueViolations("postNative.<return value>");
-   }
+    /**
+     * @tpTestDetails Test return value violations.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testReturnValues() throws Exception {
+        doTestReturnValueViolations("postNative.<return value>");
+    }
 }

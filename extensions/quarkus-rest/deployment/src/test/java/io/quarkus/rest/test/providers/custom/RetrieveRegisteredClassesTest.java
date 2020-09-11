@@ -15,107 +15,86 @@ import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.MediaType;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
+
 import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.rest.test.simple.TestUtil;
 
-public class RetrieveRegisteredClassesTest
-{
+public class RetrieveRegisteredClassesTest {
 
-   @Path("/testResource")
-   @Produces(MediaType.APPLICATION_XML)
-   public static final class TestResource
-   {
+    @Path("/testResource")
+    @Produces(MediaType.APPLICATION_XML)
+    public static final class TestResource {
 
-      @GET
-      public String get()
-      {
-         return TestResource.class.getName();
-      }
+        @GET
+        public String get() {
+            return TestResource.class.getName();
+        }
 
-   }
+    }
 
-   private static class MyFilter implements ClientRequestFilter
-   {
+    private static class MyFilter implements ClientRequestFilter {
 
-      // To discard empty constructor
-      private MyFilter(final Object value)
-      {
-      }
+        // To discard empty constructor
+        private MyFilter(final Object value) {
+        }
 
-      @Override
-      public void filter(ClientRequestContext clientRequestContext) throws IOException
-      {
-      }
+        @Override
+        public void filter(ClientRequestContext clientRequestContext) throws IOException {
+        }
 
-   }
+    }
 
-   @Deployment
-   public static Archive<?> deploy()
-   {
-      WebArchive war = TestUtil.prepareArchive(RetrieveRegisteredClassesTest.class.getSimpleName());
-      return TestUtil.finishContainerPrepare(war, null, TestResource.class);
-   }
+    @Deployment
+    public static Archive<?> deploy() {
+        WebArchive war = TestUtil.prepareArchive(RetrieveRegisteredClassesTest.class.getSimpleName());
+        return TestUtil.finishContainerPrepare(war, null, TestResource.class);
+    }
 
-   @Test
-   public void test()
-   {
+    @Test
+    public void test() {
 
-      Client client = ClientBuilder.newClient();
-      try
-      {
-         String uri = PortProviderUtil
-               .generateURL("/testResource", RetrieveRegisteredClassesTest.class.getSimpleName());
-         MyFilter myFilter = new MyFilter(new Object());
+        Client client = ClientBuilder.newClient();
+        try {
+            String uri = PortProviderUtil
+                    .generateURL("/testResource", RetrieveRegisteredClassesTest.class.getSimpleName());
+            MyFilter myFilter = new MyFilter(new Object());
 
-         WebTarget firstWebTarget = client.target(uri).register(myFilter);
-         String firstResult = firstWebTarget.request(MediaType.APPLICATION_XML).get(String.class);
-         Configuration firstWebTargetConfiguration = firstWebTarget.getConfiguration();
-         Set<Class<?>> classes = firstWebTargetConfiguration.getClasses();
-         Set<Object> instances = firstWebTargetConfiguration.getInstances();
-         Assert.assertFalse(classes.contains(MyFilter.class));
-         Assert.assertTrue(instances.contains(myFilter));
+            WebTarget firstWebTarget = client.target(uri).register(myFilter);
+            String firstResult = firstWebTarget.request(MediaType.APPLICATION_XML).get(String.class);
+            Configuration firstWebTargetConfiguration = firstWebTarget.getConfiguration();
+            Set<Class<?>> classes = firstWebTargetConfiguration.getClasses();
+            Set<Object> instances = firstWebTargetConfiguration.getInstances();
+            Assert.assertFalse(classes.contains(MyFilter.class));
+            Assert.assertTrue(instances.contains(myFilter));
 
-         WebTarget secondWebTarget = client.target(uri);
-         Configuration secondWebTargetConfiguration = secondWebTarget.getConfiguration();
-         for (Class<?> classz : classes)
-         {
-            if (!secondWebTargetConfiguration.isRegistered(classz))
-            {
-               secondWebTarget.register(classz);
+            WebTarget secondWebTarget = client.target(uri);
+            Configuration secondWebTargetConfiguration = secondWebTarget.getConfiguration();
+            for (Class<?> classz : classes) {
+                if (!secondWebTargetConfiguration.isRegistered(classz)) {
+                    secondWebTarget.register(classz);
+                }
             }
-         }
-         for (Object instance : instances)
-         {
-            if (!secondWebTargetConfiguration.isRegistered(instance.getClass()))
-            {
-               secondWebTarget.register(instance);
+            for (Object instance : instances) {
+                if (!secondWebTargetConfiguration.isRegistered(instance.getClass())) {
+                    secondWebTarget.register(instance);
+                }
             }
-         }
-         String secondeResult = secondWebTarget.request(MediaType.APPLICATION_XML).get(String.class);
-         classes = secondWebTargetConfiguration.getClasses();
-         instances = secondWebTargetConfiguration.getInstances();
-         Assert.assertFalse(classes.contains(MyFilter.class));
-         Assert.assertTrue(instances.contains(myFilter));
-         Assert.assertEquals(firstResult, secondeResult);
-      }
-      finally
-      {
-         client.close();
-      }
+            String secondeResult = secondWebTarget.request(MediaType.APPLICATION_XML).get(String.class);
+            classes = secondWebTargetConfiguration.getClasses();
+            instances = secondWebTargetConfiguration.getInstances();
+            Assert.assertFalse(classes.contains(MyFilter.class));
+            Assert.assertTrue(instances.contains(myFilter));
+            Assert.assertEquals(firstResult, secondeResult);
+        } finally {
+            client.close();
+        }
 
-   }
+    }
 
 }

@@ -1,13 +1,13 @@
 package io.quarkus.rest.test.cdi.injection.resource;
 
 public class ProviderFinalInheritedMethodStringHandler {
-   private String b;
+    private String b;
 
-   public String getB() {
-      return b;
-   }
+    public String getB() {
+        return b;
+    }
 
-   public void setB(String b) {
-      this.b = b;
-   }
+    public void setB(String b) {
+        this.b = b;
+    }
 }

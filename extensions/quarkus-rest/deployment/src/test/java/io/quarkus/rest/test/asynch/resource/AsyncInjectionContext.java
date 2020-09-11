@@ -1,12 +1,10 @@
 package io.quarkus.rest.test.asynch.resource;
 
-public class AsyncInjectionContext implements AsyncInjectionContextInterface
-{
+public class AsyncInjectionContext implements AsyncInjectionContextInterface {
 
-   @Override
-   public int foo()
-   {
-      return 42;
-   }
+    @Override
+    public int foo() {
+        return 42;
+    }
 
 }

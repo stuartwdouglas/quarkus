@@ -5,7 +5,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.spi.HttpResponseCodes;
+import javax.ws.rs.core.Response.Status;
+
 import io.quarkus.rest.test.providers.jackson2.whitelist.model.TestPolymorphicType;
 
 /**
@@ -17,6 +18,6 @@ public class TestRESTService {
     @Path("/post")
     @Consumes("application/json")
     public Response postTest(TestPolymorphicType test) {
-        return Response.status(HttpResponseCodes.SC_CREATED).entity("Test success: " + test).build();
+        return Response.status(Status.CREATED).entity("Test success: " + test).build();
     }
 }

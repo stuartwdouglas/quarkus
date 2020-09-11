@@ -6,7 +6,7 @@ package io.quarkus.rest.test.cdi.inheritence.resource;
  */
 @CDIInheritenceSelectBook
 public class CDIInheritenceBook {
-   public Class<?> getType() {
-      return this.getClass();
-   }
+    public Class<?> getType() {
+        return this.getClass();
+    }
 }

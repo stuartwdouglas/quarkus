@@ -1,19 +1,20 @@
 package io.quarkus.rest.test.validation;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.Response;
+
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
-
-import javax.ws.rs.client.ClientBuilder;
-import io.quarkus.rest.test.validation.resource.PathSuppressionClassConstraint;
-import io.quarkus.rest.test.validation.resource.PathSuppressionClassValidator;
-import io.quarkus.rest.test.validation.resource.PathSuppressionResource;
-import org.jboss.resteasy.spi.HttpResponseCodes;
+import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -22,21 +23,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.rest.test.simple.TestUtil;
-
-import javax.ws.rs.core.Response;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
+import io.quarkus.rest.test.validation.resource.PathSuppressionClassConstraint;
+import io.quarkus.rest.test.validation.resource.PathSuppressionClassValidator;
+import io.quarkus.rest.test.validation.resource.PathSuppressionResource;
 
 /**
  * @tpSubChapter Response
@@ -46,130 +39,134 @@ import static org.junit.Assert.assertEquals;
  */
 public class PathSuppressionTest {
 
-   static QuarkusRestClient client;
+    static QuarkusRestClient client;
 
-   public static Archive<?> generateArchive(String deploymentName, String suppressPath) {
-      WebArchive war = TestUtil.prepareArchive(deploymentName)
-            .addClasses(PathSuppressionResource.class)
-            .addClasses(PathSuppressionClassConstraint.class, PathSuppressionClassValidator.class);
-      Map<String, String> contextParam = new HashMap<>();
-      if (suppressPath != null) {
-         contextParam.put("resteasy.validation.suppress.path", suppressPath);
-      }
-      return TestUtil.finishContainerPrepare(war, contextParam, PathSuppressionResource.class);
-   }
+    public static Archive<?> generateArchive(String deploymentName, String suppressPath) {
+        WebArchive war = TestUtil.prepareArchive(deploymentName)
+                .addClasses(PathSuppressionResource.class)
+                .addClasses(PathSuppressionClassConstraint.class, PathSuppressionClassValidator.class);
+        Map<String, String> contextParam = new HashMap<>();
+        if (suppressPath != null) {
+            contextParam.put("resteasy.validation.suppress.path", suppressPath);
+        }
+        return TestUtil.finishContainerPrepare(war, contextParam, PathSuppressionResource.class);
+    }
 
-   @BeforeClass
-   public static void before() throws Exception {
-      client = (QuarkusRestClient)ClientBuilder.newClient();
-   }
+    @BeforeClass
+    public static void before() throws Exception {
+        client = (QuarkusRestClient) ClientBuilder.newClient();
+    }
 
-   @AfterClass
-   public static void after() throws Exception {
-      client.close();
-   }
+    @AfterClass
+    public static void after() throws Exception {
+        client.close();
+    }
 
-   @Deployment(name = "default", order = 1)
-   public static Archive<?> createTestArchiveDefault() {
-      return generateArchive("RESTEASY-945-default", null);
-   }
+    @Deployment(name = "default", order = 1)
+    public static Archive<?> createTestArchiveDefault() {
+        return generateArchive("RESTEASY-945-default", null);
+    }
 
-   @Deployment(name = "false", order = 2)
-   public static Archive<?> createTestArchiveFalse() {
-      return generateArchive("RESTEASY-945-false", "false");
-   }
+    @Deployment(name = "false", order = 2)
+    public static Archive<?> createTestArchiveFalse() {
+        return generateArchive("RESTEASY-945-false", "false");
+    }
 
-   @Deployment(name = "true")
-   public static Archive<?> createTestArchiveTrue() {
-      return generateArchive("RESTEASY-945-true", "true");
-   }
+    @Deployment(name = "true")
+    public static Archive<?> createTestArchiveTrue() {
+        return generateArchive("RESTEASY-945-true", "true");
+    }
 
-   /**
-    * @tpTestDetails Check input parameters for default value of resteasy.validation.suppress.path
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testInputSuppressPathDefault() throws Exception {
-      doTestInputViolations("default", "s", "t", "", new String[]{"test.arg0", "test.u"});
-   }
+    /**
+     * @tpTestDetails Check input parameters for default value of resteasy.validation.suppress.path
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testInputSuppressPathDefault() throws Exception {
+        doTestInputViolations("default", "s", "t", "", new String[] { "test.arg0", "test.u" });
+    }
 
-   /**
-    * @tpTestDetails Check input parameters for false value of resteasy.validation.suppress.path
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testInputSuppressPathFalse() throws Exception {
-      doTestInputViolations("false", "s", "t", "", new String[]{"test.arg0", "test.u"});
-   }
+    /**
+     * @tpTestDetails Check input parameters for false value of resteasy.validation.suppress.path
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testInputSuppressPathFalse() throws Exception {
+        doTestInputViolations("false", "s", "t", "", new String[] { "test.arg0", "test.u" });
+    }
 
-   /**
-    * @tpTestDetails Check input parameters for true value of resteasy.validation.suppress.path
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testInputSuppressPathTrue() throws Exception {
-      doTestInputViolations("true", "*", "*", "*", "*");
-   }
+    /**
+     * @tpTestDetails Check input parameters for true value of resteasy.validation.suppress.path
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testInputSuppressPathTrue() throws Exception {
+        doTestInputViolations("true", "*", "*", "*", "*");
+    }
 
-   /**
-    * @tpTestDetails Check return value for default value of resteasy.validation.suppress.path
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testReturnValueSuppressPathDefault() throws Exception {
-      doTestReturnValueViolations("default", "test.<return value>");
-   }
+    /**
+     * @tpTestDetails Check return value for default value of resteasy.validation.suppress.path
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testReturnValueSuppressPathDefault() throws Exception {
+        doTestReturnValueViolations("default", "test.<return value>");
+    }
 
-   /**
-    * @tpTestDetails Check return value for false value of resteasy.validation.suppress.path
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testReturnValueSuppressPathFalse() throws Exception {
-      doTestReturnValueViolations("false", "test.<return value>");
-   }
+    /**
+     * @tpTestDetails Check return value for false value of resteasy.validation.suppress.path
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testReturnValueSuppressPathFalse() throws Exception {
+        doTestReturnValueViolations("false", "test.<return value>");
+    }
 
-   /**
-    * @tpTestDetails Check return value for true value of resteasy.validation.suppress.path
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testReturnSuppressPathTrue() throws Exception {
-      doTestReturnValueViolations("true", "*");
-   }
+    /**
+     * @tpTestDetails Check return value for true value of resteasy.validation.suppress.path
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testReturnSuppressPathTrue() throws Exception {
+        doTestReturnValueViolations("true", "*");
+    }
 
-   public void doTestInputViolations(String suppress, String fieldPath, String propertyPath, String classPath, String... parameterPaths) throws Exception {
-      Response response = client.target(PortProviderUtil.generateURL("/all/a/b/c", "RESTEASY-945-" + suppress)).request().get();
-      Object header = response.getHeaderString(Validation.VALIDATION_HEADER);
-      Assert.assertTrue("Header has wrong format", header instanceof String);
-      Assert.assertTrue("Header has wrong format", Boolean.valueOf(String.class.cast(header)));
-      String answer = response.readEntity(String.class);
-      assertEquals(HttpResponseCodes.SC_BAD_REQUEST, response.getStatus());
-      ViolationReport report = new ViolationReport(new ResteasyViolationExceptionImpl(String.class.cast(answer)));
-      TestUtil.countViolations(report, 2, 1, 1, 0);
-      ResteasyConstraintViolation violation = TestUtil.getViolationByPath(report.getPropertyViolations(), fieldPath);
-      Assert.assertNotNull("Expected validation error is not in response", violation);
-      violation = TestUtil.getViolationByPath(report.getPropertyViolations(), propertyPath);
-      Assert.assertNotNull("Expected validation error is not in response", violation);
-      violation = report.getClassViolations().iterator().next();
-      Assert.assertEquals("Expected validation error is not in response", classPath, violation.getPath());
+    public void doTestInputViolations(String suppress, String fieldPath, String propertyPath, String classPath,
+            String... parameterPaths) throws Exception {
+        Response response = client.target(PortProviderUtil.generateURL("/all/a/b/c", "RESTEASY-945-" + suppress)).request()
+                .get();
+        Object header = response.getHeaderString(Validation.VALIDATION_HEADER);
+        Assert.assertTrue("Header has wrong format", header instanceof String);
+        Assert.assertTrue("Header has wrong format", Boolean.valueOf(String.class.cast(header)));
+        String answer = response.readEntity(String.class);
+        assertEquals(Status.BAD_REQUEST, response.getStatus());
+        ViolationReport report = new ViolationReport(new ResteasyViolationExceptionImpl(String.class.cast(answer)));
+        TestUtil.countViolations(report, 2, 1, 1, 0);
+        ResteasyConstraintViolation violation = TestUtil.getViolationByPath(report.getPropertyViolations(), fieldPath);
+        Assert.assertNotNull("Expected validation error is not in response", violation);
+        violation = TestUtil.getViolationByPath(report.getPropertyViolations(), propertyPath);
+        Assert.assertNotNull("Expected validation error is not in response", violation);
+        violation = report.getClassViolations().iterator().next();
+        Assert.assertEquals("Expected validation error is not in response", classPath, violation.getPath());
 
-      violation = report.getParameterViolations().iterator().next();
-      Assert.assertTrue("Expected validation error is not in response: " + parameterPaths, Arrays.asList(parameterPaths).contains(violation.getPath()));
-      response.close();
-   }
+        violation = report.getParameterViolations().iterator().next();
+        Assert.assertTrue("Expected validation error is not in response: " + parameterPaths,
+                Arrays.asList(parameterPaths).contains(violation.getPath()));
+        response.close();
+    }
 
-   public void doTestReturnValueViolations(String suppress, String returnValuePath) throws Exception {
-      Response response = client.target(PortProviderUtil.generateURL("/all/aa/bbb/cccc", "RESTEASY-945-" + suppress)).request().get();
-      Object header = response.getHeaderString(Validation.VALIDATION_HEADER);
-      Assert.assertTrue("Header has wrong format", header instanceof String);
-      Assert.assertTrue("Header has wrong format", Boolean.valueOf(String.class.cast(header)));
-      String answer = response.readEntity(String.class);
-      assertEquals(HttpResponseCodes.SC_INTERNAL_SERVER_ERROR, response.getStatus());
-      ViolationReport report = new ViolationReport(new ResteasyViolationExceptionImpl(String.class.cast(answer)));
-      TestUtil.countViolations(report, 0, 0, 0, 1);
-      ResteasyConstraintViolation violation = report.getReturnValueViolations().iterator().next();
-      Assert.assertEquals("Expected validation error is not in response", returnValuePath, violation.getPath());
-      response.close();
-   }
+    public void doTestReturnValueViolations(String suppress, String returnValuePath) throws Exception {
+        Response response = client.target(PortProviderUtil.generateURL("/all/aa/bbb/cccc", "RESTEASY-945-" + suppress))
+                .request().get();
+        Object header = response.getHeaderString(Validation.VALIDATION_HEADER);
+        Assert.assertTrue("Header has wrong format", header instanceof String);
+        Assert.assertTrue("Header has wrong format", Boolean.valueOf(String.class.cast(header)));
+        String answer = response.readEntity(String.class);
+        assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        ViolationReport report = new ViolationReport(new ResteasyViolationExceptionImpl(String.class.cast(answer)));
+        TestUtil.countViolations(report, 0, 0, 0, 1);
+        ResteasyConstraintViolation violation = report.getReturnValueViolations().iterator().next();
+        Assert.assertEquals("Expected validation error is not in response", returnValuePath, violation.getPath());
+        response.close();
+    }
 }

@@ -1,24 +1,17 @@
 package io.quarkus.rest.test.cdi.basic;
 
-import org.jboss.arquillian.container.test.api.Deployment;
+import java.util.function.Supplier;
+
 import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.test.cdi.basic.resource.ApplicationInjection;
-import org.jboss.resteasy.utils.PermissionUtil;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
-import java.lang.reflect.ReflectPermission;
-import java.util.PropertyPermission;
+import io.quarkus.rest.test.cdi.basic.resource.ApplicationInjection;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter CDI
@@ -37,20 +30,21 @@ public class ApplicationInjectionTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      // Arquillian in the deployment
+                    // Arquillian in the deployment
 
-      war.addClass(ApplicationInjection.class);
-      return war;
-   }});
+                    war.addClass(ApplicationInjection.class);
+                    return war;
+                }
+            });
 
-   /**
-    * @tpTestDetails Injected application instance should not be null.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testAppInjection() throws Exception {
-      Assert.assertEquals("Wrong count of initialized applications", 1, ApplicationInjection.instances.size());
-      ApplicationInjection app = ApplicationInjection.instances.iterator().next();
-      Assert.assertNotNull("Injected application instance should not be null", app.app);
-   }
+    /**
+     * @tpTestDetails Injected application instance should not be null.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testAppInjection() throws Exception {
+        Assert.assertEquals("Wrong count of initialized applications", 1, ApplicationInjection.instances.size());
+        ApplicationInjection app = ApplicationInjection.instances.iterator().next();
+        Assert.assertNotNull("Injected application instance should not be null", app.app);
+    }
 }

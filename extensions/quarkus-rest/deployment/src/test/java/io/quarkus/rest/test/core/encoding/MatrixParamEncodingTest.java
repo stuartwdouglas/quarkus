@@ -1,33 +1,30 @@
 package io.quarkus.rest.test.core.encoding;
 
+import java.util.function.Supplier;
+
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import io.quarkus.rest.test.core.encoding.resource.MatrixParamEncodingResource;
-import org.jboss.resteasy.spi.HttpResponseCodes;
+import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.core.encoding.resource.MatrixParamEncodingResource;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Encoding
@@ -37,19 +34,18 @@ import javax.ws.rs.core.UriBuilder;
  */
 public class MatrixParamEncodingTest {
 
-   protected static final Logger logger = LogManager.getLogger(MatrixParamEncodingTest.class.getName());
+    protected static final Logger logger = LogManager.getLogger(MatrixParamEncodingTest.class.getName());
 
-   protected static QuarkusRestClient client;
+    protected static QuarkusRestClient client;
 
-   @Before
-   public void setup() throws Exception {
-      client = (QuarkusRestClient)ClientBuilder.newClient();
-   }
+    @Before
+    public void setup() throws Exception {
+        client = (QuarkusRestClient) ClientBuilder.newClient();
+    }
 
-
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, MatrixParamEncodingTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, MatrixParamEncodingTest.class.getSimpleName());
+    }
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -59,85 +55,87 @@ public class MatrixParamEncodingTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      return TestUtil.finishContainerPrepare(war, null, MatrixParamEncodingResource.class);
-   }});
+                    return TestUtil.finishContainerPrepare(war, null, MatrixParamEncodingResource.class);
+                }
+            });
 
-   @After
-   public void shutdown() throws Exception {
-      client.close();
-      client = null;
-   }
+    @After
+    public void shutdown() throws Exception {
+        client.close();
+        client = null;
+    }
 
-   /**
-    * @tpTestDetails Check decoded request, do not use UriBuilder
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testMatrixParamRequestDecoded() throws Exception {
-      ResteasyWebTarget target = client.target(generateURL("/decoded")).matrixParam("param", "ac/dc");
-      Response response = target.request().get();
-      Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-      Assert.assertEquals("Wrong response", "ac/dc", response.readEntity(String.class));
-      response.close();
-   }
+    /**
+     * @tpTestDetails Check decoded request, do not use UriBuilder
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testMatrixParamRequestDecoded() throws Exception {
+        ResteasyWebTarget target = client.target(generateURL("/decoded")).matrixParam("param", "ac/dc");
+        Response response = target.request().get();
+        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals("Wrong response", "ac/dc", response.readEntity(String.class));
+        response.close();
+    }
 
-   /**
-    * @tpTestDetails Check decoded request, one matrix param is not defined, do not use UriBuilder
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testMatrixParamNullRequestDecoded() throws Exception {
-      ResteasyWebTarget target = client.target(generateURL("/decodedMultipleParam")).matrixParam("param1", "").matrixParam("param2", "abc");
-      Response response = target.request().get();
-      Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-      Assert.assertEquals("Wrong response", "null abc", response.readEntity(String.class));
-      response.close();
-   }
+    /**
+     * @tpTestDetails Check decoded request, one matrix param is not defined, do not use UriBuilder
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testMatrixParamNullRequestDecoded() throws Exception {
+        ResteasyWebTarget target = client.target(generateURL("/decodedMultipleParam")).matrixParam("param1", "")
+                .matrixParam("param2", "abc");
+        Response response = target.request().get();
+        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals("Wrong response", "null abc", response.readEntity(String.class));
+        response.close();
+    }
 
-   /**
-    * @tpTestDetails Check encoded request, do not use UriBuilder
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testMatrixParamRequestEncoded() throws Exception {
-      ResteasyWebTarget target = client.target(generateURL("/encoded")).matrixParam("param", "ac/dc");
-      Response response = target.request().get();
-      Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-      Assert.assertEquals("Wrong response", "ac%2Fdc", response.readEntity(String.class));
-      response.close();
-   }
+    /**
+     * @tpTestDetails Check encoded request, do not use UriBuilder
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testMatrixParamRequestEncoded() throws Exception {
+        ResteasyWebTarget target = client.target(generateURL("/encoded")).matrixParam("param", "ac/dc");
+        Response response = target.request().get();
+        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals("Wrong response", "ac%2Fdc", response.readEntity(String.class));
+        response.close();
+    }
 
-   /**
-    * @tpTestDetails Check decoded request, use UriBuilder
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testMatrixParamUriBuilderDecoded() throws Exception {
-      UriBuilder uriBuilder = UriBuilder.fromUri(generateURL("/decoded"));
-      uriBuilder.matrixParam("param", "ac/dc");
-      ResteasyWebTarget target = client.target(uriBuilder.build().toString());
-      logger.info("Sending request to " + uriBuilder.build().toString());
-      Response response = target.request().get();
-      String entity = response.readEntity(String.class);
-      Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-      Assert.assertEquals("Wrong response", "ac/dc", entity);
-      response.close();
-   }
+    /**
+     * @tpTestDetails Check decoded request, use UriBuilder
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testMatrixParamUriBuilderDecoded() throws Exception {
+        UriBuilder uriBuilder = UriBuilder.fromUri(generateURL("/decoded"));
+        uriBuilder.matrixParam("param", "ac/dc");
+        ResteasyWebTarget target = client.target(uriBuilder.build().toString());
+        logger.info("Sending request to " + uriBuilder.build().toString());
+        Response response = target.request().get();
+        String entity = response.readEntity(String.class);
+        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals("Wrong response", "ac/dc", entity);
+        response.close();
+    }
 
-   /**
-    * @tpTestDetails Check encoded request, use UriBuilder
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testMatrixParamUriBuilderEncoded() throws Exception {
-      UriBuilder uriBuilder = UriBuilder.fromUri(generateURL("/encoded"));
-      uriBuilder.matrixParam("param", "ac/dc");
-      ResteasyWebTarget target = client.target(uriBuilder.build().toString());
-      logger.info("Sending request to " + uriBuilder.build().toString());
-      Response response = target.request().get();
-      String entity = response.readEntity(String.class);
-      Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-      Assert.assertEquals("Wrong response", "ac%2Fdc", entity);
-      response.close();
-   }
+    /**
+     * @tpTestDetails Check encoded request, use UriBuilder
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testMatrixParamUriBuilderEncoded() throws Exception {
+        UriBuilder uriBuilder = UriBuilder.fromUri(generateURL("/encoded"));
+        uriBuilder.matrixParam("param", "ac/dc");
+        ResteasyWebTarget target = client.target(uriBuilder.build().toString());
+        logger.info("Sending request to " + uriBuilder.build().toString());
+        Response response = target.request().get();
+        String entity = response.readEntity(String.class);
+        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals("Wrong response", "ac%2Fdc", entity);
+        response.close();
+    }
 }

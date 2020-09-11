@@ -1,28 +1,26 @@
 package io.quarkus.rest.test.core.smoke;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import java.util.function.Supplier;
+
 import javax.ws.rs.client.ClientBuilder;
-import io.quarkus.rest.test.core.smoke.resource.ResourceWithMultipleInterfacesEmpty;
-import io.quarkus.rest.test.core.smoke.resource.ResourceWithMultipleInterfacesIntA;
-import io.quarkus.rest.test.core.smoke.resource.ResourceWithMultipleInterfacesRootResource;
+
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.core.smoke.resource.ResourceWithMultipleInterfacesEmpty;
+import io.quarkus.rest.test.core.smoke.resource.ResourceWithMultipleInterfacesIntA;
+import io.quarkus.rest.test.core.smoke.resource.ResourceWithMultipleInterfacesRootResource;
+import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Smoke tests for jaxrs
@@ -32,7 +30,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  */
 public class ResourceWithMultipleInterfacesTest {
 
-   static QuarkusRestClient client;
+    static QuarkusRestClient client;
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -42,32 +40,34 @@ public class ResourceWithMultipleInterfacesTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addClass(ResourceWithMultipleInterfacesIntA.class);
-      war.addClass(ResourceWithMultipleInterfacesEmpty.class);
-      return TestUtil.finishContainerPrepare(war, null, ResourceWithMultipleInterfacesRootResource.class);
-   }});
+                    war.addClass(ResourceWithMultipleInterfacesIntA.class);
+                    war.addClass(ResourceWithMultipleInterfacesEmpty.class);
+                    return TestUtil.finishContainerPrepare(war, null, ResourceWithMultipleInterfacesRootResource.class);
+                }
+            });
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, ResourceWithMultipleInterfacesTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, ResourceWithMultipleInterfacesTest.class.getSimpleName());
+    }
 
-   @Before
-   public void init() {
-      client = (QuarkusRestClient)ClientBuilder.newClient();
-   }
+    @Before
+    public void init() {
+        client = (QuarkusRestClient) ClientBuilder.newClient();
+    }
 
-   @After
-   public void after() throws Exception {
-      client.close();
-   }
+    @After
+    public void after() throws Exception {
+        client.close();
+    }
 
-   /**
-    * @tpTestDetails Check result from resource with multiple interfaces.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testNoDefaultsResource() throws Exception {
-      ResourceWithMultipleInterfacesIntA proxy = client.target(generateURL("/")).proxyBuilder(ResourceWithMultipleInterfacesIntA.class).build();
-      Assert.assertEquals("Wrong client answer.", "FOO", proxy.getFoo());
-   }
+    /**
+     * @tpTestDetails Check result from resource with multiple interfaces.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testNoDefaultsResource() throws Exception {
+        ResourceWithMultipleInterfacesIntA proxy = client.target(generateURL("/"))
+                .proxyBuilder(ResourceWithMultipleInterfacesIntA.class).build();
+        Assert.assertEquals("Wrong client answer.", "FOO", proxy.getFoo());
+    }
 }

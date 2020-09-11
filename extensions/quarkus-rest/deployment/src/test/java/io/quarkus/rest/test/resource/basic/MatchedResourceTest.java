@@ -67,13 +67,13 @@ public class MatchedResourceTest {
     public void testEmpty() throws Exception {
         WebTarget base = client.target(generateURL("/start"));
         Response response = base.request().post(Entity.text(""));
-        Assertions.assertEquals(response.getStatus(), HttpResponseCodes.SC_OK);
+        Assertions.assertEquals(response.getStatus(), Status.OK);
         String rtn = response.readEntity(String.class);
         Assertions.assertEquals("started", rtn);
         response.close();
         base = client.target(generateURL("/start"));
         response = base.request().post(Entity.entity("<xml/>", "application/xml"));
-        Assertions.assertEquals(response.getStatus(), HttpResponseCodes.SC_OK);
+        Assertions.assertEquals(response.getStatus(), Status.OK);
         rtn = response.readEntity(String.class);
         Assertions.assertEquals("<xml/>", rtn, "Wrong response content");
         response.close();
@@ -98,7 +98,7 @@ public class MatchedResourceTest {
     public void generalPostTest(String uri, String value) {
         WebTarget base = client.target(uri);
         Response response = base.request().get();
-        Assertions.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assertions.assertEquals(Status.OK, response.getStatus());
         Assertions.assertEquals(response.readEntity(String.class), value, "Wrong response content");
     }
 

@@ -3,13 +3,13 @@ package io.quarkus.rest.test.cdi.generic.resource;
 import java.lang.reflect.Type;
 
 public class NestedHierarchyHolder<T> {
-   private Class<?> clazz;
+    private Class<?> clazz;
 
-   public NestedHierarchyHolder(final Class<?> clazz) {
-      this.clazz = clazz;
-   }
+    public NestedHierarchyHolder(final Class<?> clazz) {
+        this.clazz = clazz;
+    }
 
-   Type getTypeArgument() {
-      return clazz;
-   }
+    Type getTypeArgument() {
+        return clazz;
+    }
 }

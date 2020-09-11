@@ -13,25 +13,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.hamcrest.Matchers;
-import org.hibernate.validator.HibernateValidatorPermission;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import io.quarkus.rest.test.validation.resource.ValidationCoreClassConstraint;
-import io.quarkus.rest.test.validation.resource.ValidationCoreClassValidator;
-import io.quarkus.rest.test.validation.resource.ValidationCoreFoo;
-import io.quarkus.rest.test.validation.resource.ValidationCoreFooConstraint;
-import io.quarkus.rest.test.validation.resource.ValidationCoreFooReaderWriter;
-import io.quarkus.rest.test.validation.resource.ValidationCoreFooValidator;
-import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithAllViolationTypes;
-import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithReturnValues;
-import org.jboss.resteasy.utils.PermissionUtil;
+import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -41,14 +28,18 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.rest.test.validation.resource.ValidationCoreClassConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationCoreClassValidator;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFoo;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooConstraint;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooReaderWriter;
+import io.quarkus.rest.test.validation.resource.ValidationCoreFooValidator;
+import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithAllViolationTypes;
+import io.quarkus.rest.test.validation.resource.ValidationCoreResourceWithReturnValues;
 import io.restassured.path.json.JsonPath;
 
 /**
@@ -58,151 +49,151 @@ import io.restassured.path.json.JsonPath;
  * @tpSince RESTEasy 3.0.16
  */
 public class ValidationJaxbTest {
-   QuarkusRestClient client;
-   private static final String UNEXPECTED_VALIDATION_ERROR_MSG = "Unexpected validation error";
-   private static final String WAR_WITH_JSONB = "ValidationJaxbTest";
-   private static final String WAR_WITH_JACKSON2 = "ValidationJaxbTestJackson2";
+    QuarkusRestClient client;
+    private static final String UNEXPECTED_VALIDATION_ERROR_MSG = "Unexpected validation error";
+    private static final String WAR_WITH_JSONB = "ValidationJaxbTest";
+    private static final String WAR_WITH_JACKSON2 = "ValidationJaxbTestJackson2";
 
-   /**
-    * Prepare deployment with resteasy.preferJacksonOverJsonB = false
-    */
-   @Deployment(name = WAR_WITH_JSONB)
-   public static Archive<?> deployWithJsonB() {
-      return deploy(WAR_WITH_JSONB, false);
-   }
+    /**
+     * Prepare deployment with resteasy.preferJacksonOverJsonB = false
+     */
+    @Deployment(name = WAR_WITH_JSONB)
+    public static Archive<?> deployWithJsonB() {
+        return deploy(WAR_WITH_JSONB, false);
+    }
 
-   /**
-    * Prepare deployment with resteasy.preferJacksonOverJsonB = true
-    */
-   @Deployment(name = WAR_WITH_JACKSON2)
-   public static Archive<?> deployWithoutJsonB() {
-      return deploy(WAR_WITH_JACKSON2, true);
-   }
+    /**
+     * Prepare deployment with resteasy.preferJacksonOverJsonB = true
+     */
+    @Deployment(name = WAR_WITH_JACKSON2)
+    public static Archive<?> deployWithoutJsonB() {
+        return deploy(WAR_WITH_JACKSON2, true);
+    }
 
+    @Before
+    public void init() {
+        client = (QuarkusRestClient) ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
+    }
 
-   @Before
-   public void init() {
-      client = (QuarkusRestClient)ClientBuilder.newClient().register(ValidationCoreFooReaderWriter.class);
-   }
+    @After
+    public void after() throws Exception {
+        client.close();
+    }
 
-   @After
-   public void after() throws Exception {
-      client.close();
-   }
+    /**
+     * Prepare deployment with specific archive name and specific resteasy.preferJacksonOverJsonB value
+     */
+    public static Archive<?> deploy(String archiveName, Boolean useJackson) {
+        WebArchive war = TestUtil.prepareArchive(archiveName)
+                .addClasses(ValidationCoreFoo.class, ValidationCoreFooConstraint.class, ValidationCoreFooReaderWriter.class,
+                        ValidationCoreFooValidator.class)
+                .addClasses(ValidationCoreClassConstraint.class, ValidationCoreClassValidator.class)
+                .addClasses(ValidationCoreResourceWithAllViolationTypes.class, ValidationCoreResourceWithReturnValues.class)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
-   /**
-    * Prepare deployment with specific archive name and specific resteasy.preferJacksonOverJsonB value
-    */
-   public static Archive<?> deploy(String archiveName, Boolean useJackson) {
-      WebArchive war = TestUtil.prepareArchive(archiveName)
-            .addClasses(ValidationCoreFoo.class, ValidationCoreFooConstraint.class, ValidationCoreFooReaderWriter.class, ValidationCoreFooValidator.class)
-            .addClasses(ValidationCoreClassConstraint.class, ValidationCoreClassValidator.class)
-            .addClasses(ValidationCoreResourceWithAllViolationTypes.class, ValidationCoreResourceWithReturnValues.class)
-            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+        Map<String, String> contextParams = new HashMap<>();
+        contextParams.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, useJackson.toString());
+        return TestUtil.finishContainerPrepare(war, contextParams, (Class<?>[]) null);
+    }
 
-      Map<String, String> contextParams = new HashMap<>();
-      contextParams.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, useJackson.toString());
-      return TestUtil.finishContainerPrepare(war, contextParams, (Class<?>[]) null);
-   }
+    private static String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, WAR_WITH_JSONB);
+    }
 
-   private static String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, WAR_WITH_JSONB);
-   }
+    private static String generateJacksonURL(String path) {
+        return PortProviderUtil.generateURL(path, WAR_WITH_JACKSON2);
+    }
 
-   private static String generateJacksonURL(String path) {
-      return PortProviderUtil.generateURL(path, WAR_WITH_JACKSON2);
-   }
+    /**
+     * @tpTestDetails Raw XML check.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testRawXML() throws Exception {
+        doRawXMLTest(MediaType.APPLICATION_XML_TYPE,
+                "<propertyViolations><constraintType>PROPERTY</constraintType><path>s</path>", generateURL("/all/a/z"));
+    }
 
+    /**
+     * @tpTestDetails Raw JSON check.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testRawJSON() throws Exception {
+        ValidationCoreFoo foo = new ValidationCoreFoo("p");
+        Response response = client.target(generateURL("/all/a/z")).request().accept(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(foo, "application/foo"));
+        assertValidationReport(response);
+    }
 
-   /**
-    * @tpTestDetails Raw XML check.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testRawXML() throws Exception {
-      doRawXMLTest(MediaType.APPLICATION_XML_TYPE, "<propertyViolations><constraintType>PROPERTY</constraintType><path>s</path>", generateURL("/all/a/z"));
-   }
+    @Test
+    public void testRawJSONWithJackson2() throws Exception {
+        ValidationCoreFoo foo = new ValidationCoreFoo("p");
+        Response response = client.target(generateJacksonURL("/all/a/z")).request().accept(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(foo, "application/foo"));
+        assertValidationReport(response);
+    }
 
-   /**
-    * @tpTestDetails Raw JSON check.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testRawJSON() throws Exception {
-      ValidationCoreFoo foo = new ValidationCoreFoo("p");
-      Response response = client.target(generateURL("/all/a/z")).request().accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.entity(foo, "application/foo"));
-      assertValidationReport(response);
-   }
+    /**
+     * @tpTestDetails ViolationReport from XML check.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testXML() throws Exception {
+        doTest(MediaType.APPLICATION_XML_TYPE, client.target(generateURL("/all/a/z")));
+    }
 
+    /**
+     * @tpTestDetails ViolationReport from JSON check.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testJSON() throws Exception {
+        doTest(MediaType.APPLICATION_JSON_TYPE, client.target(generateURL("/all/a/z")));
+    }
 
-   @Test
-   public void testRawJSONWithJackson2() throws Exception {
-      ValidationCoreFoo foo = new ValidationCoreFoo("p");
-      Response response = client.target(generateJacksonURL("/all/a/z")).request().accept(MediaType.APPLICATION_JSON_TYPE).post(Entity.entity(foo, "application/foo"));
-      assertValidationReport(response);
-   }
-   /**
-    * @tpTestDetails ViolationReport from XML check.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testXML() throws Exception {
-      doTest(MediaType.APPLICATION_XML_TYPE, client.target(generateURL("/all/a/z")));
-   }
+    @Test
+    public void testJSONJackson() throws Exception {
+        doTest(MediaType.APPLICATION_JSON_TYPE, client.target(generateJacksonURL("/all/a/z")));
+    }
 
-   /**
-    * @tpTestDetails ViolationReport from JSON check.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testJSON() throws Exception
-   {
-      doTest(MediaType.APPLICATION_JSON_TYPE, client.target(generateURL("/all/a/z")));
-   }
+    public void doTest(MediaType mediaType, WebTarget target) throws Exception {
+        ValidationCoreFoo foo = new ValidationCoreFoo("p");
+        Response response = target.request().accept(mediaType).post(Entity.entity(foo, "application/foo"));
+        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        String header = response.getHeaderString(Validation.VALIDATION_HEADER);
+        Assert.assertNotNull("Validation header is missing", header);
+        Assert.assertTrue("Wrong value of validation header", Boolean.valueOf(header));
+        ViolationReport r = response.readEntity(ViolationReport.class);
+        TestUtil.countViolations(r, 2, 1, 1, 0);
+        ResteasyConstraintViolation violation = TestUtil.getViolationByPath(r.getPropertyViolations(), "s");
+        Assert.assertNotNull(UNEXPECTED_VALIDATION_ERROR_MSG, violation);
+        violation = TestUtil.getViolationByPath(r.getPropertyViolations(), "t");
+        Assert.assertNotNull(UNEXPECTED_VALIDATION_ERROR_MSG, violation);
+        violation = r.getClassViolations().iterator().next();
+        Assert.assertEquals(UNEXPECTED_VALIDATION_ERROR_MSG, "", violation.getPath());
+        violation = r.getParameterViolations().iterator().next();
+        String[] paths = new String[] { "post.arg0", "post.foo" };
+        Assert.assertTrue(UNEXPECTED_VALIDATION_ERROR_MSG + paths, Arrays.asList(paths).contains(violation.getPath()));
+        response.close();
+    }
 
-   @Test
-   public void testJSONJackson() throws Exception
-   {
-      doTest(MediaType.APPLICATION_JSON_TYPE, client.target(generateJacksonURL("/all/a/z")));
-   }
+    public void doRawXMLTest(MediaType mediaType, String expected, String targetURL) throws Exception {
+        ValidationCoreFoo foo = new ValidationCoreFoo("p");
+        Response response = client.target(targetURL).request().accept(mediaType).post(Entity.entity(foo, "application/foo"));
+        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        String header = response.getHeaderString(Validation.VALIDATION_HEADER);
+        Assert.assertNotNull("Validation header is missing", header);
+        Assert.assertTrue("Wrong value of validation header", Boolean.valueOf(header));
+        String report = response.readEntity(String.class);
+        Assert.assertThat(UNEXPECTED_VALIDATION_ERROR_MSG, report, containsString(expected));
+        response.close();
+    }
 
-   public void doTest(MediaType mediaType, WebTarget target) throws Exception {
-      ValidationCoreFoo foo = new ValidationCoreFoo("p");
-      Response response = target.request().accept(mediaType).post(Entity.entity(foo, "application/foo"));
-      Assert.assertEquals(HttpResponseCodes.SC_BAD_REQUEST, response.getStatus());
-      String header = response.getHeaderString(Validation.VALIDATION_HEADER);
-      Assert.assertNotNull("Validation header is missing", header);
-      Assert.assertTrue("Wrong value of validation header", Boolean.valueOf(header));
-      ViolationReport r = response.readEntity(ViolationReport.class);
-      TestUtil.countViolations(r, 2, 1, 1, 0);
-      ResteasyConstraintViolation violation = TestUtil.getViolationByPath(r.getPropertyViolations(), "s");
-      Assert.assertNotNull(UNEXPECTED_VALIDATION_ERROR_MSG, violation);
-      violation = TestUtil.getViolationByPath(r.getPropertyViolations(), "t");
-      Assert.assertNotNull(UNEXPECTED_VALIDATION_ERROR_MSG, violation);
-      violation = r.getClassViolations().iterator().next();
-      Assert.assertEquals(UNEXPECTED_VALIDATION_ERROR_MSG, "", violation.getPath());
-      violation = r.getParameterViolations().iterator().next();
-      String[] paths = new String[]{"post.arg0", "post.foo"};
-      Assert.assertTrue(UNEXPECTED_VALIDATION_ERROR_MSG + paths, Arrays.asList(paths).contains(violation.getPath()));
-      response.close();
-   }
-
-   public void doRawXMLTest(MediaType mediaType, String expected, String targetURL) throws Exception {
-      ValidationCoreFoo foo = new ValidationCoreFoo("p");
-      Response response = client.target(targetURL).request().accept(mediaType).post(Entity.entity(foo, "application/foo"));
-      Assert.assertEquals(HttpResponseCodes.SC_BAD_REQUEST, response.getStatus());
-      String header = response.getHeaderString(Validation.VALIDATION_HEADER);
-      Assert.assertNotNull("Validation header is missing", header);
-      Assert.assertTrue("Wrong value of validation header", Boolean.valueOf(header));
-      String report = response.readEntity(String.class);
-      Assert.assertThat(UNEXPECTED_VALIDATION_ERROR_MSG, report, containsString(expected));
-      response.close();
-   }
-
-   private void assertValidationReport(Response response)  {
-      JsonPath jsonPath = new JsonPath(response.readEntity(String.class));
-      Assert.assertThat(UNEXPECTED_VALIDATION_ERROR_MSG, jsonPath.getList("propertyViolations.constraintType"), Matchers.hasItem("PROPERTY"));
-      Assert.assertThat(UNEXPECTED_VALIDATION_ERROR_MSG, jsonPath.getList("propertyViolations.path"), Matchers.hasItem("s"));
-   }
+    private void assertValidationReport(Response response) {
+        JsonPath jsonPath = new JsonPath(response.readEntity(String.class));
+        Assert.assertThat(UNEXPECTED_VALIDATION_ERROR_MSG, jsonPath.getList("propertyViolations.constraintType"),
+                Matchers.hasItem("PROPERTY"));
+        Assert.assertThat(UNEXPECTED_VALIDATION_ERROR_MSG, jsonPath.getList("propertyViolations.path"), Matchers.hasItem("s"));
+    }
 }
-

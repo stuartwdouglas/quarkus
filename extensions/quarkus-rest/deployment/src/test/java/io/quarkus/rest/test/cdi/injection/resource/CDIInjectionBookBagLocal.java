@@ -1,11 +1,12 @@
 package io.quarkus.rest.test.cdi.injection.resource;
 
-import javax.ejb.Local;
 import java.util.Collection;
+
+import javax.ejb.Local;
 
 @Local
 public interface CDIInjectionBookBagLocal {
-   void addBook(CDIInjectionBook book);
+    void addBook(CDIInjectionBook book);
 
-   Collection<CDIInjectionBook> getContents();
+    Collection<CDIInjectionBook> getContents();
 }

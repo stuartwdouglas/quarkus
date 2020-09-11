@@ -1,30 +1,27 @@
 package io.quarkus.rest.test.core.basic;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import javax.ws.rs.client.ClientBuilder;
-import io.quarkus.rest.test.core.basic.resource.InvalidMediaTypeResource;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.core.basic.resource.InvalidMediaTypeResource;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Resteasy-client
@@ -34,7 +31,7 @@ import javax.ws.rs.core.Response;
  */
 public class InvalidMediaTypeTest {
 
-   protected static final Logger logger = LogManager.getLogger(InvalidMediaTypeTest.class.getName());
+    protected static final Logger logger = LogManager.getLogger(InvalidMediaTypeTest.class.getName());
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -44,55 +41,56 @@ public class InvalidMediaTypeTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      return TestUtil.finishContainerPrepare(war, null, InvalidMediaTypeResource.class);
-   }});
+                    return TestUtil.finishContainerPrepare(war, null, InvalidMediaTypeResource.class);
+                }
+            });
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, InvalidMediaTypeTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, InvalidMediaTypeTest.class.getSimpleName());
+    }
 
-   /**
-    * @tpTestDetails Check various wrong media type
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testInvalidMediaTypes() throws Exception {
-      QuarkusRestClient client = (QuarkusRestClient)ClientBuilder.newClient();
-      Invocation.Builder request = client.target(generateURL("/test")).request();
+    /**
+     * @tpTestDetails Check various wrong media type
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testInvalidMediaTypes() throws Exception {
+        QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
+        Invocation.Builder request = client.target(generateURL("/test")).request();
 
-      // Missing type or subtype
-      doTest(request, "/");
-      doTest(request, "/*");
-      doTest(request, "*/");
-      doTest(request, "text/");
-      doTest(request, "/plain");
+        // Missing type or subtype
+        doTest(request, "/");
+        doTest(request, "/*");
+        doTest(request, "*/");
+        doTest(request, "text/");
+        doTest(request, "/plain");
 
-      // Illegal white space
-      doTest(request, " /*");
-      doTest(request, "/* ");
-      doTest(request, " /* ");
-      doTest(request, "/ *");
-      doTest(request, "* /");
-      doTest(request, " / *");
-      doTest(request, "* / ");
-      doTest(request, "* / *");
-      doTest(request, " * / *");
-      doTest(request, "* / * ");
-      doTest(request, "text/ plain");
-      doTest(request, "text /plain");
-      doTest(request, " text/plain");
-      doTest(request, "text/plain ");
-      doTest(request, " text/plain ");
-      doTest(request, " text / plain ");
-      client.close();
-   }
+        // Illegal white space
+        doTest(request, " /*");
+        doTest(request, "/* ");
+        doTest(request, " /* ");
+        doTest(request, "/ *");
+        doTest(request, "* /");
+        doTest(request, " / *");
+        doTest(request, "* / ");
+        doTest(request, "* / *");
+        doTest(request, " * / *");
+        doTest(request, "* / * ");
+        doTest(request, "text/ plain");
+        doTest(request, "text /plain");
+        doTest(request, " text/plain");
+        doTest(request, "text/plain ");
+        doTest(request, " text/plain ");
+        doTest(request, " text / plain ");
+        client.close();
+    }
 
-   private void doTest(Invocation.Builder request, String mediaType) {
-      request.accept(mediaType);
-      Response response = request.get();
-      logger.info("mediaType: " + mediaType + "");
-      logger.info("status: " + response.getStatus());
-      Assert.assertEquals(HttpResponseCodes.SC_BAD_REQUEST, response.getStatus());
-      response.close();
-   }
+    private void doTest(Invocation.Builder request, String mediaType) {
+        request.accept(mediaType);
+        Response response = request.get();
+        logger.info("mediaType: " + mediaType + "");
+        logger.info("status: " + response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        response.close();
+    }
 }

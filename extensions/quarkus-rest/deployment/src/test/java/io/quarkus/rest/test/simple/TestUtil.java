@@ -20,6 +20,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 
@@ -61,8 +62,8 @@ public class TestUtil {
      *
      * @param resources classes used in deployment as resources
      */
-    public static Archive<?> finishContainerPrepare(WebArchive war, Map<String, String> contextParams,
-            final Class<?>... resources) {
+    public static JavaArchive finishContainerPrepare(JavaArchive war, Map<String, String> contextParams,
+                                                    final Class<?>... resources) {
         return finishContainerPrepare(war, contextParams, null, resources);
     }
 
@@ -76,7 +77,7 @@ public class TestUtil {
      * @param singletons classes used in deployment as singletons
      * @param resources classes used in deployment as resources
      */
-    public static Archive<?> finishContainerPrepare(WebArchive war, Map<String, String> contextParams,
+    public static JavaArchive finishContainerPrepare(JavaArchive war, Map<String, String> contextParams,
             List<Class<?>> singletons, final Class<?>... resources) {
 
         if (contextParams == null) {
@@ -119,7 +120,7 @@ public class TestUtil {
 
             webXml.append("</web-app>\n");
             Asset resource = new StringAsset(webXml.toString());
-            war.addAsWebInfResource(resource, "web.xml");
+            war.addAsResource(resource, "web.xml");
         }
 
         // prepare class list for getClasses function of TestApplication class

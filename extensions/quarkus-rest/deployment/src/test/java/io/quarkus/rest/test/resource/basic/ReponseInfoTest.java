@@ -57,7 +57,7 @@ public class ReponseInfoTest {
     private void basicTest(String path) {
         WebTarget base = client.target(PortProviderUtil.generateURL(path, ReponseInfoTest.class.getSimpleName()));
         Response response = base.request().get();
-        Assertions.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assertions.assertEquals(Status.OK, response.getStatus());
         response.close();
     }
 

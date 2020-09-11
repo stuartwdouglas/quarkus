@@ -148,7 +148,7 @@ public class UriInfoTest {
     private static void basicTest(String path, String testName) throws Exception {
         Response response = client.target(PortProviderUtil.generateURL("/" + testName + path)).request().get();
         try {
-            Assertions.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+            Assertions.assertEquals(Status.OK, response.getStatus());
         } finally {
             response.close();
         }

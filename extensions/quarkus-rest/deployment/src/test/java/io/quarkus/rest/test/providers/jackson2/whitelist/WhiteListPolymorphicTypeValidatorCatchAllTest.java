@@ -1,34 +1,5 @@
 package io.quarkus.rest.test.providers.jackson2.whitelist;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.logging.Logger;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import org.jboss.resteasy.plugins.providers.jackson.WhiteListPolymorphicTypeValidatorBuilder;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import io.quarkus.rest.test.providers.jackson2.whitelist.model.AbstractVehicle;
-import io.quarkus.rest.test.providers.jackson2.whitelist.model.TestPolymorphicType;
-import io.quarkus.rest.test.providers.jackson2.whitelist.model.air.Aircraft;
-import io.quarkus.rest.test.providers.jackson2.whitelist.model.land.Automobile;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
-
-import javax.ws.rs.client.ClientBuilder;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,8 +10,34 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.client.ClientBuilder;
+
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.plugins.providers.jackson.WhiteListPolymorphicTypeValidatorBuilder;
+import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.providers.jackson2.whitelist.model.AbstractVehicle;
+import io.quarkus.rest.test.providers.jackson2.whitelist.model.TestPolymorphicType;
+import io.quarkus.rest.test.providers.jackson2.whitelist.model.air.Aircraft;
+import io.quarkus.rest.test.providers.jackson2.whitelist.model.land.Automobile;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Jackson2 provider
@@ -53,7 +50,7 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
 
     static QuarkusRestClient client;
 
-     @RegisterExtension
+    @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
             .setArchiveProducer(new Supplier<JavaArchive>() {
                 @Override
@@ -61,12 +58,13 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-        war.addClass(WhiteListPolymorphicTypeValidatorCatchAllTest.class);
-        Map<String, String> contextParam = new HashMap<>();
-        contextParam.put("resteasy.jackson.deserialization.whitelist.allowIfSubType.prefix", "*");
-        return TestUtil.finishContainerPrepare(war, contextParam, JaxRsActivator.class, TestRESTService.class,
-                TestPolymorphicType.class, AbstractVehicle.class, Automobile.class, Aircraft.class);
-    }});
+                    war.addClass(WhiteListPolymorphicTypeValidatorCatchAllTest.class);
+                    Map<String, String> contextParam = new HashMap<>();
+                    contextParam.put("resteasy.jackson.deserialization.whitelist.allowIfSubType.prefix", "*");
+                    return TestUtil.finishContainerPrepare(war, contextParam, JaxRsActivator.class, TestRESTService.class,
+                            TestPolymorphicType.class, AbstractVehicle.class, Automobile.class, Aircraft.class);
+                }
+            });
 
     @Before
     public void init() {
@@ -83,7 +81,8 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
     }
 
     /**
-     * @tpTestDetails Client sends POST request with polymorphic type enabled by configuration of {@link WhiteListPolymorphicTypeValidatorBuilder}.
+     * @tpTestDetails Client sends POST request with polymorphic type enabled by configuration of
+     *                {@link WhiteListPolymorphicTypeValidatorBuilder}.
      * @tpPassCrit The resource returns successfully, deserialization passed.
      * @tpSince RESTEasy 4.5.0
      */
@@ -92,7 +91,7 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
         String response = sendPost(new TestPolymorphicType(new Automobile()));
         logger.info("response: " + response);
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.contains("Response code: " + HttpResponseCodes.SC_CREATED));
+        Assert.assertTrue(response.contains("Response code: " + Status.CREATED));
         Assert.assertTrue(response.contains("Created"));
     }
 
@@ -101,7 +100,7 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
         String response = sendPost(new TestPolymorphicType(new Aircraft()));
         logger.info("response: " + response);
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.contains("Response code: " + HttpResponseCodes.SC_CREATED));
+        Assert.assertTrue(response.contains("Response code: " + Status.CREATED));
         Assert.assertTrue(response.contains("Created"));
     }
 
@@ -142,8 +141,10 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
             is = http.getInputStream();
         }
 
-        String result = is == null ? "" : new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
-        String response = String.format("Response code: %s response message: %s  %s", http.getResponseCode(), http.getResponseMessage(), result);
+        String result = is == null ? ""
+                : new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
+        String response = String.format("Response code: %s response message: %s  %s", http.getResponseCode(),
+                http.getResponseMessage(), result);
 
         logger.info("Response: " + response);
 

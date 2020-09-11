@@ -1,27 +1,7 @@
 package io.quarkus.rest.test.security;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.logging.Logger;
-import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
-import io.quarkus.rest.test.security.resource.SslResource;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
+import static io.quarkus.rest.test.ContainerConstants.SSL_CONTAINER_PORT_OFFSET_WILDCARD;
+import static io.quarkus.rest.test.ContainerConstants.SSL_CONTAINER_QUALIFIER_WILDCARD;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,13 +12,29 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.function.Supplier;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
-import static io.quarkus.rest.test.ContainerConstants.SSL_CONTAINER_PORT_OFFSET_WILDCARD;
-import static io.quarkus.rest.test.ContainerConstants.SSL_CONTAINER_QUALIFIER_WILDCARD;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.test.security.resource.SslResource;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Security
@@ -48,15 +44,15 @@ import static io.quarkus.rest.test.ContainerConstants.SSL_CONTAINER_QUALIFIER_WI
  */
 public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
 
-   private static final Logger LOG = Logger.getLogger(SslServerWithWildcardHostnameCertificateTest.class.getName());
+    private static final Logger LOG = Logger.getLogger(SslServerWithWildcardHostnameCertificateTest.class.getName());
 
-   private static KeyStore truststore;
+    private static KeyStore truststore;
 
-   private static final String SERVER_KEYSTORE_PATH = RESOURCES + "/server-wildcard-hostname.keystore";
-   private static final String CLIENT_TRUSTSTORE_PATH = RESOURCES + "/client-wildcard-hostname.truststore";
-   private static final String URL = generateHttpsURL(SSL_CONTAINER_PORT_OFFSET_WILDCARD);
+    private static final String SERVER_KEYSTORE_PATH = RESOURCES + "/server-wildcard-hostname.keystore";
+    private static final String CLIENT_TRUSTSTORE_PATH = RESOURCES + "/client-wildcard-hostname.truststore";
+    private static final String URL = generateHttpsURL(SSL_CONTAINER_PORT_OFFSET_WILDCARD);
 
-   @TargetsContainer(SSL_CONTAINER_QUALIFIER_WILDCARD)
+    @TargetsContainer(SSL_CONTAINER_QUALIFIER_WILDCARD)
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
             .setArchiveProducer(new Supplier<JavaArchive>() {
@@ -65,106 +61,96 @@ public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      return TestUtil.finishContainerPrepare(war, null, SslResource.class);
-   }});
+                    return TestUtil.finishContainerPrepare(war, null, SslResource.class);
+                }
+            });
 
-   @BeforeClass
-   public static void prepareTruststore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
-      truststore = KeyStore.getInstance("jks");
-      try (InputStream in = new FileInputStream(CLIENT_TRUSTSTORE_PATH)) {
-         truststore.load(in, PASSWORD.toCharArray());
-      }
-   }
+    @BeforeClass
+    public static void prepareTruststore()
+            throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        truststore = KeyStore.getInstance("jks");
+        try (InputStream in = new FileInputStream(CLIENT_TRUSTSTORE_PATH)) {
+            truststore.load(in, PASSWORD.toCharArray());
+        }
+    }
 
-   @Before
-   public void startContainer() throws Exception {
-      if (!containerController.isStarted(SSL_CONTAINER_QUALIFIER_WILDCARD)) {
-         containerController.start(SSL_CONTAINER_QUALIFIER_WILDCARD);
-         secureServer(SERVER_KEYSTORE_PATH, SSL_CONTAINER_PORT_OFFSET_WILDCARD);
-         deployer.deploy(DEPLOYMENT_NAME);
-      }
-   }
+    @Before
+    public void startContainer() throws Exception {
+        if (!containerController.isStarted(SSL_CONTAINER_QUALIFIER_WILDCARD)) {
+            containerController.start(SSL_CONTAINER_QUALIFIER_WILDCARD);
+            secureServer(SERVER_KEYSTORE_PATH, SSL_CONTAINER_PORT_OFFSET_WILDCARD);
+            deployer.deploy(DEPLOYMENT_NAME);
+        }
+    }
 
-   /**
-    * @tpTestDetails HostnameVerificationPolicy.WILDCARD test
-    * Client has truststore containing self-signed certificate.
-    * Server/endpoint is secured with the same self-signed certificate, but only wildcard of server hostname (*host) is included among 'subject alternative names' in the certificate.
-    * Client should trust the server because HostnameVerificationPolicy is set to WILDCARD.
-    * @tpSince RESTEasy 3.7.0
-    */
-   @Test
-   public void testHostnameVerificationPolicyWildcard() {
-      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
-      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
+    /**
+     * @tpTestDetails HostnameVerificationPolicy.WILDCARD test
+     *                Client has truststore containing self-signed certificate.
+     *                Server/endpoint is secured with the same self-signed certificate, but only wildcard of server hostname
+     *                (*host) is included among 'subject alternative names' in the certificate.
+     *                Client should trust the server because HostnameVerificationPolicy is set to WILDCARD.
+     * @tpSince RESTEasy 3.7.0
+     */
+    @Test
+    public void testHostnameVerificationPolicyWildcard() {
+        QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+        QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      QuarkusRestClientBuilder.hostnameVerification(QuarkusRestClientBuilder.HostnameVerificationPolicy.WILDCARD);
+        QuarkusRestClientBuilder.hostnameVerification(QuarkusRestClientBuilder.HostnameVerificationPolicy.WILDCARD);
 
-      client = QuarkusRestClientBuilder.trustStore(truststore).build();
-      Response response = client.target(URL).request().get();
-      Assert.assertEquals("Hello World!", response.readEntity(String.class));
-      Assert.assertEquals(200, response.getStatus());
-   }
+        client = QuarkusRestClientBuilder.trustStore(truststore).build();
+        Response response = client.target(URL).request().get();
+        Assert.assertEquals("Hello World!", response.readEntity(String.class));
+        Assert.assertEquals(200, response.getStatus());
+    }
 
-   /**
-    * @tpTestDetails HostnameVerificationPolicy.STRICT test
-    * Client has truststore containing self-signed certificate.
-    * Server/endpoint is secured with the same self-signed certificate, but only wildcard of server hostname (*host) is included among 'subject alternative names' in the certificate.
-    * HostnameVerificationPolicy is set to STRICT so exception should be thrown.
-    * @tpSince RESTEasy 3.7.0
-    */
-   @Test
-   public void testHostnameVerificationPolicyStrict() throws Exception {
-      QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
-      QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
+    /**
+     * @tpTestDetails HostnameVerificationPolicy.STRICT test
+     *                Client has truststore containing self-signed certificate.
+     *                Server/endpoint is secured with the same self-signed certificate, but only wildcard of server hostname
+     *                (*host) is included among 'subject alternative names' in the certificate.
+     *                HostnameVerificationPolicy is set to STRICT so exception should be thrown.
+     * @tpSince RESTEasy 3.7.0
+     */
+    @Test
+    public void testHostnameVerificationPolicyStrict() throws Exception {
+        QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
+        QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
 
-      QuarkusRestClientBuilder.hostnameVerification(QuarkusRestClientBuilder.HostnameVerificationPolicy.STRICT);
+        QuarkusRestClientBuilder.hostnameVerification(QuarkusRestClientBuilder.HostnameVerificationPolicy.STRICT);
 
-      client = QuarkusRestClientBuilder.trustStore(truststore).build();
-      try
-      {
-         if (InetAddress.getByName("localhost.localdomain") != null)
-         {
-            String anotherURL = URL.replace("localhost", "localhost.localdomain");
-            try
-            {
-               client.target(anotherURL).request().get();
-               Assert.fail("ProcessingException ie expected");
+        client = QuarkusRestClientBuilder.trustStore(truststore).build();
+        try {
+            if (InetAddress.getByName("localhost.localdomain") != null) {
+                String anotherURL = URL.replace("localhost", "localhost.localdomain");
+                try {
+                    client.target(anotherURL).request().get();
+                    Assert.fail("ProcessingException ie expected");
+                } catch (ProcessingException e) {
+                    //expected
+                }
             }
-            catch (ProcessingException e)
-            {
-               //expected
+        } catch (UnknownHostException e) {
+            try {
+                if (InetAddress.getByName("localhost.localhost") != null) {
+                    String anotherURL = URL.replace("localhost", "localhost.localhost");
+                    try {
+                        client.target(anotherURL).request().get();
+                        Assert.fail("ProcessingException ie expected");
+                    } catch (ProcessingException e1) {
+                        //expected
+                    }
+                }
+            } catch (UnknownHostException e2) {
+                LOG.warn("Neither 'localhost.localdomain' nor 'local.localhost'can be resolved, "
+                        + "nothing is checked");
             }
-         }
-      }
-      catch (UnknownHostException e)
-      {
-         try
-         {
-            if (InetAddress.getByName("localhost.localhost") != null)
-            {
-               String anotherURL = URL.replace("localhost", "localhost.localhost");
-               try
-               {
-                  client.target(anotherURL).request().get();
-                  Assert.fail("ProcessingException ie expected");
-               }
-               catch (ProcessingException e1)
-               {
-                  //expected
-               }
-            }
-         }
-         catch (UnknownHostException e2)
-         {
-           LOG.warn("Neither 'localhost.localdomain' nor 'local.localhost'can be resolved, "
-                 + "nothing is checked");
-         }
-      }
-   }
+        }
+    }
 
-   @After
-   public void after() {
-      client.close();
-   }
+    @After
+    public void after() {
+        client.close();
+    }
 
 }

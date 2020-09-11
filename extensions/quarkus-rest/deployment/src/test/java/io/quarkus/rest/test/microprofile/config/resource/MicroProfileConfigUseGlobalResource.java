@@ -11,13 +11,14 @@ import org.eclipse.microprofile.config.ConfigProvider;
 @Path("/")
 public class MicroProfileConfigUseGlobalResource {
 
-   @Inject Config config;
+    @Inject
+    Config config;
 
-   @GET
-   @Produces("text/plain")
-   @Path("prefix")
-   public String prefix() {
-      String p = ConfigProvider.getConfig().getOptionalValue("resteasy.servlet.mapping.prefix", String.class).orElse("d'oh");
-      return p;
-   }
+    @GET
+    @Produces("text/plain")
+    @Path("prefix")
+    public String prefix() {
+        String p = ConfigProvider.getConfig().getOptionalValue("resteasy.servlet.mapping.prefix", String.class).orElse("d'oh");
+        return p;
+    }
 }

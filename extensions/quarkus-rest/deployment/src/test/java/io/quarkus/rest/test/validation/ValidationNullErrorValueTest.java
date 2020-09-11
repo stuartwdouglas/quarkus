@@ -1,13 +1,12 @@
 package io.quarkus.rest.test.validation;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.api.validation.ViolationReport;
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import javax.ws.rs.client.ClientBuilder;
-import io.quarkus.rest.test.validation.resource.ValidationNullErrorValueResourceWithNullFieldAndProperty;
-import io.quarkus.rest.test.validation.resource.ValidationNullErrorValueResourceWithNullParameterAndReturnValue;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.resteasy.api.validation.ViolationReport;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
@@ -15,17 +14,12 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.rest.test.validation.resource.ValidationNullErrorValueResourceWithNullFieldAndProperty;
+import io.quarkus.rest.test.validation.resource.ValidationNullErrorValueResourceWithNullParameterAndReturnValue;
 
 /**
  * @tpSubChapter Validation
@@ -35,70 +29,71 @@ import javax.ws.rs.core.Response;
  */
 public class ValidationNullErrorValueTest {
 
-   static QuarkusRestClient client;
+    static QuarkusRestClient client;
 
-   public static Archive<?> generateArchive(Class<?> clazz) {
-      WebArchive war = TestUtil.prepareArchive(clazz.getSimpleName());
-      return TestUtil.finishContainerPrepare(war, null, clazz);
-   }
+    public static Archive<?> generateArchive(Class<?> clazz) {
+        WebArchive war = TestUtil.prepareArchive(clazz.getSimpleName());
+        return TestUtil.finishContainerPrepare(war, null, clazz);
+    }
 
-   @BeforeClass
-   public static void before() throws Exception {
-      client = (QuarkusRestClient)ClientBuilder.newClient();
-   }
+    @BeforeClass
+    public static void before() throws Exception {
+        client = (QuarkusRestClient) ClientBuilder.newClient();
+    }
 
-   @AfterClass
-   public static void after() throws Exception {
-      client.close();
-   }
+    @AfterClass
+    public static void after() throws Exception {
+        client.close();
+    }
 
-   @Deployment(name = "ValidationNullErrorValueResourceWithNullFieldAndProperty")
-   public static Archive<?> createTestArchiveDefault() {
-      return generateArchive(ValidationNullErrorValueResourceWithNullFieldAndProperty.class);
-   }
+    @Deployment(name = "ValidationNullErrorValueResourceWithNullFieldAndProperty")
+    public static Archive<?> createTestArchiveDefault() {
+        return generateArchive(ValidationNullErrorValueResourceWithNullFieldAndProperty.class);
+    }
 
-   @Deployment(name = "ValidationNullErrorValueResourceWithNullParameterAndReturnValue")
-   public static Archive<?> createTestArchiveFalse() {
-      return generateArchive(ValidationNullErrorValueResourceWithNullParameterAndReturnValue.class);
-   }
+    @Deployment(name = "ValidationNullErrorValueResourceWithNullParameterAndReturnValue")
+    public static Archive<?> createTestArchiveFalse() {
+        return generateArchive(ValidationNullErrorValueResourceWithNullParameterAndReturnValue.class);
+    }
 
-   /**
-    * @tpTestDetails Test null field and property.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testNullFieldAndProperty() throws Exception {
-      Response response = client.target(PortProviderUtil.generateURL("/get",
-            ValidationNullErrorValueResourceWithNullFieldAndProperty.class.getSimpleName())).request().accept(MediaType.APPLICATION_XML).get();
-      ViolationReport report = response.readEntity(ViolationReport.class);
-      TestUtil.countViolations(report, 2, 0, 0, 0);
-      response.close();
-   }
+    /**
+     * @tpTestDetails Test null field and property.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testNullFieldAndProperty() throws Exception {
+        Response response = client.target(PortProviderUtil.generateURL("/get",
+                ValidationNullErrorValueResourceWithNullFieldAndProperty.class.getSimpleName())).request()
+                .accept(MediaType.APPLICATION_XML).get();
+        ViolationReport report = response.readEntity(ViolationReport.class);
+        TestUtil.countViolations(report, 2, 0, 0, 0);
+        response.close();
+    }
 
-   /**
-    * @tpTestDetails Test null return value
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testNullParameterAndReturnValue() throws Exception {
-      {
-         // Null query parameter
-         Response response = client.target(PortProviderUtil.generateURL("/post",
-               ValidationNullErrorValueResourceWithNullParameterAndReturnValue.class.getSimpleName())).request()
-               .accept(MediaType.APPLICATION_XML).post(Entity.text(new String()));
-         ViolationReport report = response.readEntity(ViolationReport.class);
-         TestUtil.countViolations(report, 0, 0, 1, 0);
-         response.close();
-      }
+    /**
+     * @tpTestDetails Test null return value
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testNullParameterAndReturnValue() throws Exception {
+        {
+            // Null query parameter
+            Response response = client.target(PortProviderUtil.generateURL("/post",
+                    ValidationNullErrorValueResourceWithNullParameterAndReturnValue.class.getSimpleName())).request()
+                    .accept(MediaType.APPLICATION_XML).post(Entity.text(new String()));
+            ViolationReport report = response.readEntity(ViolationReport.class);
+            TestUtil.countViolations(report, 0, 0, 1, 0);
+            response.close();
+        }
 
-      {
-         // Null return value
-         Response response = client.target(PortProviderUtil.generateURL("/get",
-               ValidationNullErrorValueResourceWithNullParameterAndReturnValue.class.getSimpleName())).request()
-               .accept(MediaType.APPLICATION_XML).get();
-         ViolationReport report = response.readEntity(ViolationReport.class);
-         TestUtil.countViolations(report, 0, 0, 0, 1);
-         response.close();
-      }
-   }
+        {
+            // Null return value
+            Response response = client.target(PortProviderUtil.generateURL("/get",
+                    ValidationNullErrorValueResourceWithNullParameterAndReturnValue.class.getSimpleName())).request()
+                    .accept(MediaType.APPLICATION_XML).get();
+            ViolationReport report = response.readEntity(ViolationReport.class);
+            TestUtil.countViolations(report, 0, 0, 0, 1);
+            response.close();
+        }
+    }
 }

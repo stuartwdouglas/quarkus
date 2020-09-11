@@ -1,28 +1,24 @@
 package io.quarkus.rest.test.asynch;
 
+import java.util.function.Supplier;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.test.asynch.resource.AsyncUnhandledExceptionResource;
 import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
+import io.quarkus.rest.test.asynch.resource.AsyncUnhandledExceptionResource;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Asynchronous RESTEasy
@@ -40,40 +36,41 @@ public class AsyncUnhandledExceptionTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      return TestUtil.finishContainerPrepare(war, null, AsyncUnhandledExceptionResource.class);
-   }});
+                    return TestUtil.finishContainerPrepare(war, null, AsyncUnhandledExceptionResource.class);
+                }
+            });
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, AsyncUnhandledExceptionTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, AsyncUnhandledExceptionTest.class.getSimpleName());
+    }
 
-   /**
-    * @tpTestDetails Unhandled exception is thrown from a ReadListener
-    * @tpSince RESTEasy 4.0.0
-    */
-   @Test
-   public void testPost() {
-      Client client = ClientBuilder.newClient();
-      try {
-         Response response = client.target(generateURL("/listener")).request().post(Entity.entity("aaa", "text/plain"));
-         Assert.assertEquals(500, response.getStatus());
-      } finally {
-         client.close();
-      }
-   }
+    /**
+     * @tpTestDetails Unhandled exception is thrown from a ReadListener
+     * @tpSince RESTEasy 4.0.0
+     */
+    @Test
+    public void testPost() {
+        Client client = ClientBuilder.newClient();
+        try {
+            Response response = client.target(generateURL("/listener")).request().post(Entity.entity("aaa", "text/plain"));
+            Assert.assertEquals(500, response.getStatus());
+        } finally {
+            client.close();
+        }
+    }
 
-   /**
-   * @tpTestDetails Unhandled exception is thrown from a separate thread
-    * @tpSince RESTEasy 4.0.0
-    */
-   @Test
-   public void testGet() {
-      Client client = ClientBuilder.newClient();
-      try {
-         Response response = client.target(generateURL("/thread")).request().get();
-         Assert.assertEquals(500, response.getStatus());
-      } finally {
-         client.close();
-      }
-   }
+    /**
+     * @tpTestDetails Unhandled exception is thrown from a separate thread
+     * @tpSince RESTEasy 4.0.0
+     */
+    @Test
+    public void testGet() {
+        Client client = ClientBuilder.newClient();
+        try {
+            Response response = client.target(generateURL("/thread")).request().get();
+            Assert.assertEquals(500, response.getStatus());
+        } finally {
+            client.close();
+        }
+    }
 }

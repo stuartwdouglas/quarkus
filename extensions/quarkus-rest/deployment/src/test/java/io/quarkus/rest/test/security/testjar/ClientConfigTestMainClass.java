@@ -1,19 +1,22 @@
 package io.quarkus.rest.test.security.testjar;
 
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
-import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
-
-import javax.net.ssl.SSLContext;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 
+import javax.net.ssl.SSLContext;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.Response;
+
+import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
+
+import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+
 /**
- * ClientConfigProvider implementation used in jar that tests ClientConfigProvider functionality regarding HTTP BASIC auth and SSLContext.
+ * ClientConfigProvider implementation used in jar that tests ClientConfigProvider functionality regarding HTTP BASIC auth and
+ * SSLContext.
  */
 public class ClientConfigTestMainClass {
     public static void main(String[] args) throws IOException, URISyntaxException, NoSuchAlgorithmException {
@@ -44,7 +47,8 @@ public class ClientConfigTestMainClass {
         }
 
         if (testType.equals("TEST_CLIENTCONFIG_SSLCONTEXT_IGNORED_WHEN_DIFFERENT_SET")) {
-            QuarkusRestClient clientWithSSLContextSetByUser = QuarkusRestClientBuilder.sslContext(SSLContext.getDefault()).build();
+            QuarkusRestClient clientWithSSLContextSetByUser = QuarkusRestClientBuilder.sslContext(SSLContext.getDefault())
+                    .build();
             try {
                 response = clientWithSSLContextSetByUser.target(url.toURI()).request().get();
                 result = Integer.toString(response.getStatus());

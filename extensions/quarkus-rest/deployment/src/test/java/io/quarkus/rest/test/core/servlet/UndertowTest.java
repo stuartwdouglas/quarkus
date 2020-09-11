@@ -1,32 +1,21 @@
 package io.quarkus.rest.test.core.servlet;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.function.Supplier;
+
 import org.hamcrest.CoreMatchers;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.test.core.servlet.resource.FilterForwardServlet;
-import io.quarkus.rest.test.core.servlet.resource.UndertowServlet;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.utils.PermissionUtil;
+import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
-import java.lang.reflect.ReflectPermission;
-import java.net.HttpURLConnection;
-import java.net.SocketPermission;
-import java.net.URL;
-import java.util.PropertyPermission;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Configuration
@@ -44,28 +33,29 @@ public class UndertowTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      // Arquillian in the deployment and use of PortProviderUtil
+                    // Arquillian in the deployment and use of PortProviderUtil
 
-      return war;
-   }});
+                    return war;
+                }
+            });
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, "RESTEASY-903");
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, "RESTEASY-903");
+    }
 
-   /**
-    * @tpTestDetails Redirection in one servlet to other servlet.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testUndertow() throws Exception {
-      URL url = new URL(generateURL("/test"));
-      HttpURLConnection conn = HttpURLConnection.class.cast(url.openConnection());
-      conn.connect();
-      byte[] b = new byte[16];
-      conn.getInputStream().read(b);
-      Assert.assertThat("Wrong content of response", new String(b), CoreMatchers.startsWith("forward"));
-      Assert.assertEquals(HttpResponseCodes.SC_OK, conn.getResponseCode());
-      conn.disconnect();
-   }
+    /**
+     * @tpTestDetails Redirection in one servlet to other servlet.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testUndertow() throws Exception {
+        URL url = new URL(generateURL("/test"));
+        HttpURLConnection conn = HttpURLConnection.class.cast(url.openConnection());
+        conn.connect();
+        byte[] b = new byte[16];
+        conn.getInputStream().read(b);
+        Assert.assertThat("Wrong content of response", new String(b), CoreMatchers.startsWith("forward"));
+        Assert.assertEquals(Status.OK, conn.getResponseCode());
+        conn.disconnect();
+    }
 }

@@ -1,33 +1,30 @@
 package io.quarkus.rest.test.resource.path;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import java.util.function.Supplier;
+
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.Response;
+
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
 import io.quarkus.rest.test.resource.path.resource.ResourceLocatorWithBaseExpressionResource;
 import io.quarkus.rest.test.resource.path.resource.ResourceLocatorWithBaseExpressionSubresource;
 import io.quarkus.rest.test.resource.path.resource.ResourceLocatorWithBaseExpressionSubresource2;
 import io.quarkus.rest.test.resource.path.resource.ResourceLocatorWithBaseExpressionSubresource3;
 import io.quarkus.rest.test.resource.path.resource.ResourceLocatorWithBaseExpressionSubresource3Interface;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.rest.test.simple.TestUtil;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.Response;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Resource
@@ -36,13 +33,13 @@ import javax.ws.rs.core.Response;
  * @tpSince RESTEasy 3.0.16
  */
 public class ResourceLocatorWithBaseExpressionTest {
-   private static final String ERROR_MSG = "Response contain wrong content";
-   static Client client;
+    private static final String ERROR_MSG = "Response contain wrong content";
+    static Client client;
 
-   @BeforeClass
-   public static void setup() throws Exception {
-      client = ClientBuilder.newClient();
-   }
+    @BeforeClass
+    public static void setup() throws Exception {
+        client = ClientBuilder.newClient();
+    }
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -52,47 +49,48 @@ public class ResourceLocatorWithBaseExpressionTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      war.addClasses(ResourceLocatorWithBaseExpressionSubresource.class,
-            ResourceLocatorWithBaseExpressionSubresource2.class,
-            ResourceLocatorWithBaseExpressionSubresource3.class,
-            ResourceLocatorWithBaseExpressionSubresource3Interface.class);
-      return TestUtil.finishContainerPrepare(war, null, ResourceLocatorWithBaseExpressionResource.class);
-   }});
+                    war.addClasses(ResourceLocatorWithBaseExpressionSubresource.class,
+                            ResourceLocatorWithBaseExpressionSubresource2.class,
+                            ResourceLocatorWithBaseExpressionSubresource3.class,
+                            ResourceLocatorWithBaseExpressionSubresource3Interface.class);
+                    return TestUtil.finishContainerPrepare(war, null, ResourceLocatorWithBaseExpressionResource.class);
+                }
+            });
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, ResourceLocatorWithBaseExpressionTest.class.getSimpleName());
-   }
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, ResourceLocatorWithBaseExpressionTest.class.getSimpleName());
+    }
 
-   @AfterClass
-   public static void close() throws Exception {
-      client.close();
-   }
+    @AfterClass
+    public static void close() throws Exception {
+        client.close();
+    }
 
-   @AfterClass
-   public static void after() throws Exception {
+    @AfterClass
+    public static void after() throws Exception {
 
-   }
+    }
 
-   /**
-    * @tpTestDetails Test for root resource and for subresource.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testSubresource() throws Exception {
-      {
-         Response response = client.target(generateURL("/a1/base/1/resources")).request().get();
-         Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-         Assert.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource.class.getName(),
-            response.readEntity(String.class));
-         response.close();
-      }
-      {
-         Response response = client.target(generateURL("/a1/base/1/resources/subresource2/stuff/2/bar")).request().get();
-         Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatus());
-         Assert.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource2.class.getName() + "-2",
-            response.readEntity(String.class));
-         response.close();
-      }
-   }
+    /**
+     * @tpTestDetails Test for root resource and for subresource.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testSubresource() throws Exception {
+        {
+            Response response = client.target(generateURL("/a1/base/1/resources")).request().get();
+            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource.class.getName(),
+                    response.readEntity(String.class));
+            response.close();
+        }
+        {
+            Response response = client.target(generateURL("/a1/base/1/resources/subresource2/stuff/2/bar")).request().get();
+            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource2.class.getName() + "-2",
+                    response.readEntity(String.class));
+            response.close();
+        }
+    }
 
 }

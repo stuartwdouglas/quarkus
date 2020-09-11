@@ -1,49 +1,8 @@
 package io.quarkus.rest.test.cdi.basic;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.logging.Logger;
-import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookReader;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookReaderDecorator;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookReaderInterceptor;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookReaderInterceptorDecorator;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookWriter;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookWriterDecorator;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookWriterInterceptor;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsBookWriterInterceptorDecorator;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResource;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResourceDecorator;
-import io.quarkus.rest.test.cdi.basic.resource.EJBBook;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsFilterBinding;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsRequestFilterDecorator;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResourceBinding;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResourceInterceptor;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResponseFilterDecorator;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsTestRequestFilter;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResourceIntf;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsResponseFilter;
-import io.quarkus.rest.test.cdi.basic.resource.DecoratorsVisitList;
-import io.quarkus.rest.test.cdi.util.Constants;
-import io.quarkus.rest.test.cdi.util.Utilities;
-import io.quarkus.rest.test.cdi.util.UtilityProducer;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
+import static org.junit.Assert.assertEquals;
+
 import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -51,7 +10,22 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import static org.junit.Assert.assertEquals;
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
+import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.test.cdi.basic.resource.EJBBook;
+import io.quarkus.rest.test.cdi.util.Constants;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter CDI
@@ -61,7 +35,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class DecoratorsTest {
 
-   private static Logger log = Logger.getLogger(DecoratorsTest.class);
+    private static Logger log = Logger.getLogger(DecoratorsTest.class);
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -71,61 +45,64 @@ public class DecoratorsTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      return war;
-   }});
+                    return war;
+                }
+            });
 
-   private ResteasyProviderFactory factory;
-   @Before
-   public void setup() {
-      // Create an instance and set it as the singleton to use
-      factory = ResteasyProviderFactory.newInstance();
-      ResteasyProviderFactory.setInstance(factory);
-      RegisterBuiltin.register(factory);
-   }
-   @After
-   public void cleanup() {
-      // Clear the singleton
-      ResteasyProviderFactory.clearInstanceIfEqual(factory);
-   }
+    private ResteasyProviderFactory factory;
 
-   private String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, DecoratorsTest.class.getSimpleName());
-   }
+    @Before
+    public void setup() {
+        // Create an instance and set it as the singleton to use
+        factory = ResteasyProviderFactory.newInstance();
+        ResteasyProviderFactory.setInstance(factory);
+        RegisterBuiltin.register(factory);
+    }
 
-   /**
-    * @tpTestDetails Store Book to server, received it and check decorator usage.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testDecorators() throws Exception {
-      Client client = ClientBuilder.newClient();
+    @After
+    public void cleanup() {
+        // Clear the singleton
+        ResteasyProviderFactory.clearInstanceIfEqual(factory);
+    }
 
-      // Create book.
-      WebTarget base = client.target(generateURL("/create/"));
-      EJBBook book = new EJBBook("RESTEasy: the Sequel");
-      Response response = base.request().post(Entity.entity(book, Constants.MEDIA_TYPE_TEST_XML_TYPE));
-      assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-      log.info("Status: " + response.getStatus());
-      int id = response.readEntity(int.class);
-      log.info("id: " + id);
-      assertEquals("Wrong id of received book", 0, id);
-      response.close();
+    private String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, DecoratorsTest.class.getSimpleName());
+    }
 
-      // Retrieve book.
-      base = client.target(generateURL("/book/" + id));
-      response = base.request().accept(Constants.MEDIA_TYPE_TEST_XML).get();
-      assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-      EJBBook result = response.readEntity(EJBBook.class);
-      log.info("book: " + book);
-      assertEquals("Wrong received book", book, result);
-      response.close();
+    /**
+     * @tpTestDetails Store Book to server, received it and check decorator usage.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testDecorators() throws Exception {
+        Client client = ClientBuilder.newClient();
 
-      // Test order of decorator invocations.
-      base = client.target(generateURL("/test/"));
-      response = base.request().post(Entity.text(new String()));
-      assertEquals("Wrong decorator usage", HttpResponseCodes.SC_OK, response.getStatus());
-      response.close();
+        // Create book.
+        WebTarget base = client.target(generateURL("/create/"));
+        EJBBook book = new EJBBook("RESTEasy: the Sequel");
+        Response response = base.request().post(Entity.entity(book, Constants.MEDIA_TYPE_TEST_XML_TYPE));
+        assertEquals(Status.OK, response.getStatus());
+        log.info("Status: " + response.getStatus());
+        int id = response.readEntity(int.class);
+        log.info("id: " + id);
+        assertEquals("Wrong id of received book", 0, id);
+        response.close();
 
-      client.close();
-   }
+        // Retrieve book.
+        base = client.target(generateURL("/book/" + id));
+        response = base.request().accept(Constants.MEDIA_TYPE_TEST_XML).get();
+        assertEquals(Status.OK, response.getStatus());
+        EJBBook result = response.readEntity(EJBBook.class);
+        log.info("book: " + book);
+        assertEquals("Wrong received book", book, result);
+        response.close();
+
+        // Test order of decorator invocations.
+        base = client.target(generateURL("/test/"));
+        response = base.request().post(Entity.text(new String()));
+        assertEquals("Wrong decorator usage", Status.OK, response.getStatus());
+        response.close();
+
+        client.close();
+    }
 }

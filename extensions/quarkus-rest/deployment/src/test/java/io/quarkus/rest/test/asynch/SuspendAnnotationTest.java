@@ -1,34 +1,30 @@
 package io.quarkus.rest.test.asynch;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import io.quarkus.rest.test.asynch.resource.LegacySuspendResource;
-import org.jboss.resteasy.spi.HttpResponseCodes;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import io.quarkus.rest.test.simple.PortProviderUtil;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import io.quarkus.test.QuarkusUnitTest;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import io.quarkus.rest.test.simple.TestUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
+import javax.ws.rs.core.Response.Status;
+import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.rest.test.asynch.resource.LegacySuspendResource;
+import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.test.QuarkusUnitTest;
 
 /**
  * @tpSubChapter Asynchronous RESTEasy
  * @tpChapter Integration tests
  * @tpTestCaseDetails Basic asynchronous test for suspended response.
- *                Test for org.jboss.resteasy.annotations.Suspend annotation
+ *                    Test for org.jboss.resteasy.annotations.Suspend annotation
  * @tpSince RESTEasy 3.0.16
  */
 public class SuspendAnnotationTest {
@@ -41,41 +37,42 @@ public class SuspendAnnotationTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-      return TestUtil.finishContainerPrepare(war, null, LegacySuspendResource.class);
-   }});
+                    return TestUtil.finishContainerPrepare(war, null, LegacySuspendResource.class);
+                }
+            });
 
-   private static String generateURL(String path) {
-      return PortProviderUtil.generateURL(path, JaxrsAsyncTest.class.getSimpleName());
-   }
+    private static String generateURL(String path) {
+        return PortProviderUtil.generateURL(path, JaxrsAsyncTest.class.getSimpleName());
+    }
 
-   /**
-    * @tpTestDetails Server is able to answer in requested time.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testPositive() throws Exception {
-      Client client = ClientBuilder.newClient();
-      Response response = client.target(generateURL("")).request().get();
+    /**
+     * @tpTestDetails Server is able to answer in requested time.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testPositive() throws Exception {
+        Client client = ClientBuilder.newClient();
+        Response response = client.target(generateURL("")).request().get();
 
-      Assert.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
-      Assert.assertEquals("Wrong content of response", "hello", response.readEntity(String.class));
+        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals("Wrong content of response", "hello", response.readEntity(String.class));
 
-      response.close();
-      client.close();
-   }
+        response.close();
+        client.close();
+    }
 
-   /**
-    * @tpTestDetails Server is not able to answer in requested time.
-    * @tpSince RESTEasy 3.0.16
-    */
-   @Test
-   public void testTimeout() throws Exception {
-      Client client = ClientBuilder.newClient();
-      Response response = client.target(generateURL("/timeout")).request().get();
+    /**
+     * @tpTestDetails Server is not able to answer in requested time.
+     * @tpSince RESTEasy 3.0.16
+     */
+    @Test
+    public void testTimeout() throws Exception {
+        Client client = ClientBuilder.newClient();
+        Response response = client.target(generateURL("/timeout")).request().get();
 
-      Assert.assertEquals(HttpResponseCodes.SC_SERVICE_UNAVAILABLE, response.getStatus());
+        Assert.assertEquals(Status.SERVICE_UNAVAILABLE, response.getStatus());
 
-      response.close();
-      client.close();
-   }
+        response.close();
+        client.close();
+    }
 }

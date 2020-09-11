@@ -7,14 +7,15 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
 
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+
 import io.quarkus.rest.test.providers.multipart.InputPartDefaultCharsetOverwriteTest;
 
 @Provider
 public class InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8 implements ContainerRequestFilter {
 
-   @Override
-   public void filter(ContainerRequestContext requestContext) throws IOException
-   {
-      requestContext.setProperty(InputPart.DEFAULT_CONTENT_TYPE_PROPERTY, InputPartDefaultCharsetOverwriteTest.TEXT_HTTP_WITH_CHARSET_UTF_8);
-   }
+    @Override
+    public void filter(ContainerRequestContext requestContext) throws IOException {
+        requestContext.setProperty(InputPart.DEFAULT_CONTENT_TYPE_PROPERTY,
+                InputPartDefaultCharsetOverwriteTest.TEXT_HTTP_WITH_CHARSET_UTF_8);
+    }
 }

@@ -55,7 +55,7 @@ public class CovariantReturnSubresourceLocatorsTest {
         Response response = client.target(
                 PortProviderUtil.generateURL("/path/sub/xyz", CovariantReturnSubresourceLocatorsTest.class.getSimpleName()))
                 .request().get();
-        Assertions.assertEquals(HttpResponseCodes.SC_OK, response.getStatus());
+        Assertions.assertEquals(Status.OK, response.getStatus());
         Assertions.assertEquals("Boo! - xyz", response.readEntity(String.class), "Wrong content of response");
         response.close();
         client.close();
