@@ -12,20 +12,15 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartInputImpl;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedOutput;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -34,13 +29,14 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.multipart.resource.ComplexMultipartOutputResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.test.QuarkusUnitTest;
 
 public class ComplexMultipartOutputTest {
-    protected final Logger logger = LogManager.getLogger(
+    protected final Logger logger = Logger.getLogger(
             ComplexMultipartOutputTest.class.getName());
 
     static QuarkusRestClient client;
@@ -52,8 +48,6 @@ public class ComplexMultipartOutputTest {
                 public JavaArchive get() {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
-
-                    war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
                     return TestUtil.finishContainerPrepare(war, null,
                             ComplexMultipartOutputResource.class);
@@ -82,7 +76,7 @@ public class ComplexMultipartOutputTest {
         controlList.add("bill");
         controlList.add("bob");
 
-        ResteasyWebTarget target = client.target(generateURL("/mpart/test"));
+        QuarkusRestWebTarget target = client.target(generateURL("/mpart/test"));
         Response response = target.request().get();
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
         Assert.assertEquals(Status.OK, response.getStatus());

@@ -8,12 +8,9 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -36,7 +33,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  */
 public class AlternativeVanillaInheritanceTest {
-    protected static final Logger log = LogManager.getLogger(AlternativeVanillaInheritanceTest.class.getName());
+    protected static final Logger log = Logger.getLogger(AlternativeVanillaInheritanceTest.class.getName());
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()

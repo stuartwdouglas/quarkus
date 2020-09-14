@@ -9,11 +9,10 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
-import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;

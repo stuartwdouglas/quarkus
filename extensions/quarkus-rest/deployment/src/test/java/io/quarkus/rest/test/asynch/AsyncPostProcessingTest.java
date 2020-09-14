@@ -4,12 +4,9 @@ import java.util.function.Supplier;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
-
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.logging.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -32,7 +29,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-767
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class AsyncPostProcessingTest {
 
     private static Logger logger = Logger.getLogger(AsyncPostProcessingTest.class);

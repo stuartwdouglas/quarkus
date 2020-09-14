@@ -9,6 +9,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
 import org.apache.http.HttpResponse;
@@ -16,16 +17,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.resteasy.plugins.interceptors.AcceptEncodingGZIPFilter;
 import org.jboss.resteasy.plugins.interceptors.GZIPDecodingInterceptor;
 import org.jboss.resteasy.plugins.interceptors.GZIPEncodingInterceptor;
-import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.util.ReadFromStream;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -52,7 +49,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class GzipTest {
 
     static QuarkusRestClient client;
-    protected static final Logger logger = LogManager.getLogger(GzipTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(GzipTest.class.getName());
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()

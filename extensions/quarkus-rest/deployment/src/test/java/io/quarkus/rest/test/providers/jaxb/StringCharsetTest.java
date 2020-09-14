@@ -5,9 +5,6 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -17,6 +14,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.StringCharsetResource;
 import io.quarkus.rest.test.providers.jaxb.resource.StringCharsetRespond;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -67,7 +65,7 @@ public class StringCharsetTest {
      */
     @Test
     public void testIt() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/charset/test.xml"));
+        QuarkusRestWebTarget target = client.target(generateURL("/charset/test.xml"));
         String response = target.request().header("Accept", "application/xml;charset=iso-8859-2").get(String.class);
         logger.info(response);
         Assert.assertTrue("Response doesn't contain expected characters",

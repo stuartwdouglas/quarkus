@@ -8,12 +8,9 @@ import java.util.function.Supplier;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -36,7 +33,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class CustomConstrainedFeatureTest {
 
     private static final String TEST_URI = generateURL("/test-custom-feature");
-    private static final Logger LOGGER = LogManager.getLogger(CustomConstrainedFeatureTest.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CustomConstrainedFeatureTest.class.getName());
     private static final String CUSTOM_PROVIDERS_FILENAME = "CustomConstrainedFeature.Providers";
 
     @RegisterExtension

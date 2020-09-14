@@ -8,11 +8,8 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocationBuilder;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -23,6 +20,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.resource.ChunkedTransferEncodingResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -78,7 +76,7 @@ public class ChunkedTransferEncodingTest {
     }
 
     /**
-     * @tpTestDetails Tests that chunked Transfer-encoding header is set on ResteasyWebTarget. Tests that Content-Length
+     * @tpTestDetails Tests that chunked Transfer-encoding header is set on QuarkusRestWebTarget. Tests that Content-Length
      *                header is set only in case when chunked transfer encoding is set to false. Headers are tested with the
      *                default client,
      *                client with te underlying http engines ApacheHttpClient4Engine and ApacheHttpClient43Engine.
@@ -95,7 +93,7 @@ public class ChunkedTransferEncodingTest {
     }
 
     public void doTestTarget(QuarkusRestClient client, Boolean b, String expected) throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/test"));
+        QuarkusRestWebTarget target = client.target(generateURL("/test"));
         if (b == Boolean.TRUE || b == Boolean.FALSE) {
             target.setChunked(b.booleanValue());
         }
@@ -124,7 +122,7 @@ public class ChunkedTransferEncodingTest {
     }
 
     protected void doTestRequest(QuarkusRestClient client, Boolean b, String expected) throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/test"));
+        QuarkusRestWebTarget target = client.target(generateURL("/test"));
         ClientInvocationBuilder request = (ClientInvocationBuilder) target.request();
         if (b != null) {
             request.setChunked(b);

@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 
 import javax.ws.rs.container.DynamicFeature;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.utils.TestUtil;
@@ -32,7 +31,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-1083
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class ClientDynamicFeaturesTest {
     private static final String CLIENT_FEATURE_ERROR_MSG = "Wrong count of client features";
     private static final String SERVER_FEATURE_ERROR_MSG = "Wrong count of server features";

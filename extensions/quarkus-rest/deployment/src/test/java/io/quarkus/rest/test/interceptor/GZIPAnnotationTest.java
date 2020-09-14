@@ -5,12 +5,9 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.plugins.interceptors.AcceptEncodingGZIPFilter;
 import org.jboss.resteasy.plugins.interceptors.GZIPDecodingInterceptor;
 import org.jboss.resteasy.plugins.interceptors.GZIPEncodingInterceptor;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -19,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.interceptor.resource.GZIPAnnotationInterface;
 import io.quarkus.rest.test.interceptor.resource.GZIPAnnotationResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -75,7 +73,7 @@ public class GZIPAnnotationTest {
      */
     @Test
     public void testGZIP() {
-        ResteasyWebTarget target = (ResteasyWebTarget) client.target(generateURL(""));
+        QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(generateURL(""));
         GZIPAnnotationInterface resource = target.proxy(GZIPAnnotationInterface.class);
         String s = resource.getFoo("test");
         Assert.assertTrue(s.contains("gzip"));

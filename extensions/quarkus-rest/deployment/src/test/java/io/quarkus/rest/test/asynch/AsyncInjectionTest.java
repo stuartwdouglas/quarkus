@@ -9,12 +9,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -49,11 +44,11 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Async Request Filter test.
  * @tpSince RESTEasy 4.0.0
  */
-@RunWith(Arquillian.class)
+
 //@RunWith(UndertowTestRunner.class)
-@RunAsClient
+
 public class AsyncInjectionTest {
-    protected static final Logger log = LogManager.getLogger(AsyncInjectionTest.class.getName());
+    protected static final Logger log = Logger.getLogger(AsyncInjectionTest.class.getName());
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()

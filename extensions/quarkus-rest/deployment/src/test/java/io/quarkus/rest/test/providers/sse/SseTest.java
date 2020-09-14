@@ -26,8 +26,6 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.sse.client.SseEventSourceImpl;
 import org.jboss.resteasy.plugins.providers.sse.client.SseEventSourceImpl.SourceBuilder;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

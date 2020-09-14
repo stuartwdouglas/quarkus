@@ -12,12 +12,7 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -27,6 +22,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.XmlJavaTypeAdapterAlien;
 import io.quarkus.rest.test.providers.jaxb.resource.XmlJavaTypeAdapterAlienAdapter;
 import io.quarkus.rest.test.providers.jaxb.resource.XmlJavaTypeAdapterFoo;
@@ -41,7 +37,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class XmlJavaTypeAdapterTest {
 
     private final Logger logger = Logger.getLogger(XmlJavaTypeAdapterTest.class.getName());
@@ -89,9 +85,9 @@ public class XmlJavaTypeAdapterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
-    @RunAsClient
+
     public void testPostHuman() {
-        ResteasyWebTarget target = client.target(generateURL("/human"));
+        QuarkusRestWebTarget target = client.target(generateURL("/human"));
         XmlJavaTypeAdapterHuman human = new XmlJavaTypeAdapterHuman();
         human.setName("bill");
         String response = target.request().post(Entity.entity(human, MediaType.APPLICATION_XML_TYPE), String.class);
@@ -104,9 +100,9 @@ public class XmlJavaTypeAdapterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
-    @RunAsClient
+
     public void testPostFooToFoo() {
-        ResteasyWebTarget target = client.target(generateURL("/foo/foo"));
+        QuarkusRestWebTarget target = client.target(generateURL("/foo/foo"));
         XmlJavaTypeAdapterFoo foo = new XmlJavaTypeAdapterFoo();
         foo.setName("bill");
         XmlJavaTypeAdapterFoo response = target.request().post(Entity.entity(foo, MediaType.APPLICATION_XML_TYPE),
@@ -120,9 +116,9 @@ public class XmlJavaTypeAdapterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
-    @RunAsClient
+
     public void testPostFooToString() {
-        ResteasyWebTarget target = client.target(generateURL("/foo/foo"));
+        QuarkusRestWebTarget target = client.target(generateURL("/foo/foo"));
         XmlJavaTypeAdapterFoo foo = new XmlJavaTypeAdapterFoo();
         foo.setName("bill");
         String response = target.request().post(Entity.entity(foo, MediaType.APPLICATION_XML_TYPE), String.class);
@@ -137,9 +133,9 @@ public class XmlJavaTypeAdapterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
-    @RunAsClient
+
     public void testPostHumanList() {
-        ResteasyWebTarget target = client.target(generateURL("/list/human"));
+        QuarkusRestWebTarget target = client.target(generateURL("/list/human"));
         List<XmlJavaTypeAdapterHuman> list = new ArrayList<XmlJavaTypeAdapterHuman>();
         XmlJavaTypeAdapterHuman human = new XmlJavaTypeAdapterHuman();
         human.setName("bill");
@@ -163,7 +159,7 @@ public class XmlJavaTypeAdapterTest {
      */
     @Test
     public void testPostAlienList() {
-        ResteasyWebTarget target = client.target(generateURL("/list/alien"));
+        QuarkusRestWebTarget target = client.target(generateURL("/list/alien"));
         List<XmlJavaTypeAdapterAlien> list = new ArrayList<XmlJavaTypeAdapterAlien>();
         XmlJavaTypeAdapterAlien alien1 = new XmlJavaTypeAdapterAlien();
         alien1.setName("bill");
@@ -199,7 +195,7 @@ public class XmlJavaTypeAdapterTest {
      */
     @Test
     public void testPostAlienArray() {
-        ResteasyWebTarget target = client.target(generateURL("/array/alien"));
+        QuarkusRestWebTarget target = client.target(generateURL("/array/alien"));
         XmlJavaTypeAdapterAlien[] array = new XmlJavaTypeAdapterAlien[2];
         XmlJavaTypeAdapterAlien alien1 = new XmlJavaTypeAdapterAlien();
         alien1.setName("bill");
@@ -236,7 +232,7 @@ public class XmlJavaTypeAdapterTest {
      */
     @Test
     public void testPostAlienMap() {
-        ResteasyWebTarget target = client.target(generateURL("/map/alien"));
+        QuarkusRestWebTarget target = client.target(generateURL("/map/alien"));
         Map<String, XmlJavaTypeAdapterAlien> map = new HashMap<String, XmlJavaTypeAdapterAlien>();
         XmlJavaTypeAdapterAlien alien1 = new XmlJavaTypeAdapterAlien();
         alien1.setName("bill");
@@ -273,7 +269,7 @@ public class XmlJavaTypeAdapterTest {
      */
     @Test
     public void testPostTralfamadoreanList() {
-        ResteasyWebTarget target = client.target(generateURL("/list/alien"));
+        QuarkusRestWebTarget target = client.target(generateURL("/list/alien"));
         List<XmlJavaTypeAdapterAlien> list = new ArrayList<XmlJavaTypeAdapterAlien>();
         Tralfamadorean tralfamadorean1 = new Tralfamadorean();
         tralfamadorean1.setName("bill");

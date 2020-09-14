@@ -8,19 +8,18 @@ import java.util.Map;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import javax.ws.rs.core.Response.Status;
+
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.resteasy.tracing.api.RESTEasyTracing;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class OnDemandTracingTest extends TracingTestBase {
 
-    private static final Logger LOG = LogManager.getLogger(OnDemandTracingTest.class);
+    private static final Logger LOG = Logger.getLogger(OnDemandTracingTest.class);
 
     @Test
     @OperateOnDeployment(WAR_ON_DEMAND_TRACING_FILE)

@@ -1,6 +1,7 @@
 package io.quarkus.rest.test.client.other.resource;
 
 import javax.ws.rs.core.Response.Status;
+
 import org.jboss.resteasy.spi.NoLogWebApplicationException;
 
 public class ApacheHttpClient4ResourceImpl implements ApacheHttpClient4Resource {

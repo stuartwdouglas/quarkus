@@ -15,14 +15,11 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.resteasy.utils.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -45,7 +42,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails JAXB shouldn't have a concurrent problem and should unmarshall a Map property all the time
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class JaxbMarshallingSoakTest {
     private static Logger logger = Logger.getLogger(JaxbMarshallingSoakTest.class);
     public static int iterator = 500;

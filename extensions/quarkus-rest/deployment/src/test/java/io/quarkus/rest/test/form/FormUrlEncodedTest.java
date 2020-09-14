@@ -15,12 +15,8 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -29,6 +25,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
+import io.quarkus.rest.runtime.util.MultivaluedMapImpl;
 import io.quarkus.rest.test.form.resource.FormUrlEncodedResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -159,7 +157,7 @@ public class FormUrlEncodedTest {
      */
     @Test
     public void testProxy() {
-        ResteasyWebTarget target = (ResteasyWebTarget) client.target(generateURL(""));
+        QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(generateURL(""));
         TestProxy proxy = target.proxy(TestProxy.class);
         MultivaluedMapImpl<String, String> form = new MultivaluedMapImpl<String, String>();
         form.add("hello", "world");

@@ -21,8 +21,6 @@ import javax.ws.rs.core.Response;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.resteasy.security.KeyTools;
 import org.jboss.resteasy.security.smime.EnvelopedInput;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -54,8 +52,7 @@ public class BlacklistedMediaTypeTest {
     private static Client client;
 
     private static final Function<Response, String> READ_STRING_ENTITY = (Response r) -> r.readEntity(String.class);
-    private
-    static final Function<Response, String> READ_ENVELOPED_INPUT_ENTITY = (Response r) -> {
+    private static final Function<Response, String> READ_ENVELOPED_INPUT_ENTITY = (Response r) -> {
         @SuppressWarnings("unchecked")
         EnvelopedInput<String> input = r.readEntity(EnvelopedInput.class);
         String entity = input.getEntity(String.class, privateKey, cert);
@@ -68,11 +65,34 @@ public class BlacklistedMediaTypeTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension=new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>(){@Override public JavaArchive get(){JavaArchive war=ShrinkWrap.create(JavaArchive.class);war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
 
-    try{
-    // Code borrowed from io.quarkus.rest.test.crypto.CryptoTest
-    BouncyCastleProvider bouncyCastleProvider=new BouncyCastleProvider();Security.addProvider(bouncyCastleProvider);KeyPair keyPair=KeyPairGenerator.getInstance("RSA","BC").generateKeyPair();privateKey=keyPair.getPrivate();cert=KeyTools.generateTestCertificate(keyPair);String privateKeyString=toString(privateKey);String certString=toString(cert);war.addAsResource(new StringAsset(privateKeyString),"privateKey.txt");war.addAsResource(new StringAsset(certString),"cert.txt");}catch(Exception e){throw new RuntimeException(e);}war.addAsManifestResource("jboss-deployment-structure-bouncycastle.xml","jboss-deployment-structure.xml");war.addAsWebInfResource(BlacklistedMediaTypeTest.class.getPackage(),"BlacklistedMediaTypeFile1","classes/BlacklistedMediaTypeFile1");war.addAsWebInfResource(BlacklistedMediaTypeTest.class.getPackage(),"BlacklistedMediaTypeFile2","classes/BlacklistedMediaTypeFile2");return TestUtil.finishContainerPrepare(war,null,BlacklistedMediaTypeResource.class,CryptoCertResource.class);}});
+            try {
+                // Code borrowed from io.quarkus.rest.test.crypto.CryptoTest
+                BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
+                Security.addProvider(bouncyCastleProvider);
+                KeyPair keyPair = KeyPairGenerator.getInstance("RSA", "BC").generateKeyPair();
+                privateKey = keyPair.getPrivate();
+                cert = KeyTools.generateTestCertificate(keyPair);
+                String privateKeyString = toString(privateKey);
+                String certString = toString(cert);
+                war.addAsResource(new StringAsset(privateKeyString), "privateKey.txt");
+                war.addAsResource(new StringAsset(certString), "cert.txt");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            war.addAsManifestResource("jboss-deployment-structure-bouncycastle.xml", "jboss-deployment-structure.xml");
+            war.addAsWebInfResource(BlacklistedMediaTypeTest.class.getPackage(), "BlacklistedMediaTypeFile1",
+                    "classes/BlacklistedMediaTypeFile1");
+            war.addAsWebInfResource(BlacklistedMediaTypeTest.class.getPackage(), "BlacklistedMediaTypeFile2",
+                    "classes/BlacklistedMediaTypeFile2");
+            return TestUtil.finishContainerPrepare(war, null, BlacklistedMediaTypeResource.class, CryptoCertResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, BlacklistedMediaTypeTest.class.getSimpleName());

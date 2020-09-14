@@ -13,10 +13,7 @@ import javax.ws.rs.client.WebTarget;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ClientHttpEngine;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -27,6 +24,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.core.interceptors.resource.ClientResponseFilterExceptionFilter;
 import io.quarkus.rest.test.core.interceptors.resource.ClientResponseFilterExceptionResource;
 import io.quarkus.rest.test.core.interceptors.resource.ClientResponseFilterExceptionResourceImpl;
@@ -88,7 +86,7 @@ public class ClientResponseFilterExceptionTest {
                 .register(ClientResponseFilterExceptionFilter.class).build();
 
         WebTarget target = client.target(generateURL("/"));
-        service = ((ResteasyWebTarget) target).proxy(ClientResponseFilterExceptionResource.class);
+        service = ((QuarkusRestWebTarget) target).proxy(ClientResponseFilterExceptionResource.class);
         latch = new CountDownLatch(10);
     }
 

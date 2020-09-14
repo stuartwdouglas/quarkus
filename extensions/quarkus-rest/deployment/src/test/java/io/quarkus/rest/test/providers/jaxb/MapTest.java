@@ -9,16 +9,13 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -29,6 +26,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.w3c.dom.Element;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.MapFoo;
 import io.quarkus.rest.test.providers.jaxb.resource.MapJaxb;
 import io.quarkus.rest.test.providers.jaxb.resource.MapResource;
@@ -119,7 +117,7 @@ public class MapTest {
                 + "<mapFoo name=\"monica\"/></resteasy:entry>"
                 + "</resteasy:map>";
 
-        ResteasyWebTarget target = client.target(generateURL("/map"));
+        QuarkusRestWebTarget target = client.target(generateURL("/map"));
 
         Map<String, MapFoo> entity = target.request().post(Entity.xml(xml), new GenericType<Map<String, MapFoo>>() {
         });
@@ -148,7 +146,7 @@ public class MapTest {
                 + "<mapFoo name=\"monica\"/></resteasy:entry>"
                 + "</resteasy:map>";
 
-        ResteasyWebTarget target = client.target(generateURL("/map/integerFoo"));
+        QuarkusRestWebTarget target = client.target(generateURL("/map/integerFoo"));
         Response response = target.request().post(Entity.xml(xml));
         Assert.assertEquals(Status.OK, response.getStatus());
 
@@ -184,7 +182,7 @@ public class MapTest {
                 + "<mapFoo:mapFoo name=\"monica\"/></entry>"
                 + "</map>";
 
-        ResteasyWebTarget target = client.target(generateURL("/map/wrapped"));
+        QuarkusRestWebTarget target = client.target(generateURL("/map/wrapped"));
         Map<String, MapFoo> entity = target.request().post(Entity.xml(xml), new GenericType<Map<String, MapFoo>>() {
         });
 
@@ -209,7 +207,7 @@ public class MapTest {
                 + "<mapFoo name=\"monica\"/></resteasy:entry>"
                 + "</resteasy:map>";
 
-        ResteasyWebTarget target = client.target(generateURL("/map/wrapped"));
+        QuarkusRestWebTarget target = client.target(generateURL("/map/wrapped"));
         Response response = target.request().post(Entity.xml(xml));
         Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
 

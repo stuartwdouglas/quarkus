@@ -10,7 +10,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.ext.ReaderInterceptor;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -32,7 +31,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for JBEAP-4703
  * @tpSince RESTEasy 3.0.17
  */
-@RunWith(Arquillian.class)
+
 public class DuplicateProviderRegistrationTest {
 
     private static final String RESTEASY_002155_ERR_MSG = "Wrong count of RESTEASY002155 warning message";

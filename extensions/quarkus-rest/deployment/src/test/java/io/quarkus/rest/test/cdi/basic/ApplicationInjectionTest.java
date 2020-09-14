@@ -2,7 +2,6 @@ package io.quarkus.rest.test.cdi.basic;
 
 import java.util.function.Supplier;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -19,7 +18,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for injecting of Application
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class ApplicationInjectionTest {
 
     @RegisterExtension

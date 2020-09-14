@@ -13,12 +13,8 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -27,6 +23,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.exception.resource.ExceptionBufferingResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -40,7 +37,7 @@ import io.quarkus.test.QuarkusUnitTest;
  */
 public class ExceptionBufferingTest {
 
-    protected static final Logger logger = LogManager.getLogger(ExceptionBufferingTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(ExceptionBufferingTest.class.getName());
 
     private static final String DEPLOYMENT_TRUE = "buffer";
     private static final String DEPLOYMENT_FALSE = "nobuffer";
@@ -103,7 +100,7 @@ public class ExceptionBufferingTest {
         Response response = null;
 
         try {
-            ResteasyWebTarget target = client.target(PortProviderUtil.generateURL("/test", DEPLOYMENT_DEFAULT));
+            QuarkusRestWebTarget target = client.target(PortProviderUtil.generateURL("/test", DEPLOYMENT_DEFAULT));
             Invocation invocation = target.request().buildGet();
             response = invocation.invoke();
             logger.info("status: " + response.getStatus());
@@ -126,7 +123,7 @@ public class ExceptionBufferingTest {
         Response response = null;
 
         try {
-            ResteasyWebTarget target = client.target(PortProviderUtil.generateURL("/test", DEPLOYMENT_FALSE));
+            QuarkusRestWebTarget target = client.target(PortProviderUtil.generateURL("/test", DEPLOYMENT_FALSE));
             Invocation invocation = target.request().buildGet();
             response = invocation.invoke();
             logger.info("status: " + response.getStatus());
@@ -156,7 +153,7 @@ public class ExceptionBufferingTest {
         Response response = null;
 
         try {
-            ResteasyWebTarget target = client.target(PortProviderUtil.generateURL("/test", DEPLOYMENT_TRUE));
+            QuarkusRestWebTarget target = client.target(PortProviderUtil.generateURL("/test", DEPLOYMENT_TRUE));
             Invocation invocation = target.request().buildGet();
             response = invocation.invoke();
             logger.info("status: " + response.getStatus());

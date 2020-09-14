@@ -10,13 +10,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
 import org.jboss.resteasy.security.PemUtils;
 import org.jboss.resteasy.security.smime.EnvelopedOutput;
 import org.jboss.resteasy.security.smime.SignedOutput;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -25,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.crypto.resource.VerifyDecryptResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -86,7 +84,7 @@ public class VerifyDecryptTest {
     public void testEncrypt() throws Exception {
         EnvelopedOutput output = new EnvelopedOutput("xanadu", MediaType.TEXT_PLAIN_TYPE);
         output.setCertificate(cert);
-        ResteasyWebTarget target = client.target(generateURL("/encrypt"));
+        QuarkusRestWebTarget target = client.target(generateURL("/encrypt"));
         Response res = target.request().post(Entity.entity(output, "application/pkcs7-mime"));
         String result = res.readEntity(String.class);
         Assert.assertEquals(RESPONSE_ERROR_MSG, "xanadu", result);
@@ -101,7 +99,7 @@ public class VerifyDecryptTest {
         SignedOutput signed = new SignedOutput("xanadu", MediaType.TEXT_PLAIN_TYPE);
         signed.setPrivateKey(privateKey);
         signed.setCertificate(cert);
-        ResteasyWebTarget target = client.target(generateURL("/sign"));
+        QuarkusRestWebTarget target = client.target(generateURL("/sign"));
         Response res = target.request().post(Entity.entity(signed, "multipart/signed"));
         String result = res.readEntity(String.class);
         Assert.assertEquals(RESPONSE_ERROR_MSG, "xanadu", result);
@@ -118,7 +116,7 @@ public class VerifyDecryptTest {
         SignedOutput signed = new SignedOutput(output, "application/pkcs7-mime");
         signed.setCertificate(cert);
         signed.setPrivateKey(privateKey);
-        ResteasyWebTarget target = client.target(generateURL("/encryptSign"));
+        QuarkusRestWebTarget target = client.target(generateURL("/encryptSign"));
         Response res = target.request().post(Entity.entity(signed, "multipart/signed"));
         String result = res.readEntity(String.class);
         Assert.assertEquals(RESPONSE_ERROR_MSG, "xanadu", result);
@@ -135,7 +133,7 @@ public class VerifyDecryptTest {
         signed.setCertificate(cert);
         EnvelopedOutput output = new EnvelopedOutput(signed, "multipart/signed");
         output.setCertificate(cert);
-        ResteasyWebTarget target = client.target(generateURL("/signEncrypt"));
+        QuarkusRestWebTarget target = client.target(generateURL("/signEncrypt"));
         Response res = target.request().post(Entity.entity(output, "application/pkcs7-mime"));
         String result = res.readEntity(String.class);
         Assert.assertEquals(RESPONSE_ERROR_MSG, "xanadu", result);
@@ -155,7 +153,7 @@ public class VerifyDecryptTest {
 
         EnvelopedOutput output = new EnvelopedOutput(innerPart, "application/pkcs7-mime");
         output.setCertificate(cert);
-        ResteasyWebTarget target = client.target(generateURL("/encryptedEncrypted"));
+        QuarkusRestWebTarget target = client.target(generateURL("/encryptedEncrypted"));
         Response res = target.request().post(Entity.entity(output, "application/pkcs7-mime"));
         String result = res.readEntity(String.class);
         Assert.assertEquals(RESPONSE_ERROR_MSG, "xanadu", result);
@@ -175,7 +173,7 @@ public class VerifyDecryptTest {
         SignedOutput resigned = new SignedOutput(signed, "multipart/signed");
         resigned.setCertificate(cert);
         resigned.setPrivateKey(privateKey);
-        ResteasyWebTarget target = client.target(generateURL("/encryptSignSign"));
+        QuarkusRestWebTarget target = client.target(generateURL("/encryptSignSign"));
         Response res = target.request().post(Entity.entity(resigned, "multipart/signed"));
         String result = res.readEntity(String.class);
         Assert.assertEquals(RESPONSE_ERROR_MSG, "xanadu", result);
@@ -191,7 +189,7 @@ public class VerifyDecryptTest {
         multipart.addPart("xanadu", MediaType.TEXT_PLAIN_TYPE);
         EnvelopedOutput output = new EnvelopedOutput(multipart, MULTIPART_MIXED);
         output.setCertificate(cert);
-        ResteasyWebTarget target = client.target(generateURL("/multipartEncrypted"));
+        QuarkusRestWebTarget target = client.target(generateURL("/multipartEncrypted"));
         Response res = target.request().post(Entity.entity(output, "application/pkcs7-mime"));
         String result = res.readEntity(String.class);
         Assert.assertEquals(RESPONSE_ERROR_MSG, "xanadu", result);

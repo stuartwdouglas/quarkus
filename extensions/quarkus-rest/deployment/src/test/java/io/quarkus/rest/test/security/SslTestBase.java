@@ -6,13 +6,10 @@ import java.io.File;
 
 import javax.ws.rs.client.Client;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.logging.Logger;
 import org.wildfly.extras.creaper.core.online.OnlineManagementClient;
 import org.wildfly.extras.creaper.core.online.operations.admin.Administration;
 
@@ -23,7 +20,7 @@ import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
  */
 public abstract class SslTestBase {
 
-    private static final Logger LOG = LogManager.getLogger(SslTestBase.class);
+    private static final Logger LOG = Logger.getLogger(SslTestBase.class);
 
     protected static Client client;
     protected static QuarkusRestClientBuilder QuarkusRestClientBuilder;

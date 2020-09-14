@@ -7,16 +7,15 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
-import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -50,7 +49,7 @@ public class ValidateOnExecutionTest {
 
     static QuarkusRestClient client;
 
-    protected static final Logger logger = LogManager.getLogger(ValidateOnExecutionTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(ValidateOnExecutionTest.class.getName());
 
     private static final String MAIN = "main";
     private static final String INVALID_ONE_LEVEL_CLASS = "one_class";

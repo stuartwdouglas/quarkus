@@ -4,9 +4,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -14,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.resource.param.resource.ParamInterfaceResource;
 import io.quarkus.rest.test.resource.param.resource.ParamResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -56,7 +54,7 @@ public class ParamTest {
      */
     @Test
     public void testNullMatrixParam() throws Exception {
-        ResteasyWebTarget target = (ResteasyWebTarget) client.target(generateBaseUrl());
+        QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(generateBaseUrl());
         ParamInterfaceResource proxy = target.proxy(ParamInterfaceResource.class);
         String rtn = proxy.getMatrix(null);
         Assert.assertEquals("null", rtn);
@@ -69,7 +67,7 @@ public class ParamTest {
      */
     @Test
     public void testNullCookieParam() throws Exception {
-        ResteasyWebTarget target = (ResteasyWebTarget) client.target(generateBaseUrl());
+        QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(generateBaseUrl());
         ParamInterfaceResource proxy = target.proxy(ParamInterfaceResource.class);
         String rtn = proxy.getCookie(null);
         Assert.assertEquals("null", rtn);
@@ -82,7 +80,7 @@ public class ParamTest {
      */
     @Test
     public void testNullHeaderParam() throws Exception {
-        ResteasyWebTarget target = (ResteasyWebTarget) client.target(generateBaseUrl());
+        QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(generateBaseUrl());
         ParamInterfaceResource proxy = target.proxy(ParamInterfaceResource.class);
         String rtn = proxy.getHeader(null);
         Assert.assertEquals("null", rtn);

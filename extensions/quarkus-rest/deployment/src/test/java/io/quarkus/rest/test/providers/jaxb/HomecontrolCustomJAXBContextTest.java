@@ -6,9 +6,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -18,6 +15,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.HomecontrolApplication;
 import io.quarkus.rest.test.providers.jaxb.resource.HomecontrolCustomJAXBContext;
 import io.quarkus.rest.test.providers.jaxb.resource.HomecontrolJaxbProvider;
@@ -97,7 +95,7 @@ public class HomecontrolCustomJAXBContextTest {
                 + " <credentials> <loginId>test</loginId> </credentials>"
                 + " <roles><role>USER</role></roles></user>";
 
-        ResteasyWebTarget target = client.target(generateURL("/service/users"));
+        QuarkusRestWebTarget target = client.target(generateURL("/service/users"));
         Response response = target.request().accept("application/xml").post(Entity.xml(xmlStr));
         UserType entity = response.readEntity(UserType.class);
         Assert.assertNotNull(entity);

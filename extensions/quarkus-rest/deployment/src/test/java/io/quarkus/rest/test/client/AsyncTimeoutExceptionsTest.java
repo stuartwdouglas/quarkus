@@ -11,14 +11,13 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
-import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -44,7 +43,7 @@ import io.quarkus.test.QuarkusUnitTest;
  */
 public class AsyncTimeoutExceptionsTest extends ClientTestBase {
 
-    protected static final Logger logger = LogManager.getLogger(AsyncTimeoutExceptionsTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(AsyncTimeoutExceptionsTest.class.getName());
 
     public Client client;
 

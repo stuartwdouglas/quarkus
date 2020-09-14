@@ -7,12 +7,9 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -20,6 +17,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.multipart.resource.EmbeddedMultipartCustomer;
 import io.quarkus.rest.test.providers.multipart.resource.EmbeddedMultipartResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -61,7 +59,7 @@ public class EmbeddedMultipartTest {
     @Test
     public void testEmbedded() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateURL("/embedded"));
+        QuarkusRestWebTarget target = client.target(generateURL("/embedded"));
         EmbeddedMultipartCustomer customer = new EmbeddedMultipartCustomer("bill");
         MultipartOutput innerPart = new MultipartOutput();
         innerPart.addPart(customer, MediaType.APPLICATION_XML_TYPE);
@@ -80,7 +78,7 @@ public class EmbeddedMultipartTest {
     @Test
     public void testCustomer() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateURL("/customer"));
+        QuarkusRestWebTarget target = client.target(generateURL("/customer"));
         EmbeddedMultipartCustomer customer = new EmbeddedMultipartCustomer("bill");
         MultipartOutput outerPart = new MultipartOutput();
         outerPart.addPart(customer, MediaType.APPLICATION_XML_TYPE);
@@ -98,7 +96,7 @@ public class EmbeddedMultipartTest {
     public void testInvalid() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         try {
-            ResteasyWebTarget target = client.target(generateURL("/invalid"));
+            QuarkusRestWebTarget target = client.target(generateURL("/invalid"));
             EmbeddedMultipartCustomer customer = new EmbeddedMultipartCustomer("bill");
             MultipartOutput outerPart = new MultipartOutput();
             outerPart.addPart(customer, MediaType.APPLICATION_XML_TYPE);

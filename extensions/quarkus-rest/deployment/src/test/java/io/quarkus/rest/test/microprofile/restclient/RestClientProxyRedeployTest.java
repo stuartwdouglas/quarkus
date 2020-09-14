@@ -6,10 +6,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -34,7 +31,7 @@ public class RestClientProxyRedeployTest {
                     war.addClass(RestClientProxyRedeployRemoteService.class);
                     war.addAsManifestResource(new StringAsset("Dependencies: org.eclipse.microprofile.restclient"),
                             "MANIFEST.MF");
-                    war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+
                     return TestUtil.finishContainerPrepare(war, null, RestClientProxyRedeployResource.class);
                 }
             });
@@ -50,7 +47,7 @@ public class RestClientProxyRedeployTest {
                     war.addClass(RestClientProxyRedeployRemoteService.class);
                     war.addAsManifestResource(new StringAsset("Dependencies: org.eclipse.microprofile.restclient"),
                             "MANIFEST.MF");
-                    war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+
                     return TestUtil.finishContainerPrepare(war, null, RestClientProxyRedeployResource.class);
                 }
             });

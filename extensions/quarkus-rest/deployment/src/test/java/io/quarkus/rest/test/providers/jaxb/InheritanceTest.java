@@ -4,11 +4,8 @@ import java.util.function.Supplier;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
-
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -18,6 +15,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.InheritanceAnimal;
 import io.quarkus.rest.test.providers.jaxb.resource.InheritanceCat;
 import io.quarkus.rest.test.providers.jaxb.resource.InheritanceDog;
@@ -70,7 +68,7 @@ public class InheritanceTest {
      */
     @Test
     public void testInheritance() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/zoo"));
+        QuarkusRestWebTarget target = client.target(generateURL("/zoo"));
         Response response = target.request().get();
         Assert.assertEquals(Status.OK, response.getStatus());
         InheritanceZoo zoo = response.readEntity(InheritanceZoo.class);

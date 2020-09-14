@@ -4,8 +4,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.ext.RuntimeDelegate;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.utils.TestUtil;
@@ -25,7 +23,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpTestCaseDetails RESTEASY-1531
  * @tpSince RESTEasy 3.1.0
  */
-@RunWith(Arquillian.class)
+
 public class ResteasyJAXRSImplTest {
 
     @Deployment
@@ -56,7 +54,7 @@ public class ResteasyJAXRSImplTest {
      * @tpSince RESTEasy 3.1.0
      */
     @Test
-    @RunAsClient
+
     public void testClientBuilder() throws Exception {
         testClientBuilderNewBuilder();
     }
@@ -76,7 +74,7 @@ public class ResteasyJAXRSImplTest {
      * @tpSince RESTEasy 3.1.0
      */
     @Test
-    @RunAsClient
+
     public void testRuntimeDelegate() throws Exception {
         testRuntimeDelegateGetInstance();
         testResteasyProviderFactoryGetInstance();

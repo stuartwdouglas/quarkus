@@ -7,12 +7,9 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
-
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.logging.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -52,7 +49,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression test for RESTEASY-1294
  */
-@RunWith(Arquillian.class)
+
 public class PriorityExecutionTest {
     public static volatile Queue<String> interceptors = new ConcurrentLinkedQueue<String>();
     public static Logger logger = Logger.getLogger(PriorityExecutionTest.class);

@@ -10,11 +10,10 @@ import java.io.File;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.Deployment;
 import javax.ws.rs.core.Response.Status;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -41,7 +40,7 @@ import io.quarkus.rest.test.xxe.resource.SecureProcessingResource;
  */
 public class SecureProcessing2Test {
 
-    protected final Logger logger = LogManager.getLogger(SecureProcessing2Test.class.getName());
+    protected final Logger logger = Logger.getLogger(SecureProcessing2Test.class.getName());
     static QuarkusRestClient client;
 
     private static final String URL_PREFIX = "RESTEASY-1103-";

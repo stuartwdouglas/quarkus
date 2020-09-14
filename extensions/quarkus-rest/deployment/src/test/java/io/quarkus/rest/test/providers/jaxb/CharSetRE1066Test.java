@@ -10,12 +10,9 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -25,6 +22,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.CharSetFavoriteMovieXmlRootElement;
 import io.quarkus.rest.test.providers.jaxb.resource.CharSetMovieResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -87,7 +85,7 @@ public class CharSetRE1066Test {
 
     @Test
     public void testXmlDefault() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/xml/default"));
+        QuarkusRestWebTarget target = client.target(generateURL("/xml/default"));
         Builder request = target.request();
         request.accept(MediaType.APPLICATION_XML_TYPE);
 
@@ -109,7 +107,7 @@ public class CharSetRE1066Test {
 
     @Test
     public void testXmlProduces() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/xml/produces"));
+        QuarkusRestWebTarget target = client.target(generateURL("/xml/produces"));
         Builder request = target.request();
 
         String str = "<?xml version=\"1.0\"?>\r"
@@ -127,7 +125,7 @@ public class CharSetRE1066Test {
 
     @Test
     public void testXmlAccepts() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/xml/accepts"));
+        QuarkusRestWebTarget target = client.target(generateURL("/xml/accepts"));
         Builder request = target.request();
         request.accept(APPLICATION_XML_UTF16_TYPE);
 

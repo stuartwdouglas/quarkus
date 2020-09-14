@@ -12,8 +12,6 @@ import org.jboss.resteasy.plugins.cache.server.ServerCache;
 import org.jboss.resteasy.plugins.cache.server.ServerCacheFeature;
 import org.jboss.resteasy.plugins.cache.server.ServerCacheHitFilter;
 import org.jboss.resteasy.plugins.cache.server.ServerCacheInterceptor;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

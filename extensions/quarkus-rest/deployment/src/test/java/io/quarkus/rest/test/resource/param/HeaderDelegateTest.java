@@ -6,17 +6,13 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.plugins.delegates.DateDelegate;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
-import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.util.DateUtil;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -26,6 +22,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.resource.param.resource.HeaderDelegateDate;
 import io.quarkus.rest.test.resource.param.resource.HeaderDelegateDelegate;
 import io.quarkus.rest.test.resource.param.resource.HeaderDelegateInterface1;
@@ -44,7 +41,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-915
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class HeaderDelegateTest {
     private static Logger logger = Logger.getLogger(HeaderDelegateTest.class);
 
@@ -100,7 +97,7 @@ public class HeaderDelegateTest {
     @Test
     public void lastModifiedTest() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateURL("/last"));
+        QuarkusRestWebTarget target = client.target(generateURL("/last"));
         Invocation.Builder request = target.request();
         Response response = request.get();
         logger.info("lastModified string: " + response.getHeaderString("last-modified"));

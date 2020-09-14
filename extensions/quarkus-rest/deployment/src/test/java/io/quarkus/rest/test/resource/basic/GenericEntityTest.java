@@ -16,7 +16,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.rest.runtime.util.HttpResponseCodes;
 import io.quarkus.rest.test.resource.basic.resource.GenericEntityDoubleWriter;
 import io.quarkus.rest.test.resource.basic.resource.GenericEntityResource;
 import io.quarkus.rest.test.resource.basic.resource.GenericEntitytFloatWriter;

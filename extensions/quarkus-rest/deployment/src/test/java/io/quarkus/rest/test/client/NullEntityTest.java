@@ -7,7 +7,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -16,6 +15,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.resource.NullEntityResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -48,7 +48,7 @@ public class NullEntityTest extends ClientTestBase {
     @Test
     public void testPostNull() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateURL("/null"));
+        QuarkusRestWebTarget target = client.target(generateURL("/null"));
         String response = target.request().post(null, String.class);
         Assert.assertEquals("Wrong response", "", response);
         client.close();
@@ -61,7 +61,7 @@ public class NullEntityTest extends ClientTestBase {
     @Test
     public void testEntity() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateURL("/entity"));
+        QuarkusRestWebTarget target = client.target(generateURL("/entity"));
         String response = target.request().post(Entity.entity(null, MediaType.WILDCARD), String.class);
         Assert.assertEquals("Wrong response", "", response);
         client.close();
@@ -74,7 +74,7 @@ public class NullEntityTest extends ClientTestBase {
     @Test
     public void testForm() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateURL("/form"));
+        QuarkusRestWebTarget target = client.target(generateURL("/form"));
         String response = target.request().post(Entity.form((Form) null), String.class);
         Assert.assertEquals("Wrong response", null, response);
         client.close();
@@ -87,7 +87,7 @@ public class NullEntityTest extends ClientTestBase {
     @Test
     public void testHtml() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateURL("/html"));
+        QuarkusRestWebTarget target = client.target(generateURL("/html"));
         String response = target.request().post(Entity.html(null), String.class);
         Assert.assertEquals("Wrong response", "", response);
         client.close();
@@ -100,7 +100,7 @@ public class NullEntityTest extends ClientTestBase {
     @Test
     public void testXhtml() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateURL("/xhtml"));
+        QuarkusRestWebTarget target = client.target(generateURL("/xhtml"));
         String response = target.request().post(Entity.xhtml(null), String.class);
         Assert.assertEquals("Wrong response", "", response);
         client.close();
@@ -113,7 +113,7 @@ public class NullEntityTest extends ClientTestBase {
     @Test
     public void testXml() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateURL("/xml"));
+        QuarkusRestWebTarget target = client.target(generateURL("/xml"));
         String response = target.request().post(Entity.xml(null), String.class);
         Assert.assertEquals("Wrong response", "", response);
         client.close();

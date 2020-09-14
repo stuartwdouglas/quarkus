@@ -6,16 +6,13 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.Deployment;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestApplication;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -39,7 +36,7 @@ import io.quarkus.rest.test.simple.PortProviderUtil;
  */
 public class WeldSubdeploymentTest {
 
-    protected static final Logger logger = LogManager.getLogger(WeldSubdeploymentTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(WeldSubdeploymentTest.class.getName());
 
     private static final String WAR_DEPLOYMENT_NAME = "simple";
 
@@ -54,7 +51,7 @@ public class WeldSubdeploymentTest {
         war.addClasses(WeldSubdeploymentTest.class, WeldSubdeploymentCdiJpaInjectingBean.class, TestApplication.class);
         war.addClasses(WeldSubdeploymentRequestResource.class, WeldSubdeploymentApplicationResource.class,
                 WeldSubdeploymentStatefulResource.class, WeldSubdeploymentStatelessResource.class);
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "util.jar");
         jar.addAsManifestResource(WeldSubdeploymentTest.class.getPackage(), "persistence_subdeployment.xml", "persistence.xml");
         war.addAsLibrary(jar);

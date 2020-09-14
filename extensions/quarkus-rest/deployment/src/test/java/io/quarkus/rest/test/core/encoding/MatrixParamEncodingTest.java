@@ -4,14 +4,10 @@ import java.util.function.Supplier;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -21,6 +17,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.core.encoding.resource.MatrixParamEncodingResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -34,7 +31,7 @@ import io.quarkus.test.QuarkusUnitTest;
  */
 public class MatrixParamEncodingTest {
 
-    protected static final Logger logger = LogManager.getLogger(MatrixParamEncodingTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(MatrixParamEncodingTest.class.getName());
 
     protected static QuarkusRestClient client;
 
@@ -71,7 +68,7 @@ public class MatrixParamEncodingTest {
      */
     @Test
     public void testMatrixParamRequestDecoded() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/decoded")).matrixParam("param", "ac/dc");
+        QuarkusRestWebTarget target = client.target(generateURL("/decoded")).matrixParam("param", "ac/dc");
         Response response = target.request().get();
         Assert.assertEquals(Status.OK, response.getStatus());
         Assert.assertEquals("Wrong response", "ac/dc", response.readEntity(String.class));
@@ -84,7 +81,7 @@ public class MatrixParamEncodingTest {
      */
     @Test
     public void testMatrixParamNullRequestDecoded() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/decodedMultipleParam")).matrixParam("param1", "")
+        QuarkusRestWebTarget target = client.target(generateURL("/decodedMultipleParam")).matrixParam("param1", "")
                 .matrixParam("param2", "abc");
         Response response = target.request().get();
         Assert.assertEquals(Status.OK, response.getStatus());
@@ -98,7 +95,7 @@ public class MatrixParamEncodingTest {
      */
     @Test
     public void testMatrixParamRequestEncoded() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/encoded")).matrixParam("param", "ac/dc");
+        QuarkusRestWebTarget target = client.target(generateURL("/encoded")).matrixParam("param", "ac/dc");
         Response response = target.request().get();
         Assert.assertEquals(Status.OK, response.getStatus());
         Assert.assertEquals("Wrong response", "ac%2Fdc", response.readEntity(String.class));
@@ -113,7 +110,7 @@ public class MatrixParamEncodingTest {
     public void testMatrixParamUriBuilderDecoded() throws Exception {
         UriBuilder uriBuilder = UriBuilder.fromUri(generateURL("/decoded"));
         uriBuilder.matrixParam("param", "ac/dc");
-        ResteasyWebTarget target = client.target(uriBuilder.build().toString());
+        QuarkusRestWebTarget target = client.target(uriBuilder.build().toString());
         logger.info("Sending request to " + uriBuilder.build().toString());
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
@@ -130,7 +127,7 @@ public class MatrixParamEncodingTest {
     public void testMatrixParamUriBuilderEncoded() throws Exception {
         UriBuilder uriBuilder = UriBuilder.fromUri(generateURL("/encoded"));
         uriBuilder.matrixParam("param", "ac/dc");
-        ResteasyWebTarget target = client.target(uriBuilder.build().toString());
+        QuarkusRestWebTarget target = client.target(uriBuilder.build().toString());
         logger.info("Sending request to " + uriBuilder.build().toString());
         Response response = target.request().get();
         String entity = response.readEntity(String.class);

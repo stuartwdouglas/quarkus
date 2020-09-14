@@ -14,7 +14,6 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -63,7 +62,7 @@ public class TestUtil {
      * @param resources classes used in deployment as resources
      */
     public static JavaArchive finishContainerPrepare(JavaArchive war, Map<String, String> contextParams,
-                                                    final Class<?>... resources) {
+            final Class<?>... resources) {
         return finishContainerPrepare(war, contextParams, null, resources);
     }
 

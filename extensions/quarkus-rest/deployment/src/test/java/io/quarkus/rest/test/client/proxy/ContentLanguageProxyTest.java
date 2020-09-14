@@ -3,9 +3,6 @@ package io.quarkus.rest.test.client.proxy;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
@@ -14,6 +11,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.proxy.resource.ContentLanguageInterface;
 import io.quarkus.rest.test.client.proxy.resource.ContentLanguageResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -46,7 +44,7 @@ public class ContentLanguageProxyTest {
 
     @Test
     public void testProxy() throws Exception {
-        ResteasyWebTarget target = client.target(generateBaseUrl());
+        QuarkusRestWebTarget target = client.target(generateBaseUrl());
         ContentLanguageInterface proxy = target.proxy(ContentLanguageInterface.class);
         String contentLangFirst = proxy.contentLang1("fr", "subject");
         Assert.assertEquals("Content_Language header is expected set in request", "frsubject", contentLangFirst);

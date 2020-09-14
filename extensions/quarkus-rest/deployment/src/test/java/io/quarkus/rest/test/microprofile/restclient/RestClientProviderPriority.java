@@ -19,10 +19,7 @@ import org.eclipse.microprofile.rest.client.annotation.RegisterProvider;
 import org.eclipse.microprofile.rest.client.annotation.RegisterProviders;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -39,7 +36,7 @@ public class RestClientProviderPriority {
         WebArchive war = TestUtil.prepareArchive(RestClientProviderPriority.class.getSimpleName());
         war.addClass(HelloResource.class);
         war.addClass(HelloClient.class);
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+
         war.addAsManifestResource(
                 new StringAsset(
                         "Dependencies: org.eclipse.microprofile.restclient,org.jboss.resteasy.resteasy-rxjava2 services\n"),

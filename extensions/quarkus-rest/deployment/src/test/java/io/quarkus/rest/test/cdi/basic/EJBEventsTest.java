@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 
 import javax.inject.Inject;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
@@ -24,7 +23,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails EJB, Events and RESTEasy integration test.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class EJBEventsTest {
     @Inject
     private Logger log;

@@ -6,11 +6,8 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -20,6 +17,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.JaxbCollectionFoo;
 import io.quarkus.rest.test.providers.jaxb.resource.JaxbCollectionNamespacedFoo;
 import io.quarkus.rest.test.providers.jaxb.resource.JaxbCollectionNamespacedResource;
@@ -77,7 +75,7 @@ public class JaxbCollectionTest {
         String xml = "<resteasy:collection xmlns:resteasy=\"http://jboss.org/resteasy\">"
                 + "<foo test=\"hello\"/></resteasy:collection>";
 
-        ResteasyWebTarget target = client.target(generateURL("/array"));
+        QuarkusRestWebTarget target = client.target(generateURL("/array"));
         Response response = target.request().accept("application/xml").post(Entity.xml(xml));
         List<JaxbCollectionFoo> list = response.readEntity(new javax.ws.rs.core.GenericType<List<JaxbCollectionFoo>>() {
         });
@@ -99,7 +97,7 @@ public class JaxbCollectionTest {
         String xml = "<list>"
                 + "<foo test=\"hello\"/></list>";
 
-        ResteasyWebTarget target = client.target(generateURL("/list"));
+        QuarkusRestWebTarget target = client.target(generateURL("/list"));
         Response response = target.request().post(Entity.xml(xml));
         JaxbCollectionFoo[] list = response.readEntity(new javax.ws.rs.core.GenericType<JaxbCollectionFoo[]>() {
         });
@@ -121,7 +119,7 @@ public class JaxbCollectionTest {
         String xml = "<collection xmlns:foo=\"http://foo.com\">"
                 + "<foo:foo test=\"hello\"/></collection>";
 
-        ResteasyWebTarget target = client.target(generateURL("/namespaced/array"));
+        QuarkusRestWebTarget target = client.target(generateURL("/namespaced/array"));
         Response response = target.request().post(Entity.xml(xml));
         List<JaxbCollectionNamespacedFoo> list = response
                 .readEntity(new javax.ws.rs.core.GenericType<List<JaxbCollectionNamespacedFoo>>() {
@@ -146,7 +144,7 @@ public class JaxbCollectionTest {
         String xml = "<list xmlns:foo=\"http://foo.com\">"
                 + "<foo:foo test=\"hello\"/></list>";
 
-        ResteasyWebTarget target = client.target(generateURL("/namespaced/list"));
+        QuarkusRestWebTarget target = client.target(generateURL("/namespaced/list"));
         Response response = target.request().post(Entity.xml(xml));
         JaxbCollectionNamespacedFoo[] list = response
                 .readEntity(new javax.ws.rs.core.GenericType<JaxbCollectionNamespacedFoo[]>() {
@@ -166,7 +164,7 @@ public class JaxbCollectionTest {
         String xml = "<bad-list>"
                 + "<foo test=\"hello\"/></bad-list>";
 
-        ResteasyWebTarget target = client.target(generateURL("/list"));
+        QuarkusRestWebTarget target = client.target(generateURL("/list"));
         Response response = target.request().post(Entity.xml(xml));
         Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
         response.close();

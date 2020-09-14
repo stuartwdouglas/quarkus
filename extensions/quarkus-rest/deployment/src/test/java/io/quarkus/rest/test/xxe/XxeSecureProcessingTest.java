@@ -7,11 +7,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -34,7 +31,7 @@ import io.quarkus.rest.test.xxe.resource.XxeSecureProcessingMovieResource;
 public class XxeSecureProcessingTest {
 
     private QuarkusRestClient client;
-    public final Logger logger = LogManager.getLogger(XxeSecureProcessingTest.class.getName());
+    public final Logger logger = Logger.getLogger(XxeSecureProcessingTest.class.getName());
 
     String doctype = "<!DOCTYPE foodocument [" +
             "<!ENTITY foo 'foo'>" +

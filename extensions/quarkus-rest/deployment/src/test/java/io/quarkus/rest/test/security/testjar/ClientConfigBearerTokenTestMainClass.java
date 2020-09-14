@@ -5,9 +5,9 @@ import static org.junit.Assert.fail;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
-import javax.ws.rs.core.Response.Status;
 import org.junit.Assert;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;

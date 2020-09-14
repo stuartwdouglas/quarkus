@@ -6,8 +6,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.utils.PortProviderUtil;
-
 import io.quarkus.rest.test.client.ClientResponseRedirectTest;
 
 @Path("/redirect")

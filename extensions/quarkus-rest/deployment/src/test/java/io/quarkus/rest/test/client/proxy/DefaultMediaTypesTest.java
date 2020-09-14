@@ -10,9 +10,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -21,6 +18,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.proxy.resource.DefaultMediaTypesResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -79,7 +77,7 @@ public class DefaultMediaTypesTest {
      */
     @Test(expected = RuntimeException.class)
     public void testOldBehaviorContinues() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/foo"));
+        QuarkusRestWebTarget target = client.target(generateURL("/foo"));
         target.proxy(Foo.class);
     }
 
@@ -90,7 +88,7 @@ public class DefaultMediaTypesTest {
      */
     @Test
     public void testDefaultValues() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/foo"));
+        QuarkusRestWebTarget target = client.target(generateURL("/foo"));
         Foo foo = target.proxyBuilder(Foo.class).defaultProduces(MediaType.TEXT_PLAIN_TYPE)
                 .defaultConsumes(MediaType.TEXT_PLAIN_TYPE).build();
 
@@ -105,7 +103,7 @@ public class DefaultMediaTypesTest {
      */
     @Test
     public void testMismatch() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/foo"));
+        QuarkusRestWebTarget target = client.target(generateURL("/foo"));
         Foo foo = target.proxyBuilder(Foo.class).defaultProduces(MediaType.APPLICATION_JSON_TYPE)
                 .defaultConsumes(MediaType.APPLICATION_JSON_TYPE).build();
 

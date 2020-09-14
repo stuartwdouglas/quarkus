@@ -10,10 +10,7 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
@@ -56,7 +53,7 @@ public class ValidationWithCDITest {
                 .addClasses(AsyncRootResource.class, AsyncRootResourceImpl.class)
                 .addClasses(AsyncSubResource.class, AsyncSubResourceImpl.class)
                 .addClasses(AsyncValidResource.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+
                 .addAsWebInfResource(ValidationWithCDITest.class.getPackage(), "web.xml", "/web.xml");
         return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
     }

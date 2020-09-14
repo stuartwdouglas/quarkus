@@ -6,13 +6,9 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.cache.BrowserCache;
 import org.jboss.resteasy.client.jaxrs.cache.BrowserCacheFeature;
 import org.jboss.resteasy.client.jaxrs.cache.LightweightBrowserCache;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -21,6 +17,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.resource.ClientCacheProxy;
 import io.quarkus.rest.test.client.resource.ClientCacheService;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -33,7 +30,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Test for client cache
  */
-@RunWith(Arquillian.class)
+
 public class ClientCacheTest {
 
     public static AtomicInteger count = new AtomicInteger(0);
@@ -71,7 +68,7 @@ public class ClientCacheTest {
     public void testProxy() throws Exception {
         count.set(0);
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateBaseUrl());
+        QuarkusRestWebTarget target = client.target(generateBaseUrl());
         target.register(BrowserCacheFeature.class);
 
         ClientCacheProxy proxy = target.proxy(ClientCacheProxy.class);
@@ -146,7 +143,7 @@ public class ClientCacheTest {
     @Test
     public void testMaxSize() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        ResteasyWebTarget target = client.target(generateBaseUrl());
+        QuarkusRestWebTarget target = client.target(generateBaseUrl());
         target.register(BrowserCacheFeature.class);
         LightweightBrowserCache cache = (LightweightBrowserCache) target.getConfiguration()
                 .getProperty(BrowserCache.class.getName());
@@ -181,7 +178,7 @@ public class ClientCacheTest {
     public void testMaxSizeNoProxy() throws Exception {
         String url = PortProviderUtil.generateURL("/cache/cacheit/{id}", ClientCacheTest.class.getSimpleName());
         Client client = ClientBuilder.newClient();
-        ResteasyWebTarget target = (ResteasyWebTarget) client.target(url);
+        QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(url);
         LightweightBrowserCache cache = new LightweightBrowserCache();
         cache.setMaxBytes(20);
         BrowserCacheFeature cacheFeature = new BrowserCacheFeature();

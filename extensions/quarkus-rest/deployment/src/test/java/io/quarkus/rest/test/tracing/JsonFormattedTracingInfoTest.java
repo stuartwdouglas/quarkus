@@ -8,10 +8,10 @@ import java.util.Map;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.logging.Logger;
-import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.tracing.api.RESTEasyTracing;
 import org.junit.Assert;
 import org.junit.Test;

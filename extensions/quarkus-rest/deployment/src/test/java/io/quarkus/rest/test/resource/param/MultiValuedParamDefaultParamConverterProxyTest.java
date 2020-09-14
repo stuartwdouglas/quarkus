@@ -10,10 +10,7 @@ import java.util.function.Supplier;
 
 import javax.ws.rs.client.ClientBuilder;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.ClientConfiguration;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -23,6 +20,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterConstructorClass;
 import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterCookieResource;
 import io.quarkus.rest.test.resource.param.resource.MultiValuedParamDefaultParamConverterCookieResourceIntf;
@@ -140,7 +138,7 @@ public class MultiValuedParamDefaultParamConverterProxyTest {
         ClientConfiguration config = ((ClientConfiguration) client.getConfiguration());
         config.addHeaderDelegate(MultiValuedParamDefaultParamConverterHeaderDelegateClass.class,
                 new MultiValuedParamDefaultParamConverterHeaderDelegate());
-        ResteasyWebTarget target = client.target(generateURL(""));
+        QuarkusRestWebTarget target = client.target(generateURL(""));
         cookieProxy = target.proxy(MultiValuedParamDefaultParamConverterCookieResourceIntf.class);
         headerProxy = target.proxy(MultiValuedParamDefaultParamConverterHeaderResourceIntf.class);
         matrixProxy = target.proxy(MultiValuedParamDefaultParamConverterMatrixResourceIntf.class);

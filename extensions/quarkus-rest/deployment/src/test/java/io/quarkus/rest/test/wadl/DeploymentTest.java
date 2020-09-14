@@ -7,9 +7,6 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -19,6 +16,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.test.QuarkusUnitTest;
@@ -60,7 +58,7 @@ public class DeploymentTest {
     @Test
     public void testBasic() {
         {
-            ResteasyWebTarget target = client.target(generateURL("/application.xml"));
+            QuarkusRestWebTarget target = client.target(generateURL("/application.xml"));
             Response response = target.request().get();
             int status = response.getStatus();
             Assert.assertEquals(200, status);
@@ -72,7 +70,7 @@ public class DeploymentTest {
         }
 
         {
-            ResteasyWebTarget target = client.target(generateURL("/wadl-extended/xsd0.xsd"));
+            QuarkusRestWebTarget target = client.target(generateURL("/wadl-extended/xsd0.xsd"));
             Response response = target.request().get();
             int status = response.getStatus();
             Assert.assertEquals(200, status);

@@ -18,8 +18,6 @@ import org.jboss.resteasy.plugins.stats.RegistryStatsResource;
 import org.jboss.resteasy.plugins.stats.ResourceMethodEntry;
 import org.jboss.resteasy.plugins.stats.SubresourceLocator;
 import org.jboss.resteasy.plugins.stats.TraceResourceMethod;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;

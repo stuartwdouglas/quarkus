@@ -5,11 +5,8 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -19,6 +16,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.AbstractJaxbClassCompanyCustomer;
 import io.quarkus.rest.test.providers.jaxb.resource.AbstractJaxbClassCustomer;
 import io.quarkus.rest.test.providers.jaxb.resource.AbstractJaxbClassPerson;
@@ -81,13 +79,13 @@ public class AbstractJaxbClassTest {
      */
     @Test
     public void testPost() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL(""));
+        QuarkusRestWebTarget target = client.target(generateURL(""));
         String xmlInput = "<?xml version=\"1.0\"?><abstractJaxbClassPerson><name>bill</name></abstractJaxbClassPerson>";
         Response response = target.request().post(Entity.xml(xmlInput));
         Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
         response.close();
 
-        ResteasyWebTarget target2 = client.target(generateURL("/customer"));
+        QuarkusRestWebTarget target2 = client.target(generateURL("/customer"));
         Response response2 = target2.request().post(Entity.entity(customerXml, "application/xml"));
         Assert.assertEquals(204, response2.getStatus());
         response2.close();

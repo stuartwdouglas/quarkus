@@ -22,9 +22,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.jboss.resteasy.annotations.providers.multipart.PartType;
 import org.jboss.resteasy.annotations.providers.multipart.XopWithMultipartRelated;
@@ -35,11 +35,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedOutput;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,7 +62,7 @@ import io.quarkus.test.QuarkusUnitTest;
 @SuppressWarnings("deprecation")
 public class ContextProvidersTest {
 
-    protected final Logger logger = LogManager.getLogger(ContextProvidersTest.class.getName());
+    protected final Logger logger = Logger.getLogger(ContextProvidersTest.class.getName());
 
     public static final Annotation PART_TYPE_APPLICATION_XML = new S1() {
         private static final long serialVersionUID = 1L;
@@ -100,8 +96,6 @@ public class ContextProvidersTest {
                             ContextProvidersCustomerFormNewAnnotationOnField.class,
                             ContextProvidersCustomerFormNewAnnotationOnSetter.class,
                             ContextProvidersName.class, ContextProvidersXop.class, PortProviderUtil.class);
-                    war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-
                     return TestUtil.finishContainerPrepare(war, null, ContextProvidersResource.class);
                 }
             });

@@ -6,12 +6,10 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.jboss.arquillian.container.test.api.Deployment;
 import javax.ws.rs.core.Response.Status;
+
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.resteasy.utils.PermissionUtil;
-import org.jboss.resteasy.utils.PortProviderUtil;
 import org.jboss.resteasy.utils.TestApplication;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -35,7 +33,7 @@ import io.quarkus.rest.test.simple.PortProviderUtil;
  * @tpSince RESTEasy 3.0.16
  */
 public class EarLibIntoEarLibTest {
-    protected static final org.apache.logging.log4j.Logger log = LogManager.getLogger(EarLibIntoEarLibTest.class.getName());
+    protected static final org.apache.logging.log4j.Logger log = Logger.getLogger(EarLibIntoEarLibTest.class.getName());
 
     @Deployment
     public static Archive<?> createTestArchive() {

@@ -6,14 +6,11 @@ import java.util.Map;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.logging.Logger;
+import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -47,7 +44,7 @@ public class XXEBasicTest {
     }
 
     static QuarkusRestClient client;
-    protected final Logger logger = LogManager.getLogger(XXEBasicTest.class.getName());
+    protected final Logger logger = Logger.getLogger(XXEBasicTest.class.getName());
 
     public static Archive<?> deploy(String expandEntityReferences) {
         WebArchive war = TestUtil.prepareArchive(expandEntityReferences);

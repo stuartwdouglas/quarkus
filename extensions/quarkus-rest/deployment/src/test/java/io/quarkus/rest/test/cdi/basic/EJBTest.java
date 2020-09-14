@@ -13,13 +13,10 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.logging.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
@@ -48,7 +45,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails EJB and RESTEasy integration test.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class EJBTest {
 
     private static Logger log = Logger.getLogger(EJBTest.class);
@@ -79,8 +76,7 @@ public class EJBTest {
                             .addClasses(EJBBookWriterImpl.class)
                             .addClasses(EJBResourceParent.class, EJBLocalResource.class, EJBRemoteResource.class,
                                     EJBBookResource.class)
-                            .setWebXML(EJBTest.class.getPackage(), "ejbtest_web.xml")
-                            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                            .setWebXML(EJBTest.class.getPackage(), "ejbtest_web.xml");
                     // Arquillian in the deployment
 
                     return war;
@@ -92,7 +88,7 @@ public class EJBTest {
     }
 
     /**
-     * client needs to be non-static. BeforeClass and AfterClass methods are not executed on server (@RunAsClient annotation is
+     * client needs to be non-static. BeforeClass and AfterClass methods are not executed on server ( annotation is
      * not used).
      */
     @Before

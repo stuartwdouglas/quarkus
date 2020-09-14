@@ -5,15 +5,12 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -23,6 +20,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.core.basic.resource.MyFilter;
 import io.quarkus.rest.test.core.servlet.resource.ServletMappingProxy;
 import io.quarkus.rest.test.core.servlet.resource.ServletMappingResource;
@@ -109,7 +107,7 @@ public class ServletMappingTest {
      */
     @Test
     public void testFormParamNewQuarkusRestClient() {
-        ResteasyWebTarget target = client.target(generateURL("/resteasy/rest"));
+        QuarkusRestWebTarget target = client.target(generateURL("/resteasy/rest"));
         ServletMappingProxy client = target.proxyBuilder(ServletMappingProxy.class).build();
         final String result = client.postForm("value");
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, result, "value");

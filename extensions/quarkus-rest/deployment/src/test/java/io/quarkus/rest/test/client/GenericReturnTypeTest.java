@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.Client;
 
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -14,6 +13,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.resource.GenericReturnTypeInterface;
 import io.quarkus.rest.test.client.resource.GenericReturnTypeReader;
 import io.quarkus.rest.test.client.resource.GenericReturnTypeResource;
@@ -50,7 +50,8 @@ public class GenericReturnTypeTest extends ClientTestBase {
     @Test
     public void testGenericReturnType() {
         Client client = QuarkusRestClientBuilder.newClient();
-        ResteasyWebTarget target = (ResteasyWebTarget) client.target(generateURL("")).register(GenericReturnTypeReader.class);
+        QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(generateURL(""))
+                .register(GenericReturnTypeReader.class);
         GenericReturnTypeInterface<?> server = ProxyBuilder.builder(GenericReturnTypeInterface.class, target).build();
         Object result = server.t();
         Assert.assertEquals("abc", result);

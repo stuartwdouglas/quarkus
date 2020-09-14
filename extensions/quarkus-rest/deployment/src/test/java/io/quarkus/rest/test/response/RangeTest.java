@@ -11,12 +11,9 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -37,7 +34,7 @@ import io.quarkus.test.QuarkusUnitTest;
  */
 public class RangeTest {
 
-    protected final Logger logger = LogManager.getLogger(VariantsTest.class.getName());
+    protected final Logger logger = Logger.getLogger(VariantsTest.class.getName());
 
     static Client client;
 

@@ -4,11 +4,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.function.Supplier;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -28,7 +26,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  */
 public class FilterDispatcherUndertowTest {
-    private static final Logger logger = LogManager.getLogger(FilterDispatcherUndertowTest.class.getName());
+    private static final Logger logger = Logger.getLogger(FilterDispatcherUndertowTest.class.getName());
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()

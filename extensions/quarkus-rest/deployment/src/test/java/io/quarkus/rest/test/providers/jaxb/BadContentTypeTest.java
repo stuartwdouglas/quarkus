@@ -8,12 +8,9 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -23,6 +20,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.BadContenTypeTestResource;
 import io.quarkus.rest.test.providers.jaxb.resource.BadContentTypeTestBean;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -73,7 +71,7 @@ public class BadContentTypeTest {
      */
     @Test
     public void testBadRequest() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/test"));
+        QuarkusRestWebTarget target = client.target(generateURL("/test"));
         Response response = target.request().post(Entity.entity("<junk", "application/xml"));
         Assert.assertEquals("The returned response status is not the expected one",
                 Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
@@ -87,7 +85,7 @@ public class BadContentTypeTest {
      */
     @Test
     public void testHtmlError() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/test"));
+        QuarkusRestWebTarget target = client.target(generateURL("/test"));
         Response response = target.request().header("Accept", "text/html").get();
         String stringResp = response.readEntity(String.class);
         logger.info("response: " + stringResp);
@@ -102,7 +100,7 @@ public class BadContentTypeTest {
      */
     @Test
     public void testNotAcceptable() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/test/foo"));
+        QuarkusRestWebTarget target = client.target(generateURL("/test/foo"));
         Response response = target.request().header("Accept", "text/plain").get();
         assertEquals("The returned response status is not the expected one",
                 Status.NOT_ACCEPTABLE, response.getStatus());
@@ -114,7 +112,7 @@ public class BadContentTypeTest {
      */
     @Test
     public void testBadRequestAfterHtmlError() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/test"));
+        QuarkusRestWebTarget target = client.target(generateURL("/test"));
         Response response = target.request().post(Entity.entity("<junk", "application/xml"));
         Assert.assertEquals("The returned response status is not the expected one",
                 Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());

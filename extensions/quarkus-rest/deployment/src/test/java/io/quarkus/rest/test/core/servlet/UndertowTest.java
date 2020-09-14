@@ -4,10 +4,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.function.Supplier;
 
-import org.hamcrest.CoreMatchers;
-import org.jboss.arquillian.junit.Arquillian;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
+
+import org.hamcrest.CoreMatchers;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -23,7 +22,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-903
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class UndertowTest {
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()

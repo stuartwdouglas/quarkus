@@ -4,9 +4,6 @@ import java.util.function.Supplier;
 
 import javax.ws.rs.client.ClientBuilder;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -16,6 +13,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.XmlEnumParamLocation;
 import io.quarkus.rest.test.providers.jaxb.resource.XmlEnumParamResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -66,7 +64,7 @@ public class XmlEnumParamTest {
      */
     @Test
     public void testXmlEnumParam() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/enum"));
+        QuarkusRestWebTarget target = client.target(generateURL("/enum"));
         String response = target.queryParam("loc", "north").request().get(String.class);
         Assert.assertEquals("The response doesn't contain expected enum type", "NORTH", response.toUpperCase());
     }

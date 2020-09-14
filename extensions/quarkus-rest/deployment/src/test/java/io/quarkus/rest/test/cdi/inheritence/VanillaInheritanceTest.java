@@ -8,14 +8,10 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -35,7 +31,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  */
 public class VanillaInheritanceTest {
-    protected static final Logger log = LogManager.getLogger(SpecializedInheritanceTest.class.getName());
+    protected static final Logger log = Logger.getLogger(SpecializedInheritanceTest.class.getName());
 
     @SuppressWarnings(value = "unchecked")
     @RegisterExtension
@@ -47,8 +43,7 @@ public class VanillaInheritanceTest {
                     war.addClasses(PortProviderUtil.class);
 
                     war.addClasses(UtilityProducer.class, CDIInheritenceBook.class, CDIInheritenceSelectBook.class,
-                            CDIInheritenceInheritanceResource.class)
-                            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                            CDIInheritenceInheritanceResource.class);
                     return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
                 }
             });

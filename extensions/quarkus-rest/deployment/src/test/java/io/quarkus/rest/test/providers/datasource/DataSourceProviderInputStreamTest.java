@@ -22,8 +22,6 @@ import org.apache.http.config.ConnectionConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.DataSourceProvider;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;

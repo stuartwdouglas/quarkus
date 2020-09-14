@@ -5,9 +5,6 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -17,6 +14,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.proxy.resource.EncodedPathProxyInterface;
 import io.quarkus.rest.test.client.proxy.resource.EncodedPathProxyResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -65,7 +63,7 @@ public class EncodedPathProxyTest {
      */
     @Test
     public void testEncodeProxy() throws Exception {
-        ResteasyWebTarget target = client.target(generateBaseUrl());
+        QuarkusRestWebTarget target = client.target(generateBaseUrl());
         EncodedPathProxyInterface proxy = target.proxy(EncodedPathProxyInterface.class);
         Response response = proxy.encode("t;hawkular/f;jk-feed", null);
         Assert.assertEquals(200, response.getStatus());
@@ -79,7 +77,7 @@ public class EncodedPathProxyTest {
      */
     @Test
     public void testNoencodeProxy() throws Exception {
-        ResteasyWebTarget target = client.target(generateBaseUrl());
+        QuarkusRestWebTarget target = client.target(generateBaseUrl());
         EncodedPathProxyInterface proxy = target.proxy(EncodedPathProxyInterface.class);
         Response response = proxy.noencode("t;hawkular/f;jk-feed", null);
         Assert.assertEquals(200, response.getStatus());

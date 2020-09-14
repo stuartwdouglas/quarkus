@@ -8,16 +8,12 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -57,7 +53,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpSince RESTEasy 3.0.16
  */
 public class MDBInjectionTest extends AbstractInjectionTestBase {
-    protected static final Logger log = LogManager.getLogger(MDBInjectionTest.class.getName());
+    protected static final Logger log = Logger.getLogger(MDBInjectionTest.class.getName());
 
     static Client client;
 
@@ -78,7 +74,7 @@ public class MDBInjectionTest extends AbstractInjectionTestBase {
                 .addClasses(CDIInjectionScopeStereotype.class, CDIInjectionScopeInheritingStereotype.class)
                 .addClasses(CDIInjectionStereotypedApplicationScope.class, CDIInjectionStereotypedDependentScope.class)
                 .addClasses(Resource.class, CDIInjectionResourceProducer.class, PersistenceUnitProducer.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+
                 .addAsResource(InjectionTest.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
         String host = PortProviderUtil.getHost();
         if (PortProviderUtil.isIpv6()) {

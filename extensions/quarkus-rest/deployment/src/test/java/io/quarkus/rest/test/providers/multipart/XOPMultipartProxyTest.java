@@ -12,9 +12,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -23,6 +20,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.multipart.resource.XOPMultipartProxy;
 import io.quarkus.rest.test.providers.multipart.resource.XOPMultipartProxyGetFileResponse;
 import io.quarkus.rest.test.providers.multipart.resource.XOPMultipartProxyPutFileRequest;
@@ -59,7 +57,7 @@ public class XOPMultipartProxyTest {
     @BeforeClass
     public static void before() throws Exception {
         client = ClientBuilder.newClient();
-        ResteasyWebTarget target = (ResteasyWebTarget) client.target(generateURL(""));
+        QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(generateURL(""));
         proxy = target.proxy(XOPMultipartProxy.class);
     }
 
@@ -78,7 +76,7 @@ public class XOPMultipartProxyTest {
      */
     @Test
     public void testXOPGet() throws Exception {
-        ResteasyWebTarget target = (ResteasyWebTarget) client.target(generateURL(""));
+        QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(generateURL(""));
         XOPMultipartProxy test = target.proxy(XOPMultipartProxy.class);
         XOPMultipartProxyGetFileResponse fileResp = test.getFile("testXOPGet");
         ByteArrayOutputStream out = new ByteArrayOutputStream();

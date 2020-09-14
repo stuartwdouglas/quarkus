@@ -12,12 +12,9 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import org.jboss.arquillian.junit.Arquillian;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -41,7 +38,7 @@ import io.quarkus.test.QuarkusUnitTest;
  *                    a user defined scope.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class ScopeExtensionTest {
     @Inject
     Logger log;
@@ -62,7 +59,7 @@ public class ScopeExtensionTest {
                             .addClasses(ScopeExtensionPlannedObsolescenceContext.class, ScopeExtensionResource.class)
                             .addClasses(ScopeExtensionObsolescent.class, ScopeExtensionObsolescentAfterTwoUses.class,
                                     ScopeExtensionObsolescentAfterThreeUses.class)
-                            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+
                             .addAsServiceProvider(Extension.class, ScopeExtensionPlannedObsolescenceExtension.class);
                     // Arquillian in the deployment
 

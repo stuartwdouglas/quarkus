@@ -10,11 +10,10 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.dmr.ModelNode;
 import javax.ws.rs.core.Response.Status;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -45,7 +44,7 @@ public class TraceTest extends ClientTestBase {
     private static ModelNode origDisallowedMethodsValue;
     private static Address address = Address.subsystem("undertow").and("server", "default-server").and("http-listener",
             "default");
-    protected static final Logger logger = LogManager.getLogger(TraceTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(TraceTest.class.getName());
     private static Client client;
 
     @HttpMethod("TRACE")

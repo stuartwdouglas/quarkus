@@ -9,7 +9,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -26,7 +25,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Unit tests
  * @tpSince RESTEasy 3.0.17
  */
-@RunWith(Arquillian.class)
+
 public class ClientBuilderTest {
 
     @SuppressWarnings(value = "unchecked")

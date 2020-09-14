@@ -10,11 +10,8 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -24,6 +21,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.proxy.resource.GenericEntities.EntityExtendingBaseEntity;
 import io.quarkus.rest.test.client.proxy.resource.GenericEntities.GenericEntityExtendingBaseEntityProxy;
 import io.quarkus.rest.test.client.proxy.resource.GenericEntities.GenericEntityExtendingBaseEntityResource;
@@ -82,7 +80,7 @@ public class GenericProxyTest {
      */
     @Test
     public void testEcho() {
-        ResteasyWebTarget target = client.target(generateBaseUrl());
+        QuarkusRestWebTarget target = client.target(generateBaseUrl());
         GenericProxySpecificProxy proxy = target.proxy(GenericProxySpecificProxy.class);
         String hello = proxy.sayHi("hello");
         Assert.assertEquals("Response has wrong content", "hello", hello);
@@ -96,7 +94,7 @@ public class GenericProxyTest {
      */
     @Test
     public void testEchoNoProxy() {
-        ResteasyWebTarget target = client.target(generateBaseUrl() + "/say/hello");
+        QuarkusRestWebTarget target = client.target(generateBaseUrl() + "/say/hello");
         Response response = target.request().post(Entity.text("hello"));
 
         String hello = response.readEntity(String.class);

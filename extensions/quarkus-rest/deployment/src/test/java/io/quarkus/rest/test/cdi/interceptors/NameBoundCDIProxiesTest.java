@@ -5,10 +5,7 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -40,7 +37,7 @@ public class NameBoundCDIProxiesTest {
                     war.addClasses(PortProviderUtil.class);
 
                     war.addClass(NameBoundProxiesAnnotation.class);
-                    war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+
                     return TestUtil.finishContainerPrepare(war, null, NameBoundCDIProxiesResource.class,
                             NameBoundCDIProxiesInterceptor.class);
                 }

@@ -3,7 +3,6 @@ package io.quarkus.rest.test.providers.jaxb;
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.resteasy.spi.util.Types;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -44,7 +43,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-636
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class GenericSuperInterfaceTest {
 
     @RegisterExtension

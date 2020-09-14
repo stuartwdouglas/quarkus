@@ -9,18 +9,13 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -29,6 +24,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.multipart.resource.Soup;
 import io.quarkus.rest.test.providers.multipart.resource.SoupVendorResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -36,7 +32,7 @@ import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.test.QuarkusUnitTest;
 
 public class SoupMultipartMsgTest {
-    protected final Logger logger = LogManager.getLogger(SoupMultipartMsgTest.class.getName());
+    protected final Logger logger = Logger.getLogger(SoupMultipartMsgTest.class.getName());
     static QuarkusRestClient client;
 
     @RegisterExtension
@@ -48,7 +44,6 @@ public class SoupMultipartMsgTest {
                     war.addClasses(PortProviderUtil.class);
 
                     war.addClasses(Soup.class);
-                    war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
 
                     return TestUtil.finishContainerPrepare(war, null, SoupVendorResource.class);
                 }
@@ -78,7 +73,7 @@ public class SoupMultipartMsgTest {
                 MediaType.APPLICATION_XML_TYPE);
         multipartOutput.addPart("Granny's Soups", MediaType.TEXT_PLAIN_TYPE);
 
-        ResteasyWebTarget target = client.target(generateURL("/vendor/register/soups"));
+        QuarkusRestWebTarget target = client.target(generateURL("/vendor/register/soups"));
         Entity<MultipartOutput> entity = Entity.entity(multipartOutput,
                 new MediaType("multipart", "mixed"));
         Response response = target.request().post(entity);
@@ -102,7 +97,7 @@ public class SoupMultipartMsgTest {
     }
 
     private void getMessage(String path) throws Exception {
-        ResteasyWebTarget target = client.target(generateURL(path));
+        QuarkusRestWebTarget target = client.target(generateURL(path));
         Response response = target.request().get();
 
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
@@ -148,7 +143,7 @@ public class SoupMultipartMsgTest {
     }
 
     private void getGenericTypeMessage(String path) throws Exception {
-        ResteasyWebTarget target = client.target(generateURL(path));
+        QuarkusRestWebTarget target = client.target(generateURL(path));
         Response response = target.request().get();
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
 
@@ -191,7 +186,7 @@ public class SoupMultipartMsgTest {
     @Test
     public void testSoupFile() throws Exception {
 
-        ResteasyWebTarget target = client.target(generateURL("/vendor/soupfile"));
+        QuarkusRestWebTarget target = client.target(generateURL("/vendor/soupfile"));
         Response response = target.request().get();
         Assert.assertEquals(Status.OK, response.getStatus());
 

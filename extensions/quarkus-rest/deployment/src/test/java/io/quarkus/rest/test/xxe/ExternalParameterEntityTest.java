@@ -9,10 +9,9 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import javax.ws.rs.core.Response.Status;
+
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -42,7 +41,7 @@ import io.quarkus.test.QuarkusUnitTest;
  */
 public class ExternalParameterEntityTest {
 
-    protected final Logger logger = LogManager.getLogger(ExternalParameterEntityTest.class.getName());
+    protected final Logger logger = Logger.getLogger(ExternalParameterEntityTest.class.getName());
     static QuarkusRestClient client;
 
     private static final String EXPAND = "war_expand";

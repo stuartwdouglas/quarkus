@@ -27,15 +27,11 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
@@ -91,7 +87,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  *                    Annotation @EJB and @Inject, and the semantics of both are tested.
  * @tpSince RESTEasy 3.0.16
  */
-@RunWith(Arquillian.class)
+
 public class ReverseInjectionTest extends AbstractInjectionTestBase {
     private static Logger log = Logger.getLogger(ReverseInjectionTest.class);
 
@@ -151,7 +147,7 @@ public class ReverseInjectionTest extends AbstractInjectionTestBase {
                 .addClasses(ReverseInjectionResource.class)
                 .addClasses(CDIInjectionNewBean.class, CDIInjectionStereotypedApplicationScope.class,
                         CDIInjectionStereotypedDependentScope.class)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+
                 .addAsResource(ReverseInjectionTest.class.getPackage(), "persistence.xml", "META-INF/persistence.xml");
         // Arquillian in the deployment
 

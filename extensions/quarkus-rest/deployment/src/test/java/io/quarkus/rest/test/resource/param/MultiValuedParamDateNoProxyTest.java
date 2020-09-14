@@ -9,9 +9,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -19,6 +16,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.util.MultivaluedMapImpl;
 import io.quarkus.rest.test.resource.param.resource.CookieParamWrapper;
 import io.quarkus.rest.test.resource.param.resource.CookieParamWrapperArrayConverter;
 import io.quarkus.rest.test.resource.param.resource.DateParamConverter;

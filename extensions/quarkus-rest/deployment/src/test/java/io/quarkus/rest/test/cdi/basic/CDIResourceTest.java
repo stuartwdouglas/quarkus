@@ -9,18 +9,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import javax.ws.rs.core.Response.Status;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -45,7 +42,7 @@ import io.quarkus.rest.test.simple.TestUtil;
 
 public class CDIResourceTest {
 
-    protected static final Logger logger = LogManager.getLogger(CDIResourceTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(CDIResourceTest.class.getName());
 
     private static final String WAR_NAME = "RESTEASY-1082.war";
     static final String toStr;
@@ -65,7 +62,7 @@ public class CDIResourceTest {
         war.addClasses(FooResource.class,
                 TestApplication.class,
                 TestServlet.class);
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+
         war.addAsWebInfResource(CDIResourceTest.class.getPackage(),
                 "web-resteasy1082.xml", "web.xml");
 

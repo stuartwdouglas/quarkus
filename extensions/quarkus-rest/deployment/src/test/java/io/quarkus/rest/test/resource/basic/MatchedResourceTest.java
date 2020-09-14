@@ -17,7 +17,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.rest.runtime.util.HttpResponseCodes;
 import io.quarkus.rest.test.resource.basic.resource.MatchedResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.test.QuarkusUnitTest;

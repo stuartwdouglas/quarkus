@@ -6,13 +6,10 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.arquillian.container.test.api.Deployment;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -36,7 +33,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpSince RESTEasy 3.0.16
  */
 public class WarClassesIntoWarLibTest {
-    protected static final Logger log = LogManager.getLogger(WarClassesIntoWarLibTest.class.getName());
+    protected static final Logger log = Logger.getLogger(WarClassesIntoWarLibTest.class.getName());
 
     @Deployment
     public static Archive<?> createTestArchive() {
@@ -46,8 +43,7 @@ public class WarClassesIntoWarLibTest {
         WebArchive war = TestUtil.prepareArchive(WarClassesIntoWarLibTest.class.getSimpleName())
                 .addClasses(UtilityProducer.class)
                 .addClasses(CDIModulesInjectableBinder.class, CDIModulesInjectableIntf.class, CDIModulesInjectable.class)
-                .addAsLibrary(jar)
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsLibrary(jar);
         return war;
     }
 

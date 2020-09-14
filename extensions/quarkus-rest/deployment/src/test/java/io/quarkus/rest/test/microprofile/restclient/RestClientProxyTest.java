@@ -25,10 +25,7 @@ import org.eclipse.microprofile.rest.client.RestClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.resteasy.microprofile.client.BuilderResolver;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -52,7 +49,7 @@ public class RestClientProxyTest {
         war.addClass(HelloResource.class);
         war.addClass(HeaderPropagator.class);
         war.addPackage(HelloResource.class.getPackage());
-        war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+
         war.addClass(PortProviderUtil.class);
         war.addClass(Category.class);
         war.addClasses(TestParamConverter.class, TestParamConverterProvider.class);

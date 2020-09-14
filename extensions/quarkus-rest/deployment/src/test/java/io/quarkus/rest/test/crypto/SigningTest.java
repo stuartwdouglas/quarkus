@@ -19,20 +19,16 @@ import javax.ws.rs.client.ResponseProcessingException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.security.doseta.DKIMSignature;
 import org.jboss.resteasy.security.doseta.DosetaKeyRepository;
 import org.jboss.resteasy.security.doseta.KeyRepository;
 import org.jboss.resteasy.security.doseta.UnauthorizedSignatureException;
 import org.jboss.resteasy.security.doseta.Verification;
 import org.jboss.resteasy.security.doseta.Verifier;
-import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.spi.MarshalledEntity;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -44,6 +40,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.crypto.resource.SigningProxy;
 import io.quarkus.rest.test.crypto.resource.SigningResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -62,7 +59,7 @@ public class SigningTest {
     public static PrivateKey badKey;
     private static QuarkusRestClient client;
 
-    protected final Logger logger = LogManager.getLogger(PKCS7SignatureSmokeTest.class.getName());
+    protected final Logger logger = Logger.getLogger(PKCS7SignatureSmokeTest.class.getName());
 
     private static final String RESPONSE_ERROR_MSG = "Response contains wrong content";
     static final String testJksPath;
@@ -587,7 +584,7 @@ public class SigningTest {
      */
     @Test
     public void testProxy() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/"));
+        QuarkusRestWebTarget target = client.target(generateURL("/"));
         target.property(KeyRepository.class.getName(), repository);
         SigningProxy proxy = target.proxy(SigningProxy.class);
         proxy.hello();
@@ -600,7 +597,7 @@ public class SigningTest {
      */
     @Test
     public void testBadSignatureProxy() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/"));
+        QuarkusRestWebTarget target = client.target(generateURL("/"));
         target.property(KeyRepository.class.getName(), repository);
         SigningProxy proxy = target.proxy(SigningProxy.class);
         try {

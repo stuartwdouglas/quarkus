@@ -3,8 +3,6 @@ package io.quarkus.rest.test.resource.param;
 import java.util.function.Supplier;
 
 import org.jboss.resteasy.client.jaxrs.internal.QuarkusRestClientBuilderImpl;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;

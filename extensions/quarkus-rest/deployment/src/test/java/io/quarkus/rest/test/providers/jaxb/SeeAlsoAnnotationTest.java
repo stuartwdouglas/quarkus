@@ -8,9 +8,6 @@ import javax.ws.rs.client.Entity;
 import javax.xml.bind.JAXBContext;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -19,6 +16,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.SeeAlsoAnnotationBaseFoo;
 import io.quarkus.rest.test.providers.jaxb.resource.SeeAlsoAnnotationFooIntf;
 import io.quarkus.rest.test.providers.jaxb.resource.SeeAlsoAnnotationRealFoo;
@@ -97,7 +95,7 @@ public class SeeAlsoAnnotationTest {
         String s = writer.getBuffer().toString();
         logger.info(s);
 
-        ResteasyWebTarget target = client.target(generateURL(url));
+        QuarkusRestWebTarget target = client.target(generateURL(url));
         target.request().header("Content-Type", "application/xml").put(Entity.xml(s));
     }
 

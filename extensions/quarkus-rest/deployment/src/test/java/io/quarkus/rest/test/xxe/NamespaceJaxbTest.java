@@ -7,11 +7,8 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -21,6 +18,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.rest.test.xxe.resource.xxeNamespace.FavoriteMovie;
@@ -75,7 +73,7 @@ public class NamespaceJaxbTest {
      */
     @Test
     public void testXmlRootElement() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/xmlRootElement"));
+        QuarkusRestWebTarget target = client.target(generateURL("/xmlRootElement"));
         FavoriteMovieXmlRootElement movie = new FavoriteMovieXmlRootElement();
         movie.setTitle("La Regle du Jeu");
         Response response = target.request().post(Entity.entity(movie, "application/xml"));
@@ -90,7 +88,7 @@ public class NamespaceJaxbTest {
      */
     @Test
     public void testXmlType() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/xmlType"));
+        QuarkusRestWebTarget target = client.target(generateURL("/xmlType"));
         FavoriteMovieXmlType movie = new FavoriteMovieXmlType();
         movie.setTitle("La Cage Aux Folles");
         Response response = target.request().post(Entity.entity(movie, "application/xml"));
@@ -105,7 +103,7 @@ public class NamespaceJaxbTest {
      */
     @Test
     public void testJAXBElement() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/JAXBElement"));
+        QuarkusRestWebTarget target = client.target(generateURL("/JAXBElement"));
         String str = "<?xml version=\"1.0\"?>\r" +
                 "<favoriteMovieXmlType xmlns=\"http://abc.com\"><title>La Cage Aux Folles</title></favoriteMovieXmlType>";
         Response response = target.request().post(Entity.entity(str, "application/xml"));
@@ -151,7 +149,7 @@ public class NamespaceJaxbTest {
     }
 
     void doCollectionTest(String path) throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/" + path));
+        QuarkusRestWebTarget target = client.target(generateURL("/" + path));
         String str = "<?xml version=\"1.0\"?>\r" +
                 "<collection>" +
                 "<favoriteMovieXmlRootElement><title>La Cage Aux Folles</title></favoriteMovieXmlRootElement>" +
@@ -168,7 +166,7 @@ public class NamespaceJaxbTest {
     }
 
     void doMapTest() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/map"));
+        QuarkusRestWebTarget target = client.target(generateURL("/map"));
         String str = "<?xml version=\"1.0\"?>\r" +
                 "<map>" +
                 "<entry key=\"new\">" +

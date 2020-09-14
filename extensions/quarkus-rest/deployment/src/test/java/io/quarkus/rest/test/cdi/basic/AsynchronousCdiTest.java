@@ -12,11 +12,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -38,7 +35,7 @@ public class AsynchronousCdiTest {
 
     public static final Long DELAY = 5000L;
 
-    protected static final Logger log = LogManager.getLogger(AsynchronousCdiTest.class.getName());
+    protected static final Logger log = Logger.getLogger(AsynchronousCdiTest.class.getName());
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, AsynchronousCdiTest.class.getSimpleName());
@@ -54,8 +51,7 @@ public class AsynchronousCdiTest {
 
                     war.addClasses(UtilityProducer.class)
                             .addClasses(AsynchronousStatelessLocal.class, AsynchronousStateless.class)
-                            .addClasses(AsynchronousResource.class, AsynchronousCdiTest.class)
-                            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+                            .addClasses(AsynchronousResource.class, AsynchronousCdiTest.class);
                     return war;
                 }
             });

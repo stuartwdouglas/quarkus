@@ -8,12 +8,9 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -39,7 +36,7 @@ import io.quarkus.test.QuarkusUnitTest;
  */
 public class CollectionCoreTest {
     private static final String WRONG_RESPONSE = "Response contains wrong data";
-    protected static final Logger logger = LogManager.getLogger(CollectionCoreTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(CollectionCoreTest.class.getName());
 
     static QuarkusRestClient client;
 

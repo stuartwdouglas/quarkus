@@ -7,12 +7,9 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
+
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -36,7 +33,7 @@ import io.quarkus.test.QuarkusUnitTest;
  */
 public class ResponseContainerFilterTest {
 
-    protected static final Logger logger = LogManager.getLogger(ResponseContainerFilterTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(ResponseContainerFilterTest.class.getName());
 
     static Client client;
 

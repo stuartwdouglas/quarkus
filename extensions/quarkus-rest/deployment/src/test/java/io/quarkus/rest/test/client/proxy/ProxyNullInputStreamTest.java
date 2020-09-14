@@ -5,15 +5,13 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.proxy.resource.ProxyNullInputStreamClientResponseFilter;
 import io.quarkus.rest.test.client.proxy.resource.ProxyNullInputStreamResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -51,7 +49,7 @@ public class ProxyNullInputStreamTest {
     @Test
     public void testNullPointerEx() throws Exception {
         Client client = ClientBuilder.newBuilder().register(ProxyNullInputStreamClientResponseFilter.class).build();
-        ProxyNullInputStreamResource pResource = ((ResteasyWebTarget) client.target(generateURL("/test/user/mydb")))
+        ProxyNullInputStreamResource pResource = ((QuarkusRestWebTarget) client.target(generateURL("/test/user/mydb")))
                 .proxyBuilder(ProxyNullInputStreamResource.class)
                 .build();
         try {

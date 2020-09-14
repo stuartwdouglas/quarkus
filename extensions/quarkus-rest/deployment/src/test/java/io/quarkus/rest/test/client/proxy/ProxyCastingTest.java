@@ -8,9 +8,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -18,6 +15,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.client.proxy.resource.ProxyCastingInterfaceA;
 import io.quarkus.rest.test.client.proxy.resource.ProxyCastingInterfaceB;
 import io.quarkus.rest.test.client.proxy.resource.ProxyCastingNothing;
@@ -35,7 +33,7 @@ import io.quarkus.test.QuarkusUnitTest;
  */
 public class ProxyCastingTest {
     private static Client client;
-    private static ResteasyWebTarget target;
+    private static QuarkusRestWebTarget target;
 
     @RegisterExtension
     static QuarkusUnitTest testExtension = new QuarkusUnitTest()
@@ -58,7 +56,7 @@ public class ProxyCastingTest {
     @BeforeClass
     public static void before() throws Exception {
         client = ClientBuilder.newClient();
-        target = (ResteasyWebTarget) client.target(generateURL("/foobar"));
+        target = (QuarkusRestWebTarget) client.target(generateURL("/foobar"));
     }
 
     @AfterClass

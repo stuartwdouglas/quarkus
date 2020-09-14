@@ -6,9 +6,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -18,6 +15,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.providers.jaxb.resource.EmptyContentTypeFoo;
 import io.quarkus.rest.test.providers.jaxb.resource.EmptyContentTypeResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -68,7 +66,7 @@ public class EmptyContentTypeTest {
      */
     @Test
     public void testEmptyContentType() throws Exception {
-        ResteasyWebTarget target = client.target(generateURL("/test"));
+        QuarkusRestWebTarget target = client.target(generateURL("/test"));
         EmptyContentTypeFoo foo = new EmptyContentTypeFoo();
         foo.setName("Bill");
         Response response = target.request().post(Entity.entity(foo, "application/xml"));

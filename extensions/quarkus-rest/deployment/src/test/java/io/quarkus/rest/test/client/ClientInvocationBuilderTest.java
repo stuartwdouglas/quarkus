@@ -14,7 +14,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
 
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -24,6 +23,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.test.QuarkusUnitTest;
@@ -64,7 +64,7 @@ public class ClientInvocationBuilderTest extends ClientTestBase {
     public void testBuildMethodReturnNewInstance() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         try {
-            ResteasyWebTarget webTarget = client.target(generateURL(""));
+            QuarkusRestWebTarget webTarget = client.target(generateURL(""));
             Builder invocationBuilder = webTarget.request();
 
             // GET invocation
@@ -102,7 +102,7 @@ public class ClientInvocationBuilderTest extends ClientTestBase {
     public void testBuildMethodResetEntity() throws InterruptedException, ExecutionException {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         try {
-            ResteasyWebTarget webTarget = client.target(generateURL(""));
+            QuarkusRestWebTarget webTarget = client.target(generateURL(""));
             Builder invocationBuilder = webTarget.request().accept(MediaType.TEXT_PLAIN_TYPE);
 
             // POST invocation

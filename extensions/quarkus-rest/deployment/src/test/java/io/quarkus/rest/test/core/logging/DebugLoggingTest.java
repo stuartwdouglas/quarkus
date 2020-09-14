@@ -10,13 +10,10 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import javax.ws.rs.core.Response.Status;
+
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.LogCounter;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -47,7 +44,7 @@ import io.quarkus.test.QuarkusUnitTest;
 public class DebugLoggingTest {
 
     static QuarkusRestClient client;
-    protected static final Logger logger = LogManager.getLogger(DebugLoggingTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(DebugLoggingTest.class.getName());
 
     private static final String BUILD_IN = "build-in";
     private static final String CUSTOM = "custom";

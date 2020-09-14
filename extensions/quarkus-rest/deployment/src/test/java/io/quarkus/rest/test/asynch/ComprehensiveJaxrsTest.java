@@ -20,11 +20,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -52,7 +49,7 @@ import io.quarkus.rest.test.simple.PortProviderUtil;
  * @tpSince RESTEasy 3.0.16
  */
 public class ComprehensiveJaxrsTest {
-    protected static final Logger logger = LogManager.getLogger(ComprehensiveJaxrsTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(ComprehensiveJaxrsTest.class.getName());
 
     @Deployment
     public static Archive<?> createTestArchive() {

@@ -8,16 +8,13 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hamcrest.Matchers;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ViolationReport;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
-import javax.ws.rs.core.Response.Status;
-import org.jboss.resteasy.utils.PortProviderUtil;
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -43,7 +40,7 @@ import io.restassured.path.json.JsonPath;
  */
 public class ValidationXMLTest {
     static final String WRONG_ERROR_MSG = "Expected validation error is not in response";
-    protected static final Logger logger = LogManager.getLogger(ValidationXMLTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(ValidationXMLTest.class.getName());
     QuarkusRestClient client;
 
     @RegisterExtension

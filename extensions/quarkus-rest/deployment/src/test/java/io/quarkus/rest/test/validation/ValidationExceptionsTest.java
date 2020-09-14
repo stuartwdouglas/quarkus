@@ -7,16 +7,15 @@ import java.util.List;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.ResteasyViolationException;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.plugins.validation.ResteasyViolationExceptionImpl;
-import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -53,7 +52,7 @@ import io.quarkus.rest.test.validation.resource.ValidationExceptionTestGroup2;
  */
 public class ValidationExceptionsTest {
 
-    protected static final Logger logger = LogManager.getLogger(ValidationExceptionsTest.class.getName());
+    protected static final Logger logger = Logger.getLogger(ValidationExceptionsTest.class.getName());
     static QuarkusRestClient client;
 
     private static final String DEF_EXCEPTION = "constraintDefinitionException";
