@@ -65,7 +65,7 @@ public class JaxrsAsyncServletTest {
                             JaxrsAsyncServletTimeoutHandler.class, JaxrsAsyncServletResource.class,
                             JaxrsAsyncServletPrintingErrorHandler.class,
                             JaxrsAsyncServletServiceUnavailableExceptionMapper.class, JaxrsAsyncServletXmlData.class);
-                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
+//                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
                     return war;
                 }
             });

@@ -34,7 +34,7 @@ public class SseEventSinkTest {
     public static Archive<?> deploy() {
         WebArchive war = TestUtil.prepareArchive(SseTest.class.getSimpleName());
         war.addClass(SseEventSinkTest.class);
-        war.addAsWebInfResource("org/jboss/resteasy/test/providers/sse/web.xml", "web.xml");
+//        war.addAsWebInfResource("org/jboss/resteasy/test/providers/sse/web.xml", "web.xml");
         war.addAsWebResource("org/jboss/resteasy/test/providers/sse/index.html", "index.html");
         war.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 

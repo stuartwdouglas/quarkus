@@ -51,7 +51,7 @@ public class JsonFilterWithServletConditionalFilterTest {
                             new StringAsset("Manifest-Version: 1.0\n"
                                     + "Dependencies: com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider\n"),
                             "MANIFEST.MF");
-                    war.addAsWebInfResource(JsonFilterWithServletConditionalFilterTest.class.getPackage(),
+//                    war.addAsWebInfResource(JsonFilterWithServletConditionalFilterTest.class.getPackage(),
                             "web-filter-conditional.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, Jackson2Resource.class);
                 }

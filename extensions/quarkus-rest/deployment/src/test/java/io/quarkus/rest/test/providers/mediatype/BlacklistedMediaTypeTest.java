@@ -86,9 +86,9 @@ public class BlacklistedMediaTypeTest {
                 throw new RuntimeException(e);
             }
             war.addAsManifestResource("jboss-deployment-structure-bouncycastle.xml", "jboss-deployment-structure.xml");
-            war.addAsWebInfResource(BlacklistedMediaTypeTest.class.getPackage(), "BlacklistedMediaTypeFile1",
+//            war.addAsWebInfResource(BlacklistedMediaTypeTest.class.getPackage(), "BlacklistedMediaTypeFile1",
                     "classes/BlacklistedMediaTypeFile1");
-            war.addAsWebInfResource(BlacklistedMediaTypeTest.class.getPackage(), "BlacklistedMediaTypeFile2",
+//            war.addAsWebInfResource(BlacklistedMediaTypeTest.class.getPackage(), "BlacklistedMediaTypeFile2",
                     "classes/BlacklistedMediaTypeFile2");
             return TestUtil.finishContainerPrepare(war, null, BlacklistedMediaTypeResource.class, CryptoCertResource.class);
         }

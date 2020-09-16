@@ -38,9 +38,9 @@ public class FilterDispatcherUndertowTest {
 
                     war.addClass(FilterDispatcherForwardServlet.class);
                     war.addClass(FilterDispatcherServlet.class);
-                    war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifestWeb.xml",
+//                    war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifestWeb.xml",
                             "web.xml");
-                    war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifest.MF",
+//                    war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifest.MF",
                             "MANIFEST.MF");
                     return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
                 }

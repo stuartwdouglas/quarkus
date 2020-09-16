@@ -22,7 +22,7 @@ public class SseCORSFilterTest {
     public static Archive<?> deploy() {
         WebArchive war = TestUtil.prepareArchive(SseCORSFilterTest.class.getSimpleName());
         war.addClass(SseCORSFilterTest.class);
-        war.addAsWebInfResource("org/jboss/resteasy/test/providers/sse/filter/web.xml", "web.xml");
+//        war.addAsWebInfResource("org/jboss/resteasy/test/providers/sse/filter/web.xml", "web.xml");
         war.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 
         return TestUtil.finishContainerPrepare(war, null, SseFilterApplication.class, SseResource.class,

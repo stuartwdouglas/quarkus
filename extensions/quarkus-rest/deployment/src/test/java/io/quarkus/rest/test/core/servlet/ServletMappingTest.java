@@ -47,8 +47,8 @@ public class ServletMappingTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-                    war.addAsWebInfResource(ServletMappingTest.class.getPackage(), "ServletMappingWeb.xml", "web.xml");
-                    war.addAsWebInfResource(ServletMappingTest.class.getPackage(), "ServletMappingJbossWeb.xml",
+//                    war.addAsWebInfResource(ServletMappingTest.class.getPackage(), "ServletMappingWeb.xml", "web.xml");
+//                    war.addAsWebInfResource(ServletMappingTest.class.getPackage(), "ServletMappingJbossWeb.xml",
                             "jboss-web.xml");
                     war.addClass(MyFilter.class);
 

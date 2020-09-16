@@ -39,7 +39,7 @@ public class JSAPIGetBasicJsapiHandlingScriptTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-                    war.addAsWebInfResource(JSAPIGetBasicJsapiHandlingScriptTest.class.getPackage(), "web.xml", "web.xml");
+//                    war.addAsWebInfResource(JSAPIGetBasicJsapiHandlingScriptTest.class.getPackage(), "web.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
                 }
             });

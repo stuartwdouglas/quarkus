@@ -70,7 +70,7 @@ public class ExternalParameterEntityTest {
                     war.addClasses(PortProviderUtil.class);
 
                     war.addClass(ExternalParameterEntityWrapper.class);
-                    war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
+//                    war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
                             "ExternalParameterEntityExpandWeb.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, ExternalParameterEntityResource.class);
                 }
@@ -85,7 +85,7 @@ public class ExternalParameterEntityTest {
                     war.addClasses(PortProviderUtil.class);
 
                     war.addClass(ExternalParameterEntityWrapper.class);
-                    war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
+//                    war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
                             "ExternalParameterEntityNoExpandWeb.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, ExternalParameterEntityResource.class);
                 }

@@ -59,7 +59,7 @@ public class ComprehensiveJaxrsTest {
                 JaxrsAsyncServletPrintingErrorHandler.class, JaxrsAsyncServletTimeoutHandler.class,
                 JaxrsAsyncServletResource.class, JaxrsAsyncServletServiceUnavailableExceptionMapper.class,
                 JaxrsAsyncServletXmlData.class);
-        war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
+//        war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
         return war;
     }
 

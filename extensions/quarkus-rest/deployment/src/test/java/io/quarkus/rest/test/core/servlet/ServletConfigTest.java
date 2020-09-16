@@ -40,7 +40,7 @@ public class ServletConfigTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-                    war.addAsWebInfResource(ServletConfigTest.class.getPackage(), "ServletConfigWeb.xml", "web.xml");
+//                    war.addAsWebInfResource(ServletConfigTest.class.getPackage(), "ServletConfigWeb.xml", "web.xml");
                     war.addClasses(ServletConfigException.class, ServletConfigExceptionMapper.class,
                             ServletConfigApplication.class, ServletConfigResource.class);
                     return war;

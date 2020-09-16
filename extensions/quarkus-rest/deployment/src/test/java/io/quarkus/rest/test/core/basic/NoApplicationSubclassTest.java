@@ -38,7 +38,7 @@ public class NoApplicationSubclassTest {
                     war.addClasses(PortProviderUtil.class);
 
                     war.addClasses(NoApplicationSubclassResource.class);
-                    war.addAsWebInfResource(NoApplicationSubclassTest.class.getPackage(), "NoApplicationSubclassWeb.xml",
+//                    war.addAsWebInfResource(NoApplicationSubclassTest.class.getPackage(), "NoApplicationSubclassWeb.xml",
                             "web.xml");
                     return war;
                 }

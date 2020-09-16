@@ -49,7 +49,7 @@ public class AlternativeSelectedInheritanceTest {
                             .addClasses(CDIInheritenceSelectBook.class, CDIInheritenceStereotypeAlternative.class)
                             .addClasses(CDIInheritenceBook.class, CDIInheritenceBookVanillaAlternative.class,
                                     CDIInheritenceBookSelectedAlternative.class, CDIInheritenceInheritanceResource.class)
-                            .addAsWebInfResource(SpecializedInheritanceTest.class.getPackage(), "alternativeSelectedBeans.xml",
+//                            .addAsWebInfResource(SpecializedInheritanceTest.class.getPackage(), "alternativeSelectedBeans.xml",
                                     "beans.xml");
                     return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
                 }

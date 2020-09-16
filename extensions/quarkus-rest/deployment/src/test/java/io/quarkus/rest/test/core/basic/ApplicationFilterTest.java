@@ -48,7 +48,7 @@ public class ApplicationFilterTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-                    war.addAsWebInfResource(ApplicationFilterTest.class.getPackage(), "ApplicationFilterWeb.xml", "web.xml");
+//                    war.addAsWebInfResource(ApplicationFilterTest.class.getPackage(), "ApplicationFilterWeb.xml", "web.xml");
                     war.addClasses(ApplicationFilterCustomer.class, ApplicationFilterCustomerResource.class);
                     war.add(new UrlAsset(ApplicationFilterTest.class.getResource("ApplicationFilter.html")), "foo.html");
                     List<Class<?>> singletons = new ArrayList<>();

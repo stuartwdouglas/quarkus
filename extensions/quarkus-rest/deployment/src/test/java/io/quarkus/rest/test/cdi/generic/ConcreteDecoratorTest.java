@@ -57,7 +57,7 @@ public class ConcreteDecoratorTest {
                     war.addClasses(UpperBoundHierarchyHolder.class, LowerBoundHierarchyHolder.class);
                     war.addClasses(Animal.class, Primate.class, Australopithecus.class);
                     war.addClasses(ConcreteDecorator.class);
-                    war.addAsWebInfResource(ConcreteDecoratorTest.class.getPackage(), "concrete_beans.xml", "beans.xml");
+//                    war.addAsWebInfResource(ConcreteDecoratorTest.class.getPackage(), "concrete_beans.xml", "beans.xml");
                     return war;
                 }
             });

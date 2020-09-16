@@ -45,7 +45,7 @@ public class DefaultCharsetTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_true.xml", "web.xml");
+//                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_true.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
                 }
             });
@@ -58,7 +58,7 @@ public class DefaultCharsetTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_false.xml",
+//                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_false.xml",
                             "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
                 }
@@ -72,7 +72,7 @@ public class DefaultCharsetTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_default.xml",
+//                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_default.xml",
                             "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
                 }

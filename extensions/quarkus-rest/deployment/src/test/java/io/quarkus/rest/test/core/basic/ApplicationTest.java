@@ -44,7 +44,7 @@ public class ApplicationTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-                    war.addAsWebInfResource(ApplicationTest.class.getPackage(), "ApplicationWeb.xml", "web.xml");
+//                    war.addAsWebInfResource(ApplicationTest.class.getPackage(), "ApplicationWeb.xml", "web.xml");
                     war.addClasses(ApplicationTestAExplicitApplication.class,
                             ApplicationTestBExplicitApplication.class,
                             ApplicationTestIgnoredApplication.class,

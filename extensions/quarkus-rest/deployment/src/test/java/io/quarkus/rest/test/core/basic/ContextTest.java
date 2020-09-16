@@ -45,8 +45,8 @@ public class ContextTest {
                     war.addClasses(ContextAfterEncoderInterceptor.class, ContextBeforeEncoderInterceptor.class,
                             ContextService.class,
                             ContextEncoderInterceptor.class, ContextEndInterceptor.class);
-                    war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextIndex.html", "index.html");
-                    war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextWeb.xml", "web.xml");
+//                    war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextIndex.html", "index.html");
+//                    war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextWeb.xml", "web.xml");
                     // undertow requires read permission in order to perform forward request.
 
                     return war;

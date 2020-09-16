@@ -53,7 +53,7 @@ public abstract class GzipAbstractTestBase {
     protected static Archive<?> createWebArchive(String name, boolean addProvidersFileWithGzipInterceptors) {
         WebArchive war = TestUtil.prepareArchive(name);
         war = war.addClass(GzipInterface.class);
-        war = war.addAsWebInfResource(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
+//        war = war.addAsWebInfResource(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
 
         if (addProvidersFileWithGzipInterceptors) {
             war.addAsManifestResource(GzipAbstractTestBase.class.getPackage(), "GzipAbstractTest-javax.ws.rs.ext.Providers",

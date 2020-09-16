@@ -63,7 +63,7 @@ public class CDIResourceTest {
                 TestApplication.class,
                 TestServlet.class);
 
-        war.addAsWebInfResource(CDIResourceTest.class.getPackage(),
+//        war.addAsWebInfResource(CDIResourceTest.class.getPackage(),
                 "web-resteasy1082.xml", "web.xml");
 
         //write file to disk

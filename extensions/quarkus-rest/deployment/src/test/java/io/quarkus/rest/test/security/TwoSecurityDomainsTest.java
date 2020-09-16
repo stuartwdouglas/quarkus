@@ -65,8 +65,8 @@ public class TwoSecurityDomainsTest {
                     Hashtable<String, String> contextParams = new Hashtable<String, String>();
                     contextParams.put("resteasy.role.based.security", "true");
 
-                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
-                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
+//                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
+//                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
 
                     return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
                 }
@@ -83,8 +83,8 @@ public class TwoSecurityDomainsTest {
                     Hashtable<String, String> contextParams = new Hashtable<String, String>();
                     contextParams.put("resteasy.role.based.security", "true");
 
-                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web2.xml", "/jboss-web.xml")
-                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
+//                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web2.xml", "/jboss-web.xml")
+//                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
 
                     return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
                 }

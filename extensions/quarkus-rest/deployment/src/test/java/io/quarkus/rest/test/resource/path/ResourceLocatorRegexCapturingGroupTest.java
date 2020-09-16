@@ -51,7 +51,7 @@ public class ResourceLocatorRegexCapturingGroupTest {
 
                     war.addClasses(ResourceLocatorRegexCapturingGroupSubResourceNoPath.class,
                             ResourceLocatorRegexCapturingGroupSubResourceWithPath.class);
-                    war.addAsWebInfResource(ResourceLocatorRegexCapturingGroupTest.class.getPackage(), "web.xml", "web.xml");
+//                    war.addAsWebInfResource(ResourceLocatorRegexCapturingGroupTest.class.getPackage(), "web.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, ResourceLocatorRegexCapturingGroup.class);
                 }
             });

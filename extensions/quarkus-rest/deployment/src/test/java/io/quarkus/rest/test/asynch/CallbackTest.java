@@ -67,7 +67,7 @@ public class CallbackTest {
                             CallbackStringBean.class,
                             CallbackStringBeanEntityProvider.class,
                             JaxrsAsyncServletAsyncResponseBlockingQueue.class);
-                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "CallbackTestWeb.xml", "web.xml");
+//                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "CallbackTestWeb.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, CallbackResource.class,
                             CallbackStringBeanEntityProvider.class);
                 }

@@ -88,7 +88,7 @@ public class InterceptorTest {
                                     InterceptorClassMethodInterceptorStereotype.class, InterceptorStereotyped.class)
                             .addClasses(InterceptorLifecycleBinding.class, InterceptorPostConstructInterceptor.class,
                                     InterceptorPreDestroyInterceptor.class)
-                            .addAsWebInfResource(InterceptorTest.class.getPackage(), "interceptorBeans.xml", "beans.xml");
+//                            .addAsWebInfResource(InterceptorTest.class.getPackage(), "interceptorBeans.xml", "beans.xml");
                     return war;
                 }
             });

@@ -54,7 +54,7 @@ public class ValidationWithCDITest {
                 .addClasses(AsyncSubResource.class, AsyncSubResourceImpl.class)
                 .addClasses(AsyncValidResource.class)
 
-                .addAsWebInfResource(ValidationWithCDITest.class.getPackage(), "web.xml", "/web.xml");
+//                .addAsWebInfResource(ValidationWithCDITest.class.getPackage(), "web.xml", "/web.xml");
         return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
     }
 
