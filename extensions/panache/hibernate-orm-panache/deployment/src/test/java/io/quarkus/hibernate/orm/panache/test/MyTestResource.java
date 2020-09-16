@@ -7,7 +7,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 
 @Path("entity")
 public class MyTestResource {

@@ -216,8 +216,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.acme.hibernate.search.elasticsearch.model.Author;
 import org.acme.hibernate.search.elasticsearch.model.Book;
-import org.jboss.resteasy.annotations.jaxrs.FormParam;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.FormParam;
+import io.quarkus.rest.PathParam;
 
 @Path("/library")
 @Produces(MediaType.APPLICATION_JSON)

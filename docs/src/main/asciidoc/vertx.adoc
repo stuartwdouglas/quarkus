@@ -316,7 +316,7 @@ package org.acme.vertx;
 
 import io.smallrye.mutiny.Multi;
 import io.vertx.mutiny.core.Vertx;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -507,7 +507,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import io.smallrye.mutiny.Uni;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;

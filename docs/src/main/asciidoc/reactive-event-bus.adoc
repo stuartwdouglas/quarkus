@@ -210,7 +210,7 @@ package org.acme.vertx;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.eventbus.EventBus;
 import io.vertx.mutiny.core.eventbus.Message;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -283,7 +283,7 @@ package org.acme.vertx;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.eventbus.EventBus;
 import io.vertx.mutiny.core.eventbus.Message;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;

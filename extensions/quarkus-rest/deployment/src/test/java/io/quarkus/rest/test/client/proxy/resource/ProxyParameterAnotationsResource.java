@@ -4,12 +4,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 
-import org.jboss.resteasy.annotations.jaxrs.CookieParam;
-import org.jboss.resteasy.annotations.jaxrs.FormParam;
-import org.jboss.resteasy.annotations.jaxrs.HeaderParam;
-import org.jboss.resteasy.annotations.jaxrs.MatrixParam;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
-import org.jboss.resteasy.annotations.jaxrs.QueryParam;
+import io.quarkus.rest.CookieParam;
+import io.quarkus.rest.FormParam;
+import io.quarkus.rest.HeaderParam;
+import io.quarkus.rest.MatrixParam;
+import io.quarkus.rest.PathParam;
+import io.quarkus.rest.QueryParam;
 
 /**
  * Created by Marek Marusic <mmarusic@redhat.com> on 1/16/19.

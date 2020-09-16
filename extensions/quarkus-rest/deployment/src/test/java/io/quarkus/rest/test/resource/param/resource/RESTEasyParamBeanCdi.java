@@ -2,12 +2,12 @@ package io.quarkus.rest.test.resource.param.resource;
 
 import javax.enterprise.context.RequestScoped;
 
-import org.jboss.resteasy.annotations.jaxrs.CookieParam;
-import org.jboss.resteasy.annotations.jaxrs.FormParam;
-import org.jboss.resteasy.annotations.jaxrs.HeaderParam;
-import org.jboss.resteasy.annotations.jaxrs.MatrixParam;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
-import org.jboss.resteasy.annotations.jaxrs.QueryParam;
+import io.quarkus.rest.CookieParam;
+import io.quarkus.rest.FormParam;
+import io.quarkus.rest.HeaderParam;
+import io.quarkus.rest.MatrixParam;
+import io.quarkus.rest.PathParam;
+import io.quarkus.rest.QueryParam;
 
 @RequestScoped
 public class RESTEasyParamBeanCdi {

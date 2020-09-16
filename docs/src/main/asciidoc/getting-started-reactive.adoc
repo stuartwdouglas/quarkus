@@ -265,7 +265,7 @@ import javax.ws.rs.core.MediaType;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import org.jboss.resteasy.annotations.SseElementType;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 import org.reactivestreams.Publisher;
 
 @Path("/hello")
@@ -522,7 +522,7 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.pgclient.PgPool;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -693,7 +693,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;

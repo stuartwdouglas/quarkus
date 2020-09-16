@@ -4,8 +4,8 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
-import org.jboss.resteasy.annotations.jaxrs.QueryParam;
+import io.quarkus.rest.PathParam;
+import io.quarkus.rest.QueryParam;
 
 /**
  * Created by Marek Marusic <mmarusic@redhat.com> on 3/4/19.

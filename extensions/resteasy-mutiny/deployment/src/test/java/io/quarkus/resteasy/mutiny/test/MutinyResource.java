@@ -9,7 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.jboss.resteasy.annotations.Stream;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 
 import io.quarkus.resteasy.mutiny.test.annotations.Async;
 import io.smallrye.mutiny.Multi;

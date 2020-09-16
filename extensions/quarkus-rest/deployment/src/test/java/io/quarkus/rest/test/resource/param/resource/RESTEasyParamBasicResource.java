@@ -5,12 +5,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.annotations.jaxrs.CookieParam;
-import org.jboss.resteasy.annotations.jaxrs.FormParam;
-import org.jboss.resteasy.annotations.jaxrs.HeaderParam;
-import org.jboss.resteasy.annotations.jaxrs.MatrixParam;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
-import org.jboss.resteasy.annotations.jaxrs.QueryParam;
+
+import io.quarkus.rest.CookieParam;
+import io.quarkus.rest.FormParam;
+import io.quarkus.rest.HeaderParam;
+import io.quarkus.rest.MatrixParam;
+import io.quarkus.rest.PathParam;
+import io.quarkus.rest.QueryParam;
 
 @Path("/basic")
 public class RESTEasyParamBasicResource {

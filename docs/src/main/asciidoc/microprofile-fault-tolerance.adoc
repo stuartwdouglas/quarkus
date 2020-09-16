@@ -268,7 +268,7 @@ and save the file.
 
 [source,java]
 ----
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
+import io.quarkus.rest.PathParam;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 ...
 public class CoffeeResource {

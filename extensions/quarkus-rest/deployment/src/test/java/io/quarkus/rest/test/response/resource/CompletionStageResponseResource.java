@@ -13,9 +13,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.jboss.resteasy.annotations.jaxrs.QueryParam;
 import org.jboss.resteasy.spi.HttpRequest;
 
+import io.quarkus.rest.QueryParam;
 import io.reactivex.Single;
 
 @Path("")

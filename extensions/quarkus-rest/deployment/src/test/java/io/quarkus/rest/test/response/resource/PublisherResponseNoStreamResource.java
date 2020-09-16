@@ -9,11 +9,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.annotations.jaxrs.PathParam;
 import org.jboss.resteasy.core.ResteasyContext;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.reactivestreams.Publisher;
 
+import io.quarkus.rest.PathParam;
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 
