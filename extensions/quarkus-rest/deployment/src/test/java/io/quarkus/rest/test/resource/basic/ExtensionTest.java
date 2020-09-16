@@ -79,14 +79,14 @@ public class ExtensionTest {
     public void testError() {
         Response response = client.target(PortProviderUtil.generateURL("/extension.junk", ExtensionTest.class.getSimpleName()))
                 .request().get();
-        Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+        Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
         response.close();
     }
 
     private void basicTest(String path, String body) {
         Response response = client.target(PortProviderUtil.generateURL(path, ExtensionTest.class.getSimpleName())).request()
                 .get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", body, response.readEntity(String.class));
         response.close();
     }

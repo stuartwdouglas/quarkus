@@ -61,7 +61,7 @@ public class EncodedPathTest {
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

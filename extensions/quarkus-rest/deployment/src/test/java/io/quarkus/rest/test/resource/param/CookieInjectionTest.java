@@ -77,7 +77,7 @@ public class CookieInjectionTest {
         WebTarget target = client.target(generateURL(path));
         try {
             Response response = target.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             //            for (Map.Entry<String, List<String>> headerEntry : response.getStringHeaders().entrySet()) {
             //                logger.debug(headerEntry.getKey() + ": " + headerEntry.getValue());
             //            }
@@ -105,7 +105,7 @@ public class CookieInjectionTest {
         WebTarget target = client.target(generateURL(path));
         try {
             Response response = target.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String res = response.readEntity(String.class);
             MultivaluedMap<String, String> headers = response.getStringHeaders();
             Assert.assertTrue("Unexpected cookie expires:" + res, headers.get("Set-Cookie").contains(res));

@@ -66,7 +66,7 @@ public class CollectionsFormTest {
         WebTarget base = client.target(PortProviderUtil.generateURL("/person", CollectionsFormTest.class.getSimpleName()));
         Response response = base.request().accept(MediaType.TEXT_PLAIN).post(Entity.form(form));
 
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         client.close();
     }
 }

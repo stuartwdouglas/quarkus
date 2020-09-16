@@ -67,7 +67,7 @@ public class CallbackTest {
                             CallbackStringBean.class,
                             CallbackStringBeanEntityProvider.class,
                             JaxrsAsyncServletAsyncResponseBlockingQueue.class);
-//                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "CallbackTestWeb.xml", "web.xml");
+                    //                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "CallbackTestWeb.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, CallbackResource.class,
                             CallbackStringBeanEntityProvider.class);
                 }
@@ -79,19 +79,19 @@ public class CallbackTest {
 
     protected void invokeClear() {
         Response response = client.target(generateURL("/resource/clear")).request().get();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
     protected void invokeReset() {
         Response response = client.target(generateURL("/resource/reset")).request().get();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
     protected void assertString(Future<Response> future, String check) throws Exception {
         Response response = future.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         Assert.assertEquals(entity, check);
 
@@ -115,7 +115,7 @@ public class CallbackTest {
         Assert.assertEquals("Request return wrong response", CallbackResourceBase.TRUE, response.readEntity(String.class));
 
         Response suspendResponse = suspend.get();
-        Assert.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR);
+        Assert.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         suspendResponse.close();
 
         Future<Response> error = client.target(generateURL("/resource/error")).request().async().get();
@@ -142,7 +142,7 @@ public class CallbackTest {
         Assert.assertEquals("Request return wrong response", CallbackResourceBase.TRUE, response.readEntity(String.class));
 
         Response suspendResponse = suspend.get();
-        Assert.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR);
+        Assert.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         suspendResponse.close();
 
         Future<Response> error = client.target(generateURL("/resource/error")).request().async().get();
@@ -169,7 +169,7 @@ public class CallbackTest {
         Assert.assertEquals("Request return wrong response", CallbackResourceBase.TRUE, response.readEntity(String.class));
 
         Response suspendResponse = suspend.get();
-        Assert.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR);
+        Assert.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         suspendResponse.close();
 
         Future<Response> error = client.target(generateURL("/resource/error")).request().async().get();

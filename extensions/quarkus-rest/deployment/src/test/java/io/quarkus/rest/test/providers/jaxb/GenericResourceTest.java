@@ -79,7 +79,7 @@ public class GenericResourceTest {
         WebTarget target = client.target(generateURL("/test"));
         Response response = target.request().post(Entity.entity(str, "application/xml"));
         logger.info("status: " + response.getStatus());
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String answer = response.readEntity(String.class);
         Assert.assertEquals("The response from the server is not the expected one", "Success!", answer);
         logger.info(answer);
@@ -94,7 +94,7 @@ public class GenericResourceTest {
         WebTarget target = client.target(generateURL("/test2"));
         Response response = target.request().post(Entity.entity(str, "application/xml"));
         logger.info("status: " + response.getStatus());
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String answer = response.readEntity(String.class);
         Assert.assertEquals("The response from the server is not the expected one", "Success!", answer);
         logger.info(answer);

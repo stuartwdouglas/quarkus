@@ -102,7 +102,7 @@ public class MimeMultipartProviderTest {
 
         Response response = client.target(TEST_URI).request()
                 .put(Entity.entity(mpfdo, MediaType.MULTIPART_FORM_DATA_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseBody = response.readEntity(String.class);
         Assert.assertEquals(ERR_NUMBER, responseBody, "Count: 3");
     }
@@ -125,7 +125,7 @@ public class MimeMultipartProviderTest {
         Response response = client.target(TEST_URI).request()
                 .put(Entity.entity(mpo, MediaType.MULTIPART_FORM_DATA_TYPE));
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseBody = response.readEntity(String.class);
         Assert.assertEquals(ERR_NUMBER, responseBody, "Count: 3");
     }
@@ -150,7 +150,7 @@ public class MimeMultipartProviderTest {
 
         Response response = client.target(uri).request()
                 .put(Entity.entity(mpfdo, MediaType.MULTIPART_FORM_DATA_TYPE));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -287,7 +287,7 @@ public class MimeMultipartProviderTest {
     @Test
     public void testGet() throws Exception {
         Response response = client.target(TEST_URI).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         BufferedInputStream in = new BufferedInputStream(response.readEntity(InputStream.class));
         String contentType = response.getStringHeaders().getFirst("content-type");
         ByteArrayDataSource ds = new ByteArrayDataSource(in, contentType);
@@ -305,7 +305,7 @@ public class MimeMultipartProviderTest {
         Response response = client.target(TEST_URI + "/file/test").request()
                 .post(Entity.entity(form,
                         "multipart/form-data; boundary=---------------------------52524491016334132001492192799"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 

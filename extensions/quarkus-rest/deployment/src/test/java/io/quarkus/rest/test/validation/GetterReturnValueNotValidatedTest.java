@@ -68,14 +68,14 @@ public class GetterReturnValueNotValidatedTest {
         response.close();
 
         response = client.target(generateURL("/set")).request().get();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Valid native constraint
         response = client.target(generateURL("/get")).request().get();
         String entity = response.readEntity(String.class);
         logger.info(String.format("Response: %s", entity.replace('\r', ' ').replace('\t', ' ').replace('\n', ' ')));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String header = response.getHeaderString(Validation.VALIDATION_HEADER);
         Assert.assertNull("Validation header was not excepted", header);
         Assert.assertEquals("Wrong content of response", "a", entity);

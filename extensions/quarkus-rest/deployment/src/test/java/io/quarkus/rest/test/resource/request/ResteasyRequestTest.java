@@ -68,7 +68,7 @@ public class ResteasyRequestTest {
     public void testRequest() {
         try {
             Response response = requestWebTarget.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             final String val = response.readEntity(String.class);
             final String pattern = "^127.0.0.1/.+";
             Assert.assertTrue(String.format("Expected value '%s' to match pattern '%s'", val, pattern),

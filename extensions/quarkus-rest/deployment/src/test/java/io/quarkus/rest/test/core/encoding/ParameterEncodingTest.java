@@ -72,42 +72,42 @@ public class ParameterEncodingTest {
         target = client.target(generateURL("/encoded/pathparam/bee bop"));
         response = target.request().get();
         String entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee%20bop", entity);
         response.close();
 
         target = client.target(generateURL("/decoded/pathparam/bee bop"));
         response = target.request().get();
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee bop", entity);
         response.close();
 
         target = client.target(generateURL("/encoded/matrix;m=bee bop"));
         response = target.request().get();
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee%20bop", entity);
         response.close();
 
         target = client.target(generateURL("/decoded/matrix;m=bee bop"));
         response = target.request().get();
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee bop", entity);
         response.close();
 
         target = client.target(generateURL("/encoded/query?m=bee bop"));
         response = target.request().get();
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee%20bop", entity);
         response.close();
 
         target = client.target(generateURL("/decoded/query?m=bee bop"));
         response = target.request().get();
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee bop", entity);
         response.close();
 
@@ -116,7 +116,7 @@ public class ParameterEncodingTest {
         form.param("f", "bee bop");
         response = target.request().post(Entity.form(form));
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee+bop", entity);
         response.close();
 
@@ -125,35 +125,35 @@ public class ParameterEncodingTest {
         form.param("f", "bee bop");
         response = target.request().post(Entity.form(form));
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee bop", entity);
         response.close();
 
         target = client.target(generateURL("/encoded/segment/bee bop"));
         response = target.request().get();
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee%20bop", entity);
         response.close();
 
         target = client.target(generateURL("/decoded/segment/bee bop"));
         response = target.request().get();
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee bop", entity);
         response.close();
 
         target = client.target(generateURL("/encoded/segment/matrix/params;m=bee bop"));
         response = target.request().get();
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee%20bop", entity);
         response.close();
 
         target = client.target(generateURL("/decoded/segment/matrix/params;m=bee bop"));
         response = target.request().get();
         entity = response.readEntity(String.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("bee bop", entity);
         response.close();
     }

@@ -92,7 +92,7 @@ public class ExceptionMapperMarshalTest {
         Assert.assertEquals(ExceptionMapperMarshalMyCustomException.class, exceptionType);
 
         Response response = client.target(generateURL("/resource/custom")).request().get();
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         List<ExceptionMapperMarshalErrorMessage> errors = response
                 .readEntity(new GenericType<List<ExceptionMapperMarshalErrorMessage>>() {
                 });
@@ -104,7 +104,7 @@ public class ExceptionMapperMarshalTest {
         Response response = client.target(generateURL("/resource/customME")).request().get();
         String text = response.readEntity(String.class);
 
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         Assert.assertTrue("Response does not contain UN_KNOWN_ERR", text.contains("UN_KNOWN_ERR"));
     }
 }

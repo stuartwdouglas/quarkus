@@ -82,17 +82,17 @@ public class ScopeExtensionTest {
         log.info("starting testScope()");
         WebTarget base = client.target(generateURL("/extension/setup/"));
         Response response = base.request().post(Entity.text(new String()));
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/extension/test1/"));
         response = base.request().post(Entity.text(new String()));
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/extension/test2/"));
         response = base.request().post(Entity.text(new String()));
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         client.close();

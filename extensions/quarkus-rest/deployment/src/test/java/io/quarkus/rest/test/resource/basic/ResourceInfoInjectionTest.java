@@ -68,7 +68,7 @@ public class ResourceInfoInjectionTest {
         WebTarget target = client.target(generateURL("/bogus"));
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
-        Assert.assertEquals("ResponseFilter was probably not applied to response", Status.NOT_FOUND * 2,
+        Assert.assertEquals("ResponseFilter was probably not applied to response", Status.NOT_FOUND.getStatusCode() * 2,
                 response.getStatus());
         Assert.assertTrue("Wrong body of response", entity.contains("RESTEASY003210"));
     }
@@ -82,7 +82,7 @@ public class ResourceInfoInjectionTest {
         WebTarget target = client.target(generateURL("/async"));
         Response response = target.request().post(Entity.entity("hello", "text/plain"));
         String val = response.readEntity(String.class);
-        Assert.assertEquals("OK status is expected", Status.OK, response.getStatus());
+        Assert.assertEquals("OK status is expected", Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong body of response", "async", val);
     }
 }

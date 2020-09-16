@@ -132,7 +132,7 @@ public class ValidateOnExecutionTest {
             // No method validation. Two property violations.
             Response response = client.target(generateURL("/none", MAIN)).request().post(
                     Entity.entity("abc", MediaType.TEXT_PLAIN_TYPE));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(entity));
             logger.info(String.format("Violation exception: %s", e).replace('\r', ' '));
@@ -143,7 +143,7 @@ public class ValidateOnExecutionTest {
             // No method validation. Two property violations.
             Response response = client.target(generateURL("/getterOnNonGetter", MAIN)).request().post(
                     Entity.entity("abc", MediaType.TEXT_PLAIN_TYPE));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(entity));
             logger.info(String.format("Violation exception: %s", e).replace('\r', ' '));
@@ -154,7 +154,7 @@ public class ValidateOnExecutionTest {
             // No method validation. Two property violations
             Response response = client.target(generateURL("/nonGetterOnGetter", MAIN)).request().post(
                     Entity.text(new String()));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(entity));
             logger.info(String.format("Violation exception: %s", e).replace('\r', ' '));
@@ -165,7 +165,7 @@ public class ValidateOnExecutionTest {
             // Failure.
             Response response = client.target(generateURL("/implicitOnNonGetter", MAIN)).request().post(
                     Entity.entity("abc", MediaType.TEXT_PLAIN_TYPE));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(entity));
             logger.info(String.format("Violation exception: %s", e).replace('\r', ' '));
@@ -175,7 +175,7 @@ public class ValidateOnExecutionTest {
         {
             Response response = client.target(generateURL("/implicitOnGetter", MAIN)).request().post(
                     Entity.text(new String()));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(entity));
             logger.info(String.format("Violation exception: %s", e).replace('\r', ' '));
@@ -185,7 +185,7 @@ public class ValidateOnExecutionTest {
         {
             Response response = client.target(generateURL("/allOnNonGetter", MAIN)).request().post(
                     Entity.entity("abc", MediaType.TEXT_PLAIN_TYPE));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(entity));
             logger.info(String.format("Violation exception: %s", e).replace('\r', ' '));
@@ -195,7 +195,7 @@ public class ValidateOnExecutionTest {
         {
             Response response = client.target(generateURL("/allOnGetter", MAIN)).request().post(
                     Entity.text(new String()));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(entity));
             logger.info(String.format("Violation exception: %s", e).replace('\r', ' '));
@@ -206,7 +206,7 @@ public class ValidateOnExecutionTest {
             // Failure.
             Response response = client.target(generateURL("/override", MAIN)).request().post(
                     Entity.entity("abc", MediaType.TEXT_PLAIN_TYPE));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(entity));
             logger.info(String.format("Violation exception: %s", e).replace('\r', ' '));

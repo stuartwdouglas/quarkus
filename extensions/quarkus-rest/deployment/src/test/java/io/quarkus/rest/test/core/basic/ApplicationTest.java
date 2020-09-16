@@ -44,7 +44,7 @@ public class ApplicationTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-//                    war.addAsWebInfResource(ApplicationTest.class.getPackage(), "ApplicationWeb.xml", "web.xml");
+                    //                    war.addAsWebInfResource(ApplicationTest.class.getPackage(), "ApplicationWeb.xml", "web.xml");
                     war.addClasses(ApplicationTestAExplicitApplication.class,
                             ApplicationTestBExplicitApplication.class,
                             ApplicationTestIgnoredApplication.class,
@@ -75,13 +75,13 @@ public class ApplicationTest {
         Assert.assertEquals(CONTENT_ERROR_MESSAGE, "a", value);
 
         Response response = base.path("resources/b").request().get();
-        Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+        Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
 
         value = base.path("singletons/a").request().get(String.class);
         Assert.assertEquals(CONTENT_ERROR_MESSAGE, "a", value);
 
         response = base.path("singletons/b").request().get();
-        Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+        Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
         client.close();
     }
 
@@ -98,13 +98,13 @@ public class ApplicationTest {
         Assert.assertEquals(CONTENT_ERROR_MESSAGE, "b", value);
 
         Response response = base.path("resources/a").request().get();
-        Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+        Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
 
         value = base.path("singletons/b").request().get(String.class);
         Assert.assertEquals(CONTENT_ERROR_MESSAGE, "b", value);
 
         response = base.path("singletons/a").request().get();
-        Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+        Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
         client.close();
     }
 

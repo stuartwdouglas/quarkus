@@ -76,7 +76,7 @@ public class FormUrlEncodedTest {
         WebTarget base = client.target(generateURL("/simple"));
         Response response = base.request().post(Entity.form(new Form().param("hello", "world")));
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String body = response.readEntity(String.class);
         Assert.assertEquals("Wrong response content", "hello=world", body);
 
@@ -111,7 +111,7 @@ public class FormUrlEncodedTest {
         Builder builder = client.target(generateURL("/simple")).request();
         try {
             Response response = builder.post(Entity.form(new Form("hello", "world")));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("hello=world", response.readEntity(String.class));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -127,7 +127,7 @@ public class FormUrlEncodedTest {
         Builder builder = client.target(generateURL("/form/twoparams")).request();
         try {
             Response response = builder.post(Entity.form(new Form("hello", "world").param("yo", "mama")));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String body = response.readEntity(String.class);
             Assert.assertTrue(body.indexOf("hello=world") != -1);
             Assert.assertTrue(body.indexOf("yo=mama") != -1);

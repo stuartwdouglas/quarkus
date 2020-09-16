@@ -49,13 +49,13 @@ public class OutOfBandTest {
         // Schedule timer.
         WebTarget base = client.target(PortProviderUtil.generateURL("/timer/schedule", "RESTEASY-1008"));
         Response response = base.request().get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         // Verify timer expired and timer interceptor was executed.
         base = client.target(PortProviderUtil.generateURL("/timer/test", "RESTEASY-1008"));
         response = base.request().get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         client.close();

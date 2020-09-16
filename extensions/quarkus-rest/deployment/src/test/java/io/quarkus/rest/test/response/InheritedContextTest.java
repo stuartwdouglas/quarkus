@@ -70,7 +70,7 @@ public class InheritedContextTest {
         Invocation.Builder request = client.target(generateURL("/super/test/BaseService")).request();
         Response response = request.get();
         String s = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("true", s);
         response.close();
     }
@@ -84,7 +84,7 @@ public class InheritedContextTest {
         Invocation.Builder request = client.target(generateURL("/sub/test/SomeService")).request();
         Response response = request.get();
         String s = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("true", s);
         response.close();
     }
@@ -98,7 +98,7 @@ public class InheritedContextTest {
         Invocation.Builder request = client.target(generateURL("/subsub/test/SomeSubService")).request();
         Response response = request.get();
         String s = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("true", s);
         response.close();
     }

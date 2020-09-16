@@ -165,7 +165,7 @@ public class ValidationXMLTest {
             ValidationXMLFoo foo = new ValidationXMLFoo("p");
             Response response = client.target(generateURL("/a/b/c")).request().accept(mediaType)
                     .post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("report: " + entity);
             String start = "<violationReport>";
@@ -194,7 +194,7 @@ public class ValidationXMLTest {
             ValidationXMLFoo foo = new ValidationXMLFoo("p");
             Response response = client.target(generateURL("/a/b/c")).request().accept(MediaType.APPLICATION_XML)
                     .post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             ViolationReport report = response.readEntity(ViolationReport.class);
             logger.info("report: " + report);
             TestUtil.countViolations(report, 3, 1, 1, 0);
@@ -224,7 +224,7 @@ public class ValidationXMLTest {
             ValidationXMLFoo foo = new ValidationXMLFoo("123");
             Response response = client.target(generateURL("/abc/pqr/xyz")).request().accept(mediaType)
                     .post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("report: " + entity);
             String expected = "<violationReport><returnValueViolations><constraintType>RETURN_VALUE</constraintType><path>post.&lt;return value&gt;</path><message>s must have length: 4 &lt;= length &lt;= 5</message><value>ValidationXMLFoo[123]</value></returnValueViolations></violationReport>";
@@ -237,7 +237,7 @@ public class ValidationXMLTest {
             ValidationXMLFoo foo = new ValidationXMLFoo("123");
             Response response = client.target(generateURL("/abc/pqr/xyz")).request().accept(MediaType.APPLICATION_XML)
                     .post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             ViolationReport report = response.readEntity(ViolationReport.class);
             logger.info("report: " + report);
             TestUtil.countViolations(report, 0, 0, 0, 1);
@@ -254,7 +254,7 @@ public class ValidationXMLTest {
             ValidationXMLFoo foo = new ValidationXMLFoo("p");
             Response response = client.target(generateURL("/a/b/c")).request().accept(mediaType)
                     .post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("report: " + entity);
             JsonPath jsonPath = new JsonPath(entity);
@@ -287,7 +287,7 @@ public class ValidationXMLTest {
             ValidationXMLFoo foo = new ValidationXMLFoo("p");
             Response response = client.target(generateURL("/a/b/c")).request().accept(MediaType.APPLICATION_XML)
                     .post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             ViolationReport report = response.readEntity(ViolationReport.class);
             logger.info("report: " + report);
             TestUtil.countViolations(report, 3, 1, 1, 0);
@@ -317,7 +317,7 @@ public class ValidationXMLTest {
             ValidationXMLFoo foo = new ValidationXMLFoo("123");
             Response response = client.target(generateURL("/abc/pqr/xyz")).request().accept(mediaType)
                     .post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("report: " + entity);
             JsonPath jsonPath = new JsonPath(entity);
@@ -341,7 +341,7 @@ public class ValidationXMLTest {
             ValidationXMLFoo foo = new ValidationXMLFoo("123");
             Response response = client.target(generateURL("/abc/pqr/xyz")).request().accept(MediaType.APPLICATION_XML)
                     .post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             ViolationReport report = response.readEntity(ViolationReport.class);
             logger.info("report: " + report);
             TestUtil.countViolations(report, 0, 0, 0, 1);
@@ -356,7 +356,7 @@ public class ValidationXMLTest {
         ValidationXMLFoo foo = new ValidationXMLFoo("p");
         Response response = client.target(generateURL("/a/b/c")).request().accept(mediaType)
                 .post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("report:");
         logger.info(entity);
@@ -394,7 +394,7 @@ public class ValidationXMLTest {
         ValidationXMLFoo foo = new ValidationXMLFoo("123");
         Response response = client.target(generateURL("/abc/pqr/xyz")).request().accept(mediaType)
                 .post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("report: " + entity);
         String returnValueViolation = "[RETURN_VALUE]\r" +

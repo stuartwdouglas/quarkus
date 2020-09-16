@@ -66,7 +66,7 @@ public class WriterNotBuiltinTest {
         client = (QuarkusRestClient) ClientBuilder.newClient();
         Response response = client.target(PortProviderUtil.generateURL("/string", WriterNotBuiltinTest.class.getSimpleName()))
                 .request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("text/plain;charset=UTF-8", response.getStringHeaders().getFirst("content-type"));
         Assert.assertEquals("Response contains wrong content", "hello world", response.readEntity(String.class));
         Assert.assertTrue("Wrong MessageBodyWriter was used", WriterNotBuiltinTestWriter.used);

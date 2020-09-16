@@ -80,7 +80,7 @@ public class JacksonJaxbCoexistenceTest {
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response entity content doesn't match the expected",
                 "{\"name\":\"Iphone\",\"id\":333}", entity);
 
@@ -90,7 +90,7 @@ public class JacksonJaxbCoexistenceTest {
         response = target.request().get();
         entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response entity content doesn't match the expected",
                 "[{\"name\":\"Iphone\",\"id\":333},{\"name\":\"macbook\",\"id\":44}]", entity);
         response.close();
@@ -106,7 +106,7 @@ public class JacksonJaxbCoexistenceTest {
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response entity content doesn't match the expected",
                 "{\"name\":\"Iphone\",\"id\":333}", entity);
         response.close();
@@ -115,7 +115,7 @@ public class JacksonJaxbCoexistenceTest {
         response = target.request().get();
         entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response entity content doesn't match the expected",
                 "[{\"name\":\"Iphone\",\"id\":333},{\"name\":\"macbook\",\"id\":44}]", entity);
         response.close();
@@ -138,7 +138,7 @@ public class JacksonJaxbCoexistenceTest {
         response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         target = client.target(generateURL("/products/333"));

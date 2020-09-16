@@ -89,7 +89,7 @@ public class NestedCollectionsFormTest {
                 .target(PortProviderUtil.generateURL("/person", NestedCollectionsFormTest.class.getSimpleName()));
         Response response = base.request().accept(MediaType.TEXT_PLAIN).post(Entity.form(form));
 
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
 
         response.close();
     }

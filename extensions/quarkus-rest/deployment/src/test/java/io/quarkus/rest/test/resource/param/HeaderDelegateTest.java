@@ -102,7 +102,7 @@ public class HeaderDelegateTest {
         Response response = request.get();
         logger.info("lastModified string: " + response.getHeaderString("last-modified"));
         Date last = response.getLastModified();
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         Assert.assertEquals("Wrong response", DateUtil.formatDate(RIGHT_AFTER_BIG_BANG), DateUtil.formatDate(last));
         client.close();
     }

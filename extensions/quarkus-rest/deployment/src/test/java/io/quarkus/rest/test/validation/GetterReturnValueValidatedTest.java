@@ -68,12 +68,12 @@ public class GetterReturnValueValidatedTest {
         response.close();
 
         response = client.target(generateURL("/set")).request().get();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Valid native constraint
         response = client.target(generateURL("/get")).request().get();
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         String header = response.getHeaderString(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Missing validation header", header);
         Assert.assertTrue("Wrong value of validation header", Boolean.valueOf(header));

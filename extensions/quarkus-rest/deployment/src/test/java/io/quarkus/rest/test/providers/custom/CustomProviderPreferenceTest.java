@@ -67,7 +67,7 @@ public class CustomProviderPreferenceTest {
     @Test
     public void testCustomProviderPreference() throws Exception {
         Response response = client.target(generateURL("/user")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "jharting;email@example.com", response.readEntity(String.class));
         response.close();
     }

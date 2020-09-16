@@ -137,7 +137,7 @@ public class PathSuppressionTest {
         Assert.assertTrue("Header has wrong format", header instanceof String);
         Assert.assertTrue("Header has wrong format", Boolean.valueOf(String.class.cast(header)));
         String answer = response.readEntity(String.class);
-        assertEquals(Status.BAD_REQUEST, response.getStatus());
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         ViolationReport report = new ViolationReport(new ResteasyViolationExceptionImpl(String.class.cast(answer)));
         TestUtil.countViolations(report, 2, 1, 1, 0);
         ResteasyConstraintViolation violation = TestUtil.getViolationByPath(report.getPropertyViolations(), fieldPath);
@@ -160,7 +160,7 @@ public class PathSuppressionTest {
         Assert.assertTrue("Header has wrong format", header instanceof String);
         Assert.assertTrue("Header has wrong format", Boolean.valueOf(String.class.cast(header)));
         String answer = response.readEntity(String.class);
-        assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         ViolationReport report = new ViolationReport(new ResteasyViolationExceptionImpl(String.class.cast(answer)));
         TestUtil.countViolations(report, 0, 0, 0, 1);
         ResteasyConstraintViolation violation = report.getReturnValueViolations().iterator().next();

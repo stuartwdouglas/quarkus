@@ -121,7 +121,7 @@ public class VariantsTest {
     @Test
     public void testGetLanguageEn() throws Exception {
         Response response = client.target(generateURL("/")).request().acceptLanguage("en").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("en", response.readEntity(String.class));
         Assert.assertEquals("en", response.getLanguage().toString());
         response.close();
@@ -135,7 +135,7 @@ public class VariantsTest {
     @Test
     public void testGetLanguageWildcard() throws Exception {
         Response response = client.target(generateURL("/")).request().acceptLanguage("*").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertNotNull(response.getLanguage());
         response.close();
     }
@@ -149,7 +149,7 @@ public class VariantsTest {
     public void testGetLanguageSubLocal() throws Exception {
         Response response = client.target(generateURL("/brazil")).request()
                 .acceptLanguage("pt").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertNotNull(response.getLanguage());
         response.close();
     }
@@ -162,7 +162,7 @@ public class VariantsTest {
     public void testGetLanguageZero() throws Exception {
         Response response = client.target(generateURL("/")).request()
                 .acceptLanguage("*", "zh;q=0", "en;q=0", "fr;q=0").get();
-        Assert.assertEquals(Status.NOT_ACCEPTABLE, response.getStatus());
+        Assert.assertEquals(Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -173,7 +173,7 @@ public class VariantsTest {
     @Test
     public void testGetLanguageZh() throws Exception {
         Response response = client.target(generateURL("/")).request().acceptLanguage("zh").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("zh", response.readEntity(String.class));
         Assert.assertEquals("zh", response.getLanguage().toString());
         response.close();
@@ -188,7 +188,7 @@ public class VariantsTest {
     public void testGetLanguageMultiple() throws Exception {
         Response response = client.target(generateURL("/")).request()
                 .acceptLanguage("en;q=0.3", "zh;q=0.4", "fr").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("fr", response.readEntity(String.class));
         Assert.assertEquals("fr", response.getLanguage().toString());
         response.close();
@@ -204,7 +204,7 @@ public class VariantsTest {
                 .accept("text/xml", "application/xml", "application/xhtml+xml", "image/png", "text/html;q=0.9",
                         "text/plain;q=0.8", "*/*;q=0.5")
                 .acceptLanguage("en-us", "en;q=0.5").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("GET", response.readEntity(String.class));
         Assert.assertEquals(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
         Assert.assertEquals("en-us", new LocaleDelegate().toString(response.getLanguage()));
@@ -221,7 +221,7 @@ public class VariantsTest {
                 .accept("text/xml", "application/xml", "application/xhtml+xml", "image/png", "text/html;q=0.9",
                         "text/plain;q=0.8", "*/*;q=0.5")
                 .acceptLanguage("en", "en-us").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("GET", response.readEntity(String.class));
         Assert.assertEquals(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
         Assert.assertEquals("en-us", new LocaleDelegate().toString(response.getLanguage()));
@@ -238,7 +238,7 @@ public class VariantsTest {
                 .accept("application/xml", "text/xml", "application/xhtml+xml", "image/png", "text/html;q=0.9",
                         "text/plain;q=0.8", "*/*;q=0.5")
                 .acceptLanguage("en-us", "en;q=0.5").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("GET", response.readEntity(String.class));
         Assert.assertEquals(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
         Assert.assertEquals("en-us", new LocaleDelegate().toString(response.getLanguage()));
@@ -256,7 +256,7 @@ public class VariantsTest {
                 .accept("application/xml", "text/xml", "application/xhtml+xml", "image/png", "text/html;q=0.9",
                         "text/plain;q=0.8", "*/*;q=0.5")
                 .acceptLanguage("en", "en-us;q=0.5").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("GET", response.readEntity(String.class));
         Assert.assertEquals("en", response.getLanguage().toString());
         Assert.assertEquals(MediaType.TEXT_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
@@ -306,7 +306,7 @@ public class VariantsTest {
     public void testGetEncodingCustomEnc1() throws Exception {
         Response response = client.target(generateURL("/encoding")).request()
                 .acceptEncoding("enc1").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         Assert.assertEquals("enc1", response.readEntity(String.class));
         Assert.assertEquals("enc1", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));
@@ -321,7 +321,7 @@ public class VariantsTest {
     public void testGetEncodingCustomEnc2() throws Exception {
         Response response = client.target(generateURL("/encoding")).request()
                 .acceptEncoding("enc2").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         Assert.assertEquals("enc2", response.readEntity(String.class));
         Assert.assertEquals("enc2", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));
@@ -336,7 +336,7 @@ public class VariantsTest {
     public void testGetEncodingCustomEnc3() throws Exception {
         Response response = client.target(generateURL("/encoding")).request()
                 .acceptEncoding("enc3").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         Assert.assertEquals("enc3", response.readEntity(String.class));
         Assert.assertEquals("enc3", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));
@@ -351,7 +351,7 @@ public class VariantsTest {
     public void testGetEncodingCustomPreference() throws Exception {
         Response response = client.target(generateURL("/encoding")).request()
                 .acceptEncoding("enc1;q=0.5", "enc2;q=0.9").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         Assert.assertEquals("enc2", response.readEntity(String.class));
         Assert.assertEquals("enc2", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));
@@ -366,7 +366,7 @@ public class VariantsTest {
     public void testGetEncodingCustomPreferenceZero() throws Exception {
         Response response = client.target(generateURL("/encoding")).request()
                 .acceptEncoding("enc1;q=0", "enc2;q=0.888", "enc3;q=0.889").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         Assert.assertEquals("enc3", response.readEntity(String.class));
         Assert.assertEquals("enc3", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));

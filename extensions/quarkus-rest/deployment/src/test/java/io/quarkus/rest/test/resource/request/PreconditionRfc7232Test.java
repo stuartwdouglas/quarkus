@@ -75,7 +75,7 @@ public class PreconditionRfc7232Test {
                 .header(HttpHeaderNames.IF_NONE_MATCH, "2") // true
                 .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT").get(); // true
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -91,7 +91,7 @@ public class PreconditionRfc7232Test {
                 .header(HttpHeaderNames.IF_NONE_MATCH, "2") // true
                 .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT").get(); // true
 
-        Assert.assertEquals(Status.PRECONDITION_FAILED, response.getStatus());
+        Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -106,7 +106,7 @@ public class PreconditionRfc7232Test {
                 .header(HttpHeaderNames.IF_NONE_MATCH, "2") // true
                 .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT").get(); // true
 
-        Assert.assertEquals(Status.PRECONDITION_FAILED, response.getStatus());
+        Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -120,7 +120,7 @@ public class PreconditionRfc7232Test {
                 .header(HttpHeaderNames.IF_NONE_MATCH, "1") // true
                 .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Mon, 1 Jan 2007 00:00:00 GMT") // true
                 .get();
-        Assert.assertEquals(Status.NOT_MODIFIED, response.getStatus());
+        Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
 
         response.close();
     }
@@ -135,7 +135,8 @@ public class PreconditionRfc7232Test {
                 .header(HttpHeaderNames.IF_NONE_MATCH, "2") // false
                 .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Mon, 1 Jan 2007 00:00:00 GMT") // true
                 .get();
-        Assert.assertEquals(TestUtil.getErrorMessageForKnownIssue("JBEAP-4705"), Status.OK, response.getStatus());
+        Assert.assertEquals(TestUtil.getErrorMessageForKnownIssue("JBEAP-4705"), Status.OK.getStatusCode(),
+                response.getStatus());
 
         response.close();
     }
@@ -149,7 +150,7 @@ public class PreconditionRfc7232Test {
         Response response = webTarget.request()
                 .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT") // false
                 .get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         response.close();
     }
@@ -163,7 +164,7 @@ public class PreconditionRfc7232Test {
         Response response = webTarget.request()
                 .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Tue, 2 Jan 2007 00:00:00 GMT") // true
                 .get();
-        Assert.assertEquals(Status.NOT_MODIFIED, response.getStatus());
+        Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
         response.close();
     }
 }

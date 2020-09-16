@@ -92,21 +92,21 @@ public class ValidationTest {
         WebTarget target = client.target(generateURL("/return/native"));
         ValidationFoo validationFoo = new ValidationFoo("a");
         Response response = target.request().post(Entity.entity(validationFoo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERR_ENTITY_MESSAGE, validationFoo, response.readEntity(ValidationFoo.class));
 
         // Valid imposed constraint
         target = client.target(generateURL("/return/imposed"));
         validationFoo = new ValidationFoo("abcde");
         response = target.request().post(Entity.entity(validationFoo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERR_ENTITY_MESSAGE, validationFoo, response.readEntity(ValidationFoo.class));
 
         // Valid native and imposed constraints.
         target = client.target(generateURL("/return/nativeAndImposed"));
         validationFoo = new ValidationFoo("abc");
         response = target.request().post(Entity.entity(validationFoo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERR_ENTITY_MESSAGE, validationFoo, response.readEntity(ValidationFoo.class));
 
         {
@@ -116,7 +116,7 @@ public class ValidationTest {
                     "application/foo"));
             ViolationReport r = response.readEntity(ViolationReport.class);
             logger.info("entity: " + r);
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
             Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
             Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -131,7 +131,7 @@ public class ValidationTest {
             target = client.target(generateURL("/return/imposed"));
             response = target.request().accept(MediaType.APPLICATION_XML).post(Entity.entity(new ValidationFoo("abcdef"),
                     "application/foo"));
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
             Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
             Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -149,7 +149,7 @@ public class ValidationTest {
             target = client.target(generateURL("/return/nativeAndImposed"));
             response = target.request().accept(MediaType.APPLICATION_XML).post(Entity.entity(new ValidationFoo("abcdef"),
                     "application/foo"));
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
             Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
             Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -182,7 +182,7 @@ public class ValidationTest {
         ValidationFoo validationFoo = new ValidationFoo("pqrs");
         Response response = target.request().post(Entity.entity(validationFoo,
                 "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERR_ENTITY_MESSAGE, validationFoo, response.readEntity(ValidationFoo.class));
 
         // Invalid: Should have 1 each of field, property, class, and parameter violations,
@@ -191,7 +191,7 @@ public class ValidationTest {
         target = client.target(generateURL("/all/a/z"));
         response = target.request().accept(MediaType.APPLICATION_XML).post(Entity.entity(validationFoo,
                 "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertTrue(ERROR_HEADER_MESSAGE, header instanceof String);
         Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(String.class.cast(header)));

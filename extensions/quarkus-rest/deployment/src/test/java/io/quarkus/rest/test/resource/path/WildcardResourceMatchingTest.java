@@ -66,7 +66,7 @@ public class WildcardResourceMatchingTest {
     @Test
     public void testMain() {
         Response response = client.target(generateURL("/main")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("WildcardMatchingResource", response.readEntity(String.class));
         response.close();
     }
@@ -78,7 +78,7 @@ public class WildcardResourceMatchingTest {
     @Test
     public void testMainSub() {
         Response response = client.target(generateURL("/main/sub")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("WildcardMatchingSubResource", response.readEntity(String.class));
         response.close();
     }
@@ -90,7 +90,7 @@ public class WildcardResourceMatchingTest {
     @Test
     public void testMainSubSub() {
         Response response = client.target(generateURL("/main/sub/sub")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("WildcardMatchingSubSubResource", response.readEntity(String.class));
         response.close();
     }

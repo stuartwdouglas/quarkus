@@ -183,7 +183,7 @@ public class AtomComplexModelTest {
             wr.flush();
             wr.close();
 
-            assertEquals(Status.OK, connection.getResponseCode());
+            assertEquals(Status.OK.getStatusCode(), connection.getResponseCode());
         }
 
         {
@@ -191,7 +191,7 @@ public class AtomComplexModelTest {
                     .header("Accept", MediaType.APPLICATION_ATOM_XML)
                     .header("Content-Type", MediaType.APPLICATION_ATOM_XML)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             assertNotNull("Wrong content of response",
                     response.readEntity(Entry.class).getAnyOtherJAXBObject(AtomAssetMetadata.class));
             response.close();
@@ -215,7 +215,7 @@ public class AtomComplexModelTest {
             wr.flush();
             wr.close();
 
-            assertEquals(Status.OK, connection.getResponseCode());
+            assertEquals(Status.OK.getStatusCode(), connection.getResponseCode());
         }
 
         {
@@ -223,7 +223,7 @@ public class AtomComplexModelTest {
                     .header("Accept", MediaType.APPLICATION_XML)
                     .header("Content-Type", MediaType.APPLICATION_XML)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             assertNotNull("Wrong content of response",
                     response.readEntity(Entry.class).getAnyOtherJAXBObject(AtomAssetMetadata.class));
             response.close();

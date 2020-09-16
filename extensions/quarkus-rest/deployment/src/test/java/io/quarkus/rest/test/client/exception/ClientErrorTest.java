@@ -73,7 +73,7 @@ public class ClientErrorTest {
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -92,7 +92,7 @@ public class ClientErrorTest {
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+            Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -111,7 +111,7 @@ public class ClientErrorTest {
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.METHOD_NOT_ALLOWED, response.getStatus());
+            Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -130,7 +130,7 @@ public class ClientErrorTest {
         Response response = null;
         try {
             response = builder.post(Entity.entity("content", "application/bar"));
-            Assert.assertEquals(Status.NOT_ACCEPTABLE, response.getStatus());
+            Assert.assertEquals(Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -148,7 +148,7 @@ public class ClientErrorTest {
         Response response = null;
         try {
             response = builder.post(Entity.entity("content", "text/plain"));
-            Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+            Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -166,7 +166,7 @@ public class ClientErrorTest {
         Response response = null;
         try {
             response = builder.delete();
-            Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+            Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -185,7 +185,7 @@ public class ClientErrorTest {
         Response response = null;
         try {
             response = builder.post(Entity.entity("content", "text/plain"));
-            Assert.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE, response.getStatus());
+            Assert.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -204,7 +204,7 @@ public class ClientErrorTest {
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -223,7 +223,7 @@ public class ClientErrorTest {
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {

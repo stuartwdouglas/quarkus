@@ -92,14 +92,14 @@ public class ResteasyViolationExceptionRepresentationTest {
         ViolationExceptionObject foo = new ViolationExceptionObject("a");
         Response response = client.target(generateURL("/native", TEST_RETURN_VALUES)).request()
                 .post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Server send wrong content", foo, response.readEntity(ViolationExceptionObject.class));
 
         // Valid imposed constraint
         foo = new ViolationExceptionObject("abcde");
         response = client.target(generateURL("/imposed", TEST_RETURN_VALUES)).request()
                 .post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.bufferEntity();
         Assert.assertEquals("Server send wrong content", foo, response.readEntity(ViolationExceptionObject.class));
 
@@ -107,13 +107,13 @@ public class ResteasyViolationExceptionRepresentationTest {
         foo = new ViolationExceptionObject("abc");
         response = client.target(generateURL("/nativeAndImposed", TEST_RETURN_VALUES)).request()
                 .post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Server send wrong content", foo, response.readEntity(ViolationExceptionObject.class));
 
         // Invalid native constraint
         response = client.target(generateURL("/native", TEST_RETURN_VALUES)).request()
                 .post(Entity.entity(new ViolationExceptionObject("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Header of response should not be null", header);
         Assert.assertTrue("Validation header is not correct", Boolean.valueOf(header));
@@ -129,7 +129,7 @@ public class ResteasyViolationExceptionRepresentationTest {
         // Invalid imposed constraint
         response = client.target(generateURL("/imposed", TEST_RETURN_VALUES)).request()
                 .post(Entity.entity(new ViolationExceptionObject("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Header of response should not be null", header);
         Assert.assertTrue("Validation header is not correct", Boolean.valueOf(header));
@@ -144,7 +144,7 @@ public class ResteasyViolationExceptionRepresentationTest {
         // Invalid native and imposed constraints
         response = client.target(generateURL("/nativeAndImposed", TEST_RETURN_VALUES)).request()
                 .post(Entity.entity(new ViolationExceptionObject("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Header of response should not be null", header);
         Assert.assertTrue("Validation header is not correct", Boolean.valueOf(header));
@@ -178,7 +178,7 @@ public class ResteasyViolationExceptionRepresentationTest {
         ViolationExceptionObject foo = new ViolationExceptionObject("pqrs");
         Response response = client.target(generateURL("/abc/wxyz/unused/unused", TEST_VIOLATIONS_BEFORE_RETURN_VALUE)).request()
                 .post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Server send wrong content", foo, response.readEntity(ViolationExceptionObject.class));
 
         // Invalid: Should have 1 each of field, property, class, and parameter violations,
@@ -187,7 +187,7 @@ public class ResteasyViolationExceptionRepresentationTest {
         response = client.target(generateURL("/a/z/unused/unused", TEST_VIOLATIONS_BEFORE_RETURN_VALUE)).request()
                 .post(Entity.entity(foo, "application/foo"));
         logger.info("response: " + response);
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         logger.info("entity: " + entity);
         String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);

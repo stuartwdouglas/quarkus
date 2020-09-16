@@ -90,7 +90,7 @@ public class JacksonDatatypeTest {
         String url = PortProviderUtil.generateURL(String.format("/scanned/%s", endPath), deployment);
         WebTarget base = client.target(url);
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String strResponse = response.readEntity(String.class);
         logger.info(String.format("Url: %s", url));
         logger.info(String.format("Response: %s", strResponse));

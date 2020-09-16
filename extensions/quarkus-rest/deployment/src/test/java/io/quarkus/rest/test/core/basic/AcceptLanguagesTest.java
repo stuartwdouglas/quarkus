@@ -48,7 +48,7 @@ public class AcceptLanguagesTest {
         WebTarget base = client.target(PortProviderUtil.generateURL("/lang", AcceptLanguagesTest.class.getSimpleName()));
         Response response = base.request().header("Accept-Language", "en-US;q=0,en;q=0.8,de-AT,de;q=0.9").get();
 
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
 
         response.close();
         client.close();

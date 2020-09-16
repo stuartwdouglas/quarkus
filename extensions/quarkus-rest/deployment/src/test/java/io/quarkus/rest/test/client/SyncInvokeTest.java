@@ -74,7 +74,7 @@ public class SyncInvokeTest extends ClientTestBase {
     public void testMethods() throws Exception {
         {
             Response res = client.target(generateURL("/test")).request().get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("get", entity);
         }
@@ -84,7 +84,7 @@ public class SyncInvokeTest extends ClientTestBase {
         }
         {
             Response res = client.target(generateURL("/test")).request().delete();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("delete", entity);
         }
@@ -94,7 +94,7 @@ public class SyncInvokeTest extends ClientTestBase {
         }
         {
             Response res = client.target(generateURL("/test")).request().put(Entity.text("hello"));
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("put hello", entity);
         }
@@ -104,7 +104,7 @@ public class SyncInvokeTest extends ClientTestBase {
         }
         {
             Response res = client.target(generateURL("/test")).request().post(Entity.text("hello"));
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("post hello", entity);
         }
@@ -114,7 +114,7 @@ public class SyncInvokeTest extends ClientTestBase {
         }
         {
             Response res = client.target(generateURL("/test")).request().method("PATCH", Entity.text("hello"));
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("patch hello", entity);
         }
@@ -135,7 +135,7 @@ public class SyncInvokeTest extends ClientTestBase {
     public void testInvoke() throws Exception {
         {
             Response res = client.target(generateURL("/test")).request().buildGet().invoke();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("get", entity);
         }
@@ -145,7 +145,7 @@ public class SyncInvokeTest extends ClientTestBase {
         }
         {
             Response res = client.target(generateURL("/test")).request().buildDelete().invoke();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("delete", entity);
         }
@@ -155,7 +155,7 @@ public class SyncInvokeTest extends ClientTestBase {
         }
         {
             Response res = client.target(generateURL("/test")).request().buildPut(Entity.text("hello")).invoke();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("put hello", entity);
         }
@@ -165,7 +165,7 @@ public class SyncInvokeTest extends ClientTestBase {
         }
         {
             Response res = client.target(generateURL("/test")).request().buildPost(Entity.text("hello")).invoke();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("post hello", entity);
         }
@@ -175,7 +175,7 @@ public class SyncInvokeTest extends ClientTestBase {
         }
         {
             Response res = client.target(generateURL("/test")).request().build("PATCH", Entity.text("hello")).invoke();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("patch hello", entity);
         }

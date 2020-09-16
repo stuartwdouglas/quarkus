@@ -66,7 +66,7 @@ public class MediaTypeCaseSensitivityTest {
         WebTarget base = client
                 .target(PortProviderUtil.generateURL("/stuff", MediaTypeCaseSensitivityTest.class.getSimpleName()));
         Response response = base.request().post(Entity.entity("bill", "Application/Stuff"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }
@@ -82,7 +82,7 @@ public class MediaTypeCaseSensitivityTest {
         WebTarget base = client
                 .target(PortProviderUtil.generateURL("/stuff", MediaTypeCaseSensitivityTest.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }

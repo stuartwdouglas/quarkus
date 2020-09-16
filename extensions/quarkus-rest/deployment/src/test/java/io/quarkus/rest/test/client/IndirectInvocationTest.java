@@ -73,7 +73,7 @@ public class IndirectInvocationTest extends ClientTestBase {
                 .request("text/plain").buildGet();
 
         Response response = inv.invoke();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("123456 3", response.readEntity(String.class));
     }
 
@@ -100,7 +100,7 @@ public class IndirectInvocationTest extends ClientTestBase {
         for (int i = 0; i < REPEAT; i++) {
             for (Invocation inv : invs) {
                 Response response = inv.invoke();
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 response.close();
             }
         }

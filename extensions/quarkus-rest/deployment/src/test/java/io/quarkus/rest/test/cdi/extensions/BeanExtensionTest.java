@@ -82,7 +82,7 @@ public class BeanExtensionTest {
 
         log.info("Response status: " + response.getStatus());
 
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         response.close();
         client.close();

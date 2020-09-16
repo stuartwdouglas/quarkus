@@ -71,7 +71,7 @@ public class PatchErrorHandlingTest {
                 .build();
         Response res = patchTarget.request()
                 .build(HttpMethod.PATCH, Entity.entity(patchRequest, MediaType.APPLICATION_JSON_PATCH_JSON)).invoke();
-        Assert.assertEquals(Status.BAD_REQUEST, res.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), res.getStatus());
     }
 
     /**
@@ -85,7 +85,7 @@ public class PatchErrorHandlingTest {
         Student student = new Student().setFirstName("test");
         Response res = patchTarget.request().build(HttpMethod.PATCH, Entity.entity(student, MediaType.APPLICATION_JSON_TYPE))
                 .invoke();
-        Assert.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE, res.getStatus());
+        Assert.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), res.getStatus());
     }
 
     /**
@@ -105,7 +105,7 @@ public class PatchErrorHandlingTest {
                 .build();
         Response res = patchTarget.request()
                 .build(HttpMethod.PATCH, Entity.entity(patchRequest, MediaType.APPLICATION_JSON_PATCH_JSON)).invoke();
-        Assert.assertEquals(Status.NOT_FOUND, res.getStatus());
+        Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), res.getStatus());
     }
 
     /**
@@ -125,6 +125,6 @@ public class PatchErrorHandlingTest {
                 .build();
         Response res = patchTarget.request()
                 .build(HttpMethod.PATCH, Entity.entity(patchRequest, MediaType.APPLICATION_JSON_PATCH_JSON)).invoke();
-        Assert.assertEquals(Status.CONFLICT, res.getStatus());
+        Assert.assertEquals(Status.CONFLICT.getStatusCode(), res.getStatus());
     }
 }

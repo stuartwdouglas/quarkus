@@ -59,7 +59,7 @@ public class ComplexPathParamTest {
     private void basicTest(String path, String body) {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Response response = client.target(generateURL(path)).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response, url may not be decoded correctly", body,
                 response.readEntity(String.class));
         response.close();

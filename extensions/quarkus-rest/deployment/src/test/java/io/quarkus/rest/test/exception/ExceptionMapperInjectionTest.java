@@ -75,7 +75,7 @@ public class ExceptionMapperInjectionTest {
         WebTarget base = client.target(generateUrl("/test/nonexistent"));
         Response response = base.request().get();
 
-        Assert.assertEquals(Status.HTTP_VERSION_NOT_SUPPORTED, response.getStatus());
+        Assert.assertEquals(Status.HTTP_VERSION_NOT_SUPPORTED.getStatusCode(), response.getStatus());
 
         response.close();
     }
@@ -103,7 +103,7 @@ public class ExceptionMapperInjectionTest {
         WebTarget base = client.target(generateUrl("/test/null"));
         Response response = base.request().get();
 
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
 
         response.close();
     }

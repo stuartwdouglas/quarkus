@@ -28,7 +28,7 @@ public class BasicTracingTest extends TracingTestBase {
 
         try {
             Response response = base.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
             Map<String, Boolean> results = new HashMap<String, Boolean>();
 
@@ -57,7 +57,7 @@ public class BasicTracingTest extends TracingTestBase {
         WebTarget base = client.target(url);
         try {
             Response response = base.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             boolean hasTracing = false;
             for (Map.Entry entry : response.getStringHeaders().entrySet()) {
                 if (entry.getKey().toString().startsWith(RESTEasyTracing.HEADER_TRACING_PREFIX)) {

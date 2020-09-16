@@ -365,7 +365,7 @@ public class ApacheHttpClient43Test {
                 .target(PortProviderUtil.generateBaseUrl(ApacheHttpClient43Test.class.getSimpleName() + "/test"));
         try {
             Response response = target.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("Wrong response", "hello world", response.readEntity(String.class));
             if (release) {
                 response.close();

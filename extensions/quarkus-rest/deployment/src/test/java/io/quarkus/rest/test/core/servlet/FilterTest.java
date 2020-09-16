@@ -52,7 +52,7 @@ public class FilterTest {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Invocation.Builder request = client.target(generateURL("/test/dispatch/dynamic")).request();
         Response response = request.get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("Wrong content of response", "forward", response.readEntity(String.class));
         client.close();
     }

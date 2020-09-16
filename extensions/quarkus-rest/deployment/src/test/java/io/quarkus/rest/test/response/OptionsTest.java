@@ -68,7 +68,7 @@ public class OptionsTest {
     public void testOptions() throws Exception {
         WebTarget base = client.target(generateURL("/params/customers/333/phonenumbers"));
         Response response = base.request().options();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -80,42 +80,42 @@ public class OptionsTest {
     public void testMethodNotAllowed() throws Exception {
         WebTarget base = client.target(generateURL("/params/customers/333/phonenumbers"));
         Response response = base.request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED, response.getStatus());
+        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/users"));
         response = base.request().delete();
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED, response.getStatus());
+        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/users/53"));
         response = base.request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED, response.getStatus());
+        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/users/53/contacts"));
         response = base.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/users/53/contacts"));
         response = base.request().options();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/users/53/contacts"));
         response = base.request().delete();
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED, response.getStatus());
+        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/users/53/contacts/carl"));
         response = base.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/users/53/contacts/carl"));
         response = base.request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED, response.getStatus());
+        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -127,7 +127,7 @@ public class OptionsTest {
     public void testAllowHeaderOK() {
         WebTarget base = client.target(generateURL("/users/53/contacts"));
         Response response = base.request().options();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         checkOptions(response, "GET", "POST", "HEAD", "OPTIONS");
         response.close();
     }
@@ -140,7 +140,7 @@ public class OptionsTest {
     public void testAllowHeaderMethodNotAllowed() {
         WebTarget base = client.target(generateURL("/params/customers/333/phonenumbers"));
         Response response = base.request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED, response.getStatus());
+        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         checkOptions(response, "GET", "HEAD", "OPTIONS");
         response.close();
     }

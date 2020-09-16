@@ -70,7 +70,7 @@ public class ResteasyUseContainerFormParamsTest {
         Builder builder = client.target(generateURL("/form")).request();
         Response response = builder.post(Entity.form(
                 new Form("hello", "world").param("yo", "mama")));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
     }
 
     @Test
@@ -79,6 +79,6 @@ public class ResteasyUseContainerFormParamsTest {
                 .request();
         Response response = builder.post(Entity.form(
                 new Form("hello", "world").param("yo", "mama")));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
     }
 }

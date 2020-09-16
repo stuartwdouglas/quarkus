@@ -67,7 +67,7 @@ public class CacheControlAnnotationTest {
         WebTarget base = client.target(generateURL("/maxage"));
         Response response = base.request().get();
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         CacheControl cc = CacheControl.valueOf(response.getHeaderString("cache-control"));
         Assert.assertFalse("Cache should not be private", cc.isPrivate());
         Assert.assertEquals("Wrong age of cache", 3600, cc.getMaxAge());
@@ -84,7 +84,7 @@ public class CacheControlAnnotationTest {
         WebTarget base = client.target(generateURL("/nocache"));
         Response response = base.request().get();
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String value = response.getHeaderString("cache-control");
         Assert.assertEquals("Wrong value of cache header", "no-cache", value);
         CacheControl cc = CacheControl.valueOf(value);
@@ -102,7 +102,7 @@ public class CacheControlAnnotationTest {
         WebTarget base = client.target(generateURL("/composite"));
         Response response = base.request().get();
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         CacheControl cc = CacheControl.valueOf(response.getHeaderString("cache-control"));
         Assert.assertTrue("There must be no-store", cc.isNoStore());
         Assert.assertTrue("There must be must-revalidate", cc.isMustRevalidate());

@@ -144,7 +144,7 @@ public class CollectionProviderTest {
     @Test
     public void testGenericTypeResponse() {
         Response response = client.target(generateURL("/resource/genericentity/linkedlist")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String val = response.readEntity(String.class);
         Assert.assertEquals("OK", val);
     }

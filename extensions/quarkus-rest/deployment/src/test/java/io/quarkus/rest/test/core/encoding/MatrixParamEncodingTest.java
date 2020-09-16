@@ -70,7 +70,7 @@ public class MatrixParamEncodingTest {
     public void testMatrixParamRequestDecoded() throws Exception {
         QuarkusRestWebTarget target = client.target(generateURL("/decoded")).matrixParam("param", "ac/dc");
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong response", "ac/dc", response.readEntity(String.class));
         response.close();
     }
@@ -84,7 +84,7 @@ public class MatrixParamEncodingTest {
         QuarkusRestWebTarget target = client.target(generateURL("/decodedMultipleParam")).matrixParam("param1", "")
                 .matrixParam("param2", "abc");
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong response", "null abc", response.readEntity(String.class));
         response.close();
     }
@@ -97,7 +97,7 @@ public class MatrixParamEncodingTest {
     public void testMatrixParamRequestEncoded() throws Exception {
         QuarkusRestWebTarget target = client.target(generateURL("/encoded")).matrixParam("param", "ac/dc");
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong response", "ac%2Fdc", response.readEntity(String.class));
         response.close();
     }
@@ -114,7 +114,7 @@ public class MatrixParamEncodingTest {
         logger.info("Sending request to " + uriBuilder.build().toString());
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong response", "ac/dc", entity);
         response.close();
     }
@@ -131,7 +131,7 @@ public class MatrixParamEncodingTest {
         logger.info("Sending request to " + uriBuilder.build().toString());
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong response", "ac%2Fdc", entity);
         response.close();
     }

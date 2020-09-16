@@ -66,7 +66,7 @@ public class InterceptorStreamTest {
     public void testPriority() throws Exception {
         Response response = client.target(generateURL("/test")).request().post(Entity.text("test"));
         response.bufferEntity();
-        Assert.assertEquals("Wrong response status, interceptors don't work correctly", Status.OK,
+        Assert.assertEquals("Wrong response status, interceptors don't work correctly", Status.OK.getStatusCode(),
                 response.getStatus());
         Assert.assertEquals("Wrong content of response, interceptors don't work correctly", "writer_interceptor_testtest",
                 response.readEntity(String.class));

@@ -109,7 +109,7 @@ public class KeepCharsetTest {
         Response response = target.request().accept(MediaType.APPLICATION_XML_TYPE)
                 .post(Entity.entity(entityXml, MediaType.APPLICATION_XML_TYPE));
         logger.info("Received response");
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         KeepCharsetFavoriteMovieXmlRootElement entity = response.readEntity(KeepCharsetFavoriteMovieXmlRootElement.class);
         logger.info("Result: " + entity);
         Assert.assertEquals("Incorrect xml entity was returned from the server", "La Règle du Jeu", entity.getTitle());
@@ -144,7 +144,7 @@ public class KeepCharsetTest {
         logger.info(entityXml);
         logger.info("client default charset: " + Charset.defaultCharset());
         Response response = target.request().post(Entity.entity(entityXml, APPLICATION_XML_UTF16_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         KeepCharsetFavoriteMovieXmlRootElement entity = response.readEntity(KeepCharsetFavoriteMovieXmlRootElement.class);
         logger.info("Result: " + entity);
         Assert.assertEquals("Incorrect xml entity was returned from the server", "La Règle du Jeu", entity.getTitle());
@@ -180,7 +180,7 @@ public class KeepCharsetTest {
         logger.info("client default charset: " + Charset.defaultCharset());
         Response response = target.request().accept(APPLICATION_XML_UTF16_TYPE)
                 .post(Entity.entity(entityXml, APPLICATION_XML_UTF16_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         KeepCharsetFavoriteMovieXmlRootElement entity = response.readEntity(KeepCharsetFavoriteMovieXmlRootElement.class);
         logger.info("Result: " + entity);
         Assert.assertEquals("Incorrect xml entity was returned from the server", "La Règle du Jeu", entity.getTitle());

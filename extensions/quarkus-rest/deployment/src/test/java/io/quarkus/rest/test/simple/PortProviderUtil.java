@@ -38,6 +38,14 @@ public class PortProviderUtil {
     public static String generateBaseUrl() {
         return generateURL("");
     }
+    /**
+     * Generate a base URL incorporating the configured port.
+     *
+     * @return a full URL
+     */
+    public static String generateBaseUrl(String ignore) {
+        return generateURL("");
+    }
 
     /**
      * Generate a URL with port, hostname

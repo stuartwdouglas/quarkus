@@ -70,7 +70,7 @@ public class InheritanceTest {
     public void testInheritance() throws Exception {
         QuarkusRestWebTarget target = client.target(generateURL("/zoo"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         InheritanceZoo zoo = response.readEntity(InheritanceZoo.class);
         Assert.assertEquals("The number of animals in the zoo doesn't match the expected count", 2, zoo.getAnimals().size());
     }

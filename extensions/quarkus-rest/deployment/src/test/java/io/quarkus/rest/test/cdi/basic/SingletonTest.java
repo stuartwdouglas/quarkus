@@ -77,7 +77,7 @@ public class SingletonTest {
         value = base.path("intfsub").request().get(String.class);
         logger.info(value);
         Response response = base.path("exception").request().get();
-        Assert.assertEquals(Status.CREATED, response.getStatus());
+        Assert.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
     }
 
 }

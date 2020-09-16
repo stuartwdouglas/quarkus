@@ -43,7 +43,7 @@ public class SsePostResourceMethodInvokerTest {
     @Deployment(name = WITHOUT_EXCEPTION_REQUEST_FILTER)
     public static Archive<?> deployWithExceptionRequestFilter() throws Exception {
         WebArchive war = TestUtil.prepareArchive(WITHOUT_EXCEPTION_REQUEST_FILTER);
-//        war.addAsWebInfResource("org/jboss/resteasy/test/providers/sse/synch-web.xml", "web.xml");
+        //        war.addAsWebInfResource("org/jboss/resteasy/test/providers/sse/synch-web.xml", "web.xml");
         war.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         return TestUtil.finishContainerPrepare(war, null, SsePostResourceMethodInvokerTestResource.class,
                 SsePostResourceMethodInvokerApplication.class);

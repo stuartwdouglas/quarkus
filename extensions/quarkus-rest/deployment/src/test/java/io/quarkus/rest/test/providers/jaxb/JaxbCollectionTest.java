@@ -166,7 +166,7 @@ public class JaxbCollectionTest {
 
         QuarkusRestWebTarget target = client.target(generateURL("/list"));
         Response response = target.request().post(Entity.xml(xml));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         response.close();
     }
 

@@ -49,7 +49,7 @@ public class FileExtensionMappingTest {
                     war.addClasses(PortProviderUtil.class);
 
                     war.addClass(FileExtensionMappingApplication.class);
-//                    war.addAsWebInfResource(FileExtensionMappingTest.class.getPackage(), "FileExtensionMapping.xml", "web.xml");
+                    //                    war.addAsWebInfResource(FileExtensionMappingTest.class.getPackage(), "FileExtensionMapping.xml", "web.xml");
                     Archive<?> archive = TestUtil.finishContainerPrepare(war, null, FileExtensionMappingResource.class);
                     return archive;
                 }

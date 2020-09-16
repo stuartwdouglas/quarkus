@@ -82,7 +82,7 @@ public class IIOImageProviderTest {
         File file = new File(TestUtil.getResourcePath(IIOImageProviderTest.class, testPngResource));
         Assert.assertTrue(file.exists());
         Response response = client.target(TEST_URI).request().post(Entity.entity(file, "image/png"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String contentType = response.getHeaderString("content-type");
         Assert.assertEquals("Wrong content type of response", "image/png", contentType);
 
@@ -111,7 +111,7 @@ public class IIOImageProviderTest {
         File file = new File(TestUtil.getResourcePath(IIOImageProviderTest.class, testWdpResource));
         Assert.assertTrue(file.exists());
         Response response = client.target(TEST_URI).request().post(Entity.entity(file, "image/vnd.ms-photo"));
-        Assert.assertEquals("Unsupported image is accepted by server", Status.NOT_ACCEPTABLE,
+        Assert.assertEquals("Unsupported image is accepted by server", Status.NOT_ACCEPTABLE.getStatusCode(),
                 response.getStatus());
         response.close();
     }

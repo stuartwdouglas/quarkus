@@ -48,7 +48,7 @@ public class ApplicationFilterTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-//                    war.addAsWebInfResource(ApplicationFilterTest.class.getPackage(), "ApplicationFilterWeb.xml", "web.xml");
+                    //                    war.addAsWebInfResource(ApplicationFilterTest.class.getPackage(), "ApplicationFilterWeb.xml", "web.xml");
                     war.addClasses(ApplicationFilterCustomer.class, ApplicationFilterCustomerResource.class);
                     war.add(new UrlAsset(ApplicationFilterTest.class.getResource("ApplicationFilter.html")), "foo.html");
                     List<Class<?>> singletons = new ArrayList<>();
@@ -128,7 +128,7 @@ public class ApplicationFilterTest {
         OutputStream os = connection.getOutputStream();
         os.write(newCustomer.getBytes());
         os.flush();
-        Assert.assertEquals(Status.CREATED, connection.getResponseCode());
+        Assert.assertEquals(Status.CREATED.getStatusCode(), connection.getResponseCode());
         connection.disconnect();
 
         // Get the new customer
@@ -142,7 +142,7 @@ public class ApplicationFilterTest {
         while (line != null) {
             line = reader.readLine();
         }
-        Assert.assertEquals(Status.OK, connection.getResponseCode());
+        Assert.assertEquals(Status.OK.getStatusCode(), connection.getResponseCode());
         connection.disconnect();
 
         // Update the new customer.  Change Bill's name to William
@@ -162,7 +162,7 @@ public class ApplicationFilterTest {
         os = connection.getOutputStream();
         os.write(updateCustomer.getBytes());
         os.flush();
-        Assert.assertEquals(Status.NO_CONTENT, connection.getResponseCode());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), connection.getResponseCode());
         connection.disconnect();
 
         // Show the update
@@ -175,7 +175,7 @@ public class ApplicationFilterTest {
         while (line != null) {
             line = reader.readLine();
         }
-        Assert.assertEquals(Status.OK, connection.getResponseCode());
+        Assert.assertEquals(Status.OK.getStatusCode(), connection.getResponseCode());
         connection.disconnect();
     }
 }

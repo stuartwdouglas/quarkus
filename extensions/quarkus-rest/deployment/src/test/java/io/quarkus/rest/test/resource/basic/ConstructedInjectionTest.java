@@ -65,7 +65,7 @@ public class ConstructedInjectionTest {
         WebTarget base = client.target(generateURL(path));
         try {
             Response response = base.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);

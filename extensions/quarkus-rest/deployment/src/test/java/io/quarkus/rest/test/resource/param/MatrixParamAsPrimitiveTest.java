@@ -86,7 +86,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL("/" + param)).request()
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -96,7 +96,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL("/wrappers" + param)).request()
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -106,7 +106,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL("/list" + param + param + param)).request()
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -116,7 +116,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL("/array" + param + param + param)).request()
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -128,7 +128,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL(base + "default/null")).request()
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -138,7 +138,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL(base + "default")).request()
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -149,7 +149,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL(base + "default/override" + param)).request()
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -478,7 +478,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL("/;int=abcdef")).request()
                     .header(HttpHeaderNames.ACCEPT, "application/int")
                     .get();
-            Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+            Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -495,7 +495,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL("/wrappers;int=abcdef")).request()
                     .header(HttpHeaderNames.ACCEPT, "application/int")
                     .get();
-            Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+            Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -512,7 +512,7 @@ public class MatrixParamAsPrimitiveTest {
             Response response = client.target(generateURL("/list;int=abcdef;int=abcdef")).request()
                     .header(HttpHeaderNames.ACCEPT, "application/int")
                     .get();
-            Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+            Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }

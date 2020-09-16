@@ -145,7 +145,7 @@ public class SigningTest {
         contentSignature.setAttribute("token", "1122");
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature).delete();
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String signatureHeader = response.getHeaderString(DKIMSignature.DKIM_SIGNATURE);
         contentSignature = new DKIMSignature(signatureHeader);
         Verification verification = new Verification(keys.getPublic());
@@ -163,7 +163,7 @@ public class SigningTest {
     public void testSigningManual() throws Exception {
         WebTarget target = client.target(generateURL("/signed"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         MarshalledEntity<String> marshalledEntity = response.readEntity(new GenericType<MarshalledEntity<String>>() {
         });
         Assert.assertEquals(RESPONSE_ERROR_MSG, "hello world", marshalledEntity.getEntity());
@@ -190,7 +190,7 @@ public class SigningTest {
         contentSignature.setPrivateKey(keys.getPrivate());
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature)
                 .post(Entity.text("hello world"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -208,7 +208,7 @@ public class SigningTest {
         contentSignature.setPrivateKey(keys.getPrivate());
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature)
                 .post(Entity.text("hello world"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -225,7 +225,7 @@ public class SigningTest {
         contentSignature.setDomain("samplezone.org");
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature)
                 .post(Entity.text("hello world"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -242,7 +242,7 @@ public class SigningTest {
         contentSignature.setPrivateKey(badKey);
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature)
                 .post(Entity.text("hello world"));
-        Assert.assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -254,7 +254,7 @@ public class SigningTest {
     public void testBasicVerificationNoSignature() throws Exception {
         WebTarget target = client.target(generateURL("/signed"));
         Response response = target.request().post(Entity.text("hello world"));
-        Assert.assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -290,7 +290,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         try {
             response.readEntity(String.class);
         } catch (Exception e) {
@@ -315,7 +315,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Thread.sleep(1500);
         try {
             response.readEntity(String.class);
@@ -342,7 +342,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -361,7 +361,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -380,7 +380,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -399,7 +399,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -418,7 +418,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -437,7 +437,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Thread.sleep(1500);
         try {
             response.readEntity(String.class);
@@ -469,7 +469,7 @@ public class SigningTest {
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
         Assert.assertNotNull("DKIM_SIGNATURE header is missing", response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         try {
             response.readEntity(String.class);
             throw new Exception("unreachable!");
@@ -497,7 +497,7 @@ public class SigningTest {
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
         Assert.assertNotNull("Missing header DKIM_SIGNATURE", response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String output = response.readEntity(String.class);
         Assert.assertEquals(RESPONSE_ERROR_MSG, "hello", output);
         response.close();
@@ -518,7 +518,7 @@ public class SigningTest {
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
         Assert.assertNotNull("Missing header DKIM_SIGNATURE", response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String output = response.readEntity(String.class);
         Assert.assertEquals(RESPONSE_ERROR_MSG, "hello world", output);
         response.close();
@@ -532,7 +532,7 @@ public class SigningTest {
     public void testBadSignature() throws Exception {
         WebTarget target = client.target(generateURL("/signed/bad-signature"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String signatureHeader = response.getHeaderString(DKIMSignature.DKIM_SIGNATURE);
         Assert.assertNotNull("Missing header DKIM_SIGNATURE", signatureHeader);
         logger.info(DKIMSignature.DKIM_SIGNATURE + ":  " + signatureHeader);
@@ -559,7 +559,7 @@ public class SigningTest {
     public void testBadHash() throws Exception {
         WebTarget target = client.target(generateURL("/signed/bad-hash"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String signatureHeader = response.getHeaderString(DKIMSignature.DKIM_SIGNATURE);
         Assert.assertNotNull(signatureHeader);
         logger.info(DKIMSignature.DKIM_SIGNATURE + ":  " + signatureHeader);
@@ -620,7 +620,7 @@ public class SigningTest {
         contentSignature.setDomain("samplezone.org");
         contentSignature.setPrivateKey(badKey);
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature).get();
-        Assert.assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         response.close();
     }
 }

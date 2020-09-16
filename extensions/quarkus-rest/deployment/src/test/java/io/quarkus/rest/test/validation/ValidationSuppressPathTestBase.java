@@ -40,7 +40,7 @@ public class ValidationSuppressPathTestBase {
         ValidationCoreFoo foo = new ValidationCoreFoo("p");
         Response response = client.target(PortProviderUtil.generateURL("/all/a/z", "Validation-test")).request()
                 .post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String header = response.getHeaderString(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Validation header is missing", header);
         Assert.assertTrue("Wrong validation header", Boolean.valueOf(header));
@@ -59,7 +59,7 @@ public class ValidationSuppressPathTestBase {
     public void doTestReturnValueViolations(String returnValuePath) throws Exception {
         Response response = client.target(PortProviderUtil.generateURL("/return/native", "Validation-test")).request()
                 .post(Entity.entity(new ValidationCoreFoo("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         String header = response.getHeaderString(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Validation header is missing", header);
         Assert.assertTrue("Wrong validation header", Boolean.valueOf(header));

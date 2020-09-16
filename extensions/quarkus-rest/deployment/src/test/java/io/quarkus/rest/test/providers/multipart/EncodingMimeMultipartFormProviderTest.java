@@ -67,7 +67,7 @@ public class EncodingMimeMultipartFormProviderTest {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Response response = client.target(TEST_URI + "/file").request()
                 .post(Entity.entity(mpfdo, MediaType.MULTIPART_FORM_DATA_TYPE));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         client.close();
     }
 }

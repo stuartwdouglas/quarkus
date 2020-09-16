@@ -40,7 +40,7 @@ public class ServletConfigTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-//                    war.addAsWebInfResource(ServletConfigTest.class.getPackage(), "ServletConfigWeb.xml", "web.xml");
+                    //                    war.addAsWebInfResource(ServletConfigTest.class.getPackage(), "ServletConfigWeb.xml", "web.xml");
                     war.addClasses(ServletConfigException.class, ServletConfigExceptionMapper.class,
                             ServletConfigApplication.class, ServletConfigResource.class);
                     return war;
@@ -79,7 +79,7 @@ public class ServletConfigTest {
     public void testNullJaxb() throws Exception {
         Response response = client.target(generateURL("/my/null")).request().header("Content-Type", "application/xml")
                 .post(Entity.text(""));
-        Assert.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE, response.getStatus());
+        Assert.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -90,11 +90,11 @@ public class ServletConfigTest {
     @Test
     public void testBadMediaTypeNoSubtype() throws Exception {
         Response response = client.target(generateURL("/my/application/count")).request().accept("text").get();
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         response.close();
 
         response = client.target(generateURL("/my/application/count")).request().accept("text/plain; q=bad").get();
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         response.close();
     }
 }

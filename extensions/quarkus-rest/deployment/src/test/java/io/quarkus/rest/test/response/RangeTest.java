@@ -100,7 +100,7 @@ public class RangeTest {
     public void testRange0to3() {
         Response response = client.target(generateURL("/file")).request()
                 .header("Range", "bytes=0-3").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response doesn't contain the expected length of the answer", 4, response.getLength());
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
         Assert.assertEquals("The response doesn't contain the expected substring", response.readEntity(String.class), "hell");
@@ -117,7 +117,7 @@ public class RangeTest {
     public void testRange1to4() {
         Response response = client.target(generateURL("/file")).request()
                 .header("Range", "bytes=1-4").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response doesn't contain the expected length of the answer", 4, response.getLength());
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
         Assert.assertEquals("The response doesn't contain the expected substring", response.readEntity(String.class), "ello");
@@ -134,7 +134,7 @@ public class RangeTest {
     public void testRange0to3000() {
         Response response = client.target(generateURL("/file")).request()
                 .header("Range", "bytes=0-3000").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response doesn't contain the expected length of the answer", 3001, response.getLength());
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
         byte[] bytes = response.readEntity(new GenericType<byte[]>() {
@@ -154,7 +154,7 @@ public class RangeTest {
     public void testNegativeRange4() {
         Response response = client.target(generateURL("/file")).request()
                 .header("Range", "bytes=-4").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response doesn't contain the expected length of the answer", 4, response.getLength());
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
         Assert.assertEquals("The response doesn't contain the expected substring", response.readEntity(String.class), "1234");
@@ -172,7 +172,7 @@ public class RangeTest {
     public void testNegativeRange6000OutOfSize() {
         Response response = client.target(generateURL("/file")).request()
                 .header("Range", "bytes=-6000").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -188,7 +188,7 @@ public class RangeTest {
     public void testFullRange() {
         Response response = client.target(generateURL("/smallfile")).request()
                 .header("Range", "bytes=0-8").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response doesn't contain the expected length of the answer", 9, response.getLength());
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
         Assert.assertEquals("The response doesn't contain the expected substring", response.readEntity(String.class),

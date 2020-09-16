@@ -156,7 +156,7 @@ public class ValidationJaxbTest {
     public void doTest(MediaType mediaType, WebTarget target) throws Exception {
         ValidationCoreFoo foo = new ValidationCoreFoo("p");
         Response response = target.request().accept(mediaType).post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String header = response.getHeaderString(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Validation header is missing", header);
         Assert.assertTrue("Wrong value of validation header", Boolean.valueOf(header));
@@ -177,7 +177,7 @@ public class ValidationJaxbTest {
     public void doRawXMLTest(MediaType mediaType, String expected, String targetURL) throws Exception {
         ValidationCoreFoo foo = new ValidationCoreFoo("p");
         Response response = client.target(targetURL).request().accept(mediaType).post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String header = response.getHeaderString(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Validation header is missing", header);
         Assert.assertTrue("Wrong value of validation header", Boolean.valueOf(header));

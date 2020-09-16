@@ -51,7 +51,7 @@ public class QueryParamWithMultipleEqualsTest {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Response response = client.target(generateURL("/test?foo=weird=but=valid")).request().get();
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         Assert.assertEquals("Wrong content of response", "weird=but=valid", entity);
 

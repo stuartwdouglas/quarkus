@@ -69,7 +69,7 @@ public class GenericEntityTest {
         WebTarget base = client.target(generateURL("/doubles"));
         try {
             Response response = base.request().get();
-            Assertions.assertEquals(Status.OK, response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String body = response.readEntity(String.class);
             Assertions.assertEquals("45.0D 50.0D ", body, "The response doesn't contain the expected entity");
         } catch (Exception e) {
@@ -87,7 +87,7 @@ public class GenericEntityTest {
         WebTarget base = client.target(generateURL("/floats"));
         try {
             Response response = base.request().get();
-            Assertions.assertEquals(Status.OK, response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String body = response.readEntity(String.class);
             Assertions.assertEquals("45.0F 50.0F ", body, "The response doesn't contain the expected entity");
         } catch (Exception e) {

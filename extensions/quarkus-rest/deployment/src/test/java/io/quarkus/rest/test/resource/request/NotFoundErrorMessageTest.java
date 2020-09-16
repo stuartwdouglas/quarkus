@@ -70,7 +70,7 @@ public class NotFoundErrorMessageTest {
     public void testDeploy() throws IOException {
         int initWarningCount = getWarningCount();
         Response response = client.target(generateURL("/nonsence")).request().get();
-        Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+        Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
         response.close();
 
         Assert.assertEquals("Wrong count of warning messages in logs", 0, getWarningCount() - initWarningCount);

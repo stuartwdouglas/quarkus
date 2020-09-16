@@ -45,8 +45,8 @@ public class ContextTest {
                     war.addClasses(ContextAfterEncoderInterceptor.class, ContextBeforeEncoderInterceptor.class,
                             ContextService.class,
                             ContextEncoderInterceptor.class, ContextEndInterceptor.class);
-//                    war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextIndex.html", "index.html");
-//                    war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextWeb.xml", "web.xml");
+                    //                    war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextIndex.html", "index.html");
+                    //                    war.addAsWebInfResource(ContextTest.class.getPackage(), "ContextWeb.xml", "web.xml");
                     // undertow requires read permission in order to perform forward request.
 
                     return war;
@@ -74,7 +74,7 @@ public class ContextTest {
     @Test
     public void testForward() throws Exception {
         Response response = client.target(generateURL("/test/forward")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "hello world", response.readEntity(String.class));
         response.close();
     }
@@ -86,11 +86,11 @@ public class ContextTest {
     @Test
     public void testRepeat() throws Exception {
         Response response = client.target(generateURL("/test/test")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Resource get wrong injected URL", generateURL("/test/"), response.readEntity(String.class));
         response.close();
         response = client.target(generateURL("/test/")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Resource get wrong injected URL", generateURL("/test/"), response.readEntity(String.class));
         response.close();
     }
@@ -103,7 +103,7 @@ public class ContextTest {
     public void testServletContext() throws Exception {
         final String HEADER_ERROR_MESSAGE = "Response don't have correct headers";
         Response response = client.target(generateURL("/test/test/servletcontext")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "ok", response.readEntity(String.class));
         Assert.assertNotNull(HEADER_ERROR_MESSAGE, response.getHeaderString("before-encoder"));
         Assert.assertNotNull(HEADER_ERROR_MESSAGE, response.getHeaderString("after-encoder"));
@@ -119,7 +119,7 @@ public class ContextTest {
     @Test
     public void testServletConfig() throws Exception {
         Response response = client.target(generateURL("/test/test/servletconfig")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "ok", response.readEntity(String.class));
         response.close();
     }
@@ -131,7 +131,7 @@ public class ContextTest {
     @Test
     public void testXmlMappings() throws Exception {
         Response response = client.target(generateURL("/test/stuff.xml")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "xml", response.readEntity(String.class));
         response.close();
 
@@ -144,7 +144,7 @@ public class ContextTest {
     @Test
     public void testJsonMappings() throws Exception {
         Response response = client.target(generateURL("/test/stuff.json")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "json", response.readEntity(String.class));
         response.close();
     }

@@ -68,7 +68,7 @@ public class QueryTest {
         WebTarget target = client.target(generateURL("/search?term=t1&order=ASC"));
         Response response = target.request().get();
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("term: 't1', order: 'ASC', limit: 'null'", response.readEntity(String.class));
     }
 }

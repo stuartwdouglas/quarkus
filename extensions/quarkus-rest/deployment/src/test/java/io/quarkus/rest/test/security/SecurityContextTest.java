@@ -76,8 +76,8 @@ public class SecurityContextTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-//                    war.addAsWebInfResource(SecurityContextTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
-//                            .addAsWebInfResource(SecurityContextTest.class.getPackage(), "securityContext/web.xml", "web.xml");
+                    //                    war.addAsWebInfResource(SecurityContextTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
+                    //                            .addAsWebInfResource(SecurityContextTest.class.getPackage(), "securityContext/web.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, SecurityContextResource.class);
                 }
             });
@@ -90,8 +90,8 @@ public class SecurityContextTest {
                     JavaArchive war = ShrinkWrap.create(JavaArchive.class);
                     war.addClasses(PortProviderUtil.class);
 
-//                    war.addAsWebInfResource(SecurityContextTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
-//                            .addAsWebInfResource(SecurityContextTest.class.getPackage(), "securityContext/web.xml", "web.xml");
+                    //                    war.addAsWebInfResource(SecurityContextTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
+                    //                            .addAsWebInfResource(SecurityContextTest.class.getPackage(), "securityContext/web.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, SecurityContextResource.class,
                             SecurityContextContainerRequestFilter.class);
                 }
@@ -105,7 +105,7 @@ public class SecurityContextTest {
     public void testSecurityContextAuthorized() {
         Response response = authorizedClient
                 .target(PortProviderUtil.generateURL("/test", SecurityContextTest.class.getSimpleName())).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Good user bill", response.readEntity(String.class));
     }
 
@@ -118,7 +118,7 @@ public class SecurityContextTest {
         Response response = nonauthorizedClient
                 .target(PortProviderUtil.generateURL("/test", SecurityContextTest.class.getSimpleName())).request().get();
         Assert.assertEquals("User ordinaryUser is not authorized", response.readEntity(String.class));
-        Assert.assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
 
     /**
@@ -131,7 +131,7 @@ public class SecurityContextTest {
         Response response = authorizedClient
                 .target(PortProviderUtil.generateURL("/test", SecurityContextTest.class.getSimpleName() + "Filter")).request()
                 .get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Good user bill", response.readEntity(String.class));
     }
 
@@ -146,7 +146,7 @@ public class SecurityContextTest {
                 .target(PortProviderUtil.generateURL("/test", SecurityContextTest.class.getSimpleName() + "Filter")).request()
                 .get();
         Assert.assertEquals("User ordinaryUser is not authorized, coming from filter", response.readEntity(String.class));
-        Assert.assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
 
     static class SecurityDomainSetup extends AbstractUsersRolesSecurityDomainSetup {

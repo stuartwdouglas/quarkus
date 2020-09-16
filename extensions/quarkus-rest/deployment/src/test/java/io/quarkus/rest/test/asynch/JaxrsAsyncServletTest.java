@@ -9,8 +9,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.jboss.resteasy.plugins.providers.jaxb.JAXBXmlRootElementProvider;
-import org.jboss.resteasy.utils.TimeoutUtil;
+import io.quarkus.rest.test.util.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -65,7 +64,7 @@ public class JaxrsAsyncServletTest {
                             JaxrsAsyncServletTimeoutHandler.class, JaxrsAsyncServletResource.class,
                             JaxrsAsyncServletPrintingErrorHandler.class,
                             JaxrsAsyncServletServiceUnavailableExceptionMapper.class, JaxrsAsyncServletXmlData.class);
-//                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
+                    //                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
                     return war;
                 }
             });
@@ -120,7 +119,7 @@ public class JaxrsAsyncServletTest {
         long start = System.currentTimeMillis();
         Response response = client.target(generateURL("/jaxrs")).request().get();
         long end = System.currentTimeMillis() - start;
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "hello", response.readEntity(String.class));
         // The time out is set to 2 seconds, this is a best guess test and if future failures are present this should be
         // reconsidered with some sort of offset.
@@ -137,7 +136,7 @@ public class JaxrsAsyncServletTest {
     public void testTimeout() throws Exception {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("/jaxrs/timeout")).request().get();
-        Assert.assertEquals(Status.REQUEST_TIMEOUT, response.getStatus()); // exception mapper from another test overrides 503 to 408
+        Assert.assertEquals(Status.REQUEST_TIMEOUT.getStatusCode(), response.getStatus()); // exception mapper from another test overrides 503 to 408
         response.close();
         client.close();
     }
@@ -150,7 +149,7 @@ public class JaxrsAsyncServletTest {
     public void testCancel() throws Exception {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("/jaxrs/cancel")).request().get();
-        Assert.assertEquals(Status.SERVICE_UNAVAILABLE, response.getStatus());
+        Assert.assertEquals(Status.SERVICE_UNAVAILABLE.getStatusCode(), response.getStatus());
         response.close();
 
         // It is possible, that thread created in JaxrsAsyncServletJaxrsResource.cancel method
@@ -161,7 +160,7 @@ public class JaxrsAsyncServletTest {
             response = client.target(generateURL("/jaxrs/cancelled")).request().get();
             int status = response.getStatus();
             response.close();
-            if (status == Status.NO_CONTENT) {
+            if (status == Status.NO_CONTENT.getStatusCode()) {
                 ok = true;
                 break;
             }
@@ -178,11 +177,11 @@ public class JaxrsAsyncServletTest {
     @Test
     public void testResumeObject() throws Exception {
         Client client = ClientBuilder.newClient();
-        client.register(JAXBXmlRootElementProvider.class);
+        //client.register(JAXBXmlRootElementProvider.class);
         long start = System.currentTimeMillis();
         Response response = client.target(generateURL("/jaxrs/resume/object")).request().get();
         long end = System.currentTimeMillis() - start;
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "bill", response.readEntity(JaxrsAsyncServletXmlData.class).getName());
         Assert.assertTrue("Wrong time of request", end < 1500);
         response.close();
@@ -196,11 +195,11 @@ public class JaxrsAsyncServletTest {
     @Test
     public void testResumeObjectThread() throws Exception {
         Client client = ClientBuilder.newClient();
-        client.register(JAXBXmlRootElementProvider.class);
+        //client.register(JAXBXmlRootElementProvider.class);
         long start = System.currentTimeMillis();
         Response response = client.target(generateURL("/jaxrs/resume/object/thread")).request().get();
         long end = System.currentTimeMillis() - start;
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "bill", response.readEntity(JaxrsAsyncServletXmlData.class).getName());
         Assert.assertTrue("Wrong time of request", end < 1000); // should take less than 1 second
         response.close();

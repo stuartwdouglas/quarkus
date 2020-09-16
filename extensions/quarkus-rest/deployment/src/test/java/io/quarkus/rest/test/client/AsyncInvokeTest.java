@@ -85,7 +85,7 @@ public class AsyncInvokeTest extends ClientTestBase {
         {
             Future<Response> future = nioClient.target(generateURL("/test")).request().async().get();
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("get", entity);
         }
@@ -109,7 +109,7 @@ public class AsyncInvokeTest extends ClientTestBase {
         {
             Future<Response> future = nioClient.target(generateURL("/test")).request().async().delete();
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("delete", entity);
         }
@@ -132,7 +132,7 @@ public class AsyncInvokeTest extends ClientTestBase {
         {
             Future<Response> future = nioClient.target(generateURL("/test")).request().async().put(Entity.text("hello"));
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("put hello", entity);
         }
@@ -156,7 +156,7 @@ public class AsyncInvokeTest extends ClientTestBase {
         {
             Future<Response> future = nioClient.target(generateURL("/test")).request().async().post(Entity.text("hello"));
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("post hello", entity);
 
@@ -183,7 +183,7 @@ public class AsyncInvokeTest extends ClientTestBase {
             Future<Response> future = nioClient.target(generateURL("/test")).request().async().method("PATCH",
                     Entity.text("hello"));
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("patch hello", entity);
         }
@@ -221,7 +221,7 @@ public class AsyncInvokeTest extends ClientTestBase {
                         }
                     });
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             Assert.assertTrue("Asynchronous invocation didn't use custom implemented Invocation callback",
                     latch.await(5, TimeUnit.SECONDS));
 
@@ -274,7 +274,7 @@ public class AsyncInvokeTest extends ClientTestBase {
                         }
                     });
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             Assert.assertTrue("Asynchronous invocation didn't use custom implemented Invocation callback",
                     latch.await(5, TimeUnit.SECONDS));
         }
@@ -325,7 +325,7 @@ public class AsyncInvokeTest extends ClientTestBase {
                         }
                     });
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             Assert.assertTrue("Asynchronous invocation didn't use custom implemented Invocation callback",
                     latch.await(5, TimeUnit.SECONDS));
 
@@ -377,7 +377,7 @@ public class AsyncInvokeTest extends ClientTestBase {
                         }
                     });
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             Assert.assertTrue("Asynchronous invocation didn't use custom implemented Invocation callback",
                     latch.await(5, TimeUnit.SECONDS));
 
@@ -429,7 +429,7 @@ public class AsyncInvokeTest extends ClientTestBase {
                         }
                     });
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             Assert.assertTrue("Asynchronous invocation didn't use custom implemented Invocation callback",
                     latch.await(5, TimeUnit.SECONDS));
 
@@ -513,7 +513,7 @@ public class AsyncInvokeTest extends ClientTestBase {
         {
             Future<Response> future = nioClient.target(generateURL("/test")).request().buildGet().submit();
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("get", entity);
         }
@@ -537,7 +537,7 @@ public class AsyncInvokeTest extends ClientTestBase {
         {
             Future<Response> future = nioClient.target(generateURL("/test")).request().buildDelete().submit();
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("delete", entity);
         }
@@ -561,7 +561,7 @@ public class AsyncInvokeTest extends ClientTestBase {
         {
             Future<Response> future = nioClient.target(generateURL("/test")).request().buildPut(Entity.text("hello")).submit();
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("put hello", entity);
         }
@@ -586,7 +586,7 @@ public class AsyncInvokeTest extends ClientTestBase {
         {
             Future<Response> future = nioClient.target(generateURL("/test")).request().buildPost(Entity.text("hello")).submit();
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("post hello", entity);
         }
@@ -612,7 +612,7 @@ public class AsyncInvokeTest extends ClientTestBase {
             Future<Response> future = nioClient.target(generateURL("/test")).request().build("PATCH", Entity.text("hello"))
                     .submit();
             Response res = future.get();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("patch hello", entity);
         }

@@ -52,7 +52,7 @@ public class SuspendAnnotationTest {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("")).request().get();
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "hello", response.readEntity(String.class));
 
         response.close();
@@ -68,7 +68,7 @@ public class SuspendAnnotationTest {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("/timeout")).request().get();
 
-        Assert.assertEquals(Status.SERVICE_UNAVAILABLE, response.getStatus());
+        Assert.assertEquals(Status.SERVICE_UNAVAILABLE.getStatusCode(), response.getStatus());
 
         response.close();
         client.close();

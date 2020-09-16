@@ -147,7 +147,7 @@ public class ValidationExceptionsTest {
     @OperateOnDeployment(DEF_EXCEPTION)
     public void testConstraintDefinitionException() throws Exception {
         Response response = client.target(generateURL("/", DEF_EXCEPTION)).request().post(null);
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
         Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -160,7 +160,7 @@ public class ValidationExceptionsTest {
     @OperateOnDeployment(CUSTOM_DEF_EXCEPTION)
     public void testCustomConstraintDefinitionException() throws Exception {
         Response response = client.target(generateURL("/", CUSTOM_DEF_EXCEPTION)).request().post(null);
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
         Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -180,7 +180,7 @@ public class ValidationExceptionsTest {
     @OperateOnDeployment(DECL_EXCEPTION)
     public void testConstraintDeclarationException() throws Exception {
         Response response = client.target(generateURL("/", DECL_EXCEPTION)).request().post(null);
-        Assert.assertEquals(TestUtil.getErrorMessageForKnownIssue("JBEAP-3459"), Status.INTERNAL_SERVER_ERROR,
+        Assert.assertEquals(TestUtil.getErrorMessageForKnownIssue("JBEAP-3459"), Status.INTERNAL_SERVER_ERROR.getStatusCode(),
                 response.getStatus());
         String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
@@ -215,7 +215,7 @@ public class ValidationExceptionsTest {
     @OperateOnDeployment(GROUP_DEF_EXCEPTION)
     public void testGroupDefinitionException() throws Exception {
         Response response = client.target(generateURL("/", GROUP_DEF_EXCEPTION)).request().get();
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
         Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -228,7 +228,7 @@ public class ValidationExceptionsTest {
     @OperateOnDeployment(CUSTOM_GROUP_DEF_EXCEPTION)
     public void testCustomGroupDefinitionException() throws Exception {
         Response response = client.target(generateURL("/", CUSTOM_GROUP_DEF_EXCEPTION)).request().get();
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
         Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -252,7 +252,7 @@ public class ValidationExceptionsTest {
         {
             Response response = client.target(generateURL("/parameter/fail", OTHER_EXCEPTION)).request()
                     .post(Entity.text("abc"));
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
             Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
             Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -264,7 +264,7 @@ public class ValidationExceptionsTest {
 
         {
             Response response = client.target(generateURL("/parameter/ok", OTHER_EXCEPTION)).request().post(Entity.text("abc"));
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
             Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
             Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -276,7 +276,7 @@ public class ValidationExceptionsTest {
 
         {
             Response response = client.target(generateURL("/return/ok", OTHER_EXCEPTION)).request().post(Entity.text("abc"));
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
             Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
             Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -288,7 +288,7 @@ public class ValidationExceptionsTest {
 
         {
             Response response = client.target(generateURL("/execution/ok", OTHER_EXCEPTION)).request().get();
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
             Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
             Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));
@@ -309,7 +309,7 @@ public class ValidationExceptionsTest {
     @OperateOnDeployment(CRAZY_EXCEPTION)
     public void testCrazyMessage() throws Exception {
         Response response = client.target(generateURL("/", CRAZY_EXCEPTION)).request().get();
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String header = response.getStringHeaders().getFirst(Validation.VALIDATION_HEADER);
         Assert.assertNotNull(ERROR_HEADER_MESSAGE, header);
         Assert.assertTrue(ERROR_HEADER_VALIDATION_EXCEPTION_MESSAGE, Boolean.valueOf(header));

@@ -82,7 +82,7 @@ public class AbstractJaxbClassTest {
         QuarkusRestWebTarget target = client.target(generateURL(""));
         String xmlInput = "<?xml version=\"1.0\"?><abstractJaxbClassPerson><name>bill</name></abstractJaxbClassPerson>";
         Response response = target.request().post(Entity.xml(xmlInput));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         QuarkusRestWebTarget target2 = client.target(generateURL("/customer"));

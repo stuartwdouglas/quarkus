@@ -71,12 +71,12 @@ public class AsynchCounterTest {
     public void testAsynchCounter() throws Exception {
 
         Response response = client.target(generateURL("?asynch=true")).request().get();
-        Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         String jobUrl = response.getHeaderString(HttpHeaders.LOCATION);
         int job1 = Integer.parseInt(jobUrl.substring(jobUrl.lastIndexOf('-') + 1));
         response.close();
         response = client.target(generateURL("?asynch=true")).request().get();
-        Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         jobUrl = response.getHeaderString(HttpHeaders.LOCATION);
         int job2 = Integer.parseInt(jobUrl.substring(jobUrl.lastIndexOf('-') + 1));
         Assert.assertTrue(job2 != job1 + 1);

@@ -30,7 +30,7 @@ public class ClientConfigBearerTokenTestMainClass {
             Response response = client.target(dummyUrl)
                     .register(ClientConfigProviderBearerTokenAbortFilter.class).request().get();
             // ClientConfigProviderBearerTokenAbortFilter will succeed since bearer token was used from ClientConfigProvider
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             result = String.valueOf(response.getStatus());
         }
 

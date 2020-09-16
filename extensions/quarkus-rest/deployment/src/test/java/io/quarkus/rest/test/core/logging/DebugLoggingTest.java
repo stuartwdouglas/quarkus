@@ -132,7 +132,7 @@ public class DebugLoggingTest {
         // perform request
         WebTarget base = client.target(PortProviderUtil.generateURL("/build/in", BUILD_IN));
         Response response = base.request().post(Entity.text("data"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String strResponse = response.readEntity(String.class);
         Assert.assertEquals("Wrong response", "data", strResponse);
 
@@ -174,7 +174,7 @@ public class DebugLoggingTest {
                 DEFAULT_CONTAINER_QUALIFIER);
         WebTarget base = client.target(PortProviderUtil.generateURL("/custom", CUSTOM));
         Response response = base.request().post(Entity.entity("data", "aaa/bbb"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String strResponse = response.readEntity(String.class);
         Assert.assertEquals("Wrong response", "wi_datadata", strResponse);
 

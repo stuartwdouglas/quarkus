@@ -78,7 +78,7 @@ public class CharSetTest {
         cust.setName(name);
         Response response = target.request().accept("application/xml")
                 .post(Entity.entity(cust, MediaType.APPLICATION_XML_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -98,7 +98,7 @@ public class CharSetTest {
         cust.setName(name);
         Response response = target.request().accept("application/xml")
                 .post(Entity.entity(cust, MediaType.APPLICATION_XML_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 }

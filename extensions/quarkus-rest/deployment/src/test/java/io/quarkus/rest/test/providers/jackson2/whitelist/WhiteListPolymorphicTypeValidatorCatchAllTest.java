@@ -89,7 +89,7 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
         String response = sendPost(new TestPolymorphicType(new Automobile()));
         logger.info("response: " + response);
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.contains("Response code: " + Status.CREATED));
+        Assert.assertTrue(response.contains("Response code: " + Status.CREATED.getStatusCode()));
         Assert.assertTrue(response.contains("Created"));
     }
 
@@ -98,7 +98,7 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
         String response = sendPost(new TestPolymorphicType(new Aircraft()));
         logger.info("response: " + response);
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.contains("Response code: " + Status.CREATED));
+        Assert.assertTrue(response.contains("Response code: " + Status.CREATED.getStatusCode()));
         Assert.assertTrue(response.contains("Created"));
     }
 

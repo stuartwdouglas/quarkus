@@ -78,7 +78,7 @@ public class SoupMultipartMsgTest {
                 new MediaType("multipart", "mixed"));
         Response response = target.request().post(entity);
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String result = response.readEntity(String.class);
 
         if (result.startsWith("Failed")) {
@@ -101,7 +101,7 @@ public class SoupMultipartMsgTest {
         Response response = target.request().get();
 
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         List<String> controlList = SoupVendorResource.getControlList();
 
@@ -147,7 +147,7 @@ public class SoupMultipartMsgTest {
         Response response = target.request().get();
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         List<String> controlList = SoupVendorResource.getControlList();
 
         GenericType<List<Soup>> gType = new GenericType<List<Soup>>() {
@@ -188,7 +188,7 @@ public class SoupMultipartMsgTest {
 
         QuarkusRestWebTarget target = client.target(generateURL("/vendor/soupfile"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
         InputPart inputPart = multipartInput.getParts().get(0);

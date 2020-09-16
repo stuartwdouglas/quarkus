@@ -49,7 +49,7 @@ public class JsonFilterSuperClassTest {
                             new StringAsset("Manifest-Version: 1.0\n"
                                     + "Dependencies: com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider\n"),
                             "MANIFEST.MF");
-//                    war.addAsWebInfResource(JsonFilterWithSerlvetFilterTest.class.getPackage(), "web.xml", "web.xml");
+                    //                    war.addAsWebInfResource(JsonFilterWithSerlvetFilterTest.class.getPackage(), "web.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, JsonFilterChildResource.class);
                 }
             });
@@ -68,7 +68,7 @@ public class JsonFilterSuperClassTest {
         WebTarget target = client.target(generateURL("/superclass/333"));
         Response response = target.request().get();
         response.bufferEntity();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertTrue("Filter doesn't work", !response.readEntity(String.class).contains("id") &&
                 response.readEntity(String.class).contains("name"));
         client.close();

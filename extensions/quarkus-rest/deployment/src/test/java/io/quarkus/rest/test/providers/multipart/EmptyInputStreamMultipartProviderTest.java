@@ -58,7 +58,7 @@ public class EmptyInputStreamMultipartProviderTest {
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(generateURL("/rest/zba"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String string = response.readEntity(String.class);
         logger.info(string);
         Assert.assertTrue("The response doesn't contain the expected header", string.indexOf("Content-Length") > -1);

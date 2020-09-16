@@ -114,6 +114,6 @@ public class TraceTest extends ClientTestBase {
     @Test
     public void TraceTest() {
         Response response = client.target(generateURL("/resource/trace")).request().trace(Response.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
     }
 }

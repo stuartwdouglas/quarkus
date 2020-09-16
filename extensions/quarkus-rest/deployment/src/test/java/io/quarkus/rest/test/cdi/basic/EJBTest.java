@@ -112,8 +112,8 @@ public class EJBTest {
 
         WebTarget base = client.target(generateURL("/verifyScopes/"));
         Response response = base.request().get();
-        assertEquals("Wrong response status", Status.OK, response.getStatus());
-        assertEquals("Wrong response content", Status.OK, response.readEntity(Integer.class).intValue());
+        assertEquals("Wrong response status", Status.OK.getStatusCode(), response.getStatus());
+        assertEquals("Wrong response content", Status.OK.getStatusCode(), response.readEntity(Integer.class).intValue());
     }
 
     /**
@@ -125,7 +125,7 @@ public class EJBTest {
     public void testVerifyScopesLocalEJB() throws Exception {
         log.info("starting testVerifyScopesLocalEJB()");
         int result = localResource.verifyScopes();
-        assertEquals(Status.OK, result);
+        assertEquals(Status.OK.getStatusCode(), result);
     }
 
     /**
@@ -142,7 +142,7 @@ public class EJBTest {
         log.info("remote: " + remoteResource);
         int result = remoteResource.verifyScopes();
         log.info("result: " + result);
-        assertEquals(Status.OK, result);
+        assertEquals(Status.OK.getStatusCode(), result);
     }
 
     /**
@@ -155,8 +155,8 @@ public class EJBTest {
         log.info("starting testVerifyInjectionJaxRs()");
         WebTarget base = client.target(generateURL("/verifyInjection/"));
         Response response = base.request().get();
-        assertEquals("Wrong response status", Status.OK, response.getStatus());
-        assertEquals("Wrong response content", Status.OK, response.readEntity(Integer.class).intValue());
+        assertEquals("Wrong response status", Status.OK.getStatusCode(), response.getStatus());
+        assertEquals("Wrong response content", Status.OK.getStatusCode(), response.readEntity(Integer.class).intValue());
     }
 
     /**
@@ -169,7 +169,7 @@ public class EJBTest {
         log.info("starting testVerifyInjectionLocalEJB()");
         int result = localResource.verifyInjection();
         log.info("testVerifyInjectionLocalEJB result: " + result);
-        assertEquals(Status.OK, result);
+        assertEquals(Status.OK.getStatusCode(), result);
     }
 
     /**
@@ -186,7 +186,7 @@ public class EJBTest {
         log.info("remote: " + remoteResource);
         int result = remoteResource.verifyInjection();
         log.info("result: " + result);
-        assertEquals(Status.OK, result);
+        assertEquals(Status.OK.getStatusCode(), result);
     }
 
     /**
@@ -202,7 +202,7 @@ public class EJBTest {
         EJBBook book1 = new EJBBook("RESTEasy: the Sequel");
         Response response = base.request().post(Entity.entity(book1, Constants.MEDIA_TYPE_TEST_XML));
         log.info("Status: " + response.getStatus());
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         int id1 = response.readEntity(int.class);
         log.info("id: " + id1);
         assertEquals("Wrong id of Book1 id", Counter.INITIAL_VALUE, id1);
@@ -211,7 +211,7 @@ public class EJBTest {
         EJBBook book2 = new EJBBook("RESTEasy: It's Alive");
         response = base.request().post(Entity.entity(book2, Constants.MEDIA_TYPE_TEST_XML));
         log.info("Status: " + response.getStatus());
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         int id2 = response.readEntity(int.class);
         log.info("id: " + id2);
         assertEquals("Wrong id of Book2 id", Counter.INITIAL_VALUE + 1, id2);
@@ -220,7 +220,7 @@ public class EJBTest {
         base = client.target(generateURL("/book/" + id1));
         response = base.request().accept(Constants.MEDIA_TYPE_TEST_XML).get();
         log.info("Status: " + response.getStatus());
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         EJBBook result = response.readEntity(EJBBook.class);
         log.info("book: " + book1);
         assertEquals("Wrong book1 received from server", book1, result);
@@ -229,7 +229,7 @@ public class EJBTest {
         base = client.target(generateURL("/book/" + id2));
         response = base.request().accept(Constants.MEDIA_TYPE_TEST_XML).get();
         log.info("Status: " + response.getStatus());
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         result = response.readEntity(EJBBook.class);
         log.info("book: " + book2);
         assertEquals("Wrong book2 received from server", book2, result);
@@ -238,14 +238,14 @@ public class EJBTest {
         base = client.target(generateURL("/uses/4"));
         response = base.request().get();
         log.info("Status: " + response.getStatus());
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         // Reset counter.
         base = client.target(generateURL("/reset"));
         response = base.request().get();
         log.info("Status: " + response.getStatus());
-        assertEquals(Status.NO_CONTENT, response.getStatus());
+        assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 

@@ -86,7 +86,7 @@ public class ClientResponseFailureTest {
             proxy.error();
             failed = false;
         } catch (NotFoundException e) {
-            Assert.assertEquals(Status.NOT_FOUND, e.getResponse().getStatus());
+            Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), e.getResponse().getStatus());
             Assert.assertEquals("There wasn't expected message", e.getResponse().readEntity(String.class),
                     "there was an error");
             e.getResponse().close();

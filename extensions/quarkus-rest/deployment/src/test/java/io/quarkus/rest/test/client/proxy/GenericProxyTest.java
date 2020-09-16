@@ -98,7 +98,7 @@ public class GenericProxyTest {
         Response response = target.request().post(Entity.text("hello"));
 
         String hello = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Response has wrong content", "hello", hello);
 
         response.close();

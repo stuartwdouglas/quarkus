@@ -62,7 +62,7 @@ public class FilterDispatcherUndertowTest {
         byte[] b = new byte[16];
         conn.getInputStream().read(b);
         logger.info("Response result: " + new String(b));
-        Assert.assertEquals(Status.OK, conn.getResponseCode());
+        Assert.assertEquals(Status.OK.getStatusCode(), conn.getResponseCode());
         conn.disconnect();
     }
 }

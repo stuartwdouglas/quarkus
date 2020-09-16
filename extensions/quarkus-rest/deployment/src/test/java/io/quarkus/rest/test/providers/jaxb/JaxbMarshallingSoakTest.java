@@ -20,7 +20,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.utils.TimeoutUtil;
+import io.quarkus.rest.test.util.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -104,7 +104,7 @@ public class JaxbMarshallingSoakTest {
         for (int i = 0; i < iterator; i++) {
             WebTarget target = client.target(generateURL("/mpac/add?oneway=true"));
             Response response = target.request().post(Entity.entity(itemString, "application/xml"));
-            Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+            Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
             response.close();
         }
         latch.await(10, TimeUnit.SECONDS);

@@ -98,7 +98,7 @@ public class AsynchBasicTest {
 
             //response = request.put();
             long end = System.currentTimeMillis() - start;
-            Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+            Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
             Assert.assertTrue(end < 1000);
             Assert.assertTrue("Request was not sent correctly", latch.await(2, TimeUnit.SECONDS));
         } finally {
@@ -123,7 +123,7 @@ public class AsynchBasicTest {
                 .post(Entity.entity("content", "text/plain"));
         @SuppressWarnings("unused")
         long end = System.currentTimeMillis() - start;
-        Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         String jobUrl = response.getHeaderString(HttpHeaders.LOCATION);
         response.close();
 
@@ -150,18 +150,18 @@ public class AsynchBasicTest {
         // test its still there
         response = client.target(jobUrl).request().get();
         Thread.sleep(1000);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong response content", "content", response.readEntity(String.class));
         response.close();
 
         // delete and test delete
         response = client.target(jobUrl).request().delete();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         response = client.target(jobUrl).request().get();
         Thread.sleep(1000);
-        Assert.assertEquals(Status.GONE, response.getStatus());
+        Assert.assertEquals(Status.GONE.getStatusCode(), response.getStatus());
         response.close();
 
         client.close();
@@ -180,7 +180,7 @@ public class AsynchBasicTest {
         latch = new CountDownLatch(1);
         Response response = client.target(generateURL("?asynch=true", ONE_MAX_DEPLOYMENT)).request()
                 .post(Entity.entity("content", "text/plain"));
-        Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         String jobUrl1 = response.getHeaderString(HttpHeaders.LOCATION);
         Assert.assertTrue("Request was not sent correctly", latch.await(3, TimeUnit.SECONDS));
         response.close();
@@ -188,7 +188,7 @@ public class AsynchBasicTest {
         latch = new CountDownLatch(1);
         response = client.target(generateURL("?asynch=true", ONE_MAX_DEPLOYMENT)).request()
                 .post(Entity.entity("content", "text/plain"));
-        Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         String jobUrl2 = response.getHeaderString(HttpHeaders.LOCATION);
         Assert.assertTrue("Request was not sent correctly", latch.await(3, TimeUnit.SECONDS));
         Assert.assertTrue("There are only one response for two requests", !jobUrl1.equals(jobUrl2));
@@ -196,23 +196,23 @@ public class AsynchBasicTest {
 
         response = client.target(jobUrl1).request().get();
         Thread.sleep(1000);
-        Assert.assertEquals("Response should be gone, but server still remember it", Status.GONE,
+        Assert.assertEquals("Response should be gone, but server still remember it", Status.GONE.getStatusCode(),
                 response.getStatus());
         response.close();
 
         // test its still there
         response = client.target(jobUrl2).request().get();
         Thread.sleep(1000);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "content", response.readEntity(String.class));
         response.close();
 
         // delete and test delete
         response = client.target(jobUrl2).request().delete();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
         response = client.target(jobUrl2).request().get();
-        Assert.assertEquals(Status.GONE, response.getStatus());
+        Assert.assertEquals(Status.GONE.getStatusCode(), response.getStatus());
         response.close();
 
         client.close();
@@ -234,7 +234,7 @@ public class AsynchBasicTest {
             latch = new CountDownLatch(1);
             Response response = client.target(generateURL("?asynch=true", DEFAULT_DEPLOYMENT)).request()
                     .post(Entity.entity("content", "text/plain"));
-            Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+            Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
             String jobUrl = response.getHeaderString(HttpHeaders.LOCATION);
             logger.info(i + ": " + jobUrl);
             jobs.add(jobUrl);
@@ -248,7 +248,7 @@ public class AsynchBasicTest {
             Response response = client.target(jobs.get(i)).request().get();
             logger.info(
                     i + " (" + jobs.get(i) + "): get " + response.getStatus() + ", expected: " + Status.GONE);
-            Assert.assertEquals("Response should be gone, but server still remember it", Status.GONE,
+            Assert.assertEquals("Response should be gone, but server still remember it", Status.GONE.getStatusCode(),
                     response.getStatus());
             response.close();
             Thread.sleep(50);
@@ -257,7 +257,7 @@ public class AsynchBasicTest {
         for (int i = 10; i < 110; i++) {
             Response response = client.target(jobs.get(i)).request().get();
             logger.info(i + " (" + jobs.get(i) + "): get " + response.getStatus() + ", expected: " + Status.OK);
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("Wrong content of response", "content", response.readEntity(String.class));
             response.close();
             Thread.sleep(50);
@@ -279,7 +279,7 @@ public class AsynchBasicTest {
         latch = new CountDownLatch(1);
         Response response = client.target(generateURL("?asynch=true", TEN_MAX_DEPLOYMENT)).request()
                 .post(Entity.entity("content", "text/plain"));
-        Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         String jobUrl2 = response.getHeaderString(HttpHeaders.LOCATION);
         Assert.assertTrue("Request was not sent correctly", latch.await(3, TimeUnit.SECONDS));
         response.close();
@@ -287,14 +287,14 @@ public class AsynchBasicTest {
 
         // test its still there
         response = client.target(jobUrl2).request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "content", response.readEntity(String.class));
         response.close();
         Thread.sleep(50);
 
         response = client.target(jobUrl2).request().get();
         Thread.sleep(1000);
-        Assert.assertEquals(Status.GONE, response.getStatus());
+        Assert.assertEquals(Status.GONE.getStatusCode(), response.getStatus());
         response.close();
 
         client.close();

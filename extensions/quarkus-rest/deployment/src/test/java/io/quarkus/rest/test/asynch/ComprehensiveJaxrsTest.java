@@ -59,7 +59,7 @@ public class ComprehensiveJaxrsTest {
                 JaxrsAsyncServletPrintingErrorHandler.class, JaxrsAsyncServletTimeoutHandler.class,
                 JaxrsAsyncServletResource.class, JaxrsAsyncServletServiceUnavailableExceptionMapper.class,
                 JaxrsAsyncServletXmlData.class);
-//        war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
+        //        war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
         return war;
     }
 
@@ -454,7 +454,7 @@ public class ComprehensiveJaxrsTest {
 
     private void invokeClear() throws Exception {
         Response response = client.target(getAbsoluteUrl()).path("clear").request().get();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
     }
 
     private Future<Response> invokeRequest(String resource) {

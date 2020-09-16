@@ -65,8 +65,8 @@ public class TwoSecurityDomainsTest {
                     Hashtable<String, String> contextParams = new Hashtable<String, String>();
                     contextParams.put("resteasy.role.based.security", "true");
 
-//                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
-//                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
+                    //                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
+                    //                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
 
                     return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
                 }
@@ -83,8 +83,8 @@ public class TwoSecurityDomainsTest {
                     Hashtable<String, String> contextParams = new Hashtable<String, String>();
                     contextParams.put("resteasy.role.based.security", "true");
 
-//                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web2.xml", "/jboss-web.xml")
-//                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
+                    //                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web2.xml", "/jboss-web.xml")
+                    //                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
 
                     return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
                 }
@@ -116,12 +116,12 @@ public class TwoSecurityDomainsTest {
     public void testOneClientTwoDeploymentsTwoSecurityDomains() throws Exception {
         Response response = authorizedClient.target(PortProviderUtil.generateURL("/secured",
                 TwoSecurityDomainsTest.class.getSimpleName() + SECURITY_DOMAIN_DEPLOYMENT_1)).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE, "hello", response.readEntity(String.class));
 
         response = authorizedClient.target(PortProviderUtil.generateURL("/secured",
                 TwoSecurityDomainsTest.class.getSimpleName() + SECURITY_DOMAIN_DEPLOYMENT_2)).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE, "hello", response.readEntity(String.class));
     }
 

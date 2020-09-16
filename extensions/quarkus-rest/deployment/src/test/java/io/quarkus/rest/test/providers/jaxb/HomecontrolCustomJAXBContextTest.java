@@ -64,7 +64,7 @@ public class HomecontrolCustomJAXBContextTest {
                             IDType.class,
                             ErrorMessageType.class);
 
-//                    war.addAsWebInfResource(HomecontrolCustomJAXBContextTest.class.getPackage(), "homecontrol/web.xml");
+                    //                    war.addAsWebInfResource(HomecontrolCustomJAXBContextTest.class.getPackage(), "homecontrol/web.xml");
                     return TestUtil.finishContainerPrepare(war, null, HomecontrolCustomJAXBContextTest.class);
                 }
             });

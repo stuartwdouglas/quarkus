@@ -72,7 +72,7 @@ public class ResponseFilterTest {
         for (Response.Status status : Response.Status.values()) {
             String content = String.valueOf(status.getStatusCode());
             Response response = client.target(generateURL("/resource/getstatus")).request().post(Entity.text(content));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("The entity doesn't contain the original http code of the request", content,
                     response.readEntity(String.class));
             response.close();
@@ -97,7 +97,7 @@ public class ResponseFilterTest {
         for (Response.Status status : Response.Status.values()) {
             String content = String.valueOf(status.getStatusCode());
             Response response = client.target(generateURL("/resource/getstatusinfo")).request().post(Entity.text(content));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("The entity doesn't contain the original http code of the request", content,
                     response.readEntity(String.class));
             response.close();
@@ -117,7 +117,7 @@ public class ResponseFilterTest {
     public void testEntityType() {
         String content = "string";
         Response response = client.target(generateURL("/resource/getentitytype")).request().post(Entity.text(content));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The entity doesn't contain the original entity type", String.class.getName(),
                 response.readEntity(String.class));
         response.close();

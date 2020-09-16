@@ -76,7 +76,7 @@ public class ResponseFilterChangeStatusTest {
     @Test
     public void testDefaultHead() {
         Response response = client.target(generateURL("/default_head")).request().head();
-        Assert.assertEquals(Status.CREATED, response.getStatus());
+        Assert.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
 
         thrown.expect(ProcessingException.class);
         response.readEntity(String.class);
@@ -95,7 +95,7 @@ public class ResponseFilterChangeStatusTest {
     @Test
     public void testChangeStatus() {
         Response response = client.target(generateURL("/empty")).request().post(null);
-        Assert.assertEquals(Status.CREATED, response.getStatus());
+        Assert.assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
         response.close();
     }
 }

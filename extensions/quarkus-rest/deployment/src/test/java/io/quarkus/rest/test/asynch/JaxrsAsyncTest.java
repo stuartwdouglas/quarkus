@@ -77,7 +77,7 @@ public class JaxrsAsyncTest {
     public void testNegativeTimeout() throws Exception {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("/negative")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong response", "hello", response.readEntity(String.class));
         response.close();
         client.close();
@@ -91,7 +91,7 @@ public class JaxrsAsyncTest {
     public void testZeroTimeout() throws Exception {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("/zero")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong response", "hello", response.readEntity(String.class));
         response.close();
         client.close();

@@ -22,7 +22,7 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.api.validation.ResteasyConstraintViolation;
 import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
-import org.jboss.resteasy.utils.TimeoutUtil;
+import io.quarkus.rest.test.util.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -274,7 +274,7 @@ public class ValidationComplexTest {
         Response response = client
                 .target(generateURL(BASIC_DEPLOYMENT, "/", ValidationComplexResourceWithValidField.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -287,7 +287,7 @@ public class ValidationComplexTest {
         Response response = client
                 .target(generateURL(BASIC_DEPLOYMENT, "/", ValidationComplexResourceWithInvalidField.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 1, 0, 0, 0);
@@ -308,7 +308,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/abc/unused",
                         ValidationComplexResourceWithProperty.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -322,7 +322,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/abcdef/unused",
                         ValidationComplexResourceWithProperty.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(entity);
         TestUtil.countViolations(r, 1, 0, 0, 0);
@@ -343,7 +343,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/abc/wxyz",
                         ValidationComplexResourceWithFieldAndProperty.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid
@@ -351,7 +351,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/a/uvwxyz",
                         ValidationComplexResourceWithFieldAndProperty.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(entity);
         TestUtil.countViolations(r, 2, 0, 0, 0);
@@ -376,7 +376,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/abc/xyz",
                         ValidationComplexResourceWithClassConstraint.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid
@@ -384,7 +384,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/a/b",
                         ValidationComplexResourceWithClassConstraint.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(entity);
         TestUtil.countViolations(r, 0, 1, 0, 0);
@@ -405,14 +405,14 @@ public class ValidationComplexTest {
         Response response = client
                 .target(generateURL(BASIC_DEPLOYMENT, "/abcd/vwxyz", ValidationComplexResourceWithGraph.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid
         response = client
                 .target(generateURL(BASIC_DEPLOYMENT, "/abc/xyz", ValidationComplexResourceWithGraph.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 2, 0, 0, 0);
@@ -442,14 +442,14 @@ public class ValidationComplexTest {
         Response response = client
                 .target(generateURL(BASIC_DEPLOYMENT, "/abcde", ValidationComplexResourceWithArray.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid
         response = client
                 .target(generateURL(BASIC_DEPLOYMENT, "/abc", ValidationComplexResourceWithArray.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 1, 0, 0, 0);
@@ -469,13 +469,13 @@ public class ValidationComplexTest {
         Response response = client
                 .target(generateURL(BASIC_DEPLOYMENT, "/abcde", ValidationComplexResourceWithList.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid
         response = client.target(generateURL(BASIC_DEPLOYMENT, "/abc", ValidationComplexResourceWithList.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 1, 0, 0, 0);
@@ -495,13 +495,13 @@ public class ValidationComplexTest {
         Response response = client
                 .target(generateURL(BASIC_DEPLOYMENT, "/abcde", ValidationComplexResourceWithMap.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid
         response = client.target(generateURL(BASIC_DEPLOYMENT, "/abc", ValidationComplexResourceWithMap.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 1, 0, 0, 0);
@@ -522,7 +522,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/abcde",
                         ValidationComplexResourceWithMapOfListOfArrayOfStrings.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid
@@ -530,7 +530,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/abc",
                         ValidationComplexResourceWithMapOfListOfArrayOfStrings.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(String.class.cast(entity));
         logger.info("exception: " + r);
@@ -552,7 +552,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/native",
                         ValidationComplexResourceWithParameters.class.getSimpleName()))
                 .request().post(Entity.entity(new ValidationComplexFoo("a"), "application/foo"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Valid imposed constraint
@@ -560,7 +560,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/imposed",
                         ValidationComplexResourceWithParameters.class.getSimpleName()))
                 .request().post(Entity.entity(new ValidationComplexFoo("abcde"), "application/foo"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Valid native and imposed constraints.
@@ -568,7 +568,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/nativeAndImposed",
                         ValidationComplexResourceWithParameters.class.getSimpleName()))
                 .request().post(Entity.entity(new ValidationComplexFoo("abc"), "application/foo"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid native constraint
@@ -577,7 +577,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/native",
                         ValidationComplexResourceWithParameters.class.getSimpleName()))
                 .request().post(Entity.entity(new ValidationComplexFoo("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(entity);
         TestUtil.countViolations(r, 0, 0, 1, 0);
@@ -591,7 +591,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/imposed",
                         ValidationComplexResourceWithParameters.class.getSimpleName()))
                 .request().post(Entity.entity(new ValidationComplexFoo("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         entity = response.readEntity(String.class);
         r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 0, 0, 1, 0);
@@ -605,7 +605,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/nativeAndImposed",
                         ValidationComplexResourceWithParameters.class.getSimpleName()))
                 .request().post(Entity.entity(new ValidationComplexFoo("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         entity = response.readEntity(String.class);
         r = new ViolationReport(entity);
         TestUtil.countViolations(r, 0, 0, 2, 0);
@@ -630,7 +630,7 @@ public class ValidationComplexTest {
         url += "?q=qqq"; // query param
         Form form = new Form().param("f", "fff");
         response = client.target(url).request().header("h", "hhh").cookie(new Cookie("c", "ccc")).post(Entity.form(form));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid other parameters
@@ -640,7 +640,7 @@ public class ValidationComplexTest {
         url += "?q=qqqq"; // query param
         form = new Form().param("f", "ffff");
         response = client.target(url).request().header("h", "hhhh").cookie(new Cookie("c", "cccc")).post(Entity.form(form));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         entity = response.readEntity(String.class);
         r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 0, 0, 6, 0);
@@ -666,7 +666,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/native",
                         ValidationComplexResourceWithReturnValues.class.getSimpleName()))
                 .request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationComplexFoo.class));
         response.close();
 
@@ -676,7 +676,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/imposed",
                         ValidationComplexResourceWithReturnValues.class.getSimpleName()))
                 .request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationComplexFoo.class));
         response.close();
 
@@ -686,7 +686,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/nativeAndImposed",
                         ValidationComplexResourceWithReturnValues.class.getSimpleName()))
                 .request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationComplexFoo.class));
         response.close();
 
@@ -695,7 +695,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/native",
                         ValidationComplexResourceWithReturnValues.class.getSimpleName()))
                 .request().post(Entity.entity(new ValidationComplexFoo("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 0, 0, 0, 1);
@@ -709,7 +709,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/imposed",
                         ValidationComplexResourceWithReturnValues.class.getSimpleName()))
                 .request().post(Entity.entity(new ValidationComplexFoo("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         entity = response.readEntity(String.class);
         r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 0, 0, 0, 1);
@@ -723,7 +723,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/nativeAndImposed",
                         ValidationComplexResourceWithReturnValues.class.getSimpleName()))
                 .request().post(Entity.entity(new ValidationComplexFoo("abcdef"), "application/foo"));
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         entity = response.readEntity(String.class);
         r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 0, 0, 0, 2);
@@ -754,7 +754,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/abc/wxyz/unused/unused",
                         ValidationComplexResourceWithAllFivePotentialViolations.class.getSimpleName()))
                 .request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(foo, response.readEntity(ValidationComplexFoo.class));
         response.close();
 
@@ -765,7 +765,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/a/z/unused/unused",
                         ValidationComplexResourceWithAllFivePotentialViolations.class.getSimpleName()))
                 .request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 2, 1, 1, 0);
@@ -800,7 +800,7 @@ public class ValidationComplexTest {
             Response response = client
                     .target(generateURL(BASIC_DEPLOYMENT, "/inherit", ValidationComplexInterfaceSub.class.getSimpleName()))
                     .request().post(Entity.entity("ccc", MediaType.TEXT_PLAIN_TYPE));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(RESPONSE_ERROR_MSG, "ccc", response.readEntity(String.class));
             response.close();
         }
@@ -812,7 +812,7 @@ public class ValidationComplexTest {
             Response response = client
                     .target(generateURL(BASIC_DEPLOYMENT, "/override", ValidationComplexInterfaceSub.class.getSimpleName()))
                     .request().post(Entity.entity("ccc", MediaType.TEXT_PLAIN_TYPE));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(RESPONSE_ERROR_MSG, "ccc", response.readEntity(String.class));
             response.close();
         }
@@ -825,7 +825,7 @@ public class ValidationComplexTest {
                     .target(generateURL(BASIC_DEPLOYMENT, "/inherit", ValidationComplexInterfaceSub.class.getSimpleName()))
                     .request().post(Entity.entity("e", MediaType.TEXT_PLAIN_TYPE));
             logger.info("status: " + response.getStatus());
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             Object entity = response.readEntity(String.class);
             ViolationReport r = new ViolationReport(String.class.cast(entity));
             TestUtil.countViolations(r, 0, 2, 1, 0);
@@ -840,7 +840,7 @@ public class ValidationComplexTest {
                     .target(generateURL(BASIC_DEPLOYMENT, "/override", ValidationComplexInterfaceSub.class.getSimpleName()))
                     .request().post(Entity.entity("e", MediaType.TEXT_PLAIN_TYPE));
             logger.info("status: " + response.getStatus());
-            Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             Object entity = response.readEntity(String.class);
             ViolationReport r = new ViolationReport(String.class.cast(entity));
             TestUtil.countViolations(r, 0, 2, 1, 0);
@@ -855,7 +855,7 @@ public class ValidationComplexTest {
                     .target(generateURL(BASIC_DEPLOYMENT, "/inherit", ValidationComplexInterfaceSub.class.getSimpleName()))
                     .request().post(Entity.entity("eeee", MediaType.TEXT_PLAIN_TYPE));
             logger.info("status: " + response.getStatus());
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             Object entity = response.readEntity(String.class);
             ViolationReport r = new ViolationReport(String.class.cast(entity));
             TestUtil.countViolations(r, 0, 0, 0, 1);
@@ -870,7 +870,7 @@ public class ValidationComplexTest {
                     .target(generateURL(BASIC_DEPLOYMENT, "/override", ValidationComplexInterfaceSub.class.getSimpleName()))
                     .request().post(Entity.entity("eeee", MediaType.TEXT_PLAIN_TYPE));
             logger.info("status: " + response.getStatus());
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             Object entity = response.readEntity(String.class);
             ViolationReport r = new ViolationReport(String.class.cast(entity));
             TestUtil.countViolations(r, 0, 0, 0, 2);
@@ -889,7 +889,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/validField",
                         ValidationComplexResourceWithSubLocators.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Sub-resource locator returns resource with invalid field.
@@ -897,7 +897,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/invalidField",
                         ValidationComplexResourceWithSubLocators.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(entity);
         TestUtil.countViolations(r, 1, 0, 0, 0);
@@ -913,7 +913,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/property/abc/unused",
                         ValidationComplexResourceWithSubLocators.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Sub-resource locator returns resource with invalid property.
@@ -921,7 +921,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/property/abcdef/unused",
                         ValidationComplexResourceWithSubLocators.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         entity = response.readEntity(String.class);
         r = new ViolationReport(entity);
         TestUtil.countViolations(r, 1, 0, 0, 0);
@@ -936,7 +936,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/everything/abc/wxyz/unused/unused",
                         ValidationComplexResourceWithSubLocators.class.getSimpleName()))
                 .request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationComplexFoo.class));
         response.close();
 
@@ -948,7 +948,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/everything/a/z/unused/unused",
                         ValidationComplexResourceWithSubLocators.class.getSimpleName()))
                 .request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         entity = response.readEntity(String.class);
         r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 2, 1, 1, 0);
@@ -970,7 +970,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/locator/sublocator/abc",
                         ValidationComplexResourceWithSubLocators.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Sub-resource locator returns resource with invalid property.
@@ -978,7 +978,7 @@ public class ValidationComplexTest {
                 .target(generateURL(CUSTOM_OBJECT_DEPLOYMENT, "/locator/sublocator/abcdef",
                         ValidationComplexResourceWithSubLocators.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         entity = response.readEntity(String.class);
         r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 1, 0, 0, 0);
@@ -1000,7 +1000,7 @@ public class ValidationComplexTest {
                 .target(generateURL(ASYNC_CUSTOM_OBJECT_DEPLOYMENT, "/a/z/unused/unused?asynch=true",
                         ValidationComplexResourceWithAllFivePotentialViolations.class.getSimpleName()))
                 .request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         String jobUrl = response.getHeaderString(HttpHeaders.LOCATION);
         logger.info("JOB: " + jobUrl);
         response.close();
@@ -1016,7 +1016,7 @@ public class ValidationComplexTest {
                 break;
             }
         }
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Object entity = response.readEntity(String.class);
         ViolationReport r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 2, 1, 1, 0);
@@ -1038,7 +1038,7 @@ public class ValidationComplexTest {
 
         // Delete job.
         response = client.target(jobUrl).request().delete();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Submit asynchronous job with violations in result of resource method.
@@ -1047,7 +1047,7 @@ public class ValidationComplexTest {
                 .target(generateURL(ASYNC_CUSTOM_OBJECT_DEPLOYMENT, "/abc/xyz/unused/unused?asynch=true",
                         ValidationComplexResourceWithAllFivePotentialViolations.class.getSimpleName()))
                 .request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.ACCEPTED, response.getStatus());
+        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         jobUrl = response.getHeaderString(HttpHeaders.LOCATION);
         logger.info("JOB: " + jobUrl);
         response.close();
@@ -1063,7 +1063,7 @@ public class ValidationComplexTest {
                 break;
             }
         }
-        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         entity = response.readEntity(String.class);
         r = new ViolationReport(String.class.cast(entity));
         TestUtil.countViolations(r, 0, 0, 0, 1);
@@ -1074,7 +1074,7 @@ public class ValidationComplexTest {
 
         // Delete job.
         response = client.target(jobUrl).request().delete();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -1089,7 +1089,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/2/3",
                         ValidationComplexSubResourceWithCrossParameterConstraint.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
 
         // Invalid
@@ -1097,7 +1097,7 @@ public class ValidationComplexTest {
                 .target(generateURL(BASIC_DEPLOYMENT, "/5/7",
                         ValidationComplexSubResourceWithCrossParameterConstraint.class.getSimpleName()))
                 .request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String header = response.getHeaderString(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Missing validation header", header);
         Assert.assertTrue("Wrong validation header", Boolean.valueOf(header));

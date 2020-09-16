@@ -48,7 +48,7 @@ public class ResourceLocatorRegexNonCapturingGroupTest {
 
                     war.addClasses(ResourceLocatorRegexCapturingGroupSubResourceNoPath.class,
                             ResourceLocatorRegexCapturingGroupSubResourceWithPath.class);
-//                    war.addAsWebInfResource(ResourceLocatorRegexNonCapturingGroupTest.class.getPackage(), "web.xml", "web.xml");
+                    //                    war.addAsWebInfResource(ResourceLocatorRegexNonCapturingGroupTest.class.getPackage(), "web.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, ResourceLocatorRegexNonCapturingGroup.class);
                 }
             });
@@ -71,14 +71,14 @@ public class ResourceLocatorRegexNonCapturingGroupTest {
     public void testBird() throws Exception {
         {
             Response response = client.target(generateURL("/noCapture/nobird")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "nobird success", response.readEntity(String.class));
             response.close();
         }
 
         {
             Response response = client.target(generateURL("/noCapture/BIRD/test")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "BIRD test", response.readEntity(String.class));
             response.close();
         }
@@ -88,14 +88,14 @@ public class ResourceLocatorRegexNonCapturingGroupTest {
     public void testFly() throws Exception {
         {
             Response response = client.target(generateURL("/noCapture/a/nofly/b")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "a/nofly/b success", response.readEntity(String.class));
             response.close();
         }
 
         {
             Response response = client.target(generateURL("/noCapture/a/FLY/b/test")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "a/FLY/b test", response.readEntity(String.class));
             response.close();
         }

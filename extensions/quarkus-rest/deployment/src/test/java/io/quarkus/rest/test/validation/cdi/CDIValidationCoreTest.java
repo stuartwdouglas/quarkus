@@ -70,7 +70,7 @@ public class CDIValidationCoreTest {
         Invocation.Builder request = client.target(generateURL("/input/11/13/17")).request();
         ClientResponse response = (ClientResponse) request.get();
         int answer = response.readEntity(Integer.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("Wrong content of response", 17, answer);
     }
 
@@ -83,7 +83,7 @@ public class CDIValidationCoreTest {
         Invocation.Builder request = client.target(generateURL("/input/1/2/3")).request();
         ClientResponse response = (ClientResponse) request.get();
         String answer = response.readEntity(String.class);
-        assertEquals(Status.BAD_REQUEST, response.getStatus());
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         ViolationReport r = new ViolationReport(answer);
         TestUtil.countViolations(r, 2, 1, 1, 0);
         ResteasyConstraintViolation cv = TestUtil.getViolationByMessage(r.getPropertyViolations(),
@@ -108,7 +108,7 @@ public class CDIValidationCoreTest {
         Invocation.Builder request = client.target(generateURL("/input/5/7/9")).request();
         ClientResponse response = (ClientResponse) request.get();
         String answer = response.readEntity(String.class);
-        assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         ViolationReport r = new ViolationReport(answer);
         TestUtil.countViolations(r, 0, 0, 0, 1);
         ResteasyConstraintViolation cv = r.getReturnValueViolations().iterator().next();
@@ -125,7 +125,7 @@ public class CDIValidationCoreTest {
         Invocation.Builder request = client.target(generateURL("/locator/5/7/17/19")).request();
         ClientResponse response = (ClientResponse) request.get();
         int result = response.readEntity(int.class);
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("Wrong content of response", 19, result);
     }
 
@@ -138,7 +138,7 @@ public class CDIValidationCoreTest {
         Invocation.Builder request = client.target(generateURL("/locator/5/7/13/0")).request();
         ClientResponse response = (ClientResponse) request.get();
         String answer = response.readEntity(String.class);
-        assertEquals(Status.BAD_REQUEST, response.getStatus());
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         ViolationReport r = new ViolationReport(answer);
         TestUtil.countViolations(r, 0, 0, 1, 0);
         ResteasyConstraintViolation cv = r.getParameterViolations().iterator().next();
@@ -155,7 +155,7 @@ public class CDIValidationCoreTest {
         Invocation.Builder request = client.target(generateURL("/locator/5/7/13/15")).request();
         ClientResponse response = (ClientResponse) request.get();
         String answer = response.readEntity(String.class);
-        assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         ViolationReport r = new ViolationReport(answer);
         TestUtil.countViolations(r, 0, 0, 0, 1);
         ResteasyConstraintViolation cv = r.getReturnValueViolations().iterator().next();
@@ -172,7 +172,7 @@ public class CDIValidationCoreTest {
         Invocation.Builder request = client.target(generateURL("/none/1/2/3")).request();
         ClientResponse response = (ClientResponse) request.get();
         String answer = response.readEntity(String.class);
-        assertEquals(Status.BAD_REQUEST, response.getStatus());
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         ViolationReport r = new ViolationReport(answer);
         TestUtil.countViolations(r, 2, 1, 0, 0);
         ResteasyConstraintViolation cv = TestUtil.getViolationByMessage(r.getPropertyViolations(),
@@ -194,7 +194,7 @@ public class CDIValidationCoreTest {
         Invocation.Builder request = client.target(generateURL("/noParams/1/2")).request();
         ClientResponse response = (ClientResponse) request.get();
         String answer = response.readEntity(String.class);
-        assertEquals(Status.BAD_REQUEST, response.getStatus());
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         ViolationReport r = new ViolationReport(answer);
         TestUtil.countViolations(r, 2, 1, 0, 0);
         ResteasyConstraintViolation cv = TestUtil.getViolationByMessage(r.getPropertyViolations(),

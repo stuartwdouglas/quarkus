@@ -86,7 +86,7 @@ public class XXEBasicTest {
         Response response = client.target(PortProviderUtil.generateURL("/", "false")).request()
                 .post(Entity.entity(request, "application/xml"));
 
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         Assert.assertEquals(entity, null);
         response.close();
@@ -100,7 +100,7 @@ public class XXEBasicTest {
     public void testXXEWithExpansion() throws Exception {
         Response response = client.target(PortProviderUtil.generateURL("/", "true")).request()
                 .post(Entity.entity(request, "application/xml"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         Assert.assertEquals("xx:xx:xx:xx:xx:xx:xx", entity);
         response.close();

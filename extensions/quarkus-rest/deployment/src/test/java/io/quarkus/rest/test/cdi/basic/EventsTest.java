@@ -77,7 +77,7 @@ public class EventsTest {
         WebTarget base = client.target(generateURL("/create/"));
         EJBBook book = new EJBBook("RESTEasy: the Sequel");
         Response response = base.request().post(Entity.entity(book, Constants.MEDIA_TYPE_TEST_XML_TYPE));
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         int id = response.readEntity(int.class);
         assertEquals("Received wrong id of stored book", 0, id);
         response.close();
@@ -85,7 +85,7 @@ public class EventsTest {
         // Retrieve book.
         WebTarget base2 = client.target(generateURL("/book/" + id));
         Response response2 = base2.request().accept(Constants.MEDIA_TYPE_TEST_XML).get();
-        assertEquals(Status.OK, response2.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response2.getStatus());
         EJBBook result = response2.readEntity(EJBBook.class);
         assertEquals("Received wrong Book", book, result);
         response2.close();
@@ -93,7 +93,7 @@ public class EventsTest {
         // test events
         WebTarget base3 = client.target(generateURL("/test/"));
         Response response3 = base3.request().post(Entity.text(new String()));
-        assertEquals(Status.OK, response3.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response3.getStatus());
         response3.close();
 
         client.close();

@@ -51,7 +51,7 @@ public class ResourceLocatorRegexCapturingGroupTest {
 
                     war.addClasses(ResourceLocatorRegexCapturingGroupSubResourceNoPath.class,
                             ResourceLocatorRegexCapturingGroupSubResourceWithPath.class);
-//                    war.addAsWebInfResource(ResourceLocatorRegexCapturingGroupTest.class.getPackage(), "web.xml", "web.xml");
+                    //                    war.addAsWebInfResource(ResourceLocatorRegexCapturingGroupTest.class.getPackage(), "web.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, ResourceLocatorRegexCapturingGroup.class);
                 }
             });
@@ -78,13 +78,13 @@ public class ResourceLocatorRegexCapturingGroupTest {
     public void testBasic() throws Exception {
         {
             Response response = client.target(generateURL("/capture/basic")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "basic success", response.readEntity(String.class));
             response.close();
         }
         {
             Response response = client.target(generateURL("/capture/BASIC/test")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "BASIC test", response.readEntity(String.class));
             response.close();
         }
@@ -94,14 +94,14 @@ public class ResourceLocatorRegexCapturingGroupTest {
     public void testBird() throws Exception {
         {
             Response response = client.target(generateURL("/capture/nobird")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "nobird success", response.readEntity(String.class));
             response.close();
         }
 
         {
             Response response = client.target(generateURL("/capture/BIRD/test")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "BIRD test", response.readEntity(String.class));
             response.close();
         }
@@ -111,14 +111,14 @@ public class ResourceLocatorRegexCapturingGroupTest {
     public void testFly() throws Exception {
         {
             Response response = client.target(generateURL("/capture/a/nofly/b")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "a/nofly/b success", response.readEntity(String.class));
             response.close();
         }
 
         {
             Response response = client.target(generateURL("/capture/a/FLY/b/test")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, "a/FLY/b test", response.readEntity(String.class));
             response.close();
         }

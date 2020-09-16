@@ -76,12 +76,12 @@ public class CollectionCoreTest {
     public void testArray() throws Exception {
         Invocation.Builder request = client.target(generateURL("/array")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();
         response = request.put(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -93,12 +93,12 @@ public class CollectionCoreTest {
     public void testList() throws Exception {
         Invocation.Builder request = client.target(generateURL("/list")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();
         response = request.put(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -110,7 +110,7 @@ public class CollectionCoreTest {
     public void testResponse() throws Exception {
         Invocation.Builder request = client.target(generateURL("/list/response")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         logger.info(String.format("Response: %s", response.readEntity(String.class)));
     }
 
@@ -122,12 +122,12 @@ public class CollectionCoreTest {
     public void testNamespacedArray() throws Exception {
         Invocation.Builder request = client.target(generateURL("/namespaced/array")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();
         response = request.put(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
         Assert.assertThat(WRONG_RESPONSE, str, containsString("http://customer.com"));
     }
@@ -140,12 +140,12 @@ public class CollectionCoreTest {
     public void testNamespacedList() throws Exception {
         Invocation.Builder request = client.target(generateURL("/namespaced/list")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();
         response = request.put(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
         Assert.assertThat(WRONG_RESPONSE, str, containsString("http://customer.com"));
     }
@@ -158,7 +158,7 @@ public class CollectionCoreTest {
     public void testNamespacedResponse() throws Exception {
         Invocation.Builder request = client.target(generateURL("/namespaced/list/response")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();

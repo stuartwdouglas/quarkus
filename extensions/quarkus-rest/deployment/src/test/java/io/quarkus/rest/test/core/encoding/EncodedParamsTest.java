@@ -50,7 +50,7 @@ public class EncodedParamsTest {
     private void basicTest(String path) {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL(path)).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }

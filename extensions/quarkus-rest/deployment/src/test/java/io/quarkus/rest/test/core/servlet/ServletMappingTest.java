@@ -78,7 +78,7 @@ public class ServletMappingTest {
     public void testNoDefaultsResourceNewQuarkusRestClient() throws Exception {
         WebTarget target = client.target(generateURL("/resteasy/rest/basic"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "basic", response.readEntity(String.class));
         response.close();
     }
@@ -94,7 +94,7 @@ public class ServletMappingTest {
         CloseableHttpResponse response1 = httpclient.execute(httpGet);
 
         try {
-            Assert.assertEquals(Status.OK, response1.getStatusLine().getStatusCode());
+            Assert.assertEquals(Status.OK.getStatusCode(), response1.getStatusLine().getStatusCode());
             Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "basic", TestUtil.readString(response1.getEntity().getContent()));
         } finally {
             response1.close();

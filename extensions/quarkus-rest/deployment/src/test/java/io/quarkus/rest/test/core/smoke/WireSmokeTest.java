@@ -85,24 +85,24 @@ public class WireSmokeTest {
     public void testNoDefaultsResource() throws Exception {
         {
             Response response = client.target(generateURLNoDefault("/basic")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "basic", response.readEntity(String.class));
         }
         {
             Response response = client.target(generateURLNoDefault("/basic")).request()
                     .put(Entity.entity("basic", "text/plain"));
-            Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+            Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
             response.close();
         }
         {
             Response response = client.target(generateURLNoDefault("/queryParam")).queryParam("param", "hello world").request()
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "hello world", response.readEntity(String.class));
         }
         {
             Response response = client.target(generateURLNoDefault("/uriParam/1234")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "1234", response.readEntity(String.class));
         }
     }
@@ -115,42 +115,42 @@ public class WireSmokeTest {
     public void testLocatingResource() throws Exception {
         {
             Response response = client.target(generateURLLocating("/locating/basic")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "basic", response.readEntity(String.class));
         }
         {
             Response response = client.target(generateURLLocating("/locating/basic")).request()
                     .put(Entity.entity("basic", "text/plain"));
-            Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+            Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
             response.close();
         }
         {
             Response response = client.target(generateURLLocating("/locating/queryParam")).queryParam("param", "hello world")
                     .request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "hello world", response.readEntity(String.class));
         }
         {
             Response response = client.target(generateURLLocating("/locating/uriParam/1234")).queryParam("param", "hello world")
                     .request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "1234", response.readEntity(String.class));
         }
         {
             Response response = client.target(generateURLLocating("/locating/uriParam/x1234"))
                     .queryParam("param", "hello world").request().get();
-            Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+            Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
             response.close();
         }
         {
             Response response = client.target(generateURLLocating("/locating/notmatching")).request().get();
-            Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+            Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
             response.close();
         }
         {
             Response response = client.target(generateURLLocating("/subresource/subresource/subresource/basic")).request()
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("basic", response.readEntity(String.class));
         }
     }

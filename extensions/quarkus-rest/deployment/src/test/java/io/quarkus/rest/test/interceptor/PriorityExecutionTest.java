@@ -130,7 +130,7 @@ public class PriorityExecutionTest {
         Response response = client.target(generateURL("/test")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "test", response.getEntity());
 
         // client filters

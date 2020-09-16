@@ -76,7 +76,7 @@ public class CustomConstrainedFeatureTest {
         Response response = client.target(TEST_URI).request().get();
         LOGGER.info("Response from server: {}", response.readEntity(String.class));
         // server must return 200 if only registered feature was for server runtime
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         client.close();
     }
 }

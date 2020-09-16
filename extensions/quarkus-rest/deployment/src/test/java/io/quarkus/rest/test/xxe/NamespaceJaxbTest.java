@@ -77,7 +77,7 @@ public class NamespaceJaxbTest {
         FavoriteMovieXmlRootElement movie = new FavoriteMovieXmlRootElement();
         movie.setTitle("La Regle du Jeu");
         Response response = target.request().post(Entity.entity(movie, "application/xml"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "La Regle du Jeu", entity);
     }
@@ -92,7 +92,7 @@ public class NamespaceJaxbTest {
         FavoriteMovieXmlType movie = new FavoriteMovieXmlType();
         movie.setTitle("La Cage Aux Folles");
         Response response = target.request().post(Entity.entity(movie, "application/xml"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "La Cage Aux Folles", entity);
     }
@@ -107,7 +107,7 @@ public class NamespaceJaxbTest {
         String str = "<?xml version=\"1.0\"?>\r" +
                 "<favoriteMovieXmlType xmlns=\"http://abc.com\"><title>La Cage Aux Folles</title></favoriteMovieXmlType>";
         Response response = target.request().post(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "La Cage Aux Folles", entity);
     }
@@ -156,7 +156,7 @@ public class NamespaceJaxbTest {
                 "<favoriteMovieXmlRootElement><title>La Regle du Jeu</title></favoriteMovieXmlRootElement>" +
                 "</collection>";
         Response response = target.request().post(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         if (entity.indexOf("Cage") < entity.indexOf("Regle")) {
             Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "/La Cage Aux Folles/La Regle du Jeu", entity);
@@ -177,7 +177,7 @@ public class NamespaceJaxbTest {
                 "</entry>" +
                 "</map>";
         Response response = target.request().post(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         boolean result = false;
         if ("/La Cage Aux Folles/La Regle du Jeu".equals(entity)) {

@@ -75,7 +75,7 @@ public class EjbExceptionUnwrapTest {
     @Test
     public void testNoDefaultsResourceForException() {
         Response response = client.target(generateURL("/exception")).request().get();
-        Assert.assertEquals(Status.CONFLICT, response.getStatus());
+        Assert.assertEquals(Status.CONFLICT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -87,23 +87,23 @@ public class EjbExceptionUnwrapTest {
     public void testNoDefaultsResource() throws Exception {
         {
             Response response = client.target(generateURL("/basic")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         }
         {
             Response response = client.target(generateURL("/basic")).request().put(Entity.entity("basic", "text/plain"));
-            Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+            Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
             response.close();
         }
         {
             Response response = client.target(generateURL("/queryParam")).queryParam("param", "hello world").request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("hello world", response.readEntity(String.class));
             response.close();
         }
         {
             Response response = client.target(generateURL("/uriParam/1234")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("1234", response.readEntity(String.class));
             response.close();
         }
@@ -117,27 +117,27 @@ public class EjbExceptionUnwrapTest {
     public void testLocatingResource() throws Exception {
         {
             Response response = client.target(generateURL("/locating/basic")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("basic", response.readEntity(String.class));
             response.close();
         }
         {
             Response response = client.target(generateURL("/locating/basic")).request()
                     .put(Entity.entity("basic", "text/plain"));
-            Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+            Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
             response.close();
         }
         {
             Response response = client.target(generateURL("/locating/queryParam")).queryParam("param", "hello world")
                     .request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("hello world", response.readEntity(String.class));
             response.close();
         }
         {
             Response response = client.target(generateURL("/locating/uriParam/1234"))
                     .request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("1234", response.readEntity(String.class));
             response.close();
         }

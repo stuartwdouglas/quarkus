@@ -33,7 +33,7 @@ public class JsonFormattedTracingInfoTest extends BasicTracingTest {
             Response response = base.request().header(RESTEasyTracing.HEADER_ACCEPT_FORMAT, "JSON").get();
             LOG.info(response);
 
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             boolean hasTracing = false;
             for (Map.Entry<String, List<String>> entry : response.getStringHeaders().entrySet()) {
                 if (entry.getKey().toString().startsWith(RESTEasyTracing.HEADER_TRACING_PREFIX)) {

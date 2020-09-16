@@ -73,21 +73,21 @@ public class ExecutableValidationDisabledTest {
         // Valid native constraint
         ValidationCoreFoo foo = new ValidationCoreFoo("a");
         Response response = client.target(generateURL("/return/native")).request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationCoreFoo.class));
         response.close();
 
         // Valid imposed constraint
         foo = new ValidationCoreFoo("abcde");
         response = client.target(generateURL("/return/imposed")).request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationCoreFoo.class));
         response.close();
 
         // Valid native and imposed constraints.
         foo = new ValidationCoreFoo("abc");
         response = client.target(generateURL("/return/nativeAndImposed")).request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationCoreFoo.class));
         response.close();
 
@@ -96,7 +96,7 @@ public class ExecutableValidationDisabledTest {
             // BUT EXECUTABLE VALIDATION IS DISABLE.
             foo = new ValidationCoreFoo("abcdef");
             response = client.target(generateURL("/return/native")).request().post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationCoreFoo.class));
             response.close();
         }
@@ -106,7 +106,7 @@ public class ExecutableValidationDisabledTest {
             // BUT EXECUTABLE VALIDATION IS DISABLE.
             foo = new ValidationCoreFoo("abcdef");
             response = client.target(generateURL("/return/imposed")).request().post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationCoreFoo.class));
             response.close();
         }
@@ -117,7 +117,7 @@ public class ExecutableValidationDisabledTest {
             foo = new ValidationCoreFoo("abcdef");
             response = client.target(generateURL("/return/nativeAndImposed")).request()
                     .post(Entity.entity(foo, "application/foo"));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationCoreFoo.class));
             response.close();
         }
@@ -132,7 +132,7 @@ public class ExecutableValidationDisabledTest {
         // Valid
         ValidationCoreFoo foo = new ValidationCoreFoo("pqrs");
         Response response = client.target(generateURL("/all/abc/wxyz")).request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(RESPONSE_ERROR_MSG, foo, response.readEntity(ValidationCoreFoo.class));
         response.close();
 
@@ -140,7 +140,7 @@ public class ExecutableValidationDisabledTest {
         //          and no return value violations.
         // BUT EXECUTABLE VALIDATION IS DISABLE. There will be no parameter violation.
         response = client.target(generateURL("/all/a/z")).request().post(Entity.entity(foo, "application/foo"));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         String header = response.getHeaderString(Validation.VALIDATION_HEADER);
         Assert.assertNotNull("Missing validation header", header);
         Assert.assertTrue("Wrong value of validation header", Boolean.valueOf(header));

@@ -59,7 +59,7 @@ public class SseReconnectTest {
         try {
             WebTarget baseTarget = client.target(generateURL("/reconnect/defaultReconnectDelay"));
             try (Response response = baseTarget.request().get()) {
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 Assert.assertEquals(SseEvent.RECONNECT_NOT_SET, (long) response.readEntity(long.class));
             }
         } finally {
@@ -79,7 +79,7 @@ public class SseReconnectTest {
         try {
             WebTarget baseTarget = client.target(generateURL("/reconnect/reconnectDelaySet"));
             try (Response response = baseTarget.request().get()) {
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 Assert.assertEquals(1000L, (long) response.readEntity(long.class));
             }
         } finally {

@@ -179,7 +179,7 @@ public class FormResourceTest {
                     .param(INTEGER_VALUE_FIELD, "3")
                     .param(SHORT_VALUE_FIELD, "12345");
             Response response = request.post(Entity.form(form));
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String contentType = response.getHeaderString("content-type");
             Assert.assertEquals("application/x-www-form-urlencoded", contentType);
             InputStream responseStream = response.readEntity(InputStream.class);

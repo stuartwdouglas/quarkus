@@ -128,7 +128,7 @@ public class QueryParamAsPrimitiveTest {
             request.header(HttpHeaderNames.ACCEPT, "application/" + type);
             try {
                 Response response = request.get();
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 response.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -141,7 +141,7 @@ public class QueryParamAsPrimitiveTest {
             request.header(HttpHeaderNames.ACCEPT, "application/" + type);
             try {
                 Response response = request.get();
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 response.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -154,7 +154,7 @@ public class QueryParamAsPrimitiveTest {
             request.header(HttpHeaderNames.ACCEPT, "application/" + type);
             try {
                 Response response = request.get();
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 response.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -167,7 +167,7 @@ public class QueryParamAsPrimitiveTest {
             request.header(HttpHeaderNames.ACCEPT, "application/" + type);
             try {
                 Response response = request.get();
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 response.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -181,7 +181,7 @@ public class QueryParamAsPrimitiveTest {
             request.header(HttpHeaderNames.ACCEPT, "application/" + type);
             try {
                 Response response = request.get();
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 response.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -193,7 +193,7 @@ public class QueryParamAsPrimitiveTest {
             request.header(HttpHeaderNames.ACCEPT, "application/" + type);
             try {
                 Response response = request.get();
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 response.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -207,7 +207,7 @@ public class QueryParamAsPrimitiveTest {
             request.header(HttpHeaderNames.ACCEPT, "application/" + type);
             try {
                 Response response = request.get();
-                Assert.assertEquals(Status.OK, response.getStatus());
+                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
                 response.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);

@@ -78,7 +78,7 @@ public class BigSmallDataSourceTest {
         Assert.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
         WebTarget target = client.target(generateURL("/jaf"));
         Response response = target.request().post(Entity.entity(file, "image/jpeg"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Unexpected content type returned from the server", "image/jpeg",
                 response.readEntity(String.class));
     }
@@ -93,7 +93,7 @@ public class BigSmallDataSourceTest {
         File file = new File(testFilePath);
         Assert.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
         Response response = target.request().post(Entity.entity(file, "image/jpeg"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         InputStream ris = null;
         InputStream fis = null;
@@ -128,7 +128,7 @@ public class BigSmallDataSourceTest {
         WebTarget target = client.target(generateURL("/jaf/echo"));
         byte[] input = "Hello World!".getBytes(StandardCharsets.UTF_8);
         Response response = target.request().post(Entity.entity(input, MediaType.APPLICATION_OCTET_STREAM));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         InputStream ris = null;
         InputStream bis = null;
@@ -163,7 +163,7 @@ public class BigSmallDataSourceTest {
         String value = "foo";
         WebTarget target = client.target(generateURL("/jaf") + "/" + value);
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The unexpected value returned from InputStream", value, response.readEntity(String.class));
     }
 }

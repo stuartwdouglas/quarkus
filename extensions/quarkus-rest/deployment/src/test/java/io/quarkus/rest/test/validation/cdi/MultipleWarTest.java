@@ -94,7 +94,7 @@ public class MultipleWarTest {
         for (int i = 1; i < 2; i++) {
             response = request1.request().get();
             String answer = response.readEntity(String.class);
-            assertEquals(Status.BAD_REQUEST, response.getStatus());
+            assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(answer));
             TestUtil.countViolations(e, 4, 2, 1, 1, 0);
             ResteasyConstraintViolation cv = TestUtil.getViolationByMessage(e.getPropertyViolations(),
@@ -111,7 +111,7 @@ public class MultipleWarTest {
 
             response = request2.request().get();
             answer = response.readEntity(String.class);
-            assertEquals(Status.BAD_REQUEST, response.getStatus());
+            assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             e = new ResteasyViolationExceptionImpl(String.class.cast(answer));
             TestUtil.countViolations(e, 4, 2, 1, 1, 0);
             cv = TestUtil.getViolationByMessage(e.getPropertyViolations(), "must be greater than or equal to 3");
@@ -139,7 +139,7 @@ public class MultipleWarTest {
         for (int i = 1; i < 2; i++) {
             response = request1.request().get();
             String answer = response.readEntity(String.class);
-            assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(answer));
             TestUtil.countViolations(e, 1, 0, 0, 0, 1);
             ResteasyConstraintViolation cv = e.getReturnValueViolations().iterator().next();
@@ -148,7 +148,7 @@ public class MultipleWarTest {
 
             response = request2.request().get();
             answer = response.readEntity(String.class);
-            assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
             e = new ResteasyViolationExceptionImpl(String.class.cast(answer));
             TestUtil.countViolations(e, 1, 0, 0, 0, 1);
             cv = e.getReturnValueViolations().iterator().next();

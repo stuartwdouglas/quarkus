@@ -148,7 +148,7 @@ public class MapTest {
 
         QuarkusRestWebTarget target = client.target(generateURL("/map/integerFoo"));
         Response response = target.request().post(Entity.xml(xml));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         Map<String, MapFoo> entity = response.readEntity(new GenericType<Map<String, MapFoo>>() {
         });
@@ -209,7 +209,7 @@ public class MapTest {
 
         QuarkusRestWebTarget target = client.target(generateURL("/map/wrapped"));
         Response response = target.request().post(Entity.xml(xml));
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
 
     }
 }

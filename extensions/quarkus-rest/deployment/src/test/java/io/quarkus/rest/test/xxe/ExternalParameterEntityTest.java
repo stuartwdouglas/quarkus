@@ -111,7 +111,7 @@ public class ExternalParameterEntityTest {
         logger.info(String.format("Request body: %s", this.request.replace('\r', '\n')));
         Response response = client.target(generateURL("/test", EXPAND)).request()
                 .post(Entity.entity(this.request, MediaType.APPLICATION_XML));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info(String.format("Result: \"%s\"", entity.replace('\r', '\n')));
         Assert.assertEquals("root:x:0:0:root:/root:/bin/bash", entity.trim());
@@ -127,7 +127,7 @@ public class ExternalParameterEntityTest {
         logger.info(String.format("Request body: %s", this.request.replace('\r', '\n')));
         Response response = client.target(generateURL("/test", NO_EXPAND)).request()
                 .post(Entity.entity(this.request, MediaType.APPLICATION_XML));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info(String.format("Result: \"%s\"", entity.replace('\r', '\n')));
         Assert.assertEquals("", entity.trim());

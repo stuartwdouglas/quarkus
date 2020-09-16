@@ -81,7 +81,7 @@ public class ProxyWithGenericReturnTypeJacksonTest {
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info("Received response: " + entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertTrue("Type property is missing.", entity.contains("type"));
         response.close();
 
@@ -90,7 +90,7 @@ public class ProxyWithGenericReturnTypeJacksonTest {
         response = target.request().get();
         entity = response.readEntity(String.class);
         logger.info("Received response: " + entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertTrue("Type property is missing.", entity.contains("type"));
         response.close();
     }

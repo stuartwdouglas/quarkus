@@ -92,7 +92,7 @@ public class GzipSizeTest {
         byte[] b = new byte[17];
         Variant variant = new Variant(MediaType.APPLICATION_OCTET_STREAM_TYPE, "", "gzip");
         Response response = client.target(generateURL("/big/send")).request().post(Entity.entity(b, variant));
-        Assert.assertEquals(Status.REQUEST_ENTITY_TOO_LARGE, response.getStatus());
+        Assert.assertEquals(Status.REQUEST_ENTITY_TOO_LARGE.getStatusCode(), response.getStatus());
         String message = response.readEntity(String.class);
         Assert.assertTrue(message.contains("RESTEASY003357"));
         Assert.assertTrue(message.contains("16"));
@@ -106,7 +106,7 @@ public class GzipSizeTest {
     public void testMaxConfiguredSizeReceiving() throws Exception {
         Response response = client.target(generateURL("/big/receive")).request().header(HttpHeaders.ACCEPT_ENCODING, "gzip")
                 .post(Entity.entity(17, "text/plain"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         try {
             byte[] b = response.readEntity(byte[].class);
             Assert.fail("Expecting ProcessingException, not " + b);

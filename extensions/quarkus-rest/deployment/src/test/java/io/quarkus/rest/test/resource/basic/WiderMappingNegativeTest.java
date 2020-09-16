@@ -64,7 +64,7 @@ public class WiderMappingNegativeTest {
     @DisplayName("Test Options")
     public void testOptions() {
         Response response = client.target(generateURL("/hello/int")).request().options();
-        Assertions.assertEquals(Status.OK, response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assertions.assertNotEquals(response.readEntity(String.class), "hello");
         response.close();
     }

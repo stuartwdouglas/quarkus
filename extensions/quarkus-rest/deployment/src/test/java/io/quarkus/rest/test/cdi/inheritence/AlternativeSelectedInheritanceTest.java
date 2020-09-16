@@ -68,7 +68,7 @@ public class AlternativeSelectedInheritanceTest {
                 AlternativeSelectedInheritanceTest.class.getSimpleName()));
         Response response = base.request().get();
         log.info("Status: " + response.getStatus());
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }

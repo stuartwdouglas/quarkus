@@ -69,7 +69,7 @@ public class SubresourceValidationTest {
         ClientResponse response = (ClientResponse) request.get();
         ViolationReport r = new ViolationReport(response.readEntity(String.class));
         TestUtil.countViolations(r, 0, 0, 2, 0);
-        assertEquals(Status.BAD_REQUEST, response.getStatus());
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
     }
 
     /**
@@ -82,6 +82,6 @@ public class SubresourceValidationTest {
         ClientResponse response = (ClientResponse) request.get();
         ViolationReport r = new ViolationReport(response.readEntity(String.class));
         TestUtil.countViolations(r, 0, 0, 0, 1);
-        assertEquals(Status.INTERNAL_SERVER_ERROR, response.getStatus());
+        assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
     }
 }

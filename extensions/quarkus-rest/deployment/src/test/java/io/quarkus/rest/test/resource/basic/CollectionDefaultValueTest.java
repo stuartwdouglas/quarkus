@@ -63,7 +63,7 @@ public class CollectionDefaultValueTest {
     @DisplayName("Test Empty")
     public void testEmpty() throws Exception {
         Response response = client.target(generateURL("/collection")).request().get();
-        Assertions.assertEquals(Status.OK, response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 }

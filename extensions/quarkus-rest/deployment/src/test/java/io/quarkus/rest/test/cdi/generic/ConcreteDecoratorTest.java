@@ -57,7 +57,7 @@ public class ConcreteDecoratorTest {
                     war.addClasses(UpperBoundHierarchyHolder.class, LowerBoundHierarchyHolder.class);
                     war.addClasses(Animal.class, Primate.class, Australopithecus.class);
                     war.addClasses(ConcreteDecorator.class);
-//                    war.addAsWebInfResource(ConcreteDecoratorTest.class.getPackage(), "concrete_beans.xml", "beans.xml");
+                    //                    war.addAsWebInfResource(ConcreteDecoratorTest.class.getPackage(), "concrete_beans.xml", "beans.xml");
                     return war;
                 }
             });
@@ -76,17 +76,17 @@ public class ConcreteDecoratorTest {
 
         WebTarget base = client.target(generateURL("/concrete/decorators/clear"));
         Response response = base.request().get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/concrete/decorators/execute"));
         response = base.request().get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         base = client.target(generateURL("/concrete/decorators/test"));
         response = base.request().get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         client.close();

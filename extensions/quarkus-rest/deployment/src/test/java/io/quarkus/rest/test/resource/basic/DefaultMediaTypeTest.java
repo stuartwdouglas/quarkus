@@ -79,7 +79,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK, response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
     }
@@ -99,7 +99,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK,
+        Assertions.assertEquals(Status.OK.getStatusCode(),
                 response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
@@ -118,7 +118,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK, response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
     }
@@ -138,7 +138,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK,
+        Assertions.assertEquals(Status.OK.getStatusCode(),
                 response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
@@ -157,7 +157,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK, response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
     }
@@ -175,7 +175,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK,
+        Assertions.assertEquals(Status.OK.getStatusCode(),
                 response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
@@ -194,7 +194,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK, response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
     }
@@ -212,7 +212,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK,
+        Assertions.assertEquals(Status.OK.getStatusCode(),
                 response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));

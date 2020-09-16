@@ -57,7 +57,7 @@ public class CDIValidationSessionBeanTest {
         Invocation.Builder request = client.target(generateURL("/test/resource/0")).request();
         ClientResponse response = (ClientResponse) request.get();
         String answer = response.readEntity(String.class);
-        assertEquals(Status.BAD_REQUEST, response.getStatus());
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(answer));
         TestUtil.countViolations(e, 1, 0, 0, 1, 0);
         ResteasyConstraintViolation cv = e.getParameterViolations().iterator().next();

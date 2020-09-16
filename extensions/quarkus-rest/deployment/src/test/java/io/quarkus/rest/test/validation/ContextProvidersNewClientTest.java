@@ -63,7 +63,7 @@ public class ContextProvidersNewClientTest extends ContextProvidersTestBase {
     <T> T get(String path, Class<T> clazz, Annotation[] annotations) throws Exception {
         WebTarget target = client.target(generateURL(path));
         ClientResponse response = (ClientResponse) target.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         T entity = response.readEntity(clazz, null, annotations);
         return entity;
     }
@@ -74,7 +74,7 @@ public class ContextProvidersNewClientTest extends ContextProvidersTestBase {
         WebTarget target = client.target(generateURL(path));
         Entity<S> entity = Entity.entity(payload, mediaType, annotations);
         ClientResponse response = (ClientResponse) target.request().post(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         T result;
         if (genericReturnType != null) {
             result = response.readEntity(returnType, genericReturnType, null);

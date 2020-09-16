@@ -79,7 +79,7 @@ public class ComplexMultipartOutputTest {
         QuarkusRestWebTarget target = client.target(generateURL("/mpart/test"));
         Response response = target.request().get();
         MultipartInput multipartInput = response.readEntity(MultipartInput.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         List<InputPart> parts = multipartInput.getParts(); // debug
         Assert.assertEquals(2, parts.size());
@@ -127,7 +127,7 @@ public class ComplexMultipartOutputTest {
         Entity<MultipartRelatedOutput> entity = Entity.entity(mRelatedOutput,
                 new MediaType("multipart", "related"));
         Response response = target.request().post(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         MultipartRelatedInput result = response.readEntity(MultipartRelatedInput.class);
         Set<String> keys = result.getRelatedMap().keySet();

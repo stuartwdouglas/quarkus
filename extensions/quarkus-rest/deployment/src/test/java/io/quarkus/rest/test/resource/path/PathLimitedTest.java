@@ -62,7 +62,7 @@ public class PathLimitedTest {
     private void basicTest(String path) {
         Response response = client.target(PortProviderUtil.generateURL(path, PathLimitedTest.class.getSimpleName())).request()
                 .get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 

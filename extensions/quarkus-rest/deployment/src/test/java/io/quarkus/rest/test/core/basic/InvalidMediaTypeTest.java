@@ -87,7 +87,7 @@ public class InvalidMediaTypeTest {
         Response response = request.get();
         logger.info("mediaType: " + mediaType + "");
         logger.info("status: " + response.getStatus());
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         response.close();
     }
 }

@@ -68,7 +68,7 @@ public class SetRequestUriTest {
         String uri = generateURL("/base/resource/change");
         String httpsUri = uri.replace("http://", "https://");
         Response response = client.target(uri).request().header("X-Forwarded-Proto", "https").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The original https uri doesn't match the entity in the response", httpsUri,
                 response.readEntity(String.class));
     }
@@ -82,7 +82,7 @@ public class SetRequestUriTest {
     @Test
     public void testUriOverride() {
         Response response = client.target(generateURL("/base/resource/setrequesturi1")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("OK", response.readEntity(String.class));
     }
 
@@ -97,7 +97,7 @@ public class SetRequestUriTest {
     @Test
     public void testUriOverride2() {
         Response response = client.target(generateURL("/base/resource/setrequesturi2")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The original uri doesn't match the entity changed by RequestFilter",
                 "http://xx.yy:888/base/resource/sub", response.readEntity(String.class));
     }

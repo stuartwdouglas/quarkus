@@ -71,7 +71,7 @@ public class WiderMappingTest {
     @Test
     public void testOptions() {
         Response response = client.target(generateURL("/hello/int")).request().options();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(response.readEntity(String.class), "hello");
         response.close();
     }

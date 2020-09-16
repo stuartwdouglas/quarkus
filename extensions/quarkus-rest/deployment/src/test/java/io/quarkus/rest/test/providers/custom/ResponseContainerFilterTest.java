@@ -77,7 +77,7 @@ public class ResponseContainerFilterTest {
     public void testHasEntity() {
         Response response = client.target(generateURL("/resource/hasentity")).request("*/*")
                 .header("OPERATION", "hasentity").post(Entity.entity("entity", MediaType.WILDCARD_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The ResponseFilters were used in different order than expected", MediaType.TEXT_PLAIN_TYPE,
                 response.getMediaType());
         logger.info(response.readEntity(String.class));

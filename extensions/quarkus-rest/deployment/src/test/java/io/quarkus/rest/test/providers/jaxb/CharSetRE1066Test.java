@@ -98,7 +98,7 @@ public class CharSetRE1066Test {
         Response response = request.post(Entity.entity(str, MediaType.APPLICATION_XML_TYPE));
         log.info("Received response");
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         CharSetFavoriteMovieXmlRootElement entity = response.readEntity(CharSetFavoriteMovieXmlRootElement.class);
         log.info("Result: " + entity);
         log.info("title: " + entity.getTitle());
@@ -116,7 +116,7 @@ public class CharSetRE1066Test {
         log.info("client default charset: " + Charset.defaultCharset());
 
         Response response = request.post(Entity.entity(str, APPLICATION_XML_UTF16_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         CharSetFavoriteMovieXmlRootElement entity = response.readEntity(CharSetFavoriteMovieXmlRootElement.class);
         log.info("Result: " + entity);
         log.info("title: " + entity.getTitle());
@@ -135,7 +135,7 @@ public class CharSetRE1066Test {
         log.info("client default charset: " + Charset.defaultCharset());
 
         Response response = request.post(Entity.entity(str, APPLICATION_XML_UTF16_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         CharSetFavoriteMovieXmlRootElement entity = response.readEntity(CharSetFavoriteMovieXmlRootElement.class);
         log.info("Result: " + entity);
         log.info("title: " + entity.getTitle());

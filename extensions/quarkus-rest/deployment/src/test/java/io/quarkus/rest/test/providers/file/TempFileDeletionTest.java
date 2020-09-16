@@ -52,7 +52,7 @@ public class TempFileDeletionTest {
         Client client = ClientBuilder.newClient();
         WebTarget base = client.target(PortProviderUtil.generateURL("/test/post", TempFileDeletionTest.class.getSimpleName()));
         Response response = base.request().post(Entity.entity("hello", "text/plain"));
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         String path = response.readEntity(String.class);
         File file = new File(path);
         Assert.assertFalse(file.exists());

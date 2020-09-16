@@ -117,7 +117,7 @@ public class XmlJaxbProvidersTest {
     public void testGetOrderAndUnmarshal() throws Exception {
         Response response = client.target(generateURL("/jaxb/orders") + "/order_123").request()
                 .header(XmlJaxbProvidersHelper.FORMAT_XML_HEADER, "true").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         JAXBContext jaxb = JAXBContext.newInstance(Order.class);
         Unmarshaller u = jaxb.createUnmarshaller();
         Order order = (Order) u.unmarshal(response.readEntity(InputStream.class));
@@ -135,7 +135,7 @@ public class XmlJaxbProvidersTest {
     public void testGetOrderWithParamsToOrder() throws Exception {
         Response response = client.target(generateURL("/jaxb/orders") + "/order_123").request()
                 .header(XmlJaxbProvidersHelper.FORMAT_XML_HEADER, "true").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Order order = response.readEntity(Order.class);
         Assert.assertEquals(ERR_CONTENT, "Ryan J. McDonough", order.getPerson());
     }

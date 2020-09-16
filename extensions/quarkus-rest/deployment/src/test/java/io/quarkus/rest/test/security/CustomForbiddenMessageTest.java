@@ -63,8 +63,8 @@ public class CustomForbiddenMessageTest {
                     Hashtable<String, String> contextParams = new Hashtable<String, String>();
                     contextParams.put("resteasy.role.based.security", "true");
 
-//                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
-//                            .addAsWebInfResource(BasicAuthTest.class.getPackage(), "web.xml", "/web.xml");
+                    //                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
+                    //                            .addAsWebInfResource(BasicAuthTest.class.getPackage(), "web.xml", "/web.xml");
 
                     return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class,
                             CustomForbiddenMessageExceptionMapper.class);
@@ -100,7 +100,7 @@ public class CustomForbiddenMessageTest {
     @Test
     public void testCustomExceptionMapper() throws Exception {
         Response response = authorizedClient.target(generateURL("/secured/deny")).request().get();
-        Assert.assertEquals(Status.FORBIDDEN, response.getStatus());
+        Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
         Assert.assertEquals(ACCESS_FORBIDDEN_MESSAGE, response.readEntity(String.class));
         String ct = response.getHeaderString("Content-Type");
         Assert.assertEquals("text/plain;charset=UTF-8", ct);

@@ -53,7 +53,7 @@ public class ValidationSessionBeanTest {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Response response = client.target(generateURL("/test/resource")).queryParam("param", "abc").request().get();
         String answer = response.readEntity(String.class);
-        assertEquals(Status.BAD_REQUEST, response.getStatus());
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         ResteasyViolationException e = new ResteasyViolationExceptionImpl(String.class.cast(answer));
         int c = e.getViolations().size();
         Assert.assertTrue(c == 1 || c == 2);

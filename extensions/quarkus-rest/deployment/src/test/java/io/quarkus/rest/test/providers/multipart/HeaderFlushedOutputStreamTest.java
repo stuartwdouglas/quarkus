@@ -133,7 +133,7 @@ public class HeaderFlushedOutputStreamTest {
 
         Response response = client.target(TEST_URI).request().get();
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         BufferedInputStream in = new BufferedInputStream(response.readEntity(InputStream.class));
         String contentType = response.getHeaderString("content-type");
         ByteArrayDataSource ds = new ByteArrayDataSource(in, contentType);

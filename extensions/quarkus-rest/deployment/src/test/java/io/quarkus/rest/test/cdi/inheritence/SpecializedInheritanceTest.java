@@ -66,7 +66,7 @@ public class SpecializedInheritanceTest {
                 .target(PortProviderUtil.generateURL("/specialized/", SpecializedInheritanceTest.class.getSimpleName()));
         Response response = base.request().get();
         log.info("Response status: " + response.getStatus());
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }

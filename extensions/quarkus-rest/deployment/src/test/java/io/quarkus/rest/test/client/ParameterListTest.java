@@ -74,7 +74,7 @@ public class ParameterListTest extends ClientTestBase {
     public void testMatrixNewClient() throws Exception {
         Response response = restClient.target(generateURL("/matrix;m1=a/list;m1=b;p2=c")).matrixParam("m1", "d").request()
                 .get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "a:b:d:", response.readEntity(String.class));
     }
 
@@ -85,7 +85,7 @@ public class ParameterListTest extends ClientTestBase {
     @Test
     public void testQueryNewClient() throws Exception {
         Response response = restClient.target(generateURL("/query/list?q1=a&q2=b&q1=c")).queryParam("q1", "d").request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "a:c:d:", response.readEntity(String.class));
     }
 
@@ -102,7 +102,7 @@ public class ParameterListTest extends ClientTestBase {
         list.add("b");
         list.add("c");
         Response response = client.matrixList(list);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "a:b:c:", response.readEntity(String.class));
         response.close();
     }
@@ -120,7 +120,7 @@ public class ParameterListTest extends ClientTestBase {
         set.add("b");
         set.add("c");
         Response response = client.matrixSet(set);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "a:b:c:", response.readEntity(String.class));
     }
 
@@ -137,7 +137,7 @@ public class ParameterListTest extends ClientTestBase {
         set.add("b");
         set.add("c");
         Response response = client.matrixSortedSet(set);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "a:b:c:", response.readEntity(String.class));
     }
 
@@ -154,7 +154,7 @@ public class ParameterListTest extends ClientTestBase {
         list.add("b");
         list.add("c");
         Response response = client.matrixWithEntity(list, "entity");
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "entity:a:b:c:", response.readEntity(String.class));
     }
 
@@ -171,7 +171,7 @@ public class ParameterListTest extends ClientTestBase {
         list.add("b");
         list.add("c");
         Response response = client.queryList(list);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "a:b:c:", response.readEntity(String.class));
     }
 
@@ -188,7 +188,7 @@ public class ParameterListTest extends ClientTestBase {
         set.add("b");
         set.add("c");
         Response response = client.querySet(set);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "a:b:c:", response.readEntity(String.class));
     }
 
@@ -205,7 +205,7 @@ public class ParameterListTest extends ClientTestBase {
         set.add("b");
         set.add("c");
         Response response = client.querySortedSet(set);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "a:b:c:", response.readEntity(String.class));
     }
 
@@ -222,7 +222,7 @@ public class ParameterListTest extends ClientTestBase {
         list.add("b");
         list.add("c");
         Response response = client.queryWithEntity(list, "entity");
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "entity:a:b:c:", response.readEntity(String.class));
     }
 
@@ -243,7 +243,7 @@ public class ParameterListTest extends ClientTestBase {
         queryParams.add("y");
         queryParams.add("z");
         Response response = client.matrixQueryWithEntity(matrixParams, queryParams, "entity");
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(ERROR_MESSAGE, "entity:a:b:c:x:y:z:", response.readEntity(String.class));
     }
 }

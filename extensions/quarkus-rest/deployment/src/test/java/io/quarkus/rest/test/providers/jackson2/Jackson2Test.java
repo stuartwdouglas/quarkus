@@ -149,7 +149,7 @@ public class Jackson2Test {
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response entity content doesn't match the expected",
                 "{\"name\":\"Iphone\",\"id\":333}", entity);
         response.close();
@@ -158,7 +158,7 @@ public class Jackson2Test {
         response = target.request().get();
         entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response entity content doesn't match the expected",
                 "[{\"name\":\"Iphone\",\"id\":333},{\"name\":\"macbook\",\"id\":44}]", entity);
         response.close();
@@ -178,7 +178,7 @@ public class Jackson2Test {
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response entity content doesn't match the expected", "foo({\"name\":\"Iphone\",\"id\":333})",
                 entity);
         response.close();
@@ -198,7 +198,7 @@ public class Jackson2Test {
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Jackson2JsonpInterceptor should be disabled", "{\"name\":\"Iphone\",\"id\":333}", entity);
         response.close();
     }
@@ -216,7 +216,7 @@ public class Jackson2Test {
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Jackson2JsonpInterceptor should be disabled", "{\"name\":\"Iphone\",\"id\":333}", entity);
         response.close();
     }
@@ -236,7 +236,7 @@ public class Jackson2Test {
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertTrue("Entity doesn't contain formatting", entity.contains("\n"));
         response.close();
     }
@@ -264,7 +264,7 @@ public class Jackson2Test {
         response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         target = client.target(generateURL("/products/333"));

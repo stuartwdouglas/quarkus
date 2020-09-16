@@ -63,7 +63,7 @@ public class ProxyWithGenericReturnTypeTest {
                 .target(PortProviderUtil.generateURL("/test/list/", ProxyWithGenericReturnTypeTest.class.getSimpleName()));
         Response response = base.request().get();
 
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertTrue("Wrong content of response, list was not decoden on server",
                 response.readEntity(String.class).indexOf("List<String>") >= 0);
 

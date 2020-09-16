@@ -133,14 +133,14 @@ public class ReaderWriterTest {
         WebTarget base = client
                 .target(PortProviderUtil.generateURL("/implicit", ReaderWriterCustomerWriter.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("application/xml;charset=UTF-8", response.getStringHeaders().getFirst("content-type"));
         String s = new String(response.readEntity(byte[].class), "US-ASCII");
         Assert.assertEquals("Response contains wrong content", "<customer><name>bill</name></customer>", s);
         response.close();
 
         response = base.request().delete();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         ReaderWriterClient proxy = client
@@ -150,7 +150,7 @@ public class ReaderWriterTest {
         response.close();
 
         response = proxy.deleteComplex();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -174,7 +174,7 @@ public class ReaderWriterTest {
     public void test24() throws Exception {
         WebTarget base = client.target(PortProviderUtil.generateURL("/complex", ReaderWriterResource.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.FOUND, response.getStatus());
+        Assert.assertEquals(Status.FOUND.getStatusCode(), response.getStatus());
         Assert.assertEquals(response.getStringHeaders().getFirst("content-type"), "text/plain;charset=UTF-8");
         byte[] responseBody = response.readEntity(byte[].class);
         String responseString = new String(responseBody, "US-ASCII");
@@ -190,7 +190,7 @@ public class ReaderWriterTest {
     public void test1and2() throws Exception {
         WebTarget base = client.target(PortProviderUtil.generateURL("/simple", ReaderWriterResource.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("text/plain;charset=UTF-8", response.getStringHeaders().getFirst("content-type"));
         String s = new String(response.readEntity(byte[].class), "US-ASCII");
         Assert.assertEquals("Response contains wrong content", "hello world", s);
@@ -217,7 +217,7 @@ public class ReaderWriterTest {
         WebTarget base = client.target(
                 PortProviderUtil.generateURL("/spaces/with%20spaces/without", ReaderWriterSpaces.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -231,7 +231,7 @@ public class ReaderWriterTest {
         WebTarget base = client
                 .target(PortProviderUtil.generateURL("/curly/abcd", ReaderWriterCurlyBraces.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -240,7 +240,7 @@ public class ReaderWriterTest {
     public void testProviderWithPriority() throws Exception {
         WebTarget base = client.target(PortProviderUtil.generateURL("/priority", PriorityDeploymenetName));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("application/xml;charset=UTF-8", response.getStringHeaders().getFirst("content-type"));
         String s = new String(response.readEntity(byte[].class), "UTF-8");
         Assert.assertEquals("Response contains wrong content", "<customer><name>high priority</name></customer>", s);

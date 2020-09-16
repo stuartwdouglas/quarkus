@@ -71,7 +71,7 @@ public class ClientExecutorShutdownTest extends ClientTestBase {
         ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine();
         QuarkusRestClient client = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).httpEngine(engine).build();
         Response response = client.target(generateURL("/test")).request().post(null);
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         engine.finalize();
         HttpClient httpClient = engine.getHttpClient();
         HttpPost post = new HttpPost(generateURL("/test"));
@@ -95,7 +95,7 @@ public class ClientExecutorShutdownTest extends ClientTestBase {
         ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine();
         QuarkusRestClient client = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).httpEngine(engine).build();
         Response response = client.target(generateURL("/test")).request().post(null);
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         engine.close();
         HttpClient httpClient = engine.getHttpClient();
         HttpPost post = new HttpPost(generateURL("/test"));
@@ -120,13 +120,13 @@ public class ClientExecutorShutdownTest extends ClientTestBase {
         ApacheHttpClient43Engine engine = new ApacheHttpClient43Engine(httpClient, false);
         QuarkusRestClient client = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).httpEngine(engine).build();
         Response response = client.target(generateURL("/test")).request().post(null);
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         engine.finalize();
         Assert.assertEquals("Original httpclient and engine httpclient are not the same instance",
                 httpClient, engine.getHttpClient());
         HttpPost post = new HttpPost(generateURL("/test"));
         HttpResponse httpResponse = httpClient.execute(post);
-        Assert.assertEquals("The httpclient was closed and it shouldn't", Status.NO_CONTENT,
+        Assert.assertEquals("The httpclient was closed and it shouldn't", Status.NO_CONTENT.getStatusCode(),
                 httpResponse.getStatusLine().getStatusCode());
     }
 
@@ -149,7 +149,7 @@ public class ClientExecutorShutdownTest extends ClientTestBase {
         Assert.assertEquals(httpClient, engine.getHttpClient());
         HttpPost post = new HttpPost(generateURL("/test"));
         HttpResponse httpResponse = httpClient.execute(post);
-        Assert.assertEquals("The httpclient was closed and it shouldn't", Status.NO_CONTENT,
+        Assert.assertEquals("The httpclient was closed and it shouldn't", Status.NO_CONTENT.getStatusCode(),
                 httpResponse.getStatusLine().getStatusCode());
     }
 }

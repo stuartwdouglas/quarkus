@@ -63,7 +63,7 @@ public class AsyncServletTest {
     @Test
     public void testAsync() throws Exception {
         Response response = client.target(generateURL("/async")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong response content", "hello", response.readEntity(String.class));
     }
 
@@ -74,6 +74,6 @@ public class AsyncServletTest {
     @Test
     public void testTimeout() throws Exception {
         Response response = client.target(generateURL("/async/timeout")).request().get();
-        Assert.assertEquals(Status.SERVICE_UNAVAILABLE, response.getStatus());
+        Assert.assertEquals(Status.SERVICE_UNAVAILABLE.getStatusCode(), response.getStatus());
     }
 }

@@ -66,7 +66,7 @@ public class ScanTest {
     public void testNewClient() throws Exception {
         Response response = client.target(PortProviderUtil.generateURL("/test/doit", ScanTest.class.getSimpleName())).request()
                 .get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "hello world", response.readEntity(String.class));
     }
 }

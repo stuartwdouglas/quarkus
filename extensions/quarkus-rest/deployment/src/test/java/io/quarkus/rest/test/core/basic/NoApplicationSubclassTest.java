@@ -65,7 +65,7 @@ public class NoApplicationSubclassTest {
     @Test
     public void testResource() {
         Response response = client.target(generateURL("/myresources/hello")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "hello world", response.readEntity(String.class));
         response.close();
     }

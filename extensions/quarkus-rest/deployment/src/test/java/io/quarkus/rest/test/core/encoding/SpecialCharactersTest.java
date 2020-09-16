@@ -71,7 +71,7 @@ public class SpecialCharactersTest {
     @Test
     public void testIt() throws Exception {
         Response response = client.target(generateURL("/sayhello/widget/08%2F26%2F2009")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Wrong content of response", "08/26/2009", response.readEntity(String.class));
         response.close();
     }
@@ -79,7 +79,7 @@ public class SpecialCharactersTest {
     @Test
     public void testPlus() throws Exception {
         Response response = client.target(generateURL("/sayhello/plus/foo+bar")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         // assert is in resource
         response.close();
     }
@@ -87,7 +87,7 @@ public class SpecialCharactersTest {
     @Test
     public void testPlus2() throws Exception {
         Response response = client.target(generateURL("/sayhello/plus/foo+bar")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         // assert is in resource
         response.close();
     }

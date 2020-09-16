@@ -80,6 +80,6 @@ public class ProxyJaxbResourcePostTest {
         ProxyJaxbResourcePostMessageIntf proxy = ProxyBuilder
                 .builder(ProxyJaxbResourcePostMessageIntf.class, client.target(generateURL("/"))).build();
         Response r = proxy.saveMessage(m);
-        Assert.assertEquals(r.getStatus(), Status.CREATED);
+        Assert.assertEquals(r.getStatus(), Status.CREATED.getStatusCode());
     }
 }

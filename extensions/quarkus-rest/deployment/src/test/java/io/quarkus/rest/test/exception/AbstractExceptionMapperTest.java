@@ -74,7 +74,7 @@ public class AbstractExceptionMapperTest {
 
         Response response = client.target(PortProviderUtil.generateURL("/resource/custom",
                 AbstractExceptionMapperTest.class.getSimpleName())).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("custom", response.readEntity(String.class));
     }
 }

@@ -105,7 +105,7 @@ public class EmbeddedMultipartTest {
             Assert.fail("Exception is expected");
         } catch (InternalServerErrorException e) {
             Response response = e.getResponse();
-            Assert.assertEquals("Wrong type of exception", Status.INTERNAL_SERVER_ERROR, response.getStatus());
+            Assert.assertEquals("Wrong type of exception", Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
         } finally {
             client.close();
         }

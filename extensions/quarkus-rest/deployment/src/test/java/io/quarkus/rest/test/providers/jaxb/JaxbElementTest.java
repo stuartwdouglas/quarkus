@@ -74,7 +74,7 @@ public class JaxbElementTest {
         JAXBElement<String> element = new JAXBElement<String>(new QName(""),
                 String.class, JaxbElementResource.class.getName());
         Response response = client.target(generateURL("/resource/standardwriter")).request().post(Entity.xml(element));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 

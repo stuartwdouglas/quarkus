@@ -38,7 +38,7 @@ public class BeanReaderWriterTest {
                             BeanReaderWriterService.class, BeanReaderWriterXFormat.class,
                             BeanReaderWriterXFormatProvider.class);
 
-//                    war.addAsWebInfResource(BeanReaderWriterTest.class.getPackage(), "BeanReaderWriterBeans.xml", "beans.xml");
+                    //                    war.addAsWebInfResource(BeanReaderWriterTest.class.getPackage(), "BeanReaderWriterBeans.xml", "beans.xml");
 
                     return war;
                 }

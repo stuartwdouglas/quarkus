@@ -70,7 +70,7 @@ public class ProxyJaxbResourceIntfTest {
         ProxyJaxbResourceIntf proxy = ProxyBuilder.builder(ProxyJaxbResourceIntf.class, client.target(generateURL("/")))
                 .build();
         Response response = proxy.getCredits("xx");
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         ProxyJaxbCredit cred = response.readEntity(ProxyJaxbCredit.class);
         Assert.assertEquals("Unexpected response from the server", "foobar", cred.getName());
     }

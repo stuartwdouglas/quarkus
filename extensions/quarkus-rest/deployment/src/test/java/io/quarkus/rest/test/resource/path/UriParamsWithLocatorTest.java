@@ -76,7 +76,7 @@ public class UriParamsWithLocatorTest {
     public void testDoubleId() throws Exception {
         Response response = client.target(PortProviderUtil.generateURL("/1/2", "one"))
                 .request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -88,7 +88,7 @@ public class UriParamsWithLocatorTest {
     public void testDoubleIdAsPathSegment() throws Exception {
         Response response = client.target(PortProviderUtil.generateURL("/1/2", "two"))
                 .request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 }

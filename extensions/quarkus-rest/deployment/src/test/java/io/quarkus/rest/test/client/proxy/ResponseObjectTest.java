@@ -71,7 +71,7 @@ public class ResponseObjectTest {
     @Test
     public void testSimpleProxyBuilder() {
         ResponseObjectBasicObjectIntf obj = responseObjectClientIntf.get();
-        Assert.assertEquals(Status.OK, obj.status());
+        Assert.assertEquals(Status.OK.getStatusCode(), obj.status());
         Assert.assertEquals("The response object doesn't contain the expected string", "ABC", obj.body());
         try {
             Assert.assertEquals("The response object doesn't contain the expected header",
@@ -92,7 +92,7 @@ public class ResponseObjectTest {
     @Test
     public void testLinkFollowProxyBuilder() {
         ResponseObjectHateoasObject obj = responseObjectClientIntf.performGetBasedOnHeader();
-        Assert.assertEquals(Status.NO_CONTENT, obj.status());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), obj.status());
         Assert.assertTrue("The resource was not forwarded", obj.nextLink().getPath().endsWith("next-link"));
         try {
             Assert.assertEquals("The resource was not forwarded", "forwarded", obj.followNextLink());

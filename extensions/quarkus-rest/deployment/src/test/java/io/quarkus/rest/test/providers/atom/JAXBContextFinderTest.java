@@ -69,7 +69,7 @@ public class JAXBContextFinderTest {
     @Test
     public void testAtomFeedNewClient() throws Exception {
         Response response = client.target(generateURL("/atom/feed")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Feed feed = response.readEntity(Feed.class);
         Iterator<Entry> it = feed.getEntries().iterator();
         Entry entry1 = it.next();

@@ -199,7 +199,7 @@ public class HeaderParamsAsPrimitivesTest {
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .header(type, value)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -210,7 +210,7 @@ public class HeaderParamsAsPrimitivesTest {
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .header(type, value)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -223,7 +223,7 @@ public class HeaderParamsAsPrimitivesTest {
                     .header(type, value)
                     .header(type, value)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -235,7 +235,7 @@ public class HeaderParamsAsPrimitivesTest {
             Response response = client.target(generateURL(base + "default/null")).request()
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -245,7 +245,7 @@ public class HeaderParamsAsPrimitivesTest {
             Response response = client.target(generateURL(base + "default")).request()
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -256,7 +256,7 @@ public class HeaderParamsAsPrimitivesTest {
                     .header(HttpHeaderNames.ACCEPT, "application/" + type)
                     .header(type, value)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
         }
@@ -289,7 +289,7 @@ public class HeaderParamsAsPrimitivesTest {
                     .header("header", "one")
                     .header("header", "two")
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
 
@@ -313,7 +313,7 @@ public class HeaderParamsAsPrimitivesTest {
                     .header("header", "two")
                     .get();
 
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
             client.close();
 
@@ -688,7 +688,7 @@ public class HeaderParamsAsPrimitivesTest {
                 .header(HttpHeaderNames.ACCEPT, "application/int")
                 .header("int", "abcdef")
                 .get();
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }
@@ -704,7 +704,7 @@ public class HeaderParamsAsPrimitivesTest {
                 .header(HttpHeaderNames.ACCEPT, "application/int")
                 .header("int", "abcdef")
                 .get();
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }
@@ -722,7 +722,7 @@ public class HeaderParamsAsPrimitivesTest {
                 .header("int", "abcdef")
                 .header("int", "abcdef")
                 .get();
-        Assert.assertEquals(Status.BAD_REQUEST, response.getStatus());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }

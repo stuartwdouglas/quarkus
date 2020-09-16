@@ -97,7 +97,7 @@ public class ResourceMatchingTest {
     @Test
     public void testMediaTypeFromProvider() {
         Response response = client.target(generateURL("/nomedia/list")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(MediaType.APPLICATION_SVG_XML_TYPE, response.getMediaType());
         response.close();
     }
@@ -111,7 +111,7 @@ public class ResourceMatchingTest {
     @Test
     public void testNoProduces() {
         Response response = client.target(generateURL("/nomedia/nothing")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(MediaType.APPLICATION_OCTET_STREAM_TYPE, response.getMediaType());
         response.close();
     }
@@ -127,7 +127,7 @@ public class ResourceMatchingTest {
     @Test
     public void testNonConcreteMatch() {
         Response response = client.target(generateURL("/error")).request("text/*").get();
-        Assert.assertEquals(Status.NOT_ACCEPTABLE, response.getStatus());
+        Assert.assertEquals(Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -139,7 +139,7 @@ public class ResourceMatchingTest {
     @Test
     public void testWildcard() {
         Response response = client.target(generateURL("/yas")).request("testi/*").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("test/text", response.readEntity(String.class));
         response.close();
     }
@@ -155,7 +155,7 @@ public class ResourceMatchingTest {
     @Test
     public void testQS() {
         Response response = client.target(generateURL("/yas")).request("testiii/textiii", "application/xml").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("application/xml", response.readEntity(String.class));
         response.close();
     }
@@ -169,7 +169,7 @@ public class ResourceMatchingTest {
     public void testOverride() {
         Response response = client.target(generateURL("/resource/subresource/sub")).request()
                 .header("Content-Type", "text/plain").post(null);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The incorrect subresource was chosen", ResourceMatchingAnotherSubResource.class.getSimpleName(),
                 response.readEntity(String.class));
         response.close();
@@ -184,7 +184,7 @@ public class ResourceMatchingTest {
     @Test
     public void testOptions() {
         Response response = client.target(generateURL("/resource/subresource/something")).request().options();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String actual = response.readEntity(String.class);
         Assert.assertTrue("GET is not in the list of available methods for the specified resource", actual.contains("GET"));
         response.close();
@@ -200,7 +200,7 @@ public class ResourceMatchingTest {
     public void testAvoidWildcard() {
         Response response = client.target(generateURL("/weight")).request("application/*;q=0.9", "application/xml;q=0.1")
                 .post(null);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         MediaType mediaType = response.getMediaType();
         String actual = response.readEntity(String.class);
         Assert.assertEquals("application/xml", actual);

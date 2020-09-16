@@ -66,13 +66,13 @@ public class InputStreamCloseTest {
     public void newClient() throws Exception {
         // Resource creates and returns InputStream.
         Response response = client.target(generateURL("/create/")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("hello", response.readEntity(String.class));
         response.close();
 
         // Verify previously created InputStream has been closed.
         response = client.target(generateURL("/test/")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 }

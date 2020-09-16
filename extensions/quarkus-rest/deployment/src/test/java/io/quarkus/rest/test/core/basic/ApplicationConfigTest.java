@@ -66,7 +66,7 @@ public class ApplicationConfigTest {
 
     private void basicTest(String uri, String body) {
         Response response = client.target(uri).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 

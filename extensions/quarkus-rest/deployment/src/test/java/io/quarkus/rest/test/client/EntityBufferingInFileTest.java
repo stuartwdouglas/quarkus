@@ -206,7 +206,7 @@ public class EntityBufferingInFileTest extends ClientTestBase {
             Response response = client.target(generateURL("/hello")).request()
                     .header("content-type", "text/plain; charset=UTF-8").post(Entity.text(body));
             logger.info("Received response");
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             InputStream in = response.readEntity(InputStream.class);
             StringWriter writer = new StringWriter();
             IOUtils.copy(in, writer, StandardCharsets.UTF_8);

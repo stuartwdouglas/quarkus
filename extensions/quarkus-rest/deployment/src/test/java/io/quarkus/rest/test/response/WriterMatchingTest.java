@@ -65,7 +65,7 @@ public class WriterMatchingTest {
     public void testMatch() {
         // writers sorted by type, mediatype, and then by app over builtin
         Response response = client.target(generateURL("/bool")).request("text/plain").get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String data = response.readEntity(String.class);
         response.close();
         Assert.assertEquals("RESTEasy returns wrong data", data, "true");

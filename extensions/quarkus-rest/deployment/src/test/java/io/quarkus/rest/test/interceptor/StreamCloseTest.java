@@ -56,7 +56,7 @@ public class StreamCloseTest {
         final int count = TestInterceptor.closeCounter.get();
         Response response = client.target(generateURL("/test")).request().post(Entity.text("test"));
         response.bufferEntity();
-        Assert.assertEquals("Wrong response status, interceptors don't work correctly", Status.OK,
+        Assert.assertEquals("Wrong response status, interceptors don't work correctly", Status.OK.getStatusCode(),
                 response.getStatus());
         Assert.assertEquals("Wrong content of response, interceptors don't work correctly", "test",
                 response.readEntity(String.class));

@@ -60,7 +60,7 @@ public class JAXRS21PatchTest extends ClientTestBase {
     public void testMethods() throws Exception {
         {
             Response res = client.target(generateURL("/test")).request().method(HttpMethod.PATCH, Entity.text("hello"));
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("patch hello", entity);
         }
@@ -79,7 +79,7 @@ public class JAXRS21PatchTest extends ClientTestBase {
     public void testInvoke() throws Exception {
         {
             Response res = client.target(generateURL("/test")).request().build(HttpMethod.PATCH, Entity.text("hello")).invoke();
-            Assert.assertEquals(Status.OK, res.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
             String entity = res.readEntity(String.class);
             Assert.assertEquals("patch hello", entity);
         }

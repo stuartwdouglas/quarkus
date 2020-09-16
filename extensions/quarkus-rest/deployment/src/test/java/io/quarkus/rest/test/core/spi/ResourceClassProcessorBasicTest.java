@@ -128,7 +128,7 @@ public class ResourceClassProcessorBasicTest {
 
     public void customClassDefaultMethodTestHelper(String warName) {
         Response response = client.target(PortProviderUtil.generateURL("/patched/pure", warName)).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertThat(response.getMediaType().toString(), containsString("text/plain"));
     }
 
@@ -163,7 +163,7 @@ public class ResourceClassProcessorBasicTest {
 
     public void customClassCustomMethodTestHelper(String warName) {
         Response response = client.target(PortProviderUtil.generateURL("/patched/custom", warName)).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertThat(response.getMediaType().toString(), containsString("application/xml"));
     }
 
@@ -199,7 +199,7 @@ public class ResourceClassProcessorBasicTest {
 
     public void defaultClassDefaultMethodTestHelper(String warName) {
         Response response = client.target(PortProviderUtil.generateURL("/pure/pure", warName)).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertThat(response.getMediaType().toString(), containsString("text/plain"));
     }
 
@@ -211,7 +211,7 @@ public class ResourceClassProcessorBasicTest {
     @Test
     public void interfaceTest() {
         Response response = client.target(PortProviderUtil.generateURL("/proxy", WAR_NORMAL)).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertThat(response.getMediaType().toString(), containsString("application/xml"));
     }
 

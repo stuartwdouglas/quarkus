@@ -76,7 +76,7 @@ public class ReadDataSourceTest {
         if (entity != null) {
             msg.append("\n").append(entity);
         }
-        Assert.assertEquals("Unexpected response: " + msg.toString(), Status.OK, response.getStatus());
+        Assert.assertEquals("Unexpected response: " + msg.toString(), Status.OK.getStatusCode(), response.getStatus());
     }
 
     private StringEntity createContent() throws UnsupportedEncodingException {

@@ -81,7 +81,7 @@ public class WhiteListPolymorphicTypeValidatorManualOverrideTest {
         String response = sendPost(new TestPolymorphicType(new Automobile2()));
         logger.info("response: " + response);
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.contains("Response code: " + Status.CREATED));
+        Assert.assertTrue(response.contains("Response code: " + Status.CREATED.getStatusCode()));
         Assert.assertTrue(response.contains("Created"));
     }
 
@@ -90,7 +90,7 @@ public class WhiteListPolymorphicTypeValidatorManualOverrideTest {
         String response = sendPost(new TestPolymorphicType(new Aircraft()));
         logger.info("response: " + response);
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.contains("Response code: " + Status.BAD_REQUEST));
+        Assert.assertTrue(response.contains("Response code: " + Status.BAD_REQUEST.getStatusCode()));
         Assert.assertTrue(response.contains("Configured `PolymorphicTypeValidator`") && response.contains("denied resolution"));
     }
 
@@ -99,7 +99,7 @@ public class WhiteListPolymorphicTypeValidatorManualOverrideTest {
         String response = sendPost(new TestPolymorphicType(new Automobile()));
         logger.info("response: " + response);
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.contains("Response code: " + Status.BAD_REQUEST));
+        Assert.assertTrue(response.contains("Response code: " + Status.BAD_REQUEST.getStatusCode()));
         Assert.assertTrue(response.contains("Configured `PolymorphicTypeValidator`") && response.contains("denied resolution"));
     }
 

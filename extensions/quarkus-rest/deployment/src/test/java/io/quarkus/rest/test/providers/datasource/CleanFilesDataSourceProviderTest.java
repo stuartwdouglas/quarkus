@@ -97,7 +97,7 @@ public class CleanFilesDataSourceProviderTest {
         // check http request results
         int postStatus = response.getStatusLine().getStatusCode();
         String postResponse = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-        Assert.assertEquals("Status of client request is not correct.", HttpStatus.SC_OK, postStatus);
+        Assert.assertEquals("Status of client request is not correct.", HttpStatus.SC_OK.getStatusCode(), postStatus);
         Assert.assertEquals("Client get wrong response.", CleanFilesDataSourceProviderResource.clientResponse, postResponse);
 
         // count temporary files after
@@ -161,7 +161,7 @@ public class CleanFilesDataSourceProviderTest {
         }
         Response response = client.target(generateURL("/never")).request()
                 .post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         // count temporary files after
         int countAfter = countFiles(serverTmpDir);

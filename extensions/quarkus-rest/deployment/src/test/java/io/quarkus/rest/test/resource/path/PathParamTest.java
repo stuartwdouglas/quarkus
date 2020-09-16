@@ -62,7 +62,7 @@ public class PathParamTest {
                     .request();
             request.header("Accept", "text/plain");
             Response response = request.get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(header, response.readEntity(String.class));
         }
         client.close();
@@ -79,7 +79,7 @@ public class PathParamTest {
             Invocation.Builder request = client
                     .target(PortProviderUtil.generateURL("/digits/5150", PathLimitedTest.class.getSimpleName())).request();
             Response response = request.get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         }
 
@@ -87,7 +87,7 @@ public class PathParamTest {
             Invocation.Builder request = client
                     .target(PortProviderUtil.generateURL("/digits/5150A", PathLimitedTest.class.getSimpleName())).request();
             Response response = request.get();
-            Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+            Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
             response.close();
         }
         client.close();
@@ -104,26 +104,26 @@ public class PathParamTest {
                 .generateURL("/cars/mercedes/matrixparam/e55;color=black/2006", PathLimitedTest.class.getSimpleName()))
                 .request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("A black 2006 mercedes e55", response.readEntity(String.class));
         // This must be a typo.  Should be "A midnight blue 2006 Porsche 911 Carrera S".
 
         request = client.target(PortProviderUtil.generateURL("/cars/mercedes/pathsegment/e55;color=black/2006",
                 PathLimitedTest.class.getSimpleName())).request();
         response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("A black 2006 mercedes e55", response.readEntity(String.class));
 
         request = client.target(PortProviderUtil.generateURL("/cars/mercedes/pathsegments/e55/amg/year/2006",
                 PathLimitedTest.class.getSimpleName())).request();
         response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("A 2006 mercedes e55 amg", response.readEntity(String.class));
 
         request = client.target(PortProviderUtil.generateURL("/cars/mercedes/uriinfo/e55;color=black/2006",
                 PathLimitedTest.class.getSimpleName())).request();
         response = request.get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("A black 2006 mercedes e55", response.readEntity(String.class));
         client.close();
     }

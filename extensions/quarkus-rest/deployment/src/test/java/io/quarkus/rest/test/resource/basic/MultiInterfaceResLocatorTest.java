@@ -56,11 +56,11 @@ public class MultiInterfaceResLocatorTest {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("/test/hello1")).request().get();
         String entity = response.readEntity(String.class);
-        Assertions.assertEquals(Status.OK, response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assertions.assertEquals("resourceMethod1", entity, "Wrong content of response");
         response = client.target(generateURL("/test/hello2")).request().get();
         entity = response.readEntity(String.class);
-        Assertions.assertEquals(Status.OK, response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assertions.assertEquals("resourceMethod2", entity, "Wrong content of response");
         client.close();
     }

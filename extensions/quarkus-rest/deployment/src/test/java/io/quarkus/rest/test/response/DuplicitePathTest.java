@@ -98,7 +98,7 @@ public class DuplicitePathTest {
         Response response = null;
         try {
             response = base.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String strResponse = response.readEntity(String.class);
             Assert.assertThat("Wrong body of response", strResponse,
                     either(is(DuplicitePathDupliciteResourceOne.DUPLICITE_RESPONSE))
@@ -122,7 +122,7 @@ public class DuplicitePathTest {
         Response response = null;
         try {
             response = base.request().accept(MediaType.TEXT_PLAIN, MediaType.WILDCARD).get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String strResponse = response.readEntity(String.class);
             Assert.assertThat("Wrong body of response", strResponse,
                     is(DuplicitePathMethodResource.NO_DUPLICITE_RESPONSE));
@@ -145,7 +145,7 @@ public class DuplicitePathTest {
         Response response = null;
         try {
             response = base.request().accept(MediaType.TEXT_PLAIN, MediaType.WILDCARD).get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String strResponse = response.readEntity(String.class);
             Assert.assertThat("Wrong body of response", strResponse,
                     is(DuplicitePathMethodResource.DUPLICITE_TYPE_GET));
@@ -168,7 +168,7 @@ public class DuplicitePathTest {
         Response response = null;
         try {
             response = base.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String strResponse = response.readEntity(String.class);
             Assert.assertThat("Wrong body of response", strResponse,
                     either(is(DuplicitePathDupliciteResourceOne.DUPLICITE_RESPONSE))
@@ -190,7 +190,7 @@ public class DuplicitePathTest {
         Response response = null;
         try {
             response = base.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Wrong body of response", response.readEntity(String.class),
                     either(is(DuplicitePathMethodResource.DUPLICITE_RESPONSE_1))
                             .or(is(DuplicitePathMethodResource.DUPLICITE_RESPONSE_2)));
@@ -212,7 +212,7 @@ public class DuplicitePathTest {
         Response response = null;
         try {
             response = base.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals("Wrong body of response", DuplicitePathMethodResource.NO_DUPLICITE_RESPONSE,
                     response.readEntity(String.class));
         } finally {

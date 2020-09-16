@@ -17,7 +17,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 
@@ -53,7 +52,7 @@ public abstract class GzipAbstractTestBase {
     protected static Archive<?> createWebArchive(String name, boolean addProvidersFileWithGzipInterceptors) {
         WebArchive war = TestUtil.prepareArchive(name);
         war = war.addClass(GzipInterface.class);
-//        war = war.addAsWebInfResource(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
+        //        war = war.addAsWebInfResource(EmptyAsset.INSTANCE, "WEB-INF/beans.xml");
 
         if (addProvidersFileWithGzipInterceptors) {
             war.addAsManifestResource(GzipAbstractTestBase.class.getPackage(), "GzipAbstractTest-javax.ws.rs.ext.Providers",

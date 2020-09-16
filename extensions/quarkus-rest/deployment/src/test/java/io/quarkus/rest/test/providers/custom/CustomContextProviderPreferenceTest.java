@@ -65,7 +65,7 @@ public class CustomContextProviderPreferenceTest {
     @Test
     public void testCustomContextProviderPreference() throws Exception {
         Response response = client.target(generateURL("/test")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 }

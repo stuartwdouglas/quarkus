@@ -52,7 +52,7 @@ public class UnauthorizedHttpCodeTest {
         try {
             proxy.getFoo();
         } catch (NotAuthorizedException e) {
-            Assert.assertEquals(e.getResponse().getStatus(), Status.UNAUTHORIZED);
+            Assert.assertEquals(e.getResponse().getStatus(), Status.UNAUTHORIZED.getStatusCode());
             String val = e.getResponse().readEntity(String.class);
             Assert.assertEquals("Wrong content of response", "hello", val);
         }

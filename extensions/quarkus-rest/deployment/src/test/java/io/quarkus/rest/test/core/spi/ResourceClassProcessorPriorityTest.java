@@ -82,7 +82,7 @@ public class ResourceClassProcessorPriorityTest {
 
         // do request
         Response response = client.target(generateURL("/pure/pure")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
         // log visited processors
         int i = 0;

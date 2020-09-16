@@ -77,14 +77,14 @@ public class ResourceLocatorWithBaseExpressionTest {
     public void testSubresource() throws Exception {
         {
             Response response = client.target(generateURL("/a1/base/1/resources")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource.class.getName(),
                     response.readEntity(String.class));
             response.close();
         }
         {
             Response response = client.target(generateURL("/a1/base/1/resources/subresource2/stuff/2/bar")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource2.class.getName() + "-2",
                     response.readEntity(String.class));
             response.close();

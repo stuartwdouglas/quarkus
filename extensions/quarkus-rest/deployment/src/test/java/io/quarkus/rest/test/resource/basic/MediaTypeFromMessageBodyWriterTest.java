@@ -156,7 +156,7 @@ public class MediaTypeFromMessageBodyWriterTest {
     public void test2() throws Exception {
         Response response = client.target(generateURLUserCase("")).request().accept("text/html", "image/jpg", "text/json", "*")
                 .get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("text/json;charset=UTF-8", response.getHeaderString("Content-type"));
     }
 }

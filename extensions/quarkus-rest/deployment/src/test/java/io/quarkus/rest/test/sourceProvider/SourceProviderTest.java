@@ -64,7 +64,7 @@ public class SourceProviderTest {
     public void testSourceWithStringReader() throws Exception {
         Response response = client.target(generateURL("/test")).request()
                 .post(Entity.entity(new StreamSource(new StringReader(book)), "application/*+xml"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         Assert.assertTrue(
                 entity.contentEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><book><title>Monkey kingdom</title></book>"));
@@ -75,7 +75,7 @@ public class SourceProviderTest {
         InputStream stream = new ByteArrayInputStream(book.getBytes(StandardCharsets.UTF_8));
         Response response = client.target(generateURL("/test")).request()
                 .post(Entity.entity(new StreamSource(stream), "application/*+xml"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         Assert.assertTrue(
                 entity.contentEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><book><title>Monkey kingdom</title></book>"));

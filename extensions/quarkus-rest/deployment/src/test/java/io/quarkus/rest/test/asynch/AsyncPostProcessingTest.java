@@ -76,7 +76,7 @@ public class AsyncPostProcessingTest {
         reset();
         Response response = client.target(generateURL("/sync")).request().get();
         logger.info("Status: " + response.getStatus());
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         logger.info("TestMessageBodyWriterInterceptor.called: " + AsyncPostProcessingMsgBodyWriterInterceptor.called);
         logger.info("TestPostProcessInterceptor.called: " + AsyncPostProcessingInterceptor.called);
         response.bufferEntity();
@@ -96,7 +96,7 @@ public class AsyncPostProcessingTest {
         reset();
         Response response = client.target(generateURL("/async/delay")).request().get();
         logger.info("Status: " + response.getStatus());
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         logger.info("TestMessageBodyWriterInterceptor.called: " + AsyncPostProcessingMsgBodyWriterInterceptor.called);
         logger.info("TestPostProcessInterceptor.called: " + AsyncPostProcessingInterceptor.called);
         response.bufferEntity();
@@ -116,7 +116,7 @@ public class AsyncPostProcessingTest {
         reset();
         Response response = client.target(generateURL("/async/nodelay")).request().get();
         logger.info("Status: " + response.getStatus());
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         logger.info("TestMessageBodyWriterInterceptor.called: " + AsyncPostProcessingMsgBodyWriterInterceptor.called);
         logger.info("TestPostProcessInterceptor.called: " + AsyncPostProcessingInterceptor.called);
         response.bufferEntity();

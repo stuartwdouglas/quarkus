@@ -126,7 +126,7 @@ public class GzipTest {
             proxy.getGzipErrorText();
             Assert.fail("Proxy is unreachable");
         } catch (InternalServerErrorException failure) {
-            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR, failure.getResponse().getStatus());
+            Assert.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), failure.getResponse().getStatus());
             String txt = failure.getResponse().readEntity(String.class);
             Assert.assertEquals("Response contain wrong content", "Hello", txt);
         }
@@ -169,7 +169,7 @@ public class GzipTest {
     @Test
     public void testRequestError() throws Exception {
         Response response = client.target(generateURL("/error")).request().get();
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED, response.getStatus());
+        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -181,7 +181,7 @@ public class GzipTest {
     public void testPutStream() throws Exception {
         Response response = client.target(generateURL("/stream")).request().header("Content-Encoding", "gzip")
                 .put(Entity.entity("hello world", "text/plain"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -193,7 +193,7 @@ public class GzipTest {
     public void testPutText() throws Exception {
         Response response = client.target(generateURL("/text")).request().header("Content-Encoding", "gzip")
                 .put(Entity.entity("hello world", "text/plain"));
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -229,7 +229,7 @@ public class GzipTest {
             HttpGet get = new HttpGet(generateURL("/encoded/text"));
             get.addHeader("Accept-Encoding", "gzip, deflate");
             HttpResponse response = client.execute(get);
-            Assert.assertEquals(Status.OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
             Assert.assertEquals("Wrong encoding format", "gzip", response.getFirstHeader("Content-Encoding").getValue());
 
             // test that it is actually zipped
@@ -242,7 +242,7 @@ public class GzipTest {
             HttpGet get = new HttpGet(generateURL("/text"));
             get.addHeader("Accept-Encoding", "gzip, deflate");
             HttpResponse response = client.execute(get);
-            Assert.assertEquals(Status.OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
             Assert.assertEquals("Wrong encoding format", "gzip", response.getFirstHeader("Content-Encoding").getValue());
 
             // test that it is actually zipped
@@ -260,7 +260,7 @@ public class GzipTest {
         CloseableHttpClient client = HttpClientBuilder.create().build();
         HttpGet get = new HttpGet(generateURL("/encoded/text"));
         HttpResponse response = client.execute(get);
-        Assert.assertEquals(Status.OK, response.getStatusLine().getStatusCode());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
         Assert.assertNull(response.getFirstHeader("Content-Encoding"));
 
         // test that it is actually zipped
@@ -282,7 +282,7 @@ public class GzipTest {
 
         Response response = gzipProxy.post(data);
         Assert.assertEquals("gzip", response.getHeaderString("Content-Encoding"));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
     }
 
     /**
@@ -295,7 +295,7 @@ public class GzipTest {
         byte[] b = new byte[10000001];
         Variant variant = new Variant(MediaType.APPLICATION_OCTET_STREAM_TYPE, "", "gzip");
         Response response = client.target(generateURL("/big/send")).request().post(Entity.entity(b, variant));
-        Assert.assertEquals(Status.REQUEST_ENTITY_TOO_LARGE, response.getStatus());
+        Assert.assertEquals(Status.REQUEST_ENTITY_TOO_LARGE.getStatusCode(), response.getStatus());
         String message = response.readEntity(String.class);
         Assert.assertTrue(message.contains("RESTEASY003357"));
         Assert.assertTrue(message.contains("10000000"));

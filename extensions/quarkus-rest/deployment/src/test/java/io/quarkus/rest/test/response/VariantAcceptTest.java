@@ -98,7 +98,7 @@ public class VariantAcceptTest {
         request.accept(MediaType.WILDCARD_TYPE);
         request.accept(MediaType.TEXT_HTML_TYPE);
         Response response = request.get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         assertEquals("Wrong media type on response", MediaType.TEXT_HTML, entity);
     }
@@ -113,7 +113,7 @@ public class VariantAcceptTest {
         request.accept(WILDCARD_WITH_PARAMS);
         request.accept(MediaType.TEXT_HTML_TYPE);
         Response response = request.get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         assertEquals("Wrong media type on response", TEXT_HTML_WITH_PARAMS.toString(), entity);
     }
@@ -128,12 +128,12 @@ public class VariantAcceptTest {
         Invocation.Builder request = client.target(generateURL("/simple")).request();
         request.accept("application/json;q=0.3, application/xml;q=0.2");
         Response response = request.get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("application/json", response.getHeaderString("Content-Type"));
 
         request = client.target(generateURL("/simpleqs")).request();
         response = request.get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("application/xml;charset=UTF-8", response.getHeaderString("Content-Type"));
     }
 }

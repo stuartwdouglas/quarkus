@@ -85,7 +85,7 @@ public class ExceptionMapperTest {
         Response response = client.target(generateURL("/resource/custom")).request().get();
         Assert.assertNotEquals("General RuntimeException mapper was used instead of more specific one",
                 Status.NOT_ACCEPTABLE, response.getStatus());
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("custom", response.readEntity(String.class));
     }
 
@@ -98,7 +98,7 @@ public class ExceptionMapperTest {
     @Test
     public void testWAEResponseUsed() {
         Response response = client.target(generateURL("/resource/responseok")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("hello", response.readEntity(String.class));
     }
 
@@ -112,7 +112,7 @@ public class ExceptionMapperTest {
     @Test
     public void testCustomSubExceptionsUsed() {
         Response response = client.target(generateURL("/resource/sub")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("custom", response.readEntity(String.class));
     }
 

@@ -59,7 +59,7 @@ public class PreProcessorExceptionMapperTest {
     public void testMapper() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Response response = client.target(generateURL("/interception", GzipTest.class.getSimpleName())).request().get();
-        Assert.assertEquals(Status.PRECONDITION_FAILED, response.getStatus());
+        Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }

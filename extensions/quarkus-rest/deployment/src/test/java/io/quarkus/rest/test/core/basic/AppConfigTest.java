@@ -44,7 +44,7 @@ public class AppConfigTest {
 
                     war.addClass(AppConfigResources.class);
                     war.addClass(AppConfigApplication.class);
-//                    war.addAsWebInfResource(AppConfigTest.class.getPackage(), "AppConfigWeb.xml", "web.xml");
+                    //                    war.addAsWebInfResource(AppConfigTest.class.getPackage(), "AppConfigWeb.xml", "web.xml");
                     return war;
                 }
             });
@@ -74,7 +74,7 @@ public class AppConfigTest {
         CloseableHttpResponse response1 = httpclient.execute(httpGet);
 
         try {
-            Assert.assertEquals(Status.OK, response1.getStatusLine().getStatusCode());
+            Assert.assertEquals(Status.OK.getStatusCode(), response1.getStatusLine().getStatusCode());
             Assert.assertEquals("\"hello\"", TestUtil.readString(response1.getEntity().getContent()));
         } finally {
             response1.close();

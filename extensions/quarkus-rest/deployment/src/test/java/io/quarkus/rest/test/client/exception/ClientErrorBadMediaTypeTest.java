@@ -61,7 +61,7 @@ public class ClientErrorBadMediaTypeTest {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Response response = client.target(generateURL("/")).request().post(Entity.entity("content", "foo/bar"));
         logger.info("status: " + response.getStatus());
-        Assert.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE, response.getStatus());
+        Assert.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }

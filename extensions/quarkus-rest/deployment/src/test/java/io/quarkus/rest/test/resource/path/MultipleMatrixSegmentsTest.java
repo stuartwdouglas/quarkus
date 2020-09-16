@@ -63,7 +63,7 @@ public class MultipleMatrixSegmentsTest {
     @Test
     public void testMultipleStartAndEnd() throws Exception {
         Response response = client.target(generateURL("/;name=bill;ssn=111/children/;name=skippy;ssn=3344")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -75,7 +75,7 @@ public class MultipleMatrixSegmentsTest {
     public void testMultipleMiddle() throws Exception {
         Response response = client.target(generateURL("/stuff/;name=first;ssn=111/;name=second;ssn=3344/first")).request()
                 .get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 }

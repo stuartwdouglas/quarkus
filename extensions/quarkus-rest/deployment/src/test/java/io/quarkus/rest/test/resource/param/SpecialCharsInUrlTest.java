@@ -68,7 +68,7 @@ public class SpecialCharsInUrlTest {
     public void testGet() throws Exception {
         WebTarget target = client.target(String.format("%s%s?foo=%s", generateURL("/simple/"), encodedPart, encodedPart));
         Response response = target.request().get();
-        Assert.assertEquals("The result is not correctly decoded", Status.OK, response.getStatus());
+        Assert.assertEquals("The result is not correctly decoded", Status.OK.getStatusCode(), response.getStatus());
         String result = response.readEntity(String.class);
         Assert.assertEquals("The result is not correctly decoded", decodedPart, result);
     }

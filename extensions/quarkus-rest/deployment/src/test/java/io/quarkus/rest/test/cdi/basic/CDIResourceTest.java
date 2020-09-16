@@ -16,7 +16,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.utils.TimeoutUtil;
+import io.quarkus.rest.test.util.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -64,7 +64,7 @@ public class CDIResourceTest {
                 TestServlet.class);
 
 //        war.addAsWebInfResource(CDIResourceTest.class.getPackage(),
-                "web-resteasy1082.xml", "web.xml");
+//                "web-resteasy1082.xml", "web.xml");
 
         //write file to disk
         war.as(ZipExporter.class).exportTo(exportFile, true);
@@ -99,7 +99,7 @@ public class CDIResourceTest {
             for (int i = 0; i < 40; i++) {
                 get.releaseConnection();
                 response = client.execute(get);
-                if (response.getStatusLine().getStatusCode() != Status.NOT_FOUND) {
+                if (response.getStatusLine().getStatusCode() != Status.NOT_FOUND.getStatusCode()) {
                     succesInDeploy = true;
                     break;
                 }
@@ -108,7 +108,7 @@ public class CDIResourceTest {
             Assert.assertTrue("Deployment was not deployed", succesInDeploy);
             logger.info("status: " + response.getStatusLine().getStatusCode());
             printResponse(response);
-            Assert.assertEquals(Status.OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
             get.releaseConnection();
 
             // Redeploy RESTEASY-1082.war
@@ -122,7 +122,7 @@ public class CDIResourceTest {
             for (int i = 0; i < 40; i++) {
                 get.releaseConnection();
                 response = client.execute(get);
-                if (response.getStatusLine().getStatusCode() != Status.NOT_FOUND) {
+                if (response.getStatusLine().getStatusCode() != Status.NOT_FOUND.getStatusCode()) {
                     succesInDeploy = true;
                     break;
                 }
@@ -132,7 +132,7 @@ public class CDIResourceTest {
 
             logger.info("status: " + response.getStatusLine().getStatusCode());
             printResponse(response);
-            Assert.assertEquals(Status.OK, response.getStatusLine().getStatusCode());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
         } finally {
             Files.delete(to);
         }

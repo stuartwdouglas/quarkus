@@ -164,7 +164,7 @@ public class BasicAuthTest {
             proxy.getFailure();
             Assert.fail();
         } catch (NotAuthorizedException e) {
-            Assert.assertEquals(Status.UNAUTHORIZED, e.getResponse().getStatus());
+            Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), e.getResponse().getStatus());
             Assert.assertTrue("WWW-Authenticate header is not included",
                     e.getResponse().getHeaderString("WWW-Authenticate").contains("Basic realm="));
         }
@@ -179,36 +179,36 @@ public class BasicAuthTest {
         // authorized client
         {
             Response response = authorizedClient.target(generateURL("/secured")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "hello", response.readEntity(String.class));
         }
 
         {
             Response response = authorizedClient.target(generateURL("/secured/authorized")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "authorized", response.readEntity(String.class));
         }
 
         {
             Response response = authorizedClient.target(generateURL("/secured/deny")).request().get();
-            Assert.assertEquals(Status.FORBIDDEN, response.getStatus());
+            Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, ACCESS_FORBIDDEN_MESSAGE, response.readEntity(String.class));
         }
         {
             Response response = authorizedClient.target(generateURL("/secured3/authorized")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "authorized", response.readEntity(String.class));
         }
 
         // unauthorized client
         {
             Response response = unauthorizedClient.target(generateURL("/secured3/authorized")).request().get();
-            Assert.assertEquals(Status.FORBIDDEN, response.getStatus());
+            Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, ACCESS_FORBIDDEN_MESSAGE, response.readEntity(String.class));
         }
         {
             Response response = unauthorizedClient.target(generateURL("/secured3/anybody")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         }
     }
@@ -220,7 +220,7 @@ public class BasicAuthTest {
     @Test
     public void test579() throws Exception {
         Response response = authorizedClient.target(generateURL("/secured2")).request().get();
-        Assert.assertEquals(Status.NOT_FOUND, response.getStatus());
+        Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -232,7 +232,7 @@ public class BasicAuthTest {
     public void testSecurityFailure() throws Exception {
         {
             Response response = noAutorizationClient.target(generateURL("/secured")).request().get();
-            Assert.assertEquals(Status.UNAUTHORIZED, response.getStatus());
+            Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
             Assert.assertTrue("WWW-Authenticate header is not included",
                     response.getHeaderString("WWW-Authenticate").contains("Basic realm="));
             response.close();
@@ -240,13 +240,13 @@ public class BasicAuthTest {
 
         {
             Response response = authorizedClient.target(generateURL("/secured/authorized")).request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertEquals(WRONG_RESPONSE, "authorized", response.readEntity(String.class));
         }
 
         {
             Response response = unauthorizedClient.target(generateURL("/secured/authorized")).request().get();
-            Assert.assertEquals(Status.FORBIDDEN, response.getStatus());
+            Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
             Assert.assertEquals(ACCESS_FORBIDDEN_MESSAGE, response.readEntity(String.class));
         }
     }
@@ -265,7 +265,7 @@ public class BasicAuthTest {
 
         QuarkusRestClient authorizedClient = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).httpEngine(engine).build();
         Response response = authorizedClient.target(generateURL("/secured/deny")).request().get();
-        Assert.assertEquals(Status.FORBIDDEN, response.getStatus());
+        Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
         Assert.assertEquals(ACCESS_FORBIDDEN_MESSAGE, response.readEntity(String.class));
         authorizedClient.close();
     }
@@ -277,7 +277,7 @@ public class BasicAuthTest {
     @Test
     public void testContentTypeWithForbiddenMessage() {
         Response response = unauthorizedClient.target(generateURL("/secured/denyWithContentType")).request().get();
-        Assert.assertEquals(Status.FORBIDDEN, response.getStatus());
+        Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
         Assert.assertEquals("Incorrect Content-type header", "text/html;charset=UTF-8",
                 response.getHeaderString("Content-type"));
         Assert.assertEquals("Missing forbidden message in the response", ACCESS_FORBIDDEN_MESSAGE,
@@ -291,7 +291,7 @@ public class BasicAuthTest {
     @Test
     public void testContentTypeWithUnauthorizedMessage() {
         Response response = noAutorizationClient.target(generateURL("/secured/denyWithContentType")).request().get();
-        Assert.assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         Assert.assertEquals("Incorrect Content-type header", "text/html;charset=UTF-8",
                 response.getHeaderString("Content-type"));
         Assert.assertTrue("WWW-Authenticate header is not included",
@@ -305,7 +305,7 @@ public class BasicAuthTest {
     @Test
     public void testWithClientRequestFilterAuthorizedUser() {
         Response response = authorizedClientUsingRequestFilter.target(generateURL("/secured/authorized")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE, "authorized", response.readEntity(String.class));
     }
 
@@ -317,7 +317,7 @@ public class BasicAuthTest {
     public void testWithClientRequestFilterWrongPassword() {
         Response response = unauthorizedClientUsingRequestFilterWithWrongPassword.target(generateURL("/secured/authorized"))
                 .request().get();
-        Assert.assertEquals(Status.UNAUTHORIZED, response.getStatus());
+        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         Assert.assertTrue("WWW-Authenticate header is not included",
                 response.getHeaderString("WWW-Authenticate").contains("Basic realm="));
     }
@@ -330,7 +330,7 @@ public class BasicAuthTest {
     @Test
     public void testWithClientRequestFilterUnauthorizedUser() {
         Response response = unauthorizedClientUsingRequestFilter.target(generateURL("/secured/authorized")).request().get();
-        Assert.assertEquals(Status.FORBIDDEN, response.getStatus());
+        Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE, ACCESS_FORBIDDEN_MESSAGE, response.readEntity(String.class));
     }
 

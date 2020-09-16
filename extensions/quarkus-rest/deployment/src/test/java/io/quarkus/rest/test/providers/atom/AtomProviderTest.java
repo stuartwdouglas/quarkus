@@ -198,7 +198,7 @@ public class AtomProviderTest {
         WebTarget target = client.target(generateURL("/atom/feed"));
         Response response = target.request().get();
         String stringResponse = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         logger.info(stringResponse);
 
         AtomProviderResourceInterface proxy = client.target(generateURL("")).proxy(AtomProviderResourceInterface.class);
@@ -216,7 +216,7 @@ public class AtomProviderTest {
         WebTarget target = client.target(generateURL("/atom/entry"));
         Response response = target.request().get();
         String stringResponse = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         logger.info(stringResponse);
     }
 

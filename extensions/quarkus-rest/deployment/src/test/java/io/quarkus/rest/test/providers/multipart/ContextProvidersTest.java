@@ -496,7 +496,7 @@ public class ContextProvidersTest {
             Client client = ClientBuilder.newClient();
             WebTarget target = client.target(PortProviderUtil.generateURL(path, ContextProvidersTest.class.getSimpleName()));
             Response response = target.request().get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             T entity = response.readEntity(clazz, annotations);
             client.close();
             return entity;
@@ -512,7 +512,7 @@ public class ContextProvidersTest {
         WebTarget target = client.target(PortProviderUtil.generateURL(path, ContextProvidersTest.class.getSimpleName()));
         Entity<S> entity = Entity.entity(payload, mediaType, annotations);
         Response response = target.request().post(entity);
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         T result = null;
         if (genericReturnType != null) {
             result = response.readEntity(new GenericType<T>(genericReturnType));

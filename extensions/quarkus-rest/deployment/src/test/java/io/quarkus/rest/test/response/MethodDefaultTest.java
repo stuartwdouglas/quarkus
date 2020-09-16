@@ -66,7 +66,7 @@ public class MethodDefaultTest {
     @Test
     public void testHeadPlain() throws Exception {
         Response response = client.target(generateURL("/GetTest")).request().header("Accept", "text/plain").head();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String header = response.getHeaderString("CTS-HEAD");
         Assert.assertEquals("Wrong CTS-HEAD header", "text-plain", header);
         response.close();
@@ -81,7 +81,7 @@ public class MethodDefaultTest {
     @Test
     public void testHeadHtml() throws Exception {
         Response response = client.target(generateURL("/GetTest")).request().header("Accept", "text/html").head();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String header = response.getHeaderString("CTS-HEAD");
         Assert.assertEquals("Wrong CTS-HEAD header", "text-html", header);
         response.close();
@@ -96,7 +96,7 @@ public class MethodDefaultTest {
     @Test
     public void testHeadSubresource() throws Exception {
         Response response = client.target(generateURL("/GetTest/sub")).request().header("Accept", "text/plain").head();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String header = response.getHeaderString("CTS-HEAD");
         Assert.assertEquals("Wrong CTS-HEAD header", "sub-text-plain", header);
         response.close();
@@ -111,7 +111,7 @@ public class MethodDefaultTest {
     public void testOptions() throws Exception {
 
         Response response = client.target(generateURL("/GetTest/sub")).request().options();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String allowedHeader = response.getHeaderString("Allow");
         Assert.assertNotNull("Wrong Allow header", allowedHeader);
         String[] allowed = allowedHeader.split(",");

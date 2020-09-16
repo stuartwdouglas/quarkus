@@ -107,7 +107,7 @@ public class CryptoTest {
         Response res = client.target(generateURL("/smime/signed")).request().get();
         SignedInput signed = res.readEntity(SignedInput.class);
         String output = (String) signed.getEntity(String.class);
-        Assert.assertEquals(Status.OK, res.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), res.getStatus());
         logger.info(output);
         Assert.assertEquals(ERROR_CONTENT_MSG, "hello world", output);
         Assert.assertTrue(ERROR_CORE_MSG, signed.verify(cert));
@@ -159,7 +159,7 @@ public class CryptoTest {
     @Test
     public void testEncryptedOutput() throws Exception {
         Response res = client.target(generateURL("/smime/encrypted")).request().get();
-        Assert.assertEquals("Unexpected BouncyCastle error", Status.OK, res.getStatus());
+        Assert.assertEquals("Unexpected BouncyCastle error", Status.OK.getStatusCode(), res.getStatus());
         MediaType contentType = MediaType.valueOf(res.getHeaderString("Content-Type"));
         logger.info(contentType);
         EnvelopedInput enveloped = res.readEntity(EnvelopedInput.class);
@@ -219,7 +219,7 @@ public class CryptoTest {
         EnvelopedOutput output = new EnvelopedOutput("input", "text/plain");
         output.setCertificate(cert);
         Response res = client.target(generateURL("/smime/encrypted")).request().post(Entity.entity(output, "*/*"));
-        Assert.assertEquals(Status.NO_CONTENT, res.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), res.getStatus());
         res.close();
     }
 
@@ -235,7 +235,7 @@ public class CryptoTest {
         EnvelopedOutput output = new EnvelopedOutput(signed, "multipart/signed");
         output.setCertificate(cert);
         Response res = client.target(generateURL("/smime/encrypted/signed")).request().post(Entity.entity(output, "*/*"));
-        Assert.assertEquals(Status.NO_CONTENT, res.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), res.getStatus());
         res.close();
     }
 
@@ -249,7 +249,7 @@ public class CryptoTest {
         output.setCertificate(cert);
         output.setPrivateKey(privateKey);
         Response res = client.target(generateURL("/smime/signed")).request().post(Entity.entity(output, "multipart/signed"));
-        Assert.assertEquals(Status.NO_CONTENT, res.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), res.getStatus());
         res.close();
     }
 
@@ -261,7 +261,7 @@ public class CryptoTest {
             output.setPrivateKey(privateKey);
             Response res = client.target(generateURL("/smime/pkcs7-signature")).request()
                     .post(Entity.entity(output, "application/pkcs7-signature"));
-            Assert.assertEquals(Status.NO_CONTENT, res.getStatus());
+            Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), res.getStatus());
             res.close();
         } catch (Exception e) {
             throw new RuntimeException("Unexpected BouncyCastle error", e);

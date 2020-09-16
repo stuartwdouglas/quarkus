@@ -64,7 +64,7 @@ public class InheritanceTest {
         Builder builder = client.target(generateURL("/InheritanceTest")).request();
         builder.header("Accept", "text/plain");
         Response response = builder.get();
-        Assertions.assertEquals(Status.OK, response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assertions.assertEquals(response.readEntity(String.class), "First");
     }
 }

@@ -82,7 +82,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/Byte")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -96,7 +96,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/byte")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -110,7 +110,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/Double")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123.4", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -124,7 +124,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/double")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123.4", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -138,7 +138,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/Float")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123.4", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -152,7 +152,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/float")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123.4", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -166,7 +166,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/Integer")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -180,7 +180,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/integer")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -194,7 +194,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/Long")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -208,7 +208,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/long")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -222,7 +222,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/Short")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -236,7 +236,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/short")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -250,7 +250,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/bigDecimal")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }
@@ -265,7 +265,7 @@ public class DefaultNumberWriterTest {
         Response response = client.target(generateURL("/test/bigDecimal")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(WRONG_RESPONSE_ERROR_MSG, "123", response.getEntity());
         Assert.assertTrue(WRONG_PROVIDER_USED_ERROR_MSG, DefaultNumberWriterCustom.used);
     }

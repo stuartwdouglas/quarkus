@@ -89,7 +89,7 @@ public class CharsetTest {
         String str = "La Règle du Jeu";
         logger.info(str);
         Response response = target.request().post(Entity.entity(str, MediaType.WILDCARD_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
         Assert.assertEquals("The response from the server is not what was expected", str, entity);
@@ -106,7 +106,7 @@ public class CharsetTest {
         String str = "La Règle du Jeu";
         logger.info(str);
         Response response = target.request().post(Entity.entity(str, TEXT_PLAIN_UTF16_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
         Assert.assertEquals("The response from the server is not what was expected", str, entity);
@@ -123,7 +123,7 @@ public class CharsetTest {
         String str = "La Règle du Jeu";
         logger.info(str);
         Response response = target.request().accept(WILDCARD_UTF16_TYPE).post(Entity.entity(str, TEXT_PLAIN_UTF16_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
         Assert.assertEquals("The response from the server is not what was expected", str, entity);
@@ -139,7 +139,7 @@ public class CharsetTest {
         CharsetFoo foo = new CharsetFoo("La Règle du Jeu");
         logger.info(foo);
         Response response = target.request().post(Entity.entity(foo, MediaType.TEXT_PLAIN_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
         Assert.assertEquals("The response from the server is not what was expected", foo.valueOf(), entity);
@@ -156,7 +156,7 @@ public class CharsetTest {
         CharsetFoo foo = new CharsetFoo("La Règle du Jeu");
         logger.info(foo);
         Response response = target.request().post(Entity.entity(foo, TEXT_PLAIN_UTF16_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
         Assert.assertEquals("The response from the server is not what was expected", foo.valueOf(), entity);
@@ -173,7 +173,7 @@ public class CharsetTest {
         CharsetFoo foo = new CharsetFoo("La Règle du Jeu");
         logger.info(foo);
         Response response = target.request().accept(TEXT_PLAIN_UTF16_TYPE).post(Entity.entity(foo, TEXT_PLAIN_UTF16_TYPE));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
         Assert.assertEquals("The response from the server is not what was expected", foo.valueOf(), entity);
@@ -188,7 +188,7 @@ public class CharsetTest {
         WebTarget target = client.target(generateURL("/accepts/form/default"));
         Form form = new Form().param("title", "La Règle du Jeu");
         Response response = target.request().post(Entity.form(form));
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("The response from the server is not what was expected", "title=La Règle du Jeu",
                 response.readEntity(String.class));
     }

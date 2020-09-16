@@ -30,7 +30,7 @@ public class OnDemandTracingTest extends TracingTestBase {
 
             Response response = base.request().get();
             testTracingEnabled(response, false);
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
             response.close();
 
@@ -59,7 +59,7 @@ public class OnDemandTracingTest extends TracingTestBase {
                     .header(RESTEasyTracing.HEADER_ACCEPT, "")
                     .header(RESTEasyTracing.HEADER_THRESHOLD, ResteasyContextParameters.RESTEASY_TRACING_LEVEL_VERBOSE)
                     .get();
-            Assert.assertEquals(Status.OK, response.getStatus());
+            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
             Map<String, Boolean> results = new HashMap<String, Boolean>();
             putTestEvents(results);

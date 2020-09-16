@@ -80,7 +80,7 @@ public class DecoratorsTest {
         WebTarget base = client.target(generateURL("/create/"));
         EJBBook book = new EJBBook("RESTEasy: the Sequel");
         Response response = base.request().post(Entity.entity(book, Constants.MEDIA_TYPE_TEST_XML_TYPE));
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         log.info("Status: " + response.getStatus());
         int id = response.readEntity(int.class);
         log.info("id: " + id);
@@ -90,7 +90,7 @@ public class DecoratorsTest {
         // Retrieve book.
         base = client.target(generateURL("/book/" + id));
         response = base.request().accept(Constants.MEDIA_TYPE_TEST_XML).get();
-        assertEquals(Status.OK, response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus());
         EJBBook result = response.readEntity(EJBBook.class);
         log.info("book: " + book);
         assertEquals("Wrong received book", book, result);
@@ -99,7 +99,7 @@ public class DecoratorsTest {
         // Test order of decorator invocations.
         base = client.target(generateURL("/test/"));
         response = base.request().post(Entity.text(new String()));
-        assertEquals("Wrong decorator usage", Status.OK, response.getStatus());
+        assertEquals("Wrong decorator usage", Status.OK.getStatusCode(), response.getStatus());
         response.close();
 
         client.close();

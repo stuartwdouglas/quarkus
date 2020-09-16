@@ -54,7 +54,7 @@ public class UndertowTest {
         byte[] b = new byte[16];
         conn.getInputStream().read(b);
         Assert.assertThat("Wrong content of response", new String(b), CoreMatchers.startsWith("forward"));
-        Assert.assertEquals(Status.OK, conn.getResponseCode());
+        Assert.assertEquals(Status.OK.getStatusCode(), conn.getResponseCode());
         conn.disconnect();
     }
 }

@@ -84,7 +84,7 @@ public class ResponseTest {
     @Test
     public void testHead() {
         Response response = client.target(generateURL("/head")).request().head();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         thrown.expect(ProcessingException.class);
         response.readEntity(String.class);
         response.close();
@@ -98,7 +98,7 @@ public class ResponseTest {
     @Test
     public void testEmpty() {
         Response response = client.target(generateURL("/empty")).request().head();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertFalse(response.hasEntity());
         response.close();
     }
@@ -111,7 +111,7 @@ public class ResponseTest {
     @Test
     public void testNoStatus() {
         Response response = client.target(generateURL("/entitybodyresponsetest")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("", "hello", response.readEntity(String.class));
         response.close();
     }
@@ -125,7 +125,7 @@ public class ResponseTest {
     @Test
     public void testNullEntityNoStatus() {
         Response response = client.target(generateURL("/nullEntityResponse")).request().get();
-        Assert.assertEquals(Status.NO_CONTENT, response.getStatus());
+        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -206,7 +206,7 @@ public class ResponseTest {
     @Test
     public void readEntityGenericTypeTest() throws Exception {
         Response response = client.target(generateURL("/entity")).request().get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.bufferEntity();
         String line;
 

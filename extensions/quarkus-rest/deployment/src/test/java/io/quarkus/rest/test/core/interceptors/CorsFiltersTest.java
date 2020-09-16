@@ -79,11 +79,11 @@ public class CorsFiltersTest {
         WebTarget target = client.target(generateURL("/test"));
         Response response = target.request().header(CorsHeaders.ORIGIN, testedURL)
                 .options();
-        Assert.assertEquals(Status.FORBIDDEN, response.getStatus());
+        Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
         response.close();
         response = target.request().header(CorsHeaders.ORIGIN, testedURL)
                 .get();
-        Assert.assertEquals(Status.FORBIDDEN, response.getStatus());
+        Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
         response.close();
 
         Assert.assertThat("Wrong count of singletons were created", TestApplication.singletons.size(), is(1));
@@ -92,11 +92,11 @@ public class CorsFiltersTest {
         corsFilter.getAllowedOrigins().add(testedURL);
         response = target.request().header(CorsHeaders.ORIGIN, testedURL)
                 .options();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
         response = target.request().header(CorsHeaders.ORIGIN, testedURL)
                 .get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals(response.getHeaderString(CorsHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), testedURL);
         Assert.assertEquals("Wrong response", "hello", response.readEntity(String.class));
         response.close();
@@ -120,13 +120,13 @@ public class CorsFiltersTest {
         corsFilter.getAllowedOrigins().add(testedURL);
 
         Response response = target.request().header(CorsHeaders.ORIGIN, testedURL).get();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Response doesn't contain the Vary: Origin header", CorsHeaders.ORIGIN,
                 response.getHeaderString(CorsHeaders.VARY));
         response.close();
 
         response = target.request().header(CorsHeaders.ORIGIN, testedURL).options();
-        Assert.assertEquals(Status.OK, response.getStatus());
+        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertEquals("Response doesn't contain the Vary: Origin header", CorsHeaders.ORIGIN,
                 response.getHeaderString(CorsHeaders.VARY));
         response.close();

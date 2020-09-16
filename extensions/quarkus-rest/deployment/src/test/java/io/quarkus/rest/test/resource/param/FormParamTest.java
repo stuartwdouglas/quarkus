@@ -80,7 +80,7 @@ public class FormParamTest {
     public void postTest() {
         Entity entity = Entity.entity("param=" + ENCODED, MediaType.APPLICATION_FORM_URLENCODED_TYPE);
         Response response = client.target(generateURL("/form")).request().post(entity);
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         Assert.assertEquals(ERROR_CODE, response.readEntity(String.class), ENCODED);
         response.close();
     }
@@ -93,7 +93,7 @@ public class FormParamTest {
     public void nonDefaultFormParamFromStringTest() {
         Entity entity = Entity.entity("default_argument=" + SENT, MediaType.APPLICATION_FORM_URLENCODED_TYPE);
         Response response = client.target(generateURL("/FormParamTest/ParamEntityWithFromString")).request().post(entity);
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         Assert.assertEquals(ERROR_CODE, "CTS_FORMPARAM:" + ENCODED, response.readEntity(String.class));
         response.close();
     }
@@ -106,7 +106,7 @@ public class FormParamTest {
     public void string() {
         Entity entity = Entity.entity("default_argument=" + SENT, MediaType.APPLICATION_FORM_URLENCODED_TYPE);
         Response response = client.target(generateURL("/FormParamTest/string")).request().post(entity);
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         Assert.assertEquals(ERROR_CODE, response.readEntity(String.class), "CTS_FORMPARAM:" + ENCODED);
         response.close();
     }
@@ -119,7 +119,7 @@ public class FormParamTest {
     public void defaultFormParamFromSortedSetFromStringTest() {
         Response response = client.target(generateURL("/FormParamTest/SortedSetFromString")).request()
                 .header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED).post(null);
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         Assert.assertEquals(ERROR_CODE, "CTS_FORMPARAM:SortedSetFromString", response.readEntity(String.class));
         response.close();
     }
@@ -132,7 +132,7 @@ public class FormParamTest {
     public void defaultListConstructor() {
         Response response = client.target(generateURL("/FormParamTest/ListConstructor")).request()
                 .header("Content-Type", MediaType.APPLICATION_FORM_URLENCODED).post(null);
-        Assert.assertEquals(response.getStatus(), Status.OK);
+        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         Assert.assertEquals(ERROR_CODE, "CTS_FORMPARAM:ListConstructor", response.readEntity(String.class));
         response.close();
     }
