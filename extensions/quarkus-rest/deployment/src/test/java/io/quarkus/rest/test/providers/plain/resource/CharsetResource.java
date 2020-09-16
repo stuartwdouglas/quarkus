@@ -10,7 +10,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.jboss.logging.Logger;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/")
 public class CharsetResource {

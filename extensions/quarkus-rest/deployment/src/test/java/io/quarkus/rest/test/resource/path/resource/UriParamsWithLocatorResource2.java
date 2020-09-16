@@ -5,7 +5,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.PathSegment;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 public class UriParamsWithLocatorResource2 {
     @GET

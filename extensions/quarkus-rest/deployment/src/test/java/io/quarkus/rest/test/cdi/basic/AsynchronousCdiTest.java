@@ -1,8 +1,8 @@
 package io.quarkus.rest.test.cdi.basic;
 
+import static io.quarkus.rest.test.Assert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.function.Supplier;

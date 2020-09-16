@@ -9,13 +9,13 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.proxy.resource.ProxyJaxbCredit;
 import io.quarkus.rest.test.client.proxy.resource.ProxyJaxbResource;
 import io.quarkus.rest.test.client.proxy.resource.ProxyJaxbResourceIntf;

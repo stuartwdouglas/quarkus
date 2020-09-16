@@ -1,7 +1,8 @@
 package io.quarkus.rest.test.providers.jaxb.resource;
 
 import org.jboss.resteasy.annotations.Decorator;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 /**
  * Test correct media type, but incorrect type

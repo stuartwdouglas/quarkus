@@ -105,7 +105,7 @@ public class EmbeddedMultipartTest {
             outerPart.addPart(customer, MediaType.APPLICATION_XML_TYPE);
             Entity<MultipartOutput> entity = Entity.entity(outerPart, MULTIPART_MIXED);
             target.request().post(entity, String.class);
-            Assert.fail("Exception is expected");
+            Assertions.fail("Exception is expected");
         } catch (InternalServerErrorException e) {
             Response response = e.getResponse();
             Assertions.assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus(),

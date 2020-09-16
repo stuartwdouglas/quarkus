@@ -16,7 +16,6 @@ import org.jboss.resteasy.client.jaxrs.internal.CompletionStageRxInvokerProvider
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -24,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.rx.resource.ExceptionThrowingFilter;
 import io.quarkus.rest.test.rx.resource.FilterException;
 import io.quarkus.rest.test.rx.resource.RxCompletionStageResourceImpl;
@@ -287,7 +287,7 @@ public class RxCompletionStageServerAsyncTest {
         Builder request = client.target(generateURL("/exception/unhandled")).request();
         try {
             request.get(Thing.class);
-            Assert.fail("expecting Exception");
+            Assertions.fail("expecting Exception");
         } catch (Exception e) {
             Assert.assertTrue(e.getMessage().contains("500"));
         }
@@ -298,7 +298,7 @@ public class RxCompletionStageServerAsyncTest {
         Builder request = client.target(generateURL("/exception/handled")).request();
         try {
             request.get(Thing.class);
-            Assert.fail("expecting Exception");
+            Assertions.fail("expecting Exception");
         } catch (Exception e) {
             Assert.assertTrue(e.getMessage().contains("444"));
         }
@@ -320,7 +320,7 @@ public class RxCompletionStageServerAsyncTest {
         Builder request = client.target(generateURL("/exception/filter-sync")).request();
         try {
             request.get(String.class);
-            Assert.fail("expecting Exception");
+            Assertions.fail("expecting Exception");
         } catch (Exception e) {
             Assert.assertTrue(e.getMessage().contains("500"));
         }

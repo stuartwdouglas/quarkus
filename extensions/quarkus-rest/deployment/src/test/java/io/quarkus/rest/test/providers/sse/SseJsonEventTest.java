@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.providers.sse;
 
-import static org.junit.Assert.fail;
+import static io.quarkus.rest.test.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;

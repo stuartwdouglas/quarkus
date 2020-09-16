@@ -98,7 +98,7 @@ public class ComplexMultipartOutputTest {
             }
         }
         if (!controlList.isEmpty()) {
-            Assert.fail("1 or more missing MultipartRelatedInput return objects");
+            Assertions.fail("1 or more missing MultipartRelatedInput return objects");
         }
     }
 

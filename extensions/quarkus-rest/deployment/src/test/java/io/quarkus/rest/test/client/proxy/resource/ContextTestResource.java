@@ -2,8 +2,7 @@ package io.quarkus.rest.test.client.proxy.resource;
 
 import javax.ws.rs.core.UriInfo;
 
-import org.junit.Assert;
-
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.proxy.ContextTest;
 
 public class ContextTestResource implements ContextTest.ResourceInterface {

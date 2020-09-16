@@ -11,12 +11,12 @@ import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.proxy.resource.MediaTypeCaseSensitivityStuff;
 import io.quarkus.rest.test.client.proxy.resource.MediaTypeCaseSensitivityStuffProvider;
 import io.quarkus.rest.test.client.proxy.resource.MediaTypeCaseSensitivityStuffResource;

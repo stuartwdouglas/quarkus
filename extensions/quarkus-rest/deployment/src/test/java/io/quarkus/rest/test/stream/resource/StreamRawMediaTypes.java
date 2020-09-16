@@ -6,7 +6,8 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 
 import org.jboss.resteasy.annotations.Stream;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 public class StreamRawMediaTypes {
 

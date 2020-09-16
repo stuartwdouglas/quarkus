@@ -6,8 +6,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import org.junit.Assert;
-
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.resource.param.HeaderParamsAsPrimitivesTest;
 
 @Path("/wrappers/default")

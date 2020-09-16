@@ -20,12 +20,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.jboss.resteasy.client.jaxrs.internal.ClientResponse;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.resource.ClientResponseWithEntityResponseFilter;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -147,14 +147,14 @@ public class ClientResponseWithEntityTest {
             }
             try {
                 response.getEntity();
-                Assert.fail("An IllegalStateException was expected.");
+                Assertions.fail("An IllegalStateException was expected.");
             } catch (Exception e) {
                 Assert.assertTrue(IllegalStateException.class.isInstance(e));
                 // Following is to be sure that previous IllegalStateException is not because of closed response
                 try {
                     Assert.assertTrue(response.hasEntity());
                 } catch (IllegalStateException e2) {
-                    Assert.fail("The response was not supposed to be closed");
+                    Assertions.fail("The response was not supposed to be closed");
                 }
             }
         }
@@ -167,14 +167,14 @@ public class ClientResponseWithEntityTest {
             }
             try {
                 response.getEntity();
-                Assert.fail("An IllegalStateException was expected.");
+                Assertions.fail("An IllegalStateException was expected.");
             } catch (Exception e) {
                 Assert.assertTrue(IllegalStateException.class.isInstance(e));
                 // Following is to be sure that previous IllegalStateException is not because of closed response
                 try {
                     Assert.assertTrue(response.hasEntity());
                 } catch (IllegalStateException e2) {
-                    Assert.fail("The response was not supposed to be closed");
+                    Assertions.fail("The response was not supposed to be closed");
                 }
             }
         }

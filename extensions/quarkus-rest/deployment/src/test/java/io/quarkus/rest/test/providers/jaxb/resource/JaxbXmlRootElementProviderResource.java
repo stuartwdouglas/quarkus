@@ -7,7 +7,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 @Path("/jaxb")
 @Consumes({ "application/xml", "application/fastinfoset", "application/json" })

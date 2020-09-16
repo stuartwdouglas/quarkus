@@ -29,7 +29,8 @@ import org.jboss.resteasy.security.doseta.DosetaKeyRepository;
 import org.jboss.resteasy.security.doseta.Verification;
 import org.jboss.resteasy.spi.MarshalledEntity;
 import org.jboss.resteasy.util.ParameterParser;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/signed")
 public class SigningResource {

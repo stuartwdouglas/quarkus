@@ -11,13 +11,13 @@ import org.jboss.resteasy.client.jaxrs.cache.BrowserCacheFeature;
 import org.jboss.resteasy.client.jaxrs.cache.LightweightBrowserCache;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.resource.ClientCacheProxy;
 import io.quarkus.rest.test.client.resource.ClientCacheService;
 import io.quarkus.rest.test.simple.PortProviderUtil;

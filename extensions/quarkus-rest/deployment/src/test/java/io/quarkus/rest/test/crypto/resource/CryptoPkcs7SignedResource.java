@@ -9,7 +9,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.jboss.resteasy.security.smime.PKCS7SignatureInput;
 import org.jboss.resteasy.security.smime.SignedOutput;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/smime/pkcs7-signature")
 public class CryptoPkcs7SignedResource {

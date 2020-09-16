@@ -12,7 +12,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 @Path("/")
 public class FormUrlEncodedResource {

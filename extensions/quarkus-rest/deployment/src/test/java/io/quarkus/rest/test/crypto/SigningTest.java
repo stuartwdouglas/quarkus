@@ -329,7 +329,7 @@ public class SigningTest {
         Thread.sleep(1500);
         try {
             response.readEntity(String.class);
-            Assert.fail("Validation error excepted.");
+            Assertions.fail("Validation error excepted.");
         } catch (ProcessingException pe) {
             UnauthorizedSignatureException e = (UnauthorizedSignatureException) pe.getCause();
             Assert.assertThat("Unexcepted error", e.getMessage(), containsString("Failed to verify signatures:\r\n"));
@@ -560,7 +560,7 @@ public class SigningTest {
         });
         try {
             contentSignature.verify(response.getStringHeaders(), entity.getMarshalledBytes(), keys.getPublic());
-            Assert.fail("Signing error excepted");
+            Assertions.fail("Signing error excepted");
         } catch (SignatureException e) {
             logger.info("SignatureException message: " + e.getMessage());
         }
@@ -585,7 +585,7 @@ public class SigningTest {
         });
         try {
             contentSignature.verify(response.getStringHeaders(), entity.getMarshalledBytes(), keys.getPublic());
-            Assert.fail("Signing error excepted");
+            Assertions.fail("Signing error excepted");
         } catch (SignatureException e) {
             logger.info("SignatureException message: " + e.getMessage());
         }
@@ -618,7 +618,7 @@ public class SigningTest {
         SigningProxy proxy = target.proxy(SigningProxy.class);
         try {
             proxy.bad();
-            Assert.fail("Signing error excepted");
+            Assertions.fail("Signing error excepted");
         } catch (ResponseProcessingException e) {
             logger.info("ResponseProcessingException cause: " + e.getCause().getClass().getName());
         }

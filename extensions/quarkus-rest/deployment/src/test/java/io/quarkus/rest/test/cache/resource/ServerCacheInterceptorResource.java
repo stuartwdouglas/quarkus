@@ -3,7 +3,7 @@ package io.quarkus.rest.test.cache.resource;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import org.jboss.resteasy.annotations.cache.Cache;
+import io.quarkus.rest.Cache;
 
 @Path("/")
 public class ServerCacheInterceptorResource {

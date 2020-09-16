@@ -11,12 +11,12 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.runtime.util.MultivaluedMapImpl;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.resource.param.resource.CookieParamWrapper;
 import io.quarkus.rest.test.resource.param.resource.CookieParamWrapperArrayConverter;
 import io.quarkus.rest.test.resource.param.resource.DateParamConverter;

@@ -150,7 +150,7 @@ public class JaxbXmlRootElementProviderTest {
         try {
             parent = jsonClient.getParent(JSON_PARENT);
         } catch (ResponseProcessingException exc) {
-            Assert.fail(String.format("Regression of JBEAP-3530, see %s", exc.getCause().toString()));
+            Assertions.fail(String.format("Regression of JBEAP-3530, see %s", exc.getCause().toString()));
         }
         Assertions.assertNotNull(ERR_PARENT_NULL, parent);
         Assertions.assertEquals(ERR_PARENT_NAME, parent.getName(), JSON_PARENT);

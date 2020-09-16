@@ -9,11 +9,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.resource.RedirectProxyResource;
 import io.quarkus.rest.test.client.resource.RedirectResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;

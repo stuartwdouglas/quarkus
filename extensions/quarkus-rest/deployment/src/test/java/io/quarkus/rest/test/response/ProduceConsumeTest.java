@@ -81,7 +81,7 @@ public class ProduceConsumeTest {
         response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE);
         try {
             BigDecimal big = response.readEntity(BigDecimal.class);
-            Assert.fail();
+            Assertions.fail();
         } catch (ProcessingException e) {
             Assertions.assertTrue(e.getCause() instanceof NoContentException);
         }
@@ -101,7 +101,7 @@ public class ProduceConsumeTest {
         response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE);
         try {
             Character big = response.readEntity(Character.class);
-            Assert.fail();
+            Assertions.fail();
         } catch (ProcessingException e) {
             Assertions.assertTrue(e.getCause() instanceof NoContentException);
         }
@@ -121,7 +121,7 @@ public class ProduceConsumeTest {
         response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_TYPE);
         try {
             Integer big = response.readEntity(Integer.class);
-            Assert.fail();
+            Assertions.fail();
         } catch (ProcessingException e) {
             Assertions.assertTrue(e.getCause() instanceof NoContentException);
         }

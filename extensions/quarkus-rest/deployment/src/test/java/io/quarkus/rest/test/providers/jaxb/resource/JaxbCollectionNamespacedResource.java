@@ -8,7 +8,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.jboss.resteasy.annotations.providers.jaxb.Wrapped;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/namespaced")
 public class JaxbCollectionNamespacedResource {

@@ -3,7 +3,7 @@ package io.quarkus.rest.test.resource.path.resource;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 @Path("/")
 public class UriParamsWithLocatorLocator {

@@ -2,7 +2,7 @@ package io.quarkus.rest.test.resource.path.resource;
 
 import java.util.List;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 public class ResourceLocatorWithBaseNoExpressionSubresource3 implements ResourceLocatorWithBaseExpressionSubresource3Interface {
     @Override

@@ -9,8 +9,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
 import org.jboss.logging.Logger;
-import org.junit.Assert;
 
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.TestPortProvider;
 
 @Path("/")

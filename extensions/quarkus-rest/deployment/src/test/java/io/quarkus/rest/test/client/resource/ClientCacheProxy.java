@@ -5,7 +5,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-import org.jboss.resteasy.annotations.cache.Cache;
+import io.quarkus.rest.Cache;
 
 @Path("/cache")
 public interface ClientCacheProxy {

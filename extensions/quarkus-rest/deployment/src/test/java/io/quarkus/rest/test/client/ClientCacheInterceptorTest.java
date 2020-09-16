@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.client;
 
-import static org.junit.Assert.assertEquals;
+import static io.quarkus.rest.test.Assert.assertEquals;
 
 import java.time.Instant;
 
@@ -16,8 +16,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.resteasy.annotations.cache.Cache;
-import org.jboss.resteasy.annotations.cache.NoCache;
+import io.quarkus.rest.Cache;
+import io.quarkus.rest.NoCache;
 import org.jboss.resteasy.client.jaxrs.cache.BrowserCache;
 import org.jboss.resteasy.client.jaxrs.cache.CacheInterceptor;
 import org.jboss.resteasy.client.jaxrs.cache.LightweightBrowserCache;
@@ -25,11 +25,11 @@ import org.jboss.resteasy.client.jaxrs.internal.ClientInvocationBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.ClientResponse;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 

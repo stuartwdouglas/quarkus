@@ -6,7 +6,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.jboss.resteasy.annotations.DecorateTypes;
 import org.jboss.resteasy.spi.DecoratorProcessor;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @DecorateTypes("application/xml")
 public class XmlHeaderDecorator2 implements DecoratorProcessor<Assert, XmlHeaderJunk2Intf> {

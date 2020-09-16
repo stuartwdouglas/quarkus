@@ -7,9 +7,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.junit.Assert;
-
 import io.quarkus.rest.runtime.util.MultivaluedMapImpl;
+import io.quarkus.rest.test.Assert;
 
 @Path("/form/{id}")
 @Produces("application/x-www-form-urlencoded")

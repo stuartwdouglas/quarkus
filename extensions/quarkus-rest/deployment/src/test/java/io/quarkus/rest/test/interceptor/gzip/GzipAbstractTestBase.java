@@ -1,11 +1,11 @@
 package io.quarkus.rest.test.interceptor.gzip;
 
+import static io.quarkus.rest.test.Assert.assertNotNull;
+import static io.quarkus.rest.test.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 import java.net.URL;
 
@@ -15,12 +15,12 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.interceptor.gzip.resource.GzipInterface;
 import io.quarkus.rest.test.interceptor.gzip.resource.GzipResource;
 import io.quarkus.rest.test.simple.TestUtil;

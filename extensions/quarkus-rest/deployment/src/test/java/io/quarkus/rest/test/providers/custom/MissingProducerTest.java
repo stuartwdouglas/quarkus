@@ -4,7 +4,7 @@ import static io.quarkus.rest.test.ContainerConstants.DEFAULT_CONTAINER_QUALIFIE
 
 import java.util.function.Supplier;
 
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Assertions;

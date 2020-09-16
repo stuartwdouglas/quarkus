@@ -14,7 +14,8 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.Response;
 
 import org.jboss.resteasy.annotations.providers.jaxb.Wrapped;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/")
 public class CollectionResource {

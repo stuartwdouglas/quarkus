@@ -5,15 +5,15 @@ import java.util.function.Supplier;
 import javax.ws.rs.client.Client;
 
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.resource.GenericReturnTypeInterface;
 import io.quarkus.rest.test.client.resource.GenericReturnTypeReader;
 import io.quarkus.rest.test.client.resource.GenericReturnTypeResource;

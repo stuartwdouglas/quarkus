@@ -9,7 +9,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyReader;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/stuff")
 public class MediaTypeCaseSensitivityStuffResource {

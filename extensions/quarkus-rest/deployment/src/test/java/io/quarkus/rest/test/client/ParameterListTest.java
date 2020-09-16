@@ -14,12 +14,12 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.resource.ParameterListInterface;
 import io.quarkus.rest.test.client.resource.ParameterListResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;

@@ -6,7 +6,8 @@ import javax.ws.rs.Path;
 
 import org.jboss.resteasy.security.smime.EnvelopedInput;
 import org.jboss.resteasy.security.smime.EnvelopedOutput;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/smime/encrypted")
 public class CryptoEncryptedResource {

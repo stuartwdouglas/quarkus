@@ -6,7 +6,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 
 import org.jboss.resteasy.annotations.Form;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/")
 public class CollectionsFormResource {

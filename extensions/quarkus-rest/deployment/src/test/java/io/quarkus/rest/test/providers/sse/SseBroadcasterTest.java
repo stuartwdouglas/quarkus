@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.providers.sse;
 
-import static org.junit.Assert.fail;
+import static io.quarkus.rest.test.Assertions.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -42,24 +42,24 @@ public class SseBroadcasterTest {
         sseBroadcasterImpl.close();
         try {
             sseBroadcasterImpl.broadcast(new OutboundSseEventImpl.BuilderImpl().data("Test").build());
-            Assert.fail("Should have thrown IllegalStateException");
+            Assertions.fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
         }
         try {
             sseBroadcasterImpl.onClose(sseEventSink -> {
             });
-            Assert.fail("Should have thrown IllegalStateException");
+            Assertions.fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
         }
         try {
             sseBroadcasterImpl.onError((sseEventSink, error) -> {
             });
-            Assert.fail("Should have thrown IllegalStateException");
+            Assertions.fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
         }
         try {
             sseBroadcasterImpl.register(newSseEventSink());
-            Assert.fail("Should have thrown IllegalStateException");
+            Assertions.fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
         }
     }
@@ -83,7 +83,7 @@ public class SseBroadcasterTest {
         });
         sseBroadcasterImpl.close();
         if (!countDownLatch.await(3, TimeUnit.SECONDS)) {
-            Assert.fail("All close listeners should have been notified");
+            Assertions.fail("All close listeners should have been notified");
         }
         Assertions.assertTrue(sseEventSink1.isClosed());
         Assertions.assertTrue(sseEventSink2.isClosed());
@@ -111,7 +111,7 @@ public class SseBroadcasterTest {
         });
         sseBroadcasterImpl.broadcast(new OutboundSseEventImpl.BuilderImpl().data("Test").build());
         if (!countDownLatch.await(3, TimeUnit.SECONDS)) {
-            Assert.fail("All close and error listeners should have been notified");
+            Assertions.fail("All close and error listeners should have been notified");
         }
     }
 
@@ -136,7 +136,7 @@ public class SseBroadcasterTest {
         });
         sseBroadcasterImpl.broadcast(new OutboundSseEventImpl.BuilderImpl().data("Test").build());
         if (!countDownLatch.await(3, TimeUnit.SECONDS)) {
-            Assert.fail("All close and error listeners should have been notified");
+            Assertions.fail("All close and error listeners should have been notified");
         }
     }
 
@@ -162,10 +162,10 @@ public class SseBroadcasterTest {
         });
         sseBroadcasterImpl.broadcast(new OutboundSseEventImpl.BuilderImpl().data("Test").build());
         if (!countDownLatch.await(5, TimeUnit.SECONDS)) {
-            Assert.fail("All error listeners should have been notified");
+            Assertions.fail("All error listeners should have been notified");
         }
         if (onCloseListenerInvoked.get()) {
-            Assert.fail("Close listeners should not have been notified");
+            Assertions.fail("Close listeners should not have been notified");
         }
     }
 

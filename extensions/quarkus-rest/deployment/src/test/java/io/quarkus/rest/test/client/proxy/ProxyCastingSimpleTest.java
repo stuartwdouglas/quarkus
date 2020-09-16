@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.client.proxy;
 
-import static org.junit.Assert.assertEquals;
+import static io.quarkus.rest.test.Assert.assertEquals;
 
 import java.util.function.Supplier;
 

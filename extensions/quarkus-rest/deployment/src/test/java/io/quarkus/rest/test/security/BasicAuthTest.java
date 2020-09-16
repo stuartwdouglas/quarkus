@@ -162,7 +162,7 @@ public class BasicAuthTest {
         BasicAuthBaseProxy proxy = noAutorizationClient.target(generateURL("/")).proxyBuilder(BasicAuthBaseProxy.class).build();
         try {
             proxy.getFailure();
-            Assert.fail();
+            Assertions.fail();
         } catch (NotAuthorizedException e) {
             Assertions.assertEquals(Status.UNAUTHORIZED.getStatusCode(), e.getResponse().getStatus());
             Assertions.assertTrue(e.getResponse().getHeaderString("WWW-Authenticate").contains("Basic realm="),

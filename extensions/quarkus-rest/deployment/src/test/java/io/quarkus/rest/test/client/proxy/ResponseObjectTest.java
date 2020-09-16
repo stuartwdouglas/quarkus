@@ -10,13 +10,13 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.proxy.resource.ResponseObjectBasicObjectIntf;
 import io.quarkus.rest.test.client.proxy.resource.ResponseObjectClientIntf;
 import io.quarkus.rest.test.client.proxy.resource.ResponseObjectHateoasObject;
@@ -77,7 +77,7 @@ public class ResponseObjectTest {
             Assert.assertEquals("The response object doesn't contain the expected header",
                     "text/plain;charset=UTF-8", obj.response().getHeaders().getFirst("Content-Type"));
         } catch (ClassCastException ex) {
-            Assert.fail(TestUtil.getErrorMessageForKnownIssue("JBEAP-2446"));
+            Assertions.fail(TestUtil.getErrorMessageForKnownIssue("JBEAP-2446"));
         }
         Assert.assertEquals("The response object doesn't contain the expected header", "text/plain;charset=UTF-8",
                 obj.contentType());
@@ -97,7 +97,7 @@ public class ResponseObjectTest {
         try {
             Assert.assertEquals("The resource was not forwarded", "forwarded", obj.followNextLink());
         } catch (ProcessingException ex) {
-            Assert.fail(TestUtil.getErrorMessageForKnownIssue("JBEAP-2446"));
+            Assertions.fail(TestUtil.getErrorMessageForKnownIssue("JBEAP-2446"));
         }
     }
 }

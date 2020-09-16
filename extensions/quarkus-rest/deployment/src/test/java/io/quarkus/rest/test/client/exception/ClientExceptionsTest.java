@@ -12,7 +12,7 @@ import javax.ws.rs.client.ResponseProcessingException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Rule;
@@ -221,7 +221,7 @@ public class ClientExceptionsTest extends ClientTestBase {
             Assertions.assertEquals(ClientExceptionsCustomException.class.getCanonicalName() + ": custom message",
                     ex.getMessage());
         } catch (Throwable ex) {
-            Assert.fail("The exception thrown by client was not instance of javax.ws.rs.client.ResponseProcessingException");
+            Assertions.fail("The exception thrown by client was not instance of javax.ws.rs.client.ResponseProcessingException");
         }
     }
 
@@ -243,7 +243,7 @@ public class ClientExceptionsTest extends ClientTestBase {
             Assertions.assertEquals(ClientExceptionsCustomException.class.getCanonicalName() + ": custom message",
                     ex.getMessage());
         } catch (Throwable ex) {
-            Assert.fail("The exception thrown by client was not instance of javax.ws.rs.ProcessingException");
+            Assertions.fail("The exception thrown by client was not instance of javax.ws.rs.ProcessingException");
         }
     }
 }

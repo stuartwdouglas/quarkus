@@ -22,12 +22,12 @@ import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 import org.jboss.resteasy.client.jaxrs.engines.URLConnectionEngine;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.other.resource.ApacheHttpClient4Resource;
 import io.quarkus.rest.test.client.other.resource.ApacheHttpClient4ResourceImpl;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -352,7 +352,7 @@ public class ApacheHttpClient43Test {
         } else if (engine.isAssignableFrom(URLConnectionEngine.class)) {
             executor = new URLConnectionEngine();
         } else {
-            Assert.fail("unknown engine");
+            Assertions.fail("unknown engine");
             executor = null;
         }
 

@@ -95,7 +95,7 @@ public class StreamResetTest {
             } catch (Exception e) {
             }
             response.readEntity(StreamResetPerson.class);
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalStateException e) {
             logger.info("Expected IllegalStateException was thrown");
         }

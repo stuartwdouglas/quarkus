@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.resource.param;
 
-import static org.junit.Assert.fail;
+import static io.quarkus.rest.test.Assertions.fail;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.client.exception;
 
-import static org.junit.Assert.fail;
+import static io.quarkus.rest.test.Assertions.fail;
 
 import java.io.IOException;
 import java.util.HashMap;

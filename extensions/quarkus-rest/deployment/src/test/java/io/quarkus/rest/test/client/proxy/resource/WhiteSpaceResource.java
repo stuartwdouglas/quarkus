@@ -10,7 +10,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
 import org.jboss.logging.Logger;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path(value = "/sayhello")
 public class WhiteSpaceResource {

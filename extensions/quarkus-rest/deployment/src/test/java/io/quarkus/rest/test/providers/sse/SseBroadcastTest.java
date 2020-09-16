@@ -167,7 +167,7 @@ public class SseBroadcastTest {
         SseEventSource msgEventSource = SseEventSource.target(target).reconnectingEvery(5, TimeUnit.MINUTES).build();
         try (SseEventSource eventSource = msgEventSource) {
             eventSource.register(event -> {
-                Assert.fail("Event should not be received");
+                Assertions.fail("Event should not be received");
             }, ex -> {
                 logger.error(ex.getMessage(), ex);
             });

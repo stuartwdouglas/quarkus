@@ -1,7 +1,7 @@
 package io.quarkus.rest.test.form;
 
+import static io.quarkus.rest.test.Assert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.function.Supplier;

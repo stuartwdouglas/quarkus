@@ -78,7 +78,7 @@ public class SoupMultipartMsgTest {
         Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String result = response.readEntity(String.class);
         if (result.startsWith("Failed")) {
-            Assert.fail(result);
+            Assertions.fail(result);
         }
     }
 
@@ -121,7 +121,7 @@ public class SoupMultipartMsgTest {
             for (Iterator<String> it = controlList.iterator(); it.hasNext();) {
                 sb.append(it.next() + " ");
             }
-            Assert.fail(sb.toString());
+            Assertions.fail(sb.toString());
         }
     }
 
@@ -169,7 +169,7 @@ public class SoupMultipartMsgTest {
             for (Iterator<String> it = controlList.iterator(); it.hasNext();) {
                 sb.append(it.next() + " ");
             }
-            Assert.fail(sb.toString());
+            Assertions.fail(sb.toString());
         }
     }
 

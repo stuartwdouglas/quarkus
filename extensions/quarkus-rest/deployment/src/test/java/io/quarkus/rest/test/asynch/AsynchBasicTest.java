@@ -140,7 +140,7 @@ public class AsynchBasicTest {
             }
             response.close();
             if (i == MAX) {
-                Assert.fail("Expected response with status code 200");
+                Assertions.fail("Expected response with status code 200");
             }
         }
         // test its still there

@@ -11,13 +11,13 @@ import org.jboss.resteasy.client.jaxrs.internal.CompletionStageRxInvokerProvider
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.rx.resource.RxCompletionStageResourceImpl;
 import io.quarkus.rest.test.rx.resource.RxScheduledExecutorService;
 import io.quarkus.rest.test.rx.resource.SimpleResource;
@@ -192,7 +192,7 @@ public class RxCompletionStageProxyServerAsyncTest {
     public void testUnhandledException() throws Exception {
         try {
             proxy.exceptionUnhandled();
-            Assert.fail("expecting Exception");
+            Assertions.fail("expecting Exception");
         } catch (Exception e) {
             Assert.assertTrue(e.getMessage().contains("500"));
         }
@@ -202,7 +202,7 @@ public class RxCompletionStageProxyServerAsyncTest {
     public void testHandledException() throws Exception {
         try {
             proxy.exceptionHandled();
-            Assert.fail("expecting Exception");
+            Assertions.fail("expecting Exception");
         } catch (Exception e) {
             Assert.assertTrue(e.getMessage().contains("444"));
         }

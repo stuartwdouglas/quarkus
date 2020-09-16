@@ -109,7 +109,7 @@ public class BigSmallDataSourceTest {
                 fi = fis.read();
                 ri = ris.read();
                 if (fi != ri) {
-                    Assert.fail("The sent and received stream is not identical.");
+                    Assertions.fail("The sent and received stream is not identical.");
                 }
             } while (fi != -1);
         } finally {
@@ -144,7 +144,7 @@ public class BigSmallDataSourceTest {
                 fi = bis.read();
                 ri = ris.read();
                 if (fi != ri) {
-                    Assert.fail("The sent and recived stream is not identical.");
+                    Assertions.fail("The sent and recived stream is not identical.");
                 }
             } while (fi != -1);
         } finally {

@@ -5,13 +5,13 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.proxy.resource.ContentLanguageInterface;
 import io.quarkus.rest.test.client.proxy.resource.ContentLanguageResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;

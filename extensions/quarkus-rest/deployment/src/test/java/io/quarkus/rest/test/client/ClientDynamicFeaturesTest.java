@@ -8,13 +8,13 @@ import javax.ws.rs.container.DynamicFeature;
 
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.resource.ClientDynamicFeaturesClientFeature1;
 import io.quarkus.rest.test.client.resource.ClientDynamicFeaturesClientFeature2;
 import io.quarkus.rest.test.client.resource.ClientDynamicFeaturesDualFeature1;

@@ -1,7 +1,7 @@
 package io.quarkus.rest.test.providers.custom.resource;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static io.quarkus.rest.test.Assert.assertFalse;
+import static io.quarkus.rest.test.Assert.assertTrue;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

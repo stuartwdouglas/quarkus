@@ -11,12 +11,12 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.resource.param.resource.FormParamBasicResource;
 import io.quarkus.rest.test.resource.param.resource.FormParamEntityPrototype;
 import io.quarkus.rest.test.resource.param.resource.FormParamEntityThrowsIllegaArgumentException;

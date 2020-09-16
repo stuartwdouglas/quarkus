@@ -1,17 +1,17 @@
 package io.quarkus.rest.test.security.testjar;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static io.quarkus.rest.test.Assert.assertTrue;
+import static io.quarkus.rest.test.Assertions.fail;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
-import org.junit.Assert;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
+import io.quarkus.rest.test.Assert;
 
 /**
  * Main class used in jar that is meant to test ClientConfigProvider functionality regarding Bearer token.

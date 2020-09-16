@@ -7,7 +7,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 public class ResourceLocatorWithBaseExpressionSubresource {
 

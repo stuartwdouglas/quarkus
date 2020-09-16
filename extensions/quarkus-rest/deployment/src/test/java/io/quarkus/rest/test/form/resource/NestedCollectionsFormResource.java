@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.form.resource;
 
-import static org.junit.Assert.assertEquals;
+import static io.quarkus.rest.test.Assert.assertEquals;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

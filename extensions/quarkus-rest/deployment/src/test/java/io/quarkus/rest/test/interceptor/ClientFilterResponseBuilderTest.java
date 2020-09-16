@@ -70,7 +70,7 @@ public class ClientFilterResponseBuilderTest {
             Assertions.assertEquals(result, "test");
             Assertions.assertEquals(200, status);
         } catch (ProcessingException pe) {
-            Assert.fail(pe.getMessage());
+            Assertions.fail(pe.getMessage());
         }
     }
 }

@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
 import org.jboss.resteasy.spi.util.Types;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Assertions;

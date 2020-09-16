@@ -8,7 +8,8 @@ import javax.ws.rs.Produces;
 
 import org.jboss.resteasy.security.smime.SignedInput;
 import org.jboss.resteasy.security.smime.SignedOutput;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/smime/signed")
 public class CryptoSignedResource {

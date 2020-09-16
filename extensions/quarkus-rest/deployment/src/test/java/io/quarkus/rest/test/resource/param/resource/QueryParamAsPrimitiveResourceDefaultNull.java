@@ -5,8 +5,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
-import org.junit.Assert;
-
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.resource.param.QueryParamAsPrimitiveTest;
 
 @Path("/default/null")

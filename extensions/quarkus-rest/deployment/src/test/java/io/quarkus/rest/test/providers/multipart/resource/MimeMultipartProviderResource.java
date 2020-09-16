@@ -35,7 +35,8 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartConstants;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedInput;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/mime")
 public class MimeMultipartProviderResource {

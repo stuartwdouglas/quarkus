@@ -17,7 +17,7 @@ import javax.ws.rs.sse.OutboundSseEvent;
 import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 @Singleton
 @Path("/reconnect")

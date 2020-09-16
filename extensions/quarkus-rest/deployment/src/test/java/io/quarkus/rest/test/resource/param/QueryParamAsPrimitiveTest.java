@@ -17,12 +17,12 @@ import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.resteasy.util.HttpHeaderNames;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResource;
 import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceArray;
 import io.quarkus.rest.test.resource.param.resource.QueryParamAsPrimitiveResourceArrayDefault;

@@ -56,7 +56,7 @@ public class UnauthorizedExceptionTest {
         UnauthorizedExceptionInterface proxy = client.target(generateURL("")).proxy(UnauthorizedExceptionInterface.class);
         try {
             proxy.postIt("hello");
-            Assert.fail();
+            Assertions.fail();
         } catch (NotAuthorizedException e) {
             Assertions.assertEquals(Status.UNAUTHORIZED.getStatusCode(), e.getResponse().getStatus());
         }

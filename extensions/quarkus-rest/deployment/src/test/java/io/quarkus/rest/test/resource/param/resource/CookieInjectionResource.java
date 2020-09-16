@@ -14,7 +14,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 @Path("/")
 public class CookieInjectionResource {

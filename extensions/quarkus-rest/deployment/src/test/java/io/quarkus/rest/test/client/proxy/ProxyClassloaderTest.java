@@ -6,10 +6,10 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.proxy.resource.ClassloaderResource;
 import io.quarkus.rest.test.client.proxy.resource.ClientSmokeResource;
 import io.quarkus.rest.test.core.smoke.resource.ResourceWithInterfaceSimpleClient;

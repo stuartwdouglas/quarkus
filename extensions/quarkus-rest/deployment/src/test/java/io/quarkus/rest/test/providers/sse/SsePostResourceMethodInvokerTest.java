@@ -73,7 +73,7 @@ public class SsePostResourceMethodInvokerTest {
                     client.close();
                 }
             } catch (TimeoutException e) {
-                Assert.fail("Sse initial 200 ok response is expected when resource method resource returns first.");
+                Assertions.fail("Sse initial 200 ok response is expected when resource method resource returns first.");
             }
         } finally {
             client = ClientBuilder.newClient();

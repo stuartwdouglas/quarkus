@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.core.basic.resource.DuplicateDeploymentReader;
 import io.quarkus.rest.test.core.basic.resource.DuplicateDeploymentResource;
 import io.quarkus.rest.test.simple.TestUtil;

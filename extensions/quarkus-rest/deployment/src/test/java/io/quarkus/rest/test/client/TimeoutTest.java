@@ -12,16 +12,16 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.resteasy.client.jaxrs.ClientHttpEngine;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.client.resource.TimeoutResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -71,7 +71,7 @@ public class TimeoutTest extends ClientTestBase {
         QuarkusRestWebTarget target = client.target(generateURL("/timeout"));
         try {
             target.queryParam("sleep", "5").request().get();
-            Assert.fail("The request didn't timeout as expected");
+            Assertions.fail("The request didn't timeout as expected");
         } catch (ProcessingException e) {
             Assert.assertEquals("Expected SocketTimeoutException", e.getCause().getClass(), SocketTimeoutException.class);
         }
@@ -79,7 +79,7 @@ public class TimeoutTest extends ClientTestBase {
         TimeoutResourceInterface proxy = client.target(generateURL("")).proxy(TimeoutResourceInterface.class);
         try {
             proxy.get(5);
-            Assert.fail("The request didn't timeout as expected when using client proxy");
+            Assertions.fail("The request didn't timeout as expected when using client proxy");
         } catch (ProcessingException e) {
             Assert.assertEquals("Expected SocketTimeoutException", e.getCause().getClass(), SocketTimeoutException.class);
         }

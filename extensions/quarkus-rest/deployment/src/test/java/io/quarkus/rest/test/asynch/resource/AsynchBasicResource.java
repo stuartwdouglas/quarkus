@@ -8,8 +8,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 
 import org.jboss.logging.Logger;
-import org.junit.Assert;
 
+import io.quarkus.rest.test.Assert;
 import io.quarkus.rest.test.asynch.AsynchBasicTest;
 
 @Path("/")

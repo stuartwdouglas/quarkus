@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.exception;
 
-import static org.junit.Assert.fail;
+import static io.quarkus.rest.test.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;

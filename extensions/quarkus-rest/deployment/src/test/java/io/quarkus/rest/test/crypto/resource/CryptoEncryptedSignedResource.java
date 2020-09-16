@@ -8,7 +8,8 @@ import org.jboss.resteasy.security.smime.EnvelopedInput;
 import org.jboss.resteasy.security.smime.EnvelopedOutput;
 import org.jboss.resteasy.security.smime.SignedInput;
 import org.jboss.resteasy.security.smime.SignedOutput;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/smime/encrypted/signed")
 public class CryptoEncryptedSignedResource {

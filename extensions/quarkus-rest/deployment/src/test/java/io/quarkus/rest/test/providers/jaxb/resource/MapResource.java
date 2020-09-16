@@ -9,7 +9,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import org.jboss.resteasy.annotations.providers.jaxb.WrappedMap;
-import org.junit.Assert;
+
+import io.quarkus.rest.test.Assert;
 
 @Path("/map")
 public class MapResource {

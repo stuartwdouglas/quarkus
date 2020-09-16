@@ -1,8 +1,8 @@
 package io.quarkus.rest.test.cdi;
 
+import static io.quarkus.rest.test.Assert.assertFalse;
+import static io.quarkus.rest.test.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;

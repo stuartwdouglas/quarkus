@@ -20,7 +20,7 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.utils.TestUtil;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.AfterEach;
@@ -126,7 +126,7 @@ public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
                 String anotherURL = URL.replace("localhost", "localhost.localdomain");
                 try {
                     client.target(anotherURL).request().get();
-                    Assert.fail("ProcessingException ie expected");
+                    Assertions.fail("ProcessingException ie expected");
                 } catch (ProcessingException e) {
                     // expected
                 }
@@ -137,7 +137,7 @@ public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
                     String anotherURL = URL.replace("localhost", "localhost.localhost");
                     try {
                         client.target(anotherURL).request().get();
-                        Assert.fail("ProcessingException ie expected");
+                        Assertions.fail("ProcessingException ie expected");
                     } catch (ProcessingException e1) {
                         // expected
                     }

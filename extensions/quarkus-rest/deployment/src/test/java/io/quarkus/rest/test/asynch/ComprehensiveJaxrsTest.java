@@ -543,7 +543,7 @@ public class ComprehensiveJaxrsTest {
 
     public static void checkTrue(boolean condition, Object... message) {
         if (!condition) {
-            Assert.fail(objectsToString(message));
+            Assertions.fail(objectsToString(message));
         }
     }
 

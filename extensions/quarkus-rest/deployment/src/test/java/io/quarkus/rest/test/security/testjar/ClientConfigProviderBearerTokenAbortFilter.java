@@ -6,7 +6,7 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.Response;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 /**
  * ClientRequestFilter that is used to check content of attached Bearer token. If Bearer Token checks are successful the request

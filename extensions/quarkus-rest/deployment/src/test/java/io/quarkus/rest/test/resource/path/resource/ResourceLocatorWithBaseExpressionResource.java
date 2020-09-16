@@ -10,7 +10,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
-import org.junit.Assert;
+import io.quarkus.rest.test.Assert;
 
 @Path("/a{x:\\d}")
 public class ResourceLocatorWithBaseExpressionResource {

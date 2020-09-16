@@ -154,10 +154,10 @@ public class JaxbMarshallingSoakTest {
         threadPool.shutdown();
         try {
             if (!threadPool.awaitTermination(timeout, TimeUnit.SECONDS)) {
-                Assert.fail(String.format("Clients did not terminate in %s seconds", timeout));
+                Assertions.fail(String.format("Clients did not terminate in %s seconds", timeout));
             }
         } catch (InterruptedException e) {
-            Assert.fail("ExecutorService[threadPool] was interrupted");
+            Assertions.fail("ExecutorService[threadPool] was interrupted");
         }
         String message = String.format(new StringBuilder().append("RESTEasy should successes with marshalling %d times.")
                 .append("But RESTEasy successes only %d times.").toString(), iterator, counter.get());

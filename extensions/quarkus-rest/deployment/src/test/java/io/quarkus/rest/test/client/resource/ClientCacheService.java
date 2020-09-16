@@ -10,7 +10,7 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
-import org.jboss.resteasy.annotations.cache.Cache;
+import io.quarkus.rest.Cache;
 
 import io.quarkus.rest.test.client.ClientCacheTest;
 
