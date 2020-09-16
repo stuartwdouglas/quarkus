@@ -6,10 +6,11 @@ import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -28,29 +29,30 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for resource without @Path annotation.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Annotation Inheritance Test")
 public class AnnotationInheritanceTest {
+
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(AnnotationInheritanceSuperInt.class, AnnotationInheritanceSuperIntAbstract.class,
-                            AnnotationInheritanceNotAResource.class, AnnotationInheritanceSomeOtherInterface.class);
-                    return TestUtil.finishContainerPrepare(war, null, AnnotationInheritanceSomeOtherResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(AnnotationInheritanceSuperInt.class, AnnotationInheritanceSuperIntAbstract.class,
+                    AnnotationInheritanceNotAResource.class, AnnotationInheritanceSomeOtherInterface.class);
+            return TestUtil.finishContainerPrepare(war, null, AnnotationInheritanceSomeOtherResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -64,10 +66,11 @@ public class AnnotationInheritanceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Superclass Interface Annotation")
     public void testSuperclassInterfaceAnnotation() {
         AnnotationInheritanceSomeOtherInterface proxy = client.target(generateURL("/somewhere"))
                 .proxy(AnnotationInheritanceSomeOtherInterface.class);
-        Assert.assertEquals("Foo: Fred", proxy.getSuperInt().getFoo());
+        Assertions.assertEquals(proxy.getSuperInt().getFoo(), "Foo: Fred");
     }
 
     /**
@@ -75,12 +78,13 @@ public class AnnotationInheritanceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Detection Of Non Resource")
     public void testDetectionOfNonResource() {
         try {
             AnnotationInheritanceSomeOtherInterface proxy = client.target(generateURL("/somewhere"))
                     .proxy(AnnotationInheritanceSomeOtherInterface.class);
             proxy.getFailure().blah();
-            Assert.fail();
+            Assertions.fail();
         } catch (Exception e) {
             // exception thrown
         }

@@ -8,10 +8,11 @@ import javax.ws.rs.client.WebTarget;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.core.basic.resource.ApplicationPropertiesConfig;
@@ -26,28 +27,29 @@ import io.quarkus.test.QuarkusUnitTest;
  *                    the resource.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Application Properties Config Test")
 public class ApplicationPropertiesConfigTest {
+
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(ApplicationPropertiesConfig.class, ApplicationPropertiesConfigResource.class);
-                    return war;
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(ApplicationPropertiesConfig.class, ApplicationPropertiesConfigResource.class);
+            return war;
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -62,6 +64,7 @@ public class ApplicationPropertiesConfigTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Application Properties Config")
     public void testApplicationPropertiesConfig() {
         String errorMessage = "The property is not found in the deployment";
         String response;
@@ -71,6 +74,6 @@ public class ApplicationPropertiesConfigTest {
         } catch (Exception e) {
             throw new RuntimeException(errorMessage, e);
         }
-        Assert.assertEquals(errorMessage, "Value1", response);
+        Assertions.assertEquals(errorMessage, "Value1", response);
     }
 }

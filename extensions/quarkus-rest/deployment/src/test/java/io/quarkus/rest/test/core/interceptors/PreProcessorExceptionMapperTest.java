@@ -8,8 +8,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -28,24 +29,22 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-433
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Pre Processor Exception Mapper Test")
 public class PreProcessorExceptionMapperTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(PreProcessorExceptionMapperCandlepinException.class);
-                    war.addClass(PreProcessorExceptionMapperCandlepinUnauthorizedException.class);
-                    return TestUtil.finishContainerPrepare(war, null,
-                            PreProcessorExceptionMapperPreProcessSecurityInterceptor.class,
-                            PreProcessorExceptionMapperRuntimeExceptionMapper.class,
-                            PreProcessorExceptionMapperResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(PreProcessorExceptionMapperCandlepinException.class);
+            war.addClass(PreProcessorExceptionMapperCandlepinUnauthorizedException.class);
+            return TestUtil.finishContainerPrepare(war, null, PreProcessorExceptionMapperPreProcessSecurityInterceptor.class,
+                    PreProcessorExceptionMapperRuntimeExceptionMapper.class, PreProcessorExceptionMapperResource.class);
+        }
+    });
 
     /**
      * @tpTestDetails Generate PreProcessorExceptionMapperCandlepinUnauthorizedException
@@ -53,14 +52,14 @@ public class PreProcessorExceptionMapperTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Mapper")
     public void testMapper() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Response response = client
                 .target(PortProviderUtil.generateURL("/interception", PreProcessorExceptionMapperTest.class.getSimpleName()))
                 .request().get();
-        Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }
-
 }

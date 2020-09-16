@@ -11,10 +11,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -30,35 +31,35 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for resource and provider defined in one class together.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("App Config Test")
 public class AppConfigTest {
 
     private static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(AppConfigResources.class);
-                    war.addClass(AppConfigApplication.class);
-                    //                    war.addAsWebInfResource(AppConfigTest.class.getPackage(), "AppConfigWeb.xml", "web.xml");
-                    return war;
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(AppConfigResources.class);
+            war.addClass(AppConfigApplication.class);
+            // war.addAsWebInfResource(AppConfigTest.class.getPackage(), "AppConfigWeb.xml", "web.xml");
+            return war;
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, AppConfigTest.class.getSimpleName());
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -68,14 +69,14 @@ public class AppConfigTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Apache Client")
     public void apacheClient() throws Exception {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpGet = new HttpGet(generateURL("/my"));
         CloseableHttpResponse response1 = httpclient.execute(httpGet);
-
         try {
-            Assert.assertEquals(Status.OK.getStatusCode(), response1.getStatusLine().getStatusCode());
-            Assert.assertEquals("\"hello\"", TestUtil.readString(response1.getEntity().getContent()));
+            Assertions.assertEquals(Status.OK.getStatusCode(), response1.getStatusLine().getStatusCode());
+            Assertions.assertEquals(TestUtil.readString(response1.getEntity().getContent()), "\"hello\"");
         } finally {
             response1.close();
         }

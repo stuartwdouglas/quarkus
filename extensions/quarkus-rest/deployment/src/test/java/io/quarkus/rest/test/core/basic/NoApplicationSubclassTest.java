@@ -8,10 +8,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -25,35 +26,35 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for discovering root resource classes when no Application subclass is present
  * @tpSince RESTEasy 3.6.2.Final
  */
+@DisplayName("No Application Subclass Test")
 public class NoApplicationSubclassTest {
 
     private static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(NoApplicationSubclassResource.class);
-                    //                    war.addAsWebInfResource(NoApplicationSubclassTest.class.getPackage(), "NoApplicationSubclassWeb.xml",
-                    //                            "web.xml");
-                    return war;
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(NoApplicationSubclassResource.class);
+            // war.addAsWebInfResource(NoApplicationSubclassTest.class.getPackage(), "NoApplicationSubclassWeb.xml",
+            // "web.xml");
+            return war;
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, NoApplicationSubclassTest.class.getSimpleName());
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -63,10 +64,11 @@ public class NoApplicationSubclassTest {
      * @tpSince RESTEasy 3.6.2.Final
      */
     @Test
+    @DisplayName("Test Resource")
     public void testResource() {
         Response response = client.target(generateURL("/myresources/hello")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong content of response", "hello world", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("hello world", response.readEntity(String.class), "Wrong content of response");
         response.close();
     }
 }

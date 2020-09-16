@@ -10,10 +10,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -28,32 +29,32 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for io.quarkus.rest.Cache class
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Cache Control Annotation Test")
 public class CacheControlAnnotationTest {
 
     private static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, CacheControlAnnotationResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, CacheControlAnnotationResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, CacheControlAnnotationTest.class.getSimpleName());
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -63,15 +64,14 @@ public class CacheControlAnnotationTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Resource Valid")
     public void testResourceValid() {
         WebTarget base = client.target(generateURL("/maxage"));
         Response response = base.request().get();
-
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         CacheControl cc = CacheControl.valueOf(response.getHeaderString("cache-control"));
-        Assert.assertFalse("Cache should not be private", cc.isPrivate());
-        Assert.assertEquals("Wrong age of cache", 3600, cc.getMaxAge());
-
+        Assertions.assertFalse(cc.isPrivate(), "Cache should not be private");
+        Assertions.assertEquals(3600, cc.getMaxAge(), "Wrong age of cache");
         response.close();
     }
 
@@ -80,16 +80,15 @@ public class CacheControlAnnotationTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Resource No Cach")
     public void testResourceNoCach() {
         WebTarget base = client.target(generateURL("/nocache"));
         Response response = base.request().get();
-
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String value = response.getHeaderString("cache-control");
-        Assert.assertEquals("Wrong value of cache header", "no-cache", value);
+        Assertions.assertEquals("no-cache", value, "Wrong value of cache header");
         CacheControl cc = CacheControl.valueOf(value);
-        Assert.assertTrue("Wrong value of cache header", cc.isNoCache());
-
+        Assertions.assertTrue(cc.isNoCache(), "Wrong value of cache header");
         response.close();
     }
 
@@ -98,19 +97,18 @@ public class CacheControlAnnotationTest {
      * @tpSince RESTEasy 4.0.0
      */
     @Test
+    @DisplayName("Test Resource Composite No Cache")
     public void testResourceCompositeNoCache() {
         WebTarget base = client.target(generateURL("/composite"));
         Response response = base.request().get();
-
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         CacheControl cc = CacheControl.valueOf(response.getHeaderString("cache-control"));
-        Assert.assertTrue("There must be no-store", cc.isNoStore());
-        Assert.assertTrue("There must be must-revalidate", cc.isMustRevalidate());
-        Assert.assertTrue("Cache must be private", cc.isPrivate());
-        Assert.assertEquals("Wrong age of cache", 0, cc.getMaxAge());
-        Assert.assertEquals("Wrong age of shared cache", 0, cc.getSMaxAge());
-        Assert.assertTrue("There must be no-cache", cc.isNoCache());
+        Assertions.assertTrue(cc.isNoStore(), "There must be no-store");
+        Assertions.assertTrue(cc.isMustRevalidate(), "There must be must-revalidate");
+        Assertions.assertTrue(cc.isPrivate(), "Cache must be private");
+        Assertions.assertEquals(0, cc.getMaxAge(), "Wrong age of cache");
+        Assertions.assertEquals(0, cc.getSMaxAge(), "Wrong age of shared cache");
+        Assertions.assertTrue(cc.isNoCache(), "There must be no-cache");
         response.close();
     }
-
 }

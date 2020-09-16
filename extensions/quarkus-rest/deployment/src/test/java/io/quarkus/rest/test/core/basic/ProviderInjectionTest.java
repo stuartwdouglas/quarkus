@@ -1,7 +1,7 @@
 package io.quarkus.rest.test.core.basic;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Supplier;
 
@@ -9,9 +9,10 @@ import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -29,25 +30,26 @@ import io.quarkus.test.QuarkusUnitTest;
  *                    using constructor or field injection.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Provider Injection Test")
 public class ProviderInjectionTest {
+
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(ProviderInjectionSimpleResource.class);
-                    war.addClass(PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null, ProviderInjectionSimpleMessageBodyWriter.class,
-                            ProviderInjectionSimpleResourceImpl.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ProviderInjectionSimpleResource.class);
+            war.addClass(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ProviderInjectionSimpleMessageBodyWriter.class,
+                    ProviderInjectionSimpleResourceImpl.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         // do a request (force provider instantiation if providers were created lazily)
         client = (QuarkusRestClient) ClientBuilder.newClient();
@@ -57,7 +59,7 @@ public class ProviderInjectionTest {
         assertEquals(proxy.foo(), "bar");
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -67,6 +69,7 @@ public class ProviderInjectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Constructor Injection")
     public void testConstructorInjection() {
         for (ProviderInjectionSimpleMessageBodyWriter writer : ProviderInjectionSimpleMessageBodyWriter.getInstances()) {
             assertTrue(writer.getConstructorProviders() != null);
@@ -78,10 +81,10 @@ public class ProviderInjectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Field Injection")
     public void testFieldInjection() {
         for (ProviderInjectionSimpleMessageBodyWriter writer : ProviderInjectionSimpleMessageBodyWriter.getInstances()) {
             assertTrue(writer.getFieldProviders() != null);
         }
     }
-
 }

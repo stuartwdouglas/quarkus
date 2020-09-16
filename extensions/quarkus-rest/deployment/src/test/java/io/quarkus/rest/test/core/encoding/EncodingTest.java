@@ -14,10 +14,11 @@ import javax.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -33,60 +34,55 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for HTML encoding and decoding.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Encoding Test")
 public class EncodingTest {
+
     static QuarkusRestClient client;
 
     protected static final Logger logger = Logger.getLogger(EncodingTest.class.getName());
 
     private static EncodingTestClient testClient;
 
-    Character[] RESERVED_CHARACTERS = {
-            '?', ':', '@', '&', '=', '+', '$', ','
-    };
+    Character[] RESERVED_CHARACTERS = { '?', ':', '@', '&', '=', '+', '$', ',' };
 
-    //also includes a-zA-Z0-9
-    Character[] UNRESERVED_CHARACTERS = {
-            '-', '_', '.', '!', '~', '*', '\'', '(', ')'
-    };
-    //also includes 0x00-0x1F and 0x7F
-    Character[] EXCLUDED_CHARACTERS = {
-            ' ', '<', '>', '#', '%', '\"'
-    };
-    Character[] UNWISE_CHARACTERS = {
-            '{', '}', '|', '\\', '^', '[', ']', '`'
-    };
+    // also includes a-zA-Z0-9
+    Character[] UNRESERVED_CHARACTERS = { '-', '_', '.', '!', '~', '*', '\'', '(', ')' };
 
-    @Before
+    // also includes 0x00-0x1F and 0x7F
+    Character[] EXCLUDED_CHARACTERS = { ' ', '<', '>', '#', '%', '\"' };
+
+    Character[] UNWISE_CHARACTERS = { '{', '}', '|', '\\', '^', '[', ']', '`' };
+
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
         testClient = client.target(PortProviderUtil.generateBaseUrl(EncodingTest.class.getSimpleName()))
                 .proxy(EncodingTestClient.class);
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(EncodingTestClient.class);
-
-                    return TestUtil.finishContainerPrepare(war, null, EncodingTestResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(EncodingTestClient.class);
+            return TestUtil.finishContainerPrepare(war, null, EncodingTestResource.class);
+        }
+    });
 
     /**
      * @tpTestDetails Tests requesting special characters via a ClientProxy.
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Encoding Characters")
     public void testEncodingCharacters() throws Exception {
         for (Character ch : RESERVED_CHARACTERS) {
             encodingCharacter(ch);
@@ -105,9 +101,9 @@ public class EncodingTest {
     public void encodingCharacter(Character toTest) {
         String paramWithChar = "start" + toTest + "end";
         Response returned = testClient.getPathParam(paramWithChar);
-        Assert.assertNotNull("Wrong returned value", returned);
-        Assert.assertEquals("Wrong returned status", returned.getStatus(), HttpURLConnection.HTTP_OK);
-        Assert.assertEquals("Wrong returned value", returned.readEntity(String.class), paramWithChar);
+        Assertions.assertNotNull(returned, "Wrong returned value");
+        Assertions.assertEquals(returned.getStatus(), HttpURLConnection.HTTP_OK, "Wrong returned status");
+        Assertions.assertEquals(returned.readEntity(String.class), paramWithChar, "Wrong returned value");
     }
 
     /**
@@ -115,6 +111,7 @@ public class EncodingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Percent")
     public void testPercent() {
         encodingCharacter('\\');
     }
@@ -124,6 +121,7 @@ public class EncodingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Via Direct URI")
     public void testViaDirectURI() throws Exception {
         for (Character ch : RESERVED_CHARACTERS) {
             viaDirectURI(ch);
@@ -137,7 +135,6 @@ public class EncodingTest {
         for (Character ch : UNWISE_CHARACTERS) {
             viaDirectURI(ch);
         }
-
     }
 
     public void viaDirectURI(Character toTest) throws Exception {
@@ -158,16 +155,15 @@ public class EncodingTest {
         }
         r.close();
         is.close();
-
-        Assert.assertEquals("Wrong answer (answer may be decoded badly)", buf.toString(), expected);
+        Assertions.assertEquals(buf.toString(), expected, "Wrong answer (answer may be decoded badly)");
     }
 
     public void testPathParamWithDoublePercent() {
         String paramWithDoublePercent = "start%%end";
         Response returned = testClient.getPathParam(paramWithDoublePercent);
-        Assert.assertNotNull(returned);
-        Assert.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
-        Assert.assertEquals(paramWithDoublePercent, returned.readEntity(String.class));
+        Assertions.assertNotNull(returned);
+        Assertions.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
+        Assertions.assertEquals(paramWithDoublePercent, returned.readEntity(String.class));
     }
 
     /**
@@ -175,12 +171,13 @@ public class EncodingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Path Param With Braces")
     public void testPathParamWithBraces() {
         String paramWithBraces = "start{param}end";
         Response returned = testClient.getPathParam(paramWithBraces);
-        Assert.assertNotNull("Wrong content of response", returned);
-        Assert.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
-        Assert.assertEquals("Wrong content of response", paramWithBraces, returned.readEntity(String.class));
+        Assertions.assertNotNull(returned, "Wrong content of response");
+        Assertions.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
+        Assertions.assertEquals(paramWithBraces, returned.readEntity(String.class), "Wrong content of response");
     }
 
     /**
@@ -188,12 +185,13 @@ public class EncodingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Path Param With Life Percent Death")
     public void testPathParamWithLifePercentDeath() {
         String paramWithLifePercentDeath = "life%death";
         Response returned = testClient.getPathParam(paramWithLifePercentDeath);
-        Assert.assertNotNull("Wrong content of response", returned);
-        Assert.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
-        Assert.assertEquals("Wrong content of response", paramWithLifePercentDeath, returned.readEntity(String.class));
+        Assertions.assertNotNull(returned, "Wrong content of response");
+        Assertions.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
+        Assertions.assertEquals(paramWithLifePercentDeath, returned.readEntity(String.class), "Wrong content of response");
     }
 
     /**
@@ -201,12 +199,13 @@ public class EncodingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Query Param With Double Percent")
     public void testQueryParamWithDoublePercent() {
         String paramWithDoublePercent = "start%%end";
         Response returned = testClient.getQueryParam(paramWithDoublePercent);
-        Assert.assertNotNull("Wrong content of response", returned);
-        Assert.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
-        Assert.assertEquals("Wrong content of response", paramWithDoublePercent, returned.readEntity(String.class));
+        Assertions.assertNotNull(returned, "Wrong content of response");
+        Assertions.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
+        Assertions.assertEquals(paramWithDoublePercent, returned.readEntity(String.class), "Wrong content of response");
     }
 
     /**
@@ -214,12 +213,13 @@ public class EncodingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Query Param With Braces")
     public void testQueryParamWithBraces() {
         String paramWithBraces = "start{param}end";
         Response returned = testClient.getQueryParam(paramWithBraces);
-        Assert.assertNotNull("Wrong content of response", returned);
-        Assert.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
-        Assert.assertEquals("Wrong content of response", paramWithBraces, returned.readEntity(String.class));
+        Assertions.assertNotNull(returned, "Wrong content of response");
+        Assertions.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
+        Assertions.assertEquals(paramWithBraces, returned.readEntity(String.class), "Wrong content of response");
     }
 
     /**
@@ -227,11 +227,12 @@ public class EncodingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Query Param With Life Percent Death")
     public void testQueryParamWithLifePercentDeath() {
         String paramWithLifePercentDeath = "life%death";
         Response returned = testClient.getQueryParam(paramWithLifePercentDeath);
-        Assert.assertNotNull("Wrong content of response", returned);
-        Assert.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
-        Assert.assertEquals("Wrong content of response", paramWithLifePercentDeath, returned.readEntity(String.class));
+        Assertions.assertNotNull(returned, "Wrong content of response");
+        Assertions.assertEquals(HttpURLConnection.HTTP_OK, returned.getStatus());
+        Assertions.assertEquals(paramWithLifePercentDeath, returned.readEntity(String.class), "Wrong content of response");
     }
 }

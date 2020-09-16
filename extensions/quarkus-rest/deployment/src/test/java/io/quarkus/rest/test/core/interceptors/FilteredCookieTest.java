@@ -11,8 +11,9 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.core.interceptors.resource.FilteredCookieContainerRequestFilter;
@@ -27,23 +28,24 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-1266
  * @tpSince RESTEasy 3.1.0.Final
  */
+@DisplayName("Filtered Cookie Test")
 public class FilteredCookieTest {
 
     private static final String OLD_COOKIE_NAME = "old-cookie";
+
     private static final String NEW_COOKIE_NAME = "new-cookie";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, FilteredCookieResource.class,
-                            FilteredCookieContainerRequestFilter.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, FilteredCookieResource.class,
+                    FilteredCookieContainerRequestFilter.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, FilteredCookieTest.class.getSimpleName());
@@ -54,25 +56,24 @@ public class FilteredCookieTest {
      * @tpSince RESTEasy 3.1.0.Final
      */
     @Test
+    @DisplayName("Test Server Headers")
     public void testServerHeaders() {
-
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(generateURL("/test/get"));
         Response response = target.request().get();
         NewCookie cookie = response.getCookies().get(OLD_COOKIE_NAME);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertNotNull(cookie);
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertNotNull(cookie);
         client.close();
-
         client = ClientBuilder.newClient();
         target = client.target(generateURL("/test/return"));
         Builder builder = target.request();
         response = builder.cookie(cookie).get();
         NewCookie oldCookie = response.getCookies().get(OLD_COOKIE_NAME);
         NewCookie newCookie = response.getCookies().get(NEW_COOKIE_NAME);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertNotNull(oldCookie);
-        Assert.assertNotNull(newCookie);
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertNotNull(oldCookie);
+        Assertions.assertNotNull(newCookie);
         client.close();
     }
 }
