@@ -476,6 +476,11 @@ public class QuarkusRestProcessor {
                                     MethodDescriptor.ofMethod(WebTarget.class, "queryParam", WebTarget.class,
                                             String.class, Object[].class),
                                     tg, m.load(p.name), array);
+                        } else if (p.parameterType == ParameterType.PATH) {
+                            tg = m.invokeInterfaceMethod(
+                                    MethodDescriptor.ofMethod(WebTarget.class, "resolveTemplate", WebTarget.class,
+                                            String.class, Object.class),
+                                    tg, m.load(p.name), m.getMethodParam(i));
                         }
 
                     }
@@ -501,6 +506,7 @@ public class QuarkusRestProcessor {
                                     MethodDescriptor.ofMethod(Invocation.Builder.class, "method", Object.class, String.class,
                                             Class.class),
                                     builder, m.load(method.getHttpMethod()), m.loadClass(method.getSimpleReturnType()));
+                    //TODO:converters
 
                     m.returnValue(result);
                 }

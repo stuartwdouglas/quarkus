@@ -53,7 +53,7 @@ public class AutoInjectFieldProcessor {
         annotationsTransformer.produce(new AnnotationsTransformerBuildItem(new AnnotationsTransformer() {
             @Override
             public boolean appliesTo(AnnotationTarget.Kind kind) {
-                return kind == AnnotationTarget.Kind.FIELD;
+                return kind == AnnotationTarget.Kind.FIELD || kind == AnnotationTarget.Kind.METHOD;
             }
 
             @Override
@@ -64,14 +64,25 @@ public class AutoInjectFieldProcessor {
 
             @Override
             public void transform(TransformationContext ctx) {
-                Collection<AnnotationInstance> fieldAnnotations = ctx.getAnnotations();
-                if (Modifier.isStatic(ctx.getTarget().asField().flags()) || contains(fieldAnnotations, DotNames.INJECT)
-                        || contains(fieldAnnotations, DotNames.PRODUCES)) {
-                    return;
-                }
-                if (containsAny(fieldAnnotations, annotationNames)) {
-                    ctx.transform().add(DotNames.INJECT).done();
-                    return;
+                Collection<AnnotationInstance> annotations = ctx.getAnnotations();
+                if (ctx.getTarget().kind() == AnnotationTarget.Kind.FIELD) {
+                    if (Modifier.isStatic(ctx.getTarget().asField().flags()) || contains(annotations, DotNames.INJECT)
+                            || contains(annotations, DotNames.PRODUCES)) {
+                        return;
+                    }
+                    if (containsAny(annotations, annotationNames)) {
+                        ctx.transform().add(DotNames.INJECT).done();
+                        return;
+                    }
+                } else {
+                    if (Modifier.isStatic(ctx.getTarget().asMethod().flags()) || contains(annotations, DotNames.INJECT)
+                            || contains(annotations, DotNames.PRODUCES)) {
+                        return;
+                    }
+                    if (containsAny(annotations, annotationNames)) {
+                        ctx.transform().add(DotNames.INJECT).done();
+                        return;
+                    }
                 }
             }
         }));

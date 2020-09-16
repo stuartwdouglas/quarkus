@@ -448,7 +448,7 @@ public class EndpointIndexer {
         return annotation;
     }
 
-    private static Supplier<ParameterConverter> extractConverter(String elementType, IndexView indexView,
+    public static Supplier<ParameterConverter> extractConverter(String elementType, IndexView indexView,
             BuildProducer<GeneratedClassBuildItem> generatedClassBuildItemBuildProducer,
             Map<String, String> existingConverters, MethodInfo methodInfo) {
         if (elementType.equals(String.class.getName())) {
