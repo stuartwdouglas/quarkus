@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.ApplicationClassNameBuildItem;
 import io.quarkus.deployment.builditem.ApplicationInfoBuildItem;
+import io.quarkus.deployment.builditem.AsyncRuntimeStartupTaskBuildItem;
 import io.quarkus.deployment.builditem.BytecodeRecorderObjectLoaderBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
@@ -118,7 +120,8 @@ public class MainClassBuildStep {
             LaunchModeBuildItem launchMode,
             LiveReloadBuildItem liveReloadBuildItem,
             ApplicationInfoBuildItem applicationInfo,
-            Optional<AppCDSRequestedBuildItem> appCDSRequested) {
+            Optional<AppCDSRequestedBuildItem> appCDSRequested,
+            List<AsyncRuntimeStartupTaskBuildItem> asyncRuntimeStartupTaskBuildItem) {
 
         appClassNameProducer.produce(new ApplicationClassNameBuildItem(Application.APP_CLASS_NAME));
 
@@ -264,6 +267,9 @@ public class MainClassBuildStep {
             writeRecordedBytecode(holder.getBytecodeRecorder(), holder.getGeneratedStartupContextClassName(), substitutions,
                     loaders, gizmoOutput, startupContext, tryBlock);
         }
+        for (AsyncRuntimeStartupTaskBuildItem i : asyncRuntimeStartupTaskBuildItem) {
+            waitForStartupTask(i, startupContext, tryBlock);
+        }
 
         // Startup log messages
         List<String> featureNames = new ArrayList<>();
@@ -319,6 +325,16 @@ public class MainClassBuildStep {
 
         // Finish application class
         file.close();
+    }
+
+    private void waitForStartupTask(AsyncRuntimeStartupTaskBuildItem i, ResultHandle startupContext,
+            BytecodeCreator bytecodeCreator) {
+        BytecodeRecorderImpl.ReturnedProxy rp = (BytecodeRecorderImpl.ReturnedProxy) i.getTask();
+        String proxyId = rp.__returned$proxy$key();
+        ResultHandle value = bytecodeCreator.invokeVirtualMethod(
+                ofMethod(StartupContext.class, "getValue", Object.class, String.class),
+                startupContext, bytecodeCreator.load(proxyId));
+        bytecodeCreator.invokeInterfaceMethod(MethodDescriptor.ofMethod(Future.class, "get", Object.class), value);
     }
 
     @BuildStep

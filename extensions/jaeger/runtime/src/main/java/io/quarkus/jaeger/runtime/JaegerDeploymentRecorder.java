@@ -2,6 +2,8 @@ package io.quarkus.jaeger.runtime;
 
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import org.jboss.logging.Logger;
@@ -19,6 +21,15 @@ public class JaegerDeploymentRecorder {
     private static final QuarkusJaegerTracer quarkusTracer = new QuarkusJaegerTracer();
 
     public static String jaegerVersion;
+
+    public Future<?> init(ExecutorService executorService) {
+        return executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                quarkusTracer.scopeManager();
+            }
+        });
+    }
 
     public void setJaegerVersion(String version) {
         jaegerVersion = version;

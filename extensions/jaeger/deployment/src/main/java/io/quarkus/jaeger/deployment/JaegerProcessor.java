@@ -11,7 +11,9 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.AsyncRuntimeStartupTaskBuildItem;
 import io.quarkus.deployment.builditem.CapabilityBuildItem;
+import io.quarkus.deployment.builditem.ExecutorBuildItem;
 import io.quarkus.deployment.builditem.ExtensionSslNativeSupportBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -36,8 +38,10 @@ public class JaegerProcessor {
 
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
-    void setupTracer(JaegerDeploymentRecorder jdr, JaegerBuildTimeConfig buildTimeConfig, JaegerConfig jaeger,
-            ApplicationConfig appConfig, Optional<MetricsCapabilityBuildItem> metricsCapability) {
+    AsyncRuntimeStartupTaskBuildItem setupTracer(JaegerDeploymentRecorder jdr, JaegerBuildTimeConfig buildTimeConfig,
+            JaegerConfig jaeger,
+            ApplicationConfig appConfig, Optional<MetricsCapabilityBuildItem> metricsCapability,
+            ExecutorBuildItem executorBuildItem) {
 
         // Indicates that this extension would like the SSL support to be enabled
         extensionSslNativeSupport.produce(new ExtensionSslNativeSupportBuildItem(Feature.JAEGER.getName()));
@@ -53,6 +57,7 @@ public class JaegerProcessor {
                 jdr.registerTracerWithoutMetrics(jaeger, appConfig);
             }
         }
+        return new AsyncRuntimeStartupTaskBuildItem(jdr.init(executorBuildItem.getExecutorProxy()));
     }
 
     @BuildStep
