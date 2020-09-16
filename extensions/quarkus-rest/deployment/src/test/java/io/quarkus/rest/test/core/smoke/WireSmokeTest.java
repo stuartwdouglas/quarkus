@@ -47,18 +47,6 @@ public class WireSmokeTest {
                 }
             });
 
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
-
-                    return TestUtil.finishContainerPrepare(war, null, WireSmokeSimpleResource.class);
-                }
-            });
-
     @Before
     public void init() {
         client = ClientBuilder.newClient();

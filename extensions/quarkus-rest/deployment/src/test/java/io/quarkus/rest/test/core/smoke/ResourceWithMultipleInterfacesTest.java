@@ -65,7 +65,7 @@ public class ResourceWithMultipleInterfacesTest {
     @Test
     public void testNoDefaultsResource() throws Exception {
         ResourceWithMultipleInterfacesIntA proxy = client.target(generateURL("/"))
-                .proxyBuilder(ResourceWithMultipleInterfacesIntA.class).build();
+                .proxy(ResourceWithMultipleInterfacesIntA.class);
         Assert.assertEquals("Wrong client answer.", "FOO", proxy.getFoo());
     }
 }

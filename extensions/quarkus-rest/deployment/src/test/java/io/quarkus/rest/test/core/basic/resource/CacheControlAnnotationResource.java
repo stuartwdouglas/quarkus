@@ -3,8 +3,8 @@ package io.quarkus.rest.test.core.basic.resource;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import org.jboss.resteasy.annotations.cache.Cache;
-import org.jboss.resteasy.annotations.cache.NoCache;
+import io.quarkus.rest.Cache;
+import io.quarkus.rest.NoCache;
 
 @Path("/")
 public class CacheControlAnnotationResource {

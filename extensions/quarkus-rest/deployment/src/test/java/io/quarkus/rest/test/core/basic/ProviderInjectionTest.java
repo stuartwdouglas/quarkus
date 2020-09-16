@@ -53,7 +53,7 @@ public class ProviderInjectionTest {
         client = (QuarkusRestClient) ClientBuilder.newClient();
         ProviderInjectionSimpleResource proxy = client
                 .target(PortProviderUtil.generateBaseUrl(ProviderInjectionTest.class.getSimpleName()))
-                .proxyBuilder(ProviderInjectionSimpleResource.class).build();
+                .proxy(ProviderInjectionSimpleResource.class);
         assertEquals(proxy.foo(), "bar");
     }
 

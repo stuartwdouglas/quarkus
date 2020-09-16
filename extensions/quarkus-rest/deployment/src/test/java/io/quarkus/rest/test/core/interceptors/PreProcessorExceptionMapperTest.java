@@ -1,14 +1,11 @@
 package io.quarkus.rest.test.core.interceptors;
 
-import static org.jboss.resteasy.utils.PortProviderUtil.generateURL;
-
 import java.util.function.Supplier;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
@@ -58,7 +55,9 @@ public class PreProcessorExceptionMapperTest {
     @Test
     public void testMapper() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        Response response = client.target(generateURL("/interception", GzipTest.class.getSimpleName())).request().get();
+        Response response = client
+                .target(PortProviderUtil.generateURL("/interception", PreProcessorExceptionMapperTest.class.getSimpleName()))
+                .request().get();
         Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
         response.close();
         client.close();

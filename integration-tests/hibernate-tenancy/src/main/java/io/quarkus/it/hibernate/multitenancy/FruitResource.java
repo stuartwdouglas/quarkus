@@ -24,7 +24,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.jboss.logging.Logger;
-import io.quarkus.rest.PathParam;
+import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
 @ApplicationScoped
 @Produces("application/json")

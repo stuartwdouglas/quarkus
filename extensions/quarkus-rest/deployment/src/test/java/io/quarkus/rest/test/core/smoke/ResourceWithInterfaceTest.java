@@ -46,7 +46,7 @@ public class ResourceWithInterfaceTest {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         ResourceWithInterfaceSimpleClient proxy = client
                 .target(PortProviderUtil.generateBaseUrl(ResourceWithInterfaceTest.class.getSimpleName()))
-                .proxyBuilder(ResourceWithInterfaceSimpleClient.class).build();
+                .proxy(ResourceWithInterfaceSimpleClient.class);
 
         Assert.assertEquals("Wrong client answer.", "basic", proxy.getBasic());
         proxy.putBasic("hello world");

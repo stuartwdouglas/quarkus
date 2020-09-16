@@ -25,7 +25,7 @@ import io.quarkus.test.QuarkusUnitTest;
 /**
  * @tpSubChapter Configuration
  * @tpChapter Integration tests
- * @tpTestCaseDetails Test for org.jboss.resteasy.annotations.cache.Cache class
+ * @tpTestCaseDetails Test for io.quarkus.rest.Cache class
  * @tpSince RESTEasy 3.0.16
  */
 public class CacheControlAnnotationTest {

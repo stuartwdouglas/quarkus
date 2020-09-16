@@ -9,7 +9,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import io.quarkus.rest.PathParam;
+import org.jboss.resteasy.annotations.jaxrs.PathParam;
 
 import io.quarkus.cache.CacheResult;
 

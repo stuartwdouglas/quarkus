@@ -6,7 +6,7 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import io.quarkus.rest.QueryParam;
+import org.jboss.resteasy.annotations.jaxrs.QueryParam;
 
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;

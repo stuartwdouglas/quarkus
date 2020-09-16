@@ -6,7 +6,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
@@ -50,7 +49,7 @@ public class FileExtensionMappingTest {
 
                     war.addClass(FileExtensionMappingApplication.class);
                     //                    war.addAsWebInfResource(FileExtensionMappingTest.class.getPackage(), "FileExtensionMapping.xml", "web.xml");
-                    Archive<?> archive = TestUtil.finishContainerPrepare(war, null, FileExtensionMappingResource.class);
+                    JavaArchive archive = TestUtil.finishContainerPrepare(war, null, FileExtensionMappingResource.class);
                     return archive;
                 }
             });

@@ -14,7 +14,7 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import org.jboss.resteasy.utils.TestUtil;
+import io.quarkus.rest.test.simple.TestUtil;
 
 @Provider
 public class ReaderContextArrayListEntityProvider implements
