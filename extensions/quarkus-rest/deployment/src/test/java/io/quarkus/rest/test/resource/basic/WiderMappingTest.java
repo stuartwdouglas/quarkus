@@ -11,10 +11,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.basic.resource.WiderMappingDefaultOptions;
@@ -29,6 +30,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test positive scenario for "resteasy.wider.request.matching" property
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Wider Mapping Test")
 public class WiderMappingTest {
 
     static Client client;
@@ -38,28 +40,26 @@ public class WiderMappingTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(PortProviderUtil.class);
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(PortProviderUtil.class);
+            Map<String, String> contextParam = new HashMap<>();
+            contextParam.put("resteasy.wider.request.matching", "true");
+            return TestUtil.finishContainerPrepare(war, contextParam, WiderMappingResource.class,
+                    WiderMappingDefaultOptions.class);
+        }
+    });
 
-                    Map<String, String> contextParam = new HashMap<>();
-                    contextParam.put("resteasy.wider.request.matching", "true");
-                    return TestUtil.finishContainerPrepare(war, contextParam, WiderMappingResource.class,
-                            WiderMappingDefaultOptions.class);
-                }
-            });
-
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         client.close();
     }
@@ -69,11 +69,11 @@ public class WiderMappingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Options")
     public void testOptions() {
         Response response = client.target(generateURL("/hello/int")).request().options();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals(response.readEntity(String.class), "hello");
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "hello");
         response.close();
     }
-
 }

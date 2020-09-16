@@ -7,10 +7,11 @@ import java.util.function.Supplier;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.extras.creaper.core.online.OnlineManagementClient;
 
@@ -28,32 +29,32 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 4.0.0
  *          Created by rsearls on 9/11/17.
  */
+@DisplayName("Sub Resource Warning Test")
 public class SubResourceWarningTest {
 
     // check server.log msg count before app is deployed.  Deploying causes messages to be logged.
     private static int preTestCnt = TestUtil.getWarningCount("have the same path, [test", false, DEFAULT_CONTAINER_QUALIFIER);
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, SubResourceWarningResource.class,
-                            TestResource1.class, TestResource2.class, TestSubResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, SubResourceWarningResource.class, TestResource1.class,
+                    TestResource2.class, TestSubResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void initLogging() throws Exception {
         OnlineManagementClient client = TestUtil.clientInit();
         TestUtil.runCmd(client, "/subsystem=logging/logger=org.jboss.resteasy:add(level=WARN)");
         client.close();
     }
 
-    @AfterClass
+    @AfterAll
     public static void removeLogging() throws Exception {
         OnlineManagementClient client = TestUtil.clientInit();
         TestUtil.runCmd(client, "/subsystem=logging/logger=org.jboss.resteasy:remove()");
@@ -64,12 +65,13 @@ public class SubResourceWarningTest {
      * Confirms that 2 warning messages about this incorrect coding is printed to the server.log
      * Must check for path because warning text, RESTEASY002195, exist in log for a previous test
      * in the suite.
-     * 
+     *
      * @throws Exception
      */
     @Test
+    @DisplayName("Test Warning Msg")
     public void testWarningMsg() throws Exception {
         int cnt = TestUtil.getWarningCount("have the same path, [test", false, DEFAULT_CONTAINER_QUALIFIER);
-        Assert.assertEquals("Improper log WARNING count", preTestCnt + 2, cnt);
+        Assertions.assertEquals(preTestCnt + 2, cnt, "Improper log WARNING count");
     }
 }

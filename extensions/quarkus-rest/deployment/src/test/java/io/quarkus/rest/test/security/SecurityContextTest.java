@@ -18,10 +18,11 @@ import org.jboss.resteasy.client.jaxrs.internal.BasicAuthentication;
 import org.jboss.resteasy.setup.AbstractUsersRolesSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.extras.creaper.core.CommandFailedException;
 
@@ -38,75 +39,75 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  */
 @ServerSetup({ SecurityContextTest.SecurityDomainSetup.class })
+@DisplayName("Security Context Test")
 public class SecurityContextTest {
 
     private static final String USERNAME = "bill";
+
     private static final String PASSWORD = "password1";
 
     private static final String USERNAME2 = "ordinaryUser";
+
     private static final String PASSWORD2 = "password2";
 
     private Client authorizedClient;
+
     private Client nonauthorizedClient;
 
-    @Before
+    @BeforeEach
     public void initClient() throws IOException, CommandFailedException {
-
         // Create jaxrs client
         nonauthorizedClient = ClientBuilder.newClient();
         nonauthorizedClient.register(new BasicAuthentication(USERNAME2, PASSWORD2));
-
         // Create jaxrs client
         authorizedClient = ClientBuilder.newClient();
         authorizedClient.register(new BasicAuthentication(USERNAME, PASSWORD));
-
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         authorizedClient.close();
         nonauthorizedClient.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    //                    war.addAsWebInfResource(SecurityContextTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
-                    //                            .addAsWebInfResource(SecurityContextTest.class.getPackage(), "securityContext/web.xml", "web.xml");
-                    return TestUtil.finishContainerPrepare(war, null, SecurityContextResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            // war.addAsWebInfResource(SecurityContextTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
+            // .addAsWebInfResource(SecurityContextTest.class.getPackage(), "securityContext/web.xml", "web.xml");
+            return TestUtil.finishContainerPrepare(war, null, SecurityContextResource.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    //                    war.addAsWebInfResource(SecurityContextTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
-                    //                            .addAsWebInfResource(SecurityContextTest.class.getPackage(), "securityContext/web.xml", "web.xml");
-                    return TestUtil.finishContainerPrepare(war, null, SecurityContextResource.class,
-                            SecurityContextContainerRequestFilter.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            // war.addAsWebInfResource(SecurityContextTest.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
+            // .addAsWebInfResource(SecurityContextTest.class.getPackage(), "securityContext/web.xml", "web.xml");
+            return TestUtil.finishContainerPrepare(war, null, SecurityContextResource.class,
+                    SecurityContextContainerRequestFilter.class);
+        }
+    });
 
     /**
      * @tpTestDetails Correct credentials are used.
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Context Authorized")
     public void testSecurityContextAuthorized() {
         Response response = authorizedClient
                 .target(PortProviderUtil.generateURL("/test", SecurityContextTest.class.getSimpleName())).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Good user bill", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "Good user bill");
     }
 
     /**
@@ -114,11 +115,12 @@ public class SecurityContextTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Context Non Authorized")
     public void testSecurityContextNonAuthorized() {
         Response response = nonauthorizedClient
                 .target(PortProviderUtil.generateURL("/test", SecurityContextTest.class.getSimpleName())).request().get();
-        Assert.assertEquals("User ordinaryUser is not authorized", response.readEntity(String.class));
-        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "User ordinaryUser is not authorized");
+        Assertions.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
 
     /**
@@ -127,12 +129,13 @@ public class SecurityContextTest {
      */
     @Test
     @OperateOnDeployment("containerRequestFilter")
+    @DisplayName("Test Security Context Authorized Using Filter")
     public void testSecurityContextAuthorizedUsingFilter() {
         Response response = authorizedClient
                 .target(PortProviderUtil.generateURL("/test", SecurityContextTest.class.getSimpleName() + "Filter")).request()
                 .get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Good user bill", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "Good user bill");
     }
 
     /**
@@ -141,14 +144,16 @@ public class SecurityContextTest {
      */
     @Test
     @OperateOnDeployment("containerRequestFilter")
+    @DisplayName("Test Security Context Non Authorized Using Filter")
     public void testSecurityContextNonAuthorizedUsingFilter() {
         Response response = nonauthorizedClient
                 .target(PortProviderUtil.generateURL("/test", SecurityContextTest.class.getSimpleName() + "Filter")).request()
                 .get();
-        Assert.assertEquals("User ordinaryUser is not authorized, coming from filter", response.readEntity(String.class));
-        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "User ordinaryUser is not authorized, coming from filter");
+        Assertions.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
 
+    @DisplayName("Security Domain Setup")
     static class SecurityDomainSetup extends AbstractUsersRolesSecurityDomainSetup {
 
         @Override

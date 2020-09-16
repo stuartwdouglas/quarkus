@@ -15,7 +15,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.util.AnnotationLiteral;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBoston;
 import io.quarkus.rest.test.cdi.extensions.resource.CDIExtensionsBostonHolder;

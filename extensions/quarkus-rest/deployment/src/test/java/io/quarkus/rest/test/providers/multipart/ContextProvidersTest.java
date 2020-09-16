@@ -37,8 +37,9 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedInput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedOutput;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.multipart.resource.ContextProvidersCustomer;
@@ -60,11 +61,13 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  */
 @SuppressWarnings("deprecation")
+@DisplayName("Context Providers Test")
 public class ContextProvidersTest {
 
     protected final Logger logger = Logger.getLogger(ContextProvidersTest.class.getName());
 
     public static final Annotation PART_TYPE_APPLICATION_XML = new S1() {
+
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -72,33 +75,40 @@ public class ContextProvidersTest {
             return "application/xml";
         }
     };
+
     public static final Annotation MULTIPART_FORM = new S2() {
+
         private static final long serialVersionUID = 1L;
     };
+
     public static final Annotation XOP_WITH_MULTIPART_RELATED = new S3() {
+
         private static final long serialVersionUID = 1L;
     };
+
     static final MediaType MULTIPART_MIXED = new MediaType("multipart", "mixed");
+
     static final MediaType MULTIPART_FORM_DATA = new MediaType("multipart", "form-data");
+
     static final MediaType MULTIPART_RELATED = new MediaType("multipart", "related");
+
     static final javax.ws.rs.core.GenericType<List<ContextProvidersName>> LIST_NAME_TYPE = new javax.ws.rs.core.GenericType<List<ContextProvidersName>>() {
     };
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(ContextProvidersCustomer.class, ContextProvidersCustomerForm.class,
-                            ContextProvidersCustomerFormNewAnnotationOnField.class,
-                            ContextProvidersCustomerFormNewAnnotationOnSetter.class,
-                            ContextProvidersName.class, ContextProvidersXop.class, PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null, ContextProvidersResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(ContextProvidersCustomer.class, ContextProvidersCustomerForm.class,
+                    ContextProvidersCustomerFormNewAnnotationOnField.class,
+                    ContextProvidersCustomerFormNewAnnotationOnSetter.class, ContextProvidersName.class,
+                    ContextProvidersXop.class, PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ContextProvidersResource.class);
+        }
+    });
 
     /**
      * @tpTestDetails Form data in get request is used.
@@ -106,6 +116,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Form Data")
     public void testGetFormData() throws Exception {
         doTestGetFormData();
     }
@@ -113,23 +124,21 @@ public class ContextProvidersTest {
     public void doTestGetFormData() throws Exception {
         try {
             MultipartFormDataInput entity = get("/get/form", MultipartFormDataInput.class);
-
             // Get parts by name.
             ContextProvidersCustomer c = entity.getFormDataPart("bill", ContextProvidersCustomer.class, null);
-            Assert.assertEquals("Wrong response", "Bill", c.getName());
+            Assertions.assertEquals("Bill", c.getName(), "Wrong response");
             String s = entity.getFormDataPart("bob", String.class, null);
-            Assert.assertEquals("Wrong response", "Bob", s);
-
+            Assertions.assertEquals("Bob", s, "Wrong response");
             // Iterate over list of parts.
             for (Map.Entry<String, List<InputPart>> formDataEntry : entity.getFormDataMap().entrySet()) {
-                //                logger.debug("key: " + formDataEntry.getKey());
+                // logger.debug("key: " + formDataEntry.getKey());
                 for (InputPart inputPart : formDataEntry.getValue()) {
                     if (MediaType.APPLICATION_XML_TYPE.equals(inputPart.getMediaType())) {
                         c = inputPart.getBody(ContextProvidersCustomer.class, null);
-                        Assert.assertEquals("Wrong response", "Bill", c.getName());
+                        Assertions.assertEquals("Bill", c.getName(), "Wrong response");
                     } else {
                         s = inputPart.getBody(String.class, null);
-                        Assert.assertEquals("Wrong response", "Bob", s);
+                        Assertions.assertEquals("Bob", s, "Wrong response");
                     }
                 }
             }
@@ -144,6 +153,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Mixed")
     public void testGetMixed() throws Exception {
         doTestGetMixed();
     }
@@ -151,17 +161,16 @@ public class ContextProvidersTest {
     void doTestGetMixed() throws Exception {
         try {
             MultipartInput entity = get("/get/mixed", MultipartInput.class);
-
             // Iterate over list of parts.
             List<InputPart> parts = entity.getParts();
             for (Iterator<InputPart> it = parts.iterator(); it.hasNext();) {
                 InputPart inputPart = it.next();
                 if (MediaType.APPLICATION_XML_TYPE.equals(inputPart.getMediaType())) {
                     ContextProvidersCustomer c = inputPart.getBody(ContextProvidersCustomer.class, null);
-                    Assert.assertEquals("Wrong response", "Bill", c.getName());
+                    Assertions.assertEquals("Bill", c.getName(), "Wrong response");
                 } else {
                     String s = inputPart.getBody(String.class, null);
-                    Assert.assertEquals("Wrong response", "Bob", s);
+                    Assertions.assertEquals("Bob", s, "Wrong response");
                 }
             }
         } catch (Exception e) {
@@ -175,6 +184,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get List")
     public void testGetList() throws Exception {
         doTestGetList();
     }
@@ -182,7 +192,6 @@ public class ContextProvidersTest {
     void doTestGetList() throws Exception {
         try {
             MultipartInput entity = get("/get/list", MultipartInput.class);
-
             // Iterate over list of parts.
             List<InputPart> parts = entity.getParts();
             Set<String> customers = new HashSet<String>();
@@ -204,6 +213,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Map")
     public void testGetMap() throws Exception {
         doTestGetMap();
     }
@@ -211,13 +221,11 @@ public class ContextProvidersTest {
     public void doTestGetMap() throws Exception {
         try {
             MultipartFormDataInput entity = get("/get/map", MultipartFormDataInput.class);
-
             // Get parts by name.
             ContextProvidersCustomer c = entity.getFormDataPart("bill", ContextProvidersCustomer.class, null);
-            Assert.assertEquals("Wrong response", "Bill", c.getName());
+            Assertions.assertEquals("Bill", c.getName(), "Wrong response");
             c = entity.getFormDataPart("bob", ContextProvidersCustomer.class, null);
-            Assert.assertEquals("Wrong response", "Bob", c.getName());
-
+            Assertions.assertEquals("Bob", c.getName(), "Wrong response");
             // Iterate over map of parts.
             Set<String> customers = new HashSet<>();
             for (Map.Entry<String, List<InputPart>> formDataEntry : entity.getFormDataMap().entrySet()) {
@@ -239,6 +247,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Related")
     public void testGetRelated() throws Exception {
         doTestGetRelated();
     }
@@ -246,14 +255,13 @@ public class ContextProvidersTest {
     void doTestGetRelated() throws Exception {
         try {
             MultipartRelatedInput entity = get("/get/related", MultipartRelatedInput.class);
-
             // Iterate over map of parts.
             Map<String, InputPart> map = entity.getRelatedMap();
             Set<String> keys = map.keySet();
-            Assert.assertEquals(2, keys.size());
+            Assertions.assertEquals(2, keys.size());
             Assert.assertThat("Wrong count of keys from response", new Integer(keys.size()), is(2));
-            Assert.assertTrue(keys.contains("bill"));
-            Assert.assertTrue(keys.contains("bob"));
+            Assertions.assertTrue(keys.contains("bill"));
+            Assertions.assertTrue(keys.contains("bob"));
             Assert.assertThat("Missing key from response", keys, hasItems("bill"));
             Assert.assertThat("Missing key from response", keys, hasItems("bob"));
             Set<String> parts = new HashSet<>();
@@ -273,6 +281,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Multipart Form")
     public void testGetMultipartForm() throws Exception {
         doTestGetMultipartForm();
     }
@@ -282,17 +291,15 @@ public class ContextProvidersTest {
         annotations[0] = MULTIPART_FORM;
         ContextProvidersCustomerForm form = get("/get/multipartform", ContextProvidersCustomerForm.class, annotations);
         ContextProvidersCustomer customer = form.getCustomer();
-        Assert.assertEquals("Wrong response", "Bill", customer.getName());
-
+        Assertions.assertEquals("Bill", customer.getName(), "Wrong response");
         ContextProvidersCustomerFormNewAnnotationOnField form2 = get("/get/multipartform2",
                 ContextProvidersCustomerFormNewAnnotationOnField.class, annotations);
         customer = form.getCustomer();
-        Assert.assertEquals("Wrong response", "Bill", customer.getName());
-
+        Assertions.assertEquals("Bill", customer.getName(), "Wrong response");
         ContextProvidersCustomerFormNewAnnotationOnSetter form3 = get("/get/multipartform3",
                 ContextProvidersCustomerFormNewAnnotationOnSetter.class, annotations);
         customer = form.getCustomer();
-        Assert.assertEquals("Wrong response", "Bill", customer.getName());
+        Assertions.assertEquals("Bill", customer.getName(), "Wrong response");
     }
 
     /**
@@ -301,6 +308,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Xop")
     public void testGetXop() throws Exception {
         doTestGetXop();
     }
@@ -309,7 +317,7 @@ public class ContextProvidersTest {
         Annotation[] annotations = new Annotation[1];
         annotations[0] = XOP_WITH_MULTIPART_RELATED;
         ContextProvidersXop xop = get("/get/xop", ContextProvidersXop.class, annotations);
-        Assert.assertEquals("Wrong response", "goodbye world", new String(xop.getBytes()));
+        Assertions.assertEquals("goodbye world", new String(xop.getBytes()), "Wrong response");
     }
 
     /**
@@ -318,6 +326,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post Mixed")
     public void testPostMixed() throws Exception {
         doTestPostMixed();
     }
@@ -331,9 +340,9 @@ public class ContextProvidersTest {
         annotations[0] = PART_TYPE_APPLICATION_XML;
         List<ContextProvidersName> names = new ArrayList<ContextProvidersName>();
         names = post("/post/mixed", output, MULTIPART_MIXED, names.getClass(), LIST_NAME_TYPE.getType(), annotations);
-        Assert.assertEquals(2, names.size());
-        Assert.assertTrue(names.contains(new ContextProvidersName("Bill")));
-        Assert.assertTrue(names.contains(new ContextProvidersName("Bob")));
+        Assertions.assertEquals(2, names.size());
+        Assertions.assertTrue(names.contains(new ContextProvidersName("Bill")));
+        Assertions.assertTrue(names.contains(new ContextProvidersName("Bob")));
     }
 
     /**
@@ -342,13 +351,13 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post Form Data")
     public void testPostFormData() throws Exception {
         doTestPostFormData();
     }
 
     @SuppressWarnings("unchecked")
     public void doTestPostFormData() throws Exception {
-
         MultipartFormDataOutput output = new MultipartFormDataOutput();
         output.addFormData("bill", new ContextProvidersCustomer("Bill"), MediaType.APPLICATION_XML_TYPE);
         output.addFormData("bob", "Bob", MediaType.TEXT_PLAIN_TYPE);
@@ -368,6 +377,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post List")
     public void testPostList() throws Exception {
         doTestPostList();
     }
@@ -393,6 +403,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post Map")
     public void testPostMap() throws Exception {
         doTestPostMap();
     }
@@ -419,6 +430,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post Related")
     public void testPostRelated() throws Exception {
         doTestPostRelated();
     }
@@ -445,6 +457,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post Multipart Form")
     public void testPostMultipartForm() throws Exception {
         doTestPostMultipartForm();
     }
@@ -452,21 +465,18 @@ public class ContextProvidersTest {
     void doTestPostMultipartForm() throws Exception {
         Annotation[] annotations = new Annotation[1];
         annotations[0] = MULTIPART_FORM;
-
         ContextProvidersCustomerForm form = new ContextProvidersCustomerForm();
         form.setCustomer(new ContextProvidersCustomer("Bill"));
         String name = post("/post/multipartform", form, MULTIPART_FORM_DATA, String.class, null, annotations);
-        Assert.assertEquals("Wrong response", "Bill", name);
-
+        Assertions.assertEquals("Bill", name, "Wrong response");
         ContextProvidersCustomerFormNewAnnotationOnField form2 = new ContextProvidersCustomerFormNewAnnotationOnField();
         form2.setCustomer(new ContextProvidersCustomer("Bill"));
         name = post("/post/multipartform2", form2, MULTIPART_FORM_DATA, String.class, null, annotations);
-        Assert.assertEquals("Wrong response", "Bill", name);
-
+        Assertions.assertEquals("Bill", name, "Wrong response");
         ContextProvidersCustomerFormNewAnnotationOnSetter form3 = new ContextProvidersCustomerFormNewAnnotationOnSetter();
         form3.setCustomer(new ContextProvidersCustomer("Bill"));
         name = post("/post/multipartform3", form3, MULTIPART_FORM_DATA, String.class, null, annotations);
-        Assert.assertEquals("Wrong response", "Bill", name);
+        Assertions.assertEquals("Bill", name, "Wrong response");
     }
 
     /**
@@ -475,6 +485,7 @@ public class ContextProvidersTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post Xop")
     public void testPostXop() throws Exception {
         doTestPostXop();
     }
@@ -484,7 +495,7 @@ public class ContextProvidersTest {
         Annotation[] annotations = new Annotation[1];
         annotations[0] = XOP_WITH_MULTIPART_RELATED;
         String s = post("/post/xop", xop, MULTIPART_RELATED, String.class, null, annotations);
-        Assert.assertEquals("Wrong response", "hello world", s);
+        Assertions.assertEquals("hello world", s, "Wrong response");
     }
 
     <T> T get(String path, Class<T> clazz) throws Exception {
@@ -496,7 +507,7 @@ public class ContextProvidersTest {
             Client client = ClientBuilder.newClient();
             WebTarget target = client.target(PortProviderUtil.generateURL(path, ContextProvidersTest.class.getSimpleName()));
             Response response = target.request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             T entity = response.readEntity(clazz, annotations);
             client.close();
             return entity;
@@ -512,7 +523,7 @@ public class ContextProvidersTest {
         WebTarget target = client.target(PortProviderUtil.generateURL(path, ContextProvidersTest.class.getSimpleName()));
         Entity<S> entity = Entity.entity(payload, mediaType, annotations);
         Response response = target.request().post(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         T result = null;
         if (genericReturnType != null) {
             result = response.readEntity(new GenericType<T>(genericReturnType));
@@ -523,15 +534,21 @@ public class ContextProvidersTest {
         return result;
     }
 
+    @DisplayName("S 1")
     public abstract static class S1 extends AnnotationLiteral<PartType> implements PartType {
+
         private static final long serialVersionUID = 1L;
     }
 
+    @DisplayName("S 2")
     public abstract static class S2 extends AnnotationLiteral<MultipartForm> implements MultipartForm {
+
         private static final long serialVersionUID = 1L;
     }
 
+    @DisplayName("S 3")
     public abstract static class S3 extends AnnotationLiteral<XopWithMultipartRelated> implements XopWithMultipartRelated {
+
         private static final long serialVersionUID = 1L;
     }
 }

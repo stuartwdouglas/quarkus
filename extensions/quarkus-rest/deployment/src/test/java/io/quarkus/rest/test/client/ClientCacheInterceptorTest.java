@@ -25,10 +25,10 @@ import org.jboss.resteasy.client.jaxrs.internal.ClientInvocationBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.ClientResponse;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -102,12 +102,12 @@ public class ClientCacheInterceptorTest {
         return TestUtil.finishContainerPrepare(war, null, EchoResource.class);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         client.close();
     }

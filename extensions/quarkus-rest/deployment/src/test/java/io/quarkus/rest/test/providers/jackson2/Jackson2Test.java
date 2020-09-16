@@ -19,10 +19,11 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -42,14 +43,19 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Jackson 2 Test")
 public class Jackson2Test {
 
     protected static final Logger logger = Logger.getLogger(Jackson2Test.class.getName());
+
     private static final String JSONP_ENABLED = "JSONP_enabled";
+
     private static final String JSONP_DISABLED = "JSONP_disabled";
 
     @Path("/products")
+    @DisplayName("Jackson 2 Proxy")
     public interface Jackson2Proxy {
+
         @GET
         @Produces("application/json")
         @Path("{id}")
@@ -69,66 +75,63 @@ public class Jackson2Test {
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(Jackson2Test.class);
-                    war.addAsResource(Jackson2Test.class.getPackage(), "javax.ws.rs.ext.Providers",
-                            "META-INF/services/javax.ws.rs.ext.Providers");
-                    return TestUtil.finishContainerPrepare(war, null, Jackson2Resource.class, Jackson2Product.class,
-                            Jackson2XmlResource.class, Jackson2XmlProduct.class, Jackson2JAXBResource.class,
-                            Jackson2XmlResourceWithJacksonAnnotation.class, Jackson2XmlResourceWithJAXB.class);
-                }
-            });
-
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
-
-                    war.addClass(Jackson2Test.class);
-                    war.addAsResource(Jackson2Test.class.getPackage(), "javax.ws.rs.ext.Providers",
-                            "META-INF/services/javax.ws.rs.ext.Providers");
-                    Map<String, String> contextParam = new HashMap<>();
-                    contextParam.put("resteasy.jsonp.enable", "true");
-                    return TestUtil.finishContainerPrepare(war, contextParam, Jackson2Resource.class, Jackson2Product.class,
-                            Jackson2XmlResource.class, Jackson2XmlProduct.class, Jackson2JAXBResource.class,
-                            Jackson2XmlResourceWithJacksonAnnotation.class, Jackson2XmlResourceWithJAXB.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(Jackson2Test.class);
+            war.addAsResource(Jackson2Test.class.getPackage(), "javax.ws.rs.ext.Providers",
+                    "META-INF/services/javax.ws.rs.ext.Providers");
+            return TestUtil.finishContainerPrepare(war, null, Jackson2Resource.class, Jackson2Product.class,
+                    Jackson2XmlResource.class, Jackson2XmlProduct.class, Jackson2JAXBResource.class,
+                    Jackson2XmlResourceWithJacksonAnnotation.class, Jackson2XmlResourceWithJAXB.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(Jackson2Test.class);
-                    war.addAsResource(Jackson2Test.class.getPackage(), "javax.ws.rs.ext.Providers",
-                            "META-INF/services/javax.ws.rs.ext.Providers");
-                    Map<String, String> contextParam = new HashMap<>();
-                    contextParam.put("resteasy.jsonp.enable", "false");
-                    return TestUtil.finishContainerPrepare(war, contextParam, Jackson2Resource.class, Jackson2Product.class,
-                            Jackson2XmlResource.class, Jackson2XmlProduct.class, Jackson2JAXBResource.class,
-                            Jackson2XmlResourceWithJacksonAnnotation.class, Jackson2XmlResourceWithJAXB.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(Jackson2Test.class);
+            war.addAsResource(Jackson2Test.class.getPackage(), "javax.ws.rs.ext.Providers",
+                    "META-INF/services/javax.ws.rs.ext.Providers");
+            Map<String, String> contextParam = new HashMap<>();
+            contextParam.put("resteasy.jsonp.enable", "true");
+            return TestUtil.finishContainerPrepare(war, contextParam, Jackson2Resource.class, Jackson2Product.class,
+                    Jackson2XmlResource.class, Jackson2XmlProduct.class, Jackson2JAXBResource.class,
+                    Jackson2XmlResourceWithJacksonAnnotation.class, Jackson2XmlResourceWithJAXB.class);
+        }
+    });
 
-    @Before
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(Jackson2Test.class);
+            war.addAsResource(Jackson2Test.class.getPackage(), "javax.ws.rs.ext.Providers",
+                    "META-INF/services/javax.ws.rs.ext.Providers");
+            Map<String, String> contextParam = new HashMap<>();
+            contextParam.put("resteasy.jsonp.enable", "false");
+            return TestUtil.finishContainerPrepare(war, contextParam, Jackson2Resource.class, Jackson2Product.class,
+                    Jackson2XmlResource.class, Jackson2XmlProduct.class, Jackson2JAXBResource.class,
+                    Jackson2XmlResourceWithJacksonAnnotation.class, Jackson2XmlResourceWithJAXB.class);
+        }
+    });
+
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -144,25 +147,24 @@ public class Jackson2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Jackson String")
     public void testJacksonString() throws Exception {
         WebTarget target = client.target(generateURL("/products/333"));
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response entity content doesn't match the expected",
-                "{\"name\":\"Iphone\",\"id\":333}", entity);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("{\"name\":\"Iphone\",\"id\":333}", entity,
+                "The response entity content doesn't match the expected");
         response.close();
-
         target = client.target(generateURL("/products"));
         response = target.request().get();
         entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response entity content doesn't match the expected",
-                "[{\"name\":\"Iphone\",\"id\":333},{\"name\":\"macbook\",\"id\":44}]", entity);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("[{\"name\":\"Iphone\",\"id\":333},{\"name\":\"macbook\",\"id\":44}]", entity,
+                "The response entity content doesn't match the expected");
         response.close();
-
     }
 
     /**
@@ -173,14 +175,15 @@ public class Jackson2Test {
      * @tpSince RESTEasy 3.0.16 as testJacksonJsonp() (but Jackson2JsonpInterceptor didn't need to be enabled)
      */
     @Test
+    @DisplayName("Test Jackson Jsonp Enabled")
     public void testJacksonJsonpEnabled() throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/products/333?callback=foo", JSONP_ENABLED));
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response entity content doesn't match the expected", "foo({\"name\":\"Iphone\",\"id\":333})",
-                entity);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("foo({\"name\":\"Iphone\",\"id\":333})", entity,
+                "The response entity content doesn't match the expected");
         response.close();
     }
 
@@ -193,13 +196,14 @@ public class Jackson2Test {
      * @tpSince RESTEasy 3.1.0.Final
      */
     @Test
+    @DisplayName("Test Jackson Jsonp Disabled")
     public void testJacksonJsonpDisabled() throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/products/333?callback=foo", JSONP_DISABLED));
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Jackson2JsonpInterceptor should be disabled", "{\"name\":\"Iphone\",\"id\":333}", entity);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("{\"name\":\"Iphone\",\"id\":333}", entity, "Jackson2JsonpInterceptor should be disabled");
         response.close();
     }
 
@@ -211,13 +215,14 @@ public class Jackson2Test {
      * @tpSince RESTEasy 3.0.16 (as testJacksonJsonp() but Jackson2JsonpInterceptor would have been enabled)
      */
     @Test
+    @DisplayName("Test Jackson Jsonp Default")
     public void testJacksonJsonpDefault() throws Exception {
         WebTarget target = client.target(generateURL("/products/333?callback=foo"));
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Jackson2JsonpInterceptor should be disabled", "{\"name\":\"Iphone\",\"id\":333}", entity);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("{\"name\":\"Iphone\",\"id\":333}", entity, "Jackson2JsonpInterceptor should be disabled");
         response.close();
     }
 
@@ -231,13 +236,14 @@ public class Jackson2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Formatted Jackson String")
     public void testFormattedJacksonString() throws Exception {
         WebTarget target = client.target(generateURL("/products/formatted/333"));
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertTrue("Entity doesn't contain formatting", entity.contains("\n"));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertTrue(entity.contains("\n"), "Entity doesn't contain formatting");
         response.close();
     }
 
@@ -252,28 +258,26 @@ public class Jackson2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Jackson")
     public void testJackson() throws Exception {
         WebTarget target = client.target(generateURL("/products/333"));
         Response response = target.request().get();
         Jackson2Product p = response.readEntity(Jackson2Product.class);
-        Assert.assertEquals("Jackson2Product id value doesn't match", 333, p.getId());
-        Assert.assertEquals("Jackson2Product name value doesn't match", "Iphone", p.getName());
+        Assertions.assertEquals(333, p.getId(), "Jackson2Product id value doesn't match");
+        Assertions.assertEquals("Iphone", p.getName(), "Jackson2Product name value doesn't match");
         response.close();
-
         target = client.target(generateURL("/products"));
         response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         target = client.target(generateURL("/products/333"));
         response = target.request().post(Entity.entity(p, "application/foo+json"));
         p = response.readEntity(Jackson2Product.class);
-        Assert.assertEquals("Jackson2Product id value doesn't match", 333, p.getId());
-        Assert.assertEquals("Jackson2Product name value doesn't match", "Iphone", p.getName());
+        Assertions.assertEquals(333, p.getId(), "Jackson2Product id value doesn't match");
+        Assertions.assertEquals("Iphone", p.getName(), "Jackson2Product name value doesn't match");
         response.close();
-
     }
 
     /**
@@ -282,12 +286,13 @@ public class Jackson2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Jackson Proxy")
     public void testJacksonProxy() throws Exception {
         Jackson2Proxy proxy = client.target(generateURL("")).proxy(Jackson2Proxy.class);
         Jackson2Product p = new Jackson2Product(1, "Stuff");
         p = proxy.post(1, p);
-        Assert.assertEquals("Jackson2Product id value doesn't match", 1, p.getId());
-        Assert.assertEquals("Jackson2Product name value doesn't match", "Stuff", p.getName());
+        Assertions.assertEquals(1, p.getId(), "Jackson2Product id value doesn't match");
+        Assertions.assertEquals("Stuff", p.getName(), "Jackson2Product name value doesn't match");
     }
 
     /**
@@ -299,20 +304,19 @@ public class Jackson2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Jackson JAXB")
     public void testJacksonJAXB() throws Exception {
         {
             WebTarget target = client.target(generateURL("/jaxb"));
             String response = target.request().get(String.class);
             logger.info(response);
-            Assert.assertTrue("The response doesn't contain the renamed attribute", response.contains("attr_1"));
+            Assertions.assertTrue(response.contains("attr_1"), "The response doesn't contain the renamed attribute");
         }
-
         {
             WebTarget target = client.target(generateURL("/jaxb/json"));
             String response = target.request().get(String.class);
             logger.info(response);
-            Assert.assertTrue("The response doesn't contain the renamed attribute", response.contains("attr_1"));
+            Assertions.assertTrue(response.contains("attr_1"), "The response doesn't contain the renamed attribute");
         }
-
     }
 }

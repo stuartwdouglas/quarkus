@@ -17,10 +17,11 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -38,9 +39,11 @@ import io.quarkus.rest.test.xxe.resource.SecureProcessingResource;
  *                    RestEasy is vulnerable to XML Entity Denial of Service XXE is disabled.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Secure Processing 2 Test")
 public class SecureProcessing2Test {
 
     protected final Logger logger = Logger.getLogger(SecureProcessing2Test.class.getName());
+
     static QuarkusRestClient client;
 
     private static final String URL_PREFIX = "RESTEASY-1103-";
@@ -57,84 +60,65 @@ public class SecureProcessing2Test {
         bigAttributeDoc = sb.toString();
     }
 
-    String bigElementDoctype = "<!DOCTYPE foodocument [" +
-            "<!ENTITY foo 'foo'>" +
-            "<!ENTITY foo1 '&foo;&foo;&foo;&foo;&foo;&foo;&foo;&foo;&foo;&foo;'>" +
-            "<!ENTITY foo2 '&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;'>" +
-            "<!ENTITY foo3 '&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;'>" +
-            "<!ENTITY foo4 '&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;'>" +
-            "<!ENTITY foo5 '&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;'>" +
-            "<!ENTITY foo6 '&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;'>" +
-            "]>";
+    String bigElementDoctype = "<!DOCTYPE foodocument [" + "<!ENTITY foo 'foo'>"
+            + "<!ENTITY foo1 '&foo;&foo;&foo;&foo;&foo;&foo;&foo;&foo;&foo;&foo;'>"
+            + "<!ENTITY foo2 '&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;&foo1;'>"
+            + "<!ENTITY foo3 '&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;&foo2;'>"
+            + "<!ENTITY foo4 '&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;&foo3;'>"
+            + "<!ENTITY foo5 '&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;&foo4;'>"
+            + "<!ENTITY foo6 '&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;&foo5;'>" + "]>";
 
     String bigXmlRootElement = bigElementDoctype
             + "<secureProcessingFavoriteMovieXmlRootElement><title>&foo6;</title></secureProcessingFavoriteMovieXmlRootElement>";
+
     String bigXmlType = bigElementDoctype + "<favoriteMovie><title>&foo6;</title></favoriteMovie>";
+
     String bigJAXBElement = bigElementDoctype + "<favoriteMovieXmlType><title>&foo6;</title></favoriteMovieXmlType>";
 
-    String bigCollection = bigElementDoctype +
-            "<collection>" +
-            "<secureProcessingFavoriteMovieXmlRootElement><title>&foo6;</title></secureProcessingFavoriteMovieXmlRootElement>" +
-            "<secureProcessingFavoriteMovieXmlRootElement><title>&foo6;</title></secureProcessingFavoriteMovieXmlRootElement>" +
-            "</collection>";
+    String bigCollection = bigElementDoctype + "<collection>"
+            + "<secureProcessingFavoriteMovieXmlRootElement><title>&foo6;</title></secureProcessingFavoriteMovieXmlRootElement>"
+            + "<secureProcessingFavoriteMovieXmlRootElement><title>&foo6;</title></secureProcessingFavoriteMovieXmlRootElement>"
+            + "</collection>";
 
-    String bigMap = bigElementDoctype +
-            "<map>" +
-            "<entry key=\"key1\">" +
-            "<secureProcessingFavoriteMovieXmlRootElement><title>&foo6;</title></secureProcessingFavoriteMovieXmlRootElement>" +
-            "</entry>" +
-            "<entry key=\"key2\">" +
-            "<secureProcessingFavoriteMovieXmlRootElement><title>&foo6;</title></secureProcessingFavoriteMovieXmlRootElement>" +
-            "</entry>" +
-            "</map>";
+    String bigMap = bigElementDoctype + "<map>" + "<entry key=\"key1\">"
+            + "<secureProcessingFavoriteMovieXmlRootElement><title>&foo6;</title></secureProcessingFavoriteMovieXmlRootElement>"
+            + "</entry>" + "<entry key=\"key2\">"
+            + "<secureProcessingFavoriteMovieXmlRootElement><title>&foo6;</title></secureProcessingFavoriteMovieXmlRootElement>"
+            + "</entry>" + "</map>";
 
     File file = new File("src/test/resources/org/jboss/resteasy/test/xxe/SecureProcessing_external.dtd");
+
     String secureProcessing_externalDtd = file.getAbsolutePath();
+
     String bar = "<!DOCTYPE secureProcessingBar SYSTEM \"" + secureProcessing_externalDtd
             + "\"><secureProcessingBar><s>junk</s></secureProcessingBar>";
+
     File file2 = new File("src/test/resources/org/jboss/resteasy/test/xxe/SecureProcessiongTestpasswd");
+
     String filename = file2.getAbsolutePath();
-    String externalXmlRootElement = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + filename + "\">\r" +
-            "]>\r" +
-            "<secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>";
 
-    String externalXmlType = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + filename + "\">\r" +
-            "]>\r" +
-            "<favoriteMovie><title>&xxe;</title></favoriteMovie>";
+    String externalXmlRootElement = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \"" + filename
+            + "\">\r" + "]>\r"
+            + "<secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>";
 
-    String externalJAXBElement = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + filename + "\">\r" +
-            "]>\r" +
-            "<favoriteMovieXmlType><title>&xxe;</title></favoriteMovieXmlType>";
+    String externalXmlType = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \"" + filename + "\">\r"
+            + "]>\r" + "<favoriteMovie><title>&xxe;</title></favoriteMovie>";
 
-    String externalCollection = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + filename + "\">\r" +
-            "]>\r" +
-            "<collection>" +
-            "  <secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>"
-            +
-            "  <secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>"
-            +
-            "</collection>";
+    String externalJAXBElement = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \"" + filename
+            + "\">\r" + "]>\r" + "<favoriteMovieXmlType><title>&xxe;</title></favoriteMovieXmlType>";
 
-    String externalMap = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + filename + "\">\r" +
-            "]>\r" +
-            "<map>" +
-            "<entry key=\"american\">" +
-            "<secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>" +
-            "</entry>" +
-            "<entry key=\"french\">" +
-            "<secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>" +
-            "</entry>" +
-            "</map>";
+    String externalCollection = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \"" + filename + "\">\r"
+            + "]>\r" + "<collection>"
+            + "  <secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>"
+            + "  <secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>"
+            + "</collection>";
+
+    String externalMap = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \"" + filename + "\">\r"
+            + "]>\r" + "<map>" + "<entry key=\"american\">"
+            + "<secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>"
+            + "</entry>" + "<entry key=\"french\">"
+            + "<secureProcessingFavoriteMovieXmlRootElement><title>&xxe;</title></secureProcessingFavoriteMovieXmlRootElement>"
+            + "</entry>" + "</map>";
 
     @Deployment(name = "ddd", order = 1)
     public static Archive<?> createTestArchive_ddd() {
@@ -206,18 +190,18 @@ public class SecureProcessing2Test {
         war.addClasses(SecureProcessingBar.class, SecureProcessingFavoriteMovie.class,
                 SecureProcessingFavoriteMovieXmlRootElement.class);
         war.addClasses(SecureProcessingFavoriteMovieXmlType.class, ObjectFactory.class);
-        //        war.addAsWebInfResource(SecureProcessing2Test.class.getPackage(), "SecureProcessing_external.dtd", "external.dtd");
-        //        war.addAsWebInfResource(SecureProcessing2Test.class.getPackage(), "SecureProcessing_web_" + webXmlExt + ".xml",
-        //                "web.xml");
+        // war.addAsWebInfResource(SecureProcessing2Test.class.getPackage(), "SecureProcessing_external.dtd", "external.dtd");
+        // war.addAsWebInfResource(SecureProcessing2Test.class.getPackage(), "SecureProcessing_web_" + webXmlExt + ".xml",
+        // "web.xml");
         return TestUtil.finishContainerPrepare(war, null, SecureProcessingResource.class);
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -229,6 +213,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Default DT Ds Default Expansion Default")
     public void testSecurityDefaultDTDsDefaultExpansionDefault() throws Exception {
         doTestSkipFailsFailsSkip("ddd");
     }
@@ -240,6 +225,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Default DT Ds Default Expansion False")
     public void testSecurityDefaultDTDsDefaultExpansionFalse() throws Exception {
         doTestSkipFailsFailsSkip("ddf");
     }
@@ -251,6 +237,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Default DT Ds Default Expansion True")
     public void testSecurityDefaultDTDsDefaultExpansionTrue() throws Exception {
         doTestSkipFailsFailsSkip("ddt");
     }
@@ -262,6 +249,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Default DT Ds False Expansion Default")
     public void testSecurityDefaultDTDsFalseExpansionDefault() throws Exception {
         doTestFailsFailsPassesFails("dfd");
     }
@@ -273,6 +261,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Default DT Ds False Expansion False")
     public void testSecurityDefaultDTDsFalseExpansionFalse() throws Exception {
         doTestFailsFailsPassesFails("dff");
     }
@@ -284,6 +273,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Default DT Ds False Expansion True")
     public void testSecurityDefaultDTDsFalseExpansionTrue() throws Exception {
         doTestFailsFailsPassesPasses("dft");
     }
@@ -295,6 +285,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Default DT Ds True Expansion Default")
     public void testSecurityDefaultDTDsTrueExpansionDefault() throws Exception {
         doTestSkipFailsFailsSkip("dtd");
     }
@@ -306,6 +297,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Default DT Ds True Expansion False")
     public void testSecurityDefaultDTDsTrueExpansionFalse() throws Exception {
         doTestSkipFailsFailsSkip("dtf");
     }
@@ -317,6 +309,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security Default DT Ds True Expansion True")
     public void testSecurityDefaultDTDsTrueExpansionTrue() throws Exception {
         doTestSkipFailsFailsSkip("dtt");
     }
@@ -328,6 +321,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security False DT Ds Default Expansion Default")
     public void testSecurityFalseDTDsDefaultExpansionDefault() throws Exception {
         doTestSkipPassesFailsSkip("fdd");
     }
@@ -339,6 +333,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security False DT Ds Default Expansion False")
     public void testSecurityFalseDTDsDefaultExpansionFalse() throws Exception {
         doTestSkipPassesFailsSkip("fdf");
     }
@@ -350,6 +345,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security False DT Ds Default Expansion True")
     public void testSecurityFalseDTDsDefaultExpansionTrue() throws Exception {
         doTestSkipPassesFailsSkip("fdt");
     }
@@ -361,6 +357,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Security False DT Ds False Expansion Default")
     public void testSecurityFalseDTDsFalseExpansionDefault() throws Exception {
         doTestPassesPassesPassesFails("ffd");
     }
@@ -372,6 +369,7 @@ public class SecureProcessing2Test {
      * @tpSince RESTEasy 3.1.0
      */
     @Test
+    @DisplayName("Test Security Default DT Ds True Expansion True With Apache Link Message")
     public void testSecurityDefaultDTDsTrueExpansionTrueWithApacheLinkMessage() throws Exception {
         doTestSkipFailsFailsSkipWithApacheLinkMessage("dtt");
     }
@@ -427,7 +425,7 @@ public class SecureProcessing2Test {
             logger.info("Request body: " + bigXmlRootElement);
             Response response = client.target(generateURL("/entityExpansion/xmlRootElement/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigXmlRootElement, "application/xml"));
-            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("doEntityExpansionFails() result: " + entity);
             Assert.assertThat("Wrong type of exception", entity, containsString("javax.xml.bind.UnmarshalException"));
@@ -435,7 +433,7 @@ public class SecureProcessing2Test {
         {
             Response response = client.target(generateURL("/entityExpansion/xmlType/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigXmlType, "application/xml"));
-            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("doEntityExpansionFails() result: " + entity);
             Assert.assertThat("Wrong type of exception", entity, containsString("javax.xml.bind.UnmarshalException"));
@@ -443,7 +441,7 @@ public class SecureProcessing2Test {
         {
             Response response = client.target(generateURL("/entityExpansion/JAXBElement/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigJAXBElement, "application/xml"));
-            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("doEntityExpansionFails() result: " + entity);
             Assert.assertThat("Wrong type of exception", entity, containsString("javax.xml.bind.UnmarshalException"));
@@ -451,7 +449,7 @@ public class SecureProcessing2Test {
         {
             Response response = client.target(generateURL("/entityExpansion/collection/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigCollection, "application/xml"));
-            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("doEntityExpansionFails() result: " + entity);
             Assert.assertThat("Wrong type of exception", entity, containsString("javax.xml.bind.UnmarshalException"));
@@ -459,7 +457,7 @@ public class SecureProcessing2Test {
         {
             Response response = client.target(generateURL("/entityExpansion/map/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigMap, "application/xml"));
-            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("doEntityExpansionFails() result: " + entity);
             Assert.assertThat("Wrong type of exception", entity, containsString("javax.xml.bind.UnmarshalException"));
@@ -472,47 +470,47 @@ public class SecureProcessing2Test {
             logger.info("Request body: " + bigXmlRootElement);
             Response response = client.target(generateURL("/entityExpansion/xmlRootElement/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigXmlRootElement, "application/xml"));
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals("Wrong number of received \"foo\" in text", 1000000, countFoos(entity));
+            Assertions.assertEquals(1000000, countFoos(entity), "Wrong number of received \"foo\" in text");
         }
         {
             Response response = client.target(generateURL("/entityExpansion/xmlType/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigXmlType, "application/xml"));
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals("Wrong number of received \"foo\" in text", 1000000, countFoos(entity));
+            Assertions.assertEquals(1000000, countFoos(entity), "Wrong number of received \"foo\" in text");
         }
         {
             Response response = client.target(generateURL("/entityExpansion/JAXBElement/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigJAXBElement, "application/xml"));
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals("Wrong number of received \"foo\" in text", 1000000, countFoos(entity));
+            Assertions.assertEquals(1000000, countFoos(entity), "Wrong number of received \"foo\" in text");
         }
         {
             Response response = client.target(generateURL("/entityExpansion/collection/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigCollection, "application/xml"));
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals("Wrong number of received \"foo\" in text", 2000000, countFoos(entity));
+            Assertions.assertEquals(2000000, countFoos(entity), "Wrong number of received \"foo\" in text");
         }
         {
             Response response = client.target(generateURL("/entityExpansion/map/", URL_PREFIX + ext)).request()
                     .post(Entity.entity(bigMap, "application/xml"));
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals("Wrong number of received \"foo\" in text", 2000000, countFoos(entity));
+            Assertions.assertEquals(2000000, countFoos(entity), "Wrong number of received \"foo\" in text");
         }
     }
 
@@ -532,7 +530,7 @@ public class SecureProcessing2Test {
         logger.info("doMaxAttributesPasses() status: " + response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("doMaxAttributesPasses() result: " + entity);
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
     }
 
     void doDTDFails(String ext) throws Exception {
@@ -542,7 +540,7 @@ public class SecureProcessing2Test {
         logger.info("status: " + response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("doDTDFails(): result: " + entity);
-        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Assert.assertThat("Wrong exception in response", entity, containsString("javax.xml.bind.UnmarshalException"));
         Assert.assertThat("Wrong content of response", entity, containsString("DOCTYPE"));
         Assert.assertThat("Wrong content of response", entity, containsString("true"));
@@ -555,7 +553,7 @@ public class SecureProcessing2Test {
         logger.info("status: " + response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("doDTDFails(): result: " + entity);
-        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         Assert.assertThat("Wrong exception in response", entity, containsString("javax.xml.bind.UnmarshalException"));
         Assert.assertThat("Wrong content of response", entity, containsString("DOCTYPE"));
         Assert.assertThat("Wrong content of response", entity,
@@ -569,7 +567,7 @@ public class SecureProcessing2Test {
                 .post(Entity.entity(bar, "application/xml"));
         String entity = response.readEntity(String.class);
         logger.info("doDTDPasses() result: " + entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Assert.assertThat("Wrong content of response", entity, containsString("junk"));
     }
 
@@ -580,7 +578,7 @@ public class SecureProcessing2Test {
                     .post(Entity.entity(externalXmlRootElement, "application/xml"));
             String entity = response.readEntity(String.class);
             logger.info("doExternalEntityExpansionFails() result: " + entity);
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Wrong content of response", entity, isEmptyString());
         }
         {
@@ -589,7 +587,7 @@ public class SecureProcessing2Test {
             logger.info("status: " + response.getStatus());
             String entity = response.readEntity(String.class);
             logger.info("doExternalEntityExpansionFails() result: " + entity);
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Wrong content of response", entity, isEmptyString());
         }
         {
@@ -597,7 +595,7 @@ public class SecureProcessing2Test {
                     .post(Entity.entity(externalJAXBElement, "application/xml"));
             String entity = response.readEntity(String.class);
             logger.info("doExternalEntityExpansionFails() result: " + entity);
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Wrong content of response", entity, isEmptyString());
         }
         {
@@ -605,7 +603,7 @@ public class SecureProcessing2Test {
                     .post(Entity.entity(externalCollection, "application/xml"));
             String entity = response.readEntity(String.class);
             logger.info("doExternalEntityExpansionFails() result: " + entity);
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Wrong content of response", entity, isEmptyString());
         }
         {
@@ -613,7 +611,7 @@ public class SecureProcessing2Test {
                     .post(Entity.entity(externalMap, "application/xml"));
             String entity = response.readEntity(String.class);
             logger.info("doExternalEntityExpansionFails() result: " + entity);
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Wrong content of response", entity, isEmptyString());
         }
     }
@@ -627,7 +625,7 @@ public class SecureProcessing2Test {
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doExternalEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Content of response should contain password", entity, is("xx:xx:xx:xx:xx:xx:xx"));
         }
         {
@@ -636,7 +634,7 @@ public class SecureProcessing2Test {
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doExternalEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Content of response should contain password", entity, is("xx:xx:xx:xx:xx:xx:xx"));
         }
         {
@@ -645,7 +643,7 @@ public class SecureProcessing2Test {
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doExternalEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Content of response should contain password", entity, is("xx:xx:xx:xx:xx:xx:xx"));
         }
         {
@@ -654,7 +652,7 @@ public class SecureProcessing2Test {
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doExternalEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Content of response should contain password twice", entity,
                     is("xx:xx:xx:xx:xx:xx:xxxx:xx:xx:xx:xx:xx:xx"));
         }
@@ -664,7 +662,7 @@ public class SecureProcessing2Test {
             String entity = response.readEntity(String.class);
             int len = Math.min(entity.length(), 30);
             logger.info("doExternalEntityExpansionPasses() result: " + entity.substring(0, len) + "...");
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Content of response should contain password twice", entity,
                     is("xx:xx:xx:xx:xx:xx:xxxx:xx:xx:xx:xx:xx:xx"));
         }
@@ -676,7 +674,6 @@ public class SecureProcessing2Test {
     private int countFoos(String s) {
         int count = 0;
         int pos = 0;
-
         while (pos >= 0) {
             pos = s.indexOf("foo", pos);
             if (pos >= 0) {

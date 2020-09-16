@@ -20,10 +20,11 @@ import org.jboss.resteasy.plugins.stats.SubresourceLocator;
 import org.jboss.resteasy.plugins.stats.TraceResourceMethod;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -38,34 +39,32 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Stats Test")
 public class StatsTest {
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(StatsTest.class);
-                    return TestUtil.finishContainerPrepare(war, null, StatsResource.class, RegistryStatsResource.class,
-                            ResourceMethodEntry.class, GetResourceMethod.class, PutResourceMethod.class,
-                            DeleteResourceMethod.class,
-                            PostResourceMethod.class, OptionsResourceMethod.class, HeadResourceMethod.class,
-                            TraceResourceMethod.class,
-                            RegistryData.class, RegistryEntry.class, SubresourceLocator.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(StatsTest.class);
+            return TestUtil.finishContainerPrepare(war, null, StatsResource.class, RegistryStatsResource.class,
+                    ResourceMethodEntry.class, GetResourceMethod.class, PutResourceMethod.class, DeleteResourceMethod.class,
+                    PostResourceMethod.class, OptionsResourceMethod.class, HeadResourceMethod.class, TraceResourceMethod.class,
+                    RegistryData.class, RegistryEntry.class, SubresourceLocator.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -80,58 +79,61 @@ public class StatsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Registry Stats")
     public void testRegistryStats() throws Exception {
         StatsProxy stats = client.target(generateURL("/")).proxy(StatsProxy.class);
-
         RegistryData data = stats.get();
-        Assert.assertEquals("The number of resources doesn't match", 4, data.getEntries().size());
+        Assertions.assertEquals(4, data.getEntries().size(), "The number of resources doesn't match");
         boolean found = false;
         for (RegistryEntry entry : data.getEntries()) {
             if (entry.getUriTemplate().equals("/entry/{foo:.*}")) {
-                Assert.assertEquals("Some method for resource \"" + entry.getUriTemplate() + "\" is missing ", 2,
+                Assertions.assertEquals("Some method for resource \"" + entry.getUriTemplate() + "\" is missing ", 2,
                         entry.getMethods().size());
                 List<Class> prepareRequiredTypes = prepareRequiredTypes(PostResourceMethod.class, PutResourceMethod.class);
-                Assert.assertTrue("Unexpected method type", testMethodTypes(entry.getMethods().get(0), prepareRequiredTypes));
-                Assert.assertTrue("Unexpected method type", testMethodTypes(entry.getMethods().get(1), prepareRequiredTypes));
+                Assertions.assertTrue(testMethodTypes(entry.getMethods().get(0), prepareRequiredTypes),
+                        "Unexpected method type");
+                Assertions.assertTrue(testMethodTypes(entry.getMethods().get(1), prepareRequiredTypes),
+                        "Unexpected method type");
                 found = true;
                 break;
             }
         }
-        Assert.assertTrue("Resource not found", found);
+        Assertions.assertTrue(found, "Resource not found");
         found = false;
         for (RegistryEntry entry : data.getEntries()) {
             if (entry.getUriTemplate().equals("/resource")) {
-                Assert.assertEquals("Some method for resource \"" + entry.getUriTemplate() + "\" is missing ", 2,
+                Assertions.assertEquals("Some method for resource \"" + entry.getUriTemplate() + "\" is missing ", 2,
                         entry.getMethods().size());
                 List<Class> prepareRequiredTypes = prepareRequiredTypes(HeadResourceMethod.class, DeleteResourceMethod.class);
-                Assert.assertTrue("Unexpected method type", testMethodTypes(entry.getMethods().get(0), prepareRequiredTypes));
-                Assert.assertTrue("Unexpected method type", testMethodTypes(entry.getMethods().get(1), prepareRequiredTypes));
+                Assertions.assertTrue(testMethodTypes(entry.getMethods().get(0), prepareRequiredTypes),
+                        "Unexpected method type");
+                Assertions.assertTrue(testMethodTypes(entry.getMethods().get(1), prepareRequiredTypes),
+                        "Unexpected method type");
                 found = true;
                 break;
             }
         }
-        Assert.assertTrue("Resource not found", found);
+        Assertions.assertTrue(found, "Resource not found");
         found = false;
         for (RegistryEntry entry : data.getEntries()) {
             if (entry.getUriTemplate().equals("/locator")) {
-                Assert.assertNotNull(entry.getLocator());
+                Assertions.assertNotNull(entry.getLocator());
                 found = true;
                 break;
             }
         }
-        Assert.assertTrue("Resource not found", found);
+        Assertions.assertTrue(found, "Resource not found");
         found = false;
         for (RegistryEntry entry : data.getEntries()) {
             if (entry.getUriTemplate().equals("/resteasy/registry")) {
-                Assert.assertEquals("Some method for resource \"" + entry.getUriTemplate() + "\" is missing ", 1,
+                Assertions.assertEquals("Some method for resource \"" + entry.getUriTemplate() + "\" is missing ", 1,
                         entry.getMethods().size());
-                Assert.assertTrue("Unexpected method type", entry.getMethods().get(0) instanceof GetResourceMethod);
+                Assertions.assertTrue(entry.getMethods().get(0) instanceof GetResourceMethod, "Unexpected method type");
                 found = true;
                 break;
             }
         }
-        Assert.assertTrue("Resource not found", found);
-
+        Assertions.assertTrue(found, "Resource not found");
     }
 
     private boolean testMethodTypes(ResourceMethodEntry entry, List<Class> types) {

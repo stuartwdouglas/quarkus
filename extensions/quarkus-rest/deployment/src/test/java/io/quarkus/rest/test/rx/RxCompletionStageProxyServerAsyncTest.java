@@ -11,10 +11,10 @@ import org.jboss.resteasy.client.jaxrs.internal.CompletionStageRxInvokerProvider
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -76,13 +76,13 @@ public class RxCompletionStageProxyServerAsyncTest {
     }
 
     //////////////////////////////////////////////////////////////////////////////
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
         proxy = client.target(generateURL("/")).proxy(SimpleResource.class);
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }

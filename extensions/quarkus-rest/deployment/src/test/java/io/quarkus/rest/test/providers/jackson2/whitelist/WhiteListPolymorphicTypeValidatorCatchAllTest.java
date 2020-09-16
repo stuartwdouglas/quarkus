@@ -20,10 +20,11 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.jackson.WhiteListPolymorphicTypeValidatorBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +43,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.5.0
  */
+@DisplayName("White List Polymorphic Type Validator Catch All Test")
 public class WhiteListPolymorphicTypeValidatorCatchAllTest {
 
     protected static final Logger logger = Logger.getLogger(WhiteListPolymorphicTypeValidatorCatchAllTest.class.getName());
@@ -49,27 +51,26 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(WhiteListPolymorphicTypeValidatorCatchAllTest.class);
-                    Map<String, String> contextParam = new HashMap<>();
-                    contextParam.put("resteasy.jackson.deserialization.whitelist.allowIfSubType.prefix", "*");
-                    return TestUtil.finishContainerPrepare(war, contextParam, JaxRsActivator.class, TestRESTService.class,
-                            TestPolymorphicType.class, AbstractVehicle.class, Automobile.class, Aircraft.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(WhiteListPolymorphicTypeValidatorCatchAllTest.class);
+            Map<String, String> contextParam = new HashMap<>();
+            contextParam.put("resteasy.jackson.deserialization.whitelist.allowIfSubType.prefix", "*");
+            return TestUtil.finishContainerPrepare(war, contextParam, JaxRsActivator.class, TestRESTService.class,
+                    TestPolymorphicType.class, AbstractVehicle.class, Automobile.class, Aircraft.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -85,21 +86,23 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
      * @tpSince RESTEasy 4.5.0
      */
     @Test
+    @DisplayName("Test Automobile")
     public void testAutomobile() throws Exception {
         String response = sendPost(new TestPolymorphicType(new Automobile()));
         logger.info("response: " + response);
-        Assert.assertNotNull(response);
-        Assert.assertTrue(response.contains("Response code: " + Status.CREATED.getStatusCode()));
-        Assert.assertTrue(response.contains("Created"));
+        Assertions.assertNotNull(response);
+        Assertions.assertTrue(response.contains("Response code: " + Status.CREATED.getStatusCode()));
+        Assertions.assertTrue(response.contains("Created"));
     }
 
     @Test
+    @DisplayName("Test Aircraft")
     public void testAircraft() throws Exception {
         String response = sendPost(new TestPolymorphicType(new Aircraft()));
         logger.info("response: " + response);
-        Assert.assertNotNull(response);
-        Assert.assertTrue(response.contains("Response code: " + Status.CREATED.getStatusCode()));
-        Assert.assertTrue(response.contains("Created"));
+        Assertions.assertNotNull(response);
+        Assertions.assertTrue(response.contains("Response code: " + Status.CREATED.getStatusCode()));
+        Assertions.assertTrue(response.contains("Created"));
     }
 
     private String createJSONString(TestPolymorphicType t) throws Exception {
@@ -108,29 +111,24 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
     }
 
     private String sendPost(TestPolymorphicType t) throws Exception {
-
         logger.info("Creating JSON test data");
         String jsonData = createJSONString(t);
-
         logger.info("jsonData: " + jsonData);
-
         String urlString = generateURL("/test/post");
         logger.info("POST data to : " + urlString);
         URL url = new URL(urlString);
         URLConnection con = url.openConnection();
         HttpURLConnection http = (HttpURLConnection) con;
-        http.setRequestMethod("POST"); // PUT is another valid option
+        // PUT is another valid option
+        http.setRequestMethod("POST");
         http.setDoOutput(true);
-
         byte[] out = jsonData.getBytes(StandardCharsets.UTF_8);
-
         http.setFixedLengthStreamingMode(out.length);
         http.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         http.connect();
         try (OutputStream os = http.getOutputStream()) {
             os.write(out);
         }
-
         InputStream is = null;
         if (http.getResponseCode() != 200) {
             is = http.getErrorStream();
@@ -138,15 +136,11 @@ public class WhiteListPolymorphicTypeValidatorCatchAllTest {
             /* error from server */
             is = http.getInputStream();
         }
-
         String result = is == null ? ""
                 : new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
         String response = String.format("Response code: %s response message: %s  %s", http.getResponseCode(),
                 http.getResponseMessage(), result);
-
         logger.info("Response: " + response);
-
         return response;
     }
-
 }

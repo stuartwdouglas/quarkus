@@ -15,10 +15,11 @@ import org.hamcrest.CoreMatchers;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.sse.resource.SseSmokeMessageBodyWriter;
@@ -28,29 +29,31 @@ import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.test.QuarkusUnitTest;
 
+@DisplayName("Sse Smoke Test")
 public class SseSmokeTest {
+
     private static final Logger logger = Logger.getLogger(SseSmokeTest.class);
+
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, SseSmokeMessageBodyWriter.class, SseSmokeUser.class,
-                            SseSmokeResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, SseSmokeMessageBodyWriter.class, SseSmokeUser.class,
+                    SseSmokeResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = ClientBuilder.newBuilder().build();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -65,11 +68,11 @@ public class SseSmokeTest {
      * @tpSince RESTEasy 3.5.0
      */
     @Test
+    @DisplayName("Test Smoke")
     public void testSmoke() throws Exception {
         final List<String> results = new ArrayList<String>();
         WebTarget target = client.target(generateURL("/sse/events"));
         SseEventSource msgEventSource = SseEventSource.target(target).build();
-
         try (SseEventSource eventSource = msgEventSource) {
             CountDownLatch countDownLatch = new CountDownLatch(1);
             eventSource.register(event -> {
@@ -80,9 +83,9 @@ public class SseSmokeTest {
             });
             eventSource.open();
             boolean result = countDownLatch.await(30, TimeUnit.SECONDS);
-            Assert.assertTrue("Waiting for event to be delivered has timed out.", result);
+            Assertions.assertTrue(result, "Waiting for event to be delivered has timed out.");
         }
-        Assert.assertEquals("One message was expected.", 1, results.size());
+        Assertions.assertEquals(1, results.size(), "One message was expected.");
         Assert.assertThat("The message doesn't have expected content.", "Zeytin;zeytin@resteasy.org",
                 CoreMatchers.is(CoreMatchers.equalTo(results.get(0))));
     }

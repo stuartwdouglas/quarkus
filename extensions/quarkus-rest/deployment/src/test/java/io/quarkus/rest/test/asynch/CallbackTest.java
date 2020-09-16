@@ -11,10 +11,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
@@ -37,41 +38,36 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for async exception handling
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Callback Test")
 public class CallbackTest {
+
     public static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void initClient() {
         client = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).connectionPoolSize(10).build();
     }
 
-    @AfterClass
+    @AfterAll
     public static void closeClient() {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(CallbackResource.class,
-                            CallbackExceptionThrowingStringBean.class,
-                            CallbackTimeoutHandler.class,
-                            CallbackResourceBase.class,
-                            CallbackSecondSettingCompletionCallback.class,
-                            CallbackSettingCompletionCallback.class,
-                            CallbackStringBean.class,
-                            CallbackStringBeanEntityProvider.class,
-                            JaxrsAsyncServletAsyncResponseBlockingQueue.class);
-                    //                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "CallbackTestWeb.xml", "web.xml");
-                    return TestUtil.finishContainerPrepare(war, null, CallbackResource.class,
-                            CallbackStringBeanEntityProvider.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(CallbackResource.class, CallbackExceptionThrowingStringBean.class, CallbackTimeoutHandler.class,
+                    CallbackResourceBase.class, CallbackSecondSettingCompletionCallback.class,
+                    CallbackSettingCompletionCallback.class, CallbackStringBean.class, CallbackStringBeanEntityProvider.class,
+                    JaxrsAsyncServletAsyncResponseBlockingQueue.class);
+            // war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "CallbackTestWeb.xml", "web.xml");
+            return TestUtil.finishContainerPrepare(war, null, CallbackResource.class, CallbackStringBeanEntityProvider.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, CallbackTest.class.getSimpleName());
@@ -79,22 +75,21 @@ public class CallbackTest {
 
     protected void invokeClear() {
         Response response = client.target(generateURL("/resource/clear")).request().get();
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
     protected void invokeReset() {
         Response response = client.target(generateURL("/resource/reset")).request().get();
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
     protected void assertString(Future<Response> future, String check) throws Exception {
         Response response = future.get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
-        Assert.assertEquals(entity, check);
-
+        Assertions.assertEquals(entity, check);
     }
 
     /**
@@ -102,22 +97,19 @@ public class CallbackTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Argument Contains Exception In Two Callback Classes Test")
     public void argumentContainsExceptionInTwoCallbackClassesTest() throws Exception {
         invokeClear();
         invokeReset();
         Future<Response> suspend = client.target(generateURL("/resource/suspend")).request().async().get();
-
         Future<Response> register = client.target(generateURL("/resource/registerclasses?stage=0")).request().async().get();
         assertString(register, CallbackResourceBase.FALSE);
-
         Future<Response> exception = client.target(generateURL("/resource/exception?stage=1")).request().async().get();
         Response response = exception.get();
-        Assert.assertEquals("Request return wrong response", CallbackResourceBase.TRUE, response.readEntity(String.class));
-
+        Assertions.assertEquals(CallbackResourceBase.TRUE, response.readEntity(String.class), "Request return wrong response");
         Response suspendResponse = suspend.get();
-        Assert.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        Assertions.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         suspendResponse.close();
-
         Future<Response> error = client.target(generateURL("/resource/error")).request().async().get();
         assertString(error, RuntimeException.class.getName());
         error = client.target(generateURL("/resource/seconderror")).request().async().get();
@@ -129,22 +121,19 @@ public class CallbackTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Argument Contains Exception In Two Callback Instances Test")
     public void argumentContainsExceptionInTwoCallbackInstancesTest() throws Exception {
         invokeClear();
         invokeReset();
         Future<Response> suspend = client.target(generateURL("/resource/suspend")).request().async().get();
-
         Future<Response> register = client.target(generateURL("/resource/registerobjects?stage=0")).request().async().get();
         assertString(register, CallbackResourceBase.FALSE);
-
         Future<Response> exception = client.target(generateURL("/resource/exception?stage=1")).request().async().get();
         Response response = exception.get();
-        Assert.assertEquals("Request return wrong response", CallbackResourceBase.TRUE, response.readEntity(String.class));
-
+        Assertions.assertEquals(CallbackResourceBase.TRUE, response.readEntity(String.class), "Request return wrong response");
         Response suspendResponse = suspend.get();
-        Assert.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        Assertions.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         suspendResponse.close();
-
         Future<Response> error = client.target(generateURL("/resource/error")).request().async().get();
         assertString(error, RuntimeException.class.getName());
         error = client.target(generateURL("/resource/seconderror")).request().async().get();
@@ -156,22 +145,19 @@ public class CallbackTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Argument Contains Exception When Sending Io Exception Test")
     public void argumentContainsExceptionWhenSendingIoExceptionTest() throws Exception {
         invokeClear();
         invokeReset();
         Future<Response> suspend = client.target(generateURL("/resource/suspend")).request().async().get();
-
         Future<Response> register = client.target(generateURL("/resource/register?stage=0")).request().async().get();
         assertString(register, CallbackResourceBase.FALSE);
-
         Future<Response> exception = client.target(generateURL("/resource/resumechecked?stage=1")).request().async().get();
         Response response = exception.get();
-        Assert.assertEquals("Request return wrong response", CallbackResourceBase.TRUE, response.readEntity(String.class));
-
+        Assertions.assertEquals(CallbackResourceBase.TRUE, response.readEntity(String.class), "Request return wrong response");
         Response suspendResponse = suspend.get();
-        Assert.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        Assertions.assertEquals(suspendResponse.getStatusInfo(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         suspendResponse.close();
-
         Future<Response> error = client.target(generateURL("/resource/error")).request().async().get();
         assertString(error, IOException.class.getName());
     }

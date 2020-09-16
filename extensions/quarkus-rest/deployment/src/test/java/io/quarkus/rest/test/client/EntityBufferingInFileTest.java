@@ -21,11 +21,11 @@ import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.extras.creaper.core.online.OnlineManagementClient;
 import org.wildfly.extras.creaper.core.online.operations.Address;
@@ -52,7 +52,7 @@ public class EntityBufferingInFileTest extends ClientTestBase {
     private static Address address = Address.subsystem("undertow").and("server", "default-server").and("http-listener",
             "default");
 
-    @BeforeClass
+    @BeforeAll
     public static void setMaxPostSize() throws Exception {
         OnlineManagementClient client = TestUtil.clientInit();
         Administration admin = new Administration(client);
@@ -67,7 +67,7 @@ public class EntityBufferingInFileTest extends ClientTestBase {
         client.close();
     }
 
-    @AfterClass
+    @AfterAll
     public static void resetToDefault() throws Exception {
         OnlineManagementClient client = TestUtil.clientInit();
         Administration admin = new Administration(client);
@@ -183,7 +183,8 @@ public class EntityBufferingInFileTest extends ClientTestBase {
      * @tpPassCrit Successful response is returned, the entity stream returned is same as original string
      * @tpSince RESTEasy 3.0.16
      */
-    @Ignore("The tests fails on some machines on client side. As this is performance test and performance tests were dropped" +
+    @Disabled("The tests fails on some machines on client side. As this is performance test and performance tests were dropped"
+            +
             "from EAP7 rfe list, this is not priority now.")
     @Test
     public void testGigabytes1() throws Exception {

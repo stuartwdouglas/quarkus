@@ -6,10 +6,11 @@ import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -26,19 +27,20 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test proxy with null part of message with multipart provider
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Null Part Test")
 public class NullPartTest {
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
 
-                    war.addClasses(NullPartBean.class, MyServiceProxy.class);
-                    return TestUtil.finishContainerPrepare(war, null, NullPartService.class);
-                }
-            });
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(NullPartBean.class, MyServiceProxy.class);
+            return TestUtil.finishContainerPrepare(war, null, NullPartService.class);
+        }
+    });
 
     private static QuarkusRestClient client;
 
@@ -46,12 +48,12 @@ public class NullPartTest {
         return PortProviderUtil.generateBaseUrl(NullPartTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -61,12 +63,12 @@ public class NullPartTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test New Client")
     public void testNewClient() throws Exception {
         MyServiceProxy proxy = client.target(generateBaseUrl()).proxy(MyServiceProxy.class);
-
-        NullPartBean bean = proxy.createMyBean(); // should just be ok
-        Assert.assertNotNull(bean);
+        // should just be ok
+        NullPartBean bean = proxy.createMyBean();
+        Assertions.assertNotNull(bean);
         Assert.assertNull(bean.getSomeBinary());
     }
-
 }

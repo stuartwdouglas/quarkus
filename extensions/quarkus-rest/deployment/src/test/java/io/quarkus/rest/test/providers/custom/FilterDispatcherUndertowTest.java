@@ -9,8 +9,9 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.custom.resource.FilterDispatcherForwardServlet;
@@ -25,26 +26,27 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-903
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Filter Dispatcher Undertow Test")
 public class FilterDispatcherUndertowTest {
+
     private static final Logger logger = Logger.getLogger(FilterDispatcherUndertowTest.class.getName());
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(FilterDispatcherForwardServlet.class);
-                    war.addClass(FilterDispatcherServlet.class);
-                    //                    war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifestWeb.xml",
-                    //                            "web.xml");
-                    //                    war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifest.MF",
-                    //                           "MANIFEST.MF");
-                    return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(FilterDispatcherForwardServlet.class);
+            war.addClass(FilterDispatcherServlet.class);
+            // war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifestWeb.xml",
+            // "web.xml");
+            // war.addAsWebInfResource(FilterDispatcherUndertowTest.class.getPackage(), "FilterDispatcherManifest.MF",
+            // "MANIFEST.MF");
+            return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
+        }
+    });
 
     /**
      * @tpTestDetails Server should be able to forward a HttpServletRequest/HttpServletResponse captured
@@ -53,6 +55,7 @@ public class FilterDispatcherUndertowTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Undertow")
     public void testUndertow() throws Exception {
         logger.info("starting testUndertow()");
         URL url = new URL(PortProviderUtil.generateURL("/test", FilterDispatcherUndertowTest.class.getSimpleName()));
@@ -62,7 +65,7 @@ public class FilterDispatcherUndertowTest {
         byte[] b = new byte[16];
         conn.getInputStream().read(b);
         logger.info("Response result: " + new String(b));
-        Assert.assertEquals(Status.OK.getStatusCode(), conn.getResponseCode());
+        Assertions.assertEquals(Status.OK.getStatusCode(), conn.getResponseCode());
         conn.disconnect();
     }
 }

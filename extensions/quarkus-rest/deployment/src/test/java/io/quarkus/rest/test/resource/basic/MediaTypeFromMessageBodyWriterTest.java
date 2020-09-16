@@ -13,10 +13,11 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.custom.resource.CustomProviderPreferenceUser;
@@ -35,11 +36,16 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test that MessageBodyWriters can be consulted for media type
  * @tpSince RESTEasy 3.1.3.Final
  */
+@DisplayName("Media Type From Message Body Writer Test")
 public class MediaTypeFromMessageBodyWriterTest {
 
+    @DisplayName("Target")
     private static class Target {
+
         String path;
+
         String queryName;
+
         String queryValue;
 
         Target(final String path, final String queryName, final String queryValue) {
@@ -50,10 +56,15 @@ public class MediaTypeFromMessageBodyWriterTest {
     }
 
     private static String ACCEPT_CHROME = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+
     private static String ACCEPT_FIREFOX = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+
     private static String ACCEPT_IE11 = "text/html, application/xhtml+xml, */*";
+
     private static Collection<Target> tgts = new ArrayList<Target>();
+
     private static Collection<String> accepts = new ArrayList<String>();
+
     private static Client client;
 
     static {
@@ -71,41 +82,35 @@ public class MediaTypeFromMessageBodyWriterTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null,
-                            MediaTypeFromMessageBodyWriterListAsText.class,
-                            MediaTypeFromMessageBodyWriterListAsXML.class,
-                            MediaTypeFromMessageBodyWriterResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, MediaTypeFromMessageBodyWriterListAsText.class,
+                    MediaTypeFromMessageBodyWriterListAsXML.class, MediaTypeFromMessageBodyWriterResource.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null,
-                            CustomProviderPreferenceUser.class,
-                            MediaTypeFromMessageBodyWriterTextJson.class,
-                            MediaTypeFromMessageBodyWriterResource2.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, CustomProviderPreferenceUser.class,
+                    MediaTypeFromMessageBodyWriterTextJson.class, MediaTypeFromMessageBodyWriterResource2.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -124,6 +129,7 @@ public class MediaTypeFromMessageBodyWriterTest {
      */
     @Test
     @OperateOnDeployment("multiple")
+    @DisplayName("Test")
     public void test() throws Exception {
         WebTarget base = client.target(generateURL(""));
         Response response = null;
@@ -135,9 +141,9 @@ public class MediaTypeFromMessageBodyWriterTest {
                 } else {
                     response = base.path(tgt.path).request().header("Accept", accept).get();
                 }
-                Assert.assertEquals(200, response.getStatus());
+                Assertions.assertEquals(200, response.getStatus());
                 String s = response.getHeaderString("X-COUNT");
-                Assert.assertNotNull(s);
+                Assertions.assertNotNull(s);
                 response.close();
             }
         }
@@ -153,10 +159,11 @@ public class MediaTypeFromMessageBodyWriterTest {
      */
     @Test
     @OperateOnDeployment("single")
+    @DisplayName("Test 2")
     public void test2() throws Exception {
         Response response = client.target(generateURLUserCase("")).request().accept("text/html", "image/jpg", "text/json", "*")
                 .get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("text/json;charset=UTF-8", response.getHeaderString("Content-type"));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.getHeaderString("Content-type"), "text/json;charset=UTF-8");
     }
 }

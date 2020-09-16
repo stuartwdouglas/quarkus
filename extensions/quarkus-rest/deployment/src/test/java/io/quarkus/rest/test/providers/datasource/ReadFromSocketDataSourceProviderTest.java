@@ -18,11 +18,12 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.DataSourceProvider;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -36,29 +37,30 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Read From Socket Data Source Provider Test")
 public class ReadFromSocketDataSourceProviderTest {
 
     protected static final Logger logger = Logger.getLogger(ReadFromSocketDataSourceProviderTest.class.getName());
+
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, ReadFromSocketDataSourceProviderResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ReadFromSocketDataSourceProviderResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -73,11 +75,11 @@ public class ReadFromSocketDataSourceProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Read From Socket Data Source Provider")
     public void testReadFromSocketDataSourceProvider() throws Exception {
         // important - see https://issues.jboss.org/browse/RESTEASY-779
         ConnectionConfig connConfig = ConnectionConfig.custom()
-                .setBufferSize((ReadFromSocketDataSourceProviderResource.KBs - 1) * 1024)
-                .build();
+                .setBufferSize((ReadFromSocketDataSourceProviderResource.KBs - 1) * 1024).build();
         CloseableHttpClient client = HttpClients.custom().setDefaultConnectionConfig(connConfig).build();
         HttpGet httpGet = new HttpGet(generateURL("/"));
         CloseableHttpResponse response = client.execute(httpGet);
@@ -85,7 +87,7 @@ public class ReadFromSocketDataSourceProviderTest {
         try {
             inputStream = response.getEntity().getContent();
             DataSourceProvider.readDataSource(inputStream, MediaType.TEXT_PLAIN_TYPE);
-            Assert.assertEquals("The input stream was not read entirely", 0, findSizeOfRemainingDataInStream(inputStream));
+            Assertions.assertEquals(0, findSizeOfRemainingDataInStream(inputStream), "The input stream was not read entirely");
         } finally {
             IOUtils.closeQuietly(inputStream);
         }
@@ -112,7 +114,7 @@ public class ReadFromSocketDataSourceProviderTest {
         return totalBytesRead;
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         String tmpdir = System.getProperty("java.io.tmpdir");
         File dir = new File(tmpdir);
@@ -122,5 +124,4 @@ public class ReadFromSocketDataSourceProviderTest {
             }
         }
     }
-
 }

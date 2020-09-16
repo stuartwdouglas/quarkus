@@ -9,8 +9,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.asynch.resource.LegacySuspendResource;
@@ -25,19 +26,19 @@ import io.quarkus.test.QuarkusUnitTest;
  *                    Test for org.jboss.resteasy.annotations.Suspend annotation
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Suspend Annotation Test")
 public class SuspendAnnotationTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, LegacySuspendResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, LegacySuspendResource.class);
+        }
+    });
 
     private static String generateURL(String path) {
         return PortProviderUtil.generateURL(path, JaxrsAsyncTest.class.getSimpleName());
@@ -48,13 +49,12 @@ public class SuspendAnnotationTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Positive")
     public void testPositive() throws Exception {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("")).request().get();
-
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong content of response", "hello", response.readEntity(String.class));
-
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("hello", response.readEntity(String.class), "Wrong content of response");
         response.close();
         client.close();
     }
@@ -64,12 +64,11 @@ public class SuspendAnnotationTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Timeout")
     public void testTimeout() throws Exception {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("/timeout")).request().get();
-
-        Assert.assertEquals(Status.SERVICE_UNAVAILABLE.getStatusCode(), response.getStatus());
-
+        Assertions.assertEquals(Status.SERVICE_UNAVAILABLE.getStatusCode(), response.getStatus());
         response.close();
         client.close();
     }

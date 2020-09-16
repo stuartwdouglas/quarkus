@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -27,28 +28,28 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Spec requires that HEAD and OPTIONS are handled in a default manner
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Method Default Test")
 public class MethodDefaultTest {
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, MethodDefaultResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, MethodDefaultResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -64,11 +65,12 @@ public class MethodDefaultTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Head Plain")
     public void testHeadPlain() throws Exception {
         Response response = client.target(generateURL("/GetTest")).request().header("Accept", "text/plain").head();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String header = response.getHeaderString("CTS-HEAD");
-        Assert.assertEquals("Wrong CTS-HEAD header", "text-plain", header);
+        Assertions.assertEquals("text-plain", header, "Wrong CTS-HEAD header");
         response.close();
     }
 
@@ -79,11 +81,12 @@ public class MethodDefaultTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Head Html")
     public void testHeadHtml() throws Exception {
         Response response = client.target(generateURL("/GetTest")).request().header("Accept", "text/html").head();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String header = response.getHeaderString("CTS-HEAD");
-        Assert.assertEquals("Wrong CTS-HEAD header", "text-html", header);
+        Assertions.assertEquals("text-html", header, "Wrong CTS-HEAD header");
         response.close();
     }
 
@@ -94,11 +97,12 @@ public class MethodDefaultTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Head Subresource")
     public void testHeadSubresource() throws Exception {
         Response response = client.target(generateURL("/GetTest/sub")).request().header("Accept", "text/plain").head();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String header = response.getHeaderString("CTS-HEAD");
-        Assert.assertEquals("Wrong CTS-HEAD header", "sub-text-plain", header);
+        Assertions.assertEquals("sub-text-plain", header, "Wrong CTS-HEAD header");
         response.close();
     }
 
@@ -108,22 +112,20 @@ public class MethodDefaultTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Options")
     public void testOptions() throws Exception {
-
         Response response = client.target(generateURL("/GetTest/sub")).request().options();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String allowedHeader = response.getHeaderString("Allow");
-        Assert.assertNotNull("Wrong Allow header", allowedHeader);
+        Assertions.assertNotNull(allowedHeader, "Wrong Allow header");
         String[] allowed = allowedHeader.split(",");
         HashSet<String> set = new HashSet<String>();
         for (String allow : allowed) {
             set.add(allow.trim());
         }
-
-        Assert.assertTrue("Wrong Allow header", set.contains("GET"));
-        Assert.assertTrue("Wrong Allow header", set.contains("OPTIONS"));
-        Assert.assertTrue("Wrong Allow header", set.contains("HEAD"));
+        Assertions.assertTrue(set.contains("GET"), "Wrong Allow header");
+        Assertions.assertTrue(set.contains("OPTIONS"), "Wrong Allow header");
+        Assertions.assertTrue(set.contains("HEAD"), "Wrong Allow header");
         response.close();
     }
-
 }

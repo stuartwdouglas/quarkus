@@ -9,10 +9,10 @@ import javax.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -28,6 +28,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Stream Reset Test")
 public class StreamResetTest {
 
     private final Logger logger = Logger.getLogger(StreamResetTest.class);
@@ -35,25 +36,24 @@ public class StreamResetTest {
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(StreamResetTest.class);
-                    return TestUtil.finishContainerPrepare(war, null, StreamResetPlace.class, StreamResetPerson.class,
-                            StreamResetResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(StreamResetTest.class);
+            return TestUtil.finishContainerPrepare(war, null, StreamResetPlace.class, StreamResetPerson.class,
+                    StreamResetResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
         client = null;
@@ -68,17 +68,15 @@ public class StreamResetTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test JBEAP 2138")
     public void testJBEAP2138() throws Exception {
         WebTarget target = client.target(generateURL("/test"));
         Response response = target.request().get();
-
         response.bufferEntity();
-
         try {
             response.readEntity(StreamResetPlace.class);
         } catch (Exception e) {
         }
-
         response.readEntity(StreamResetPerson.class);
     }
 
@@ -87,22 +85,19 @@ public class StreamResetTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test JBEAP 2138 Without Buffered Entity")
     public void testJBEAP2138WithoutBufferedEntity() throws Exception {
         try {
             WebTarget target = client.target(generateURL("/test"));
             Response response = target.request().get();
-
             try {
                 response.readEntity(StreamResetPlace.class);
             } catch (Exception e) {
             }
-
             response.readEntity(StreamResetPerson.class);
-
             Assert.fail();
         } catch (IllegalStateException e) {
             logger.info("Expected IllegalStateException was thrown");
         }
     }
-
 }

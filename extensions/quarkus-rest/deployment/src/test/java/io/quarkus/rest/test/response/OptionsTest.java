@@ -11,10 +11,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -30,28 +31,28 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-363
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Options Test")
 public class OptionsTest {
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, OptionParamsResource.class, OptionUsersResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, OptionParamsResource.class, OptionUsersResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -65,10 +66,11 @@ public class OptionsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Options")
     public void testOptions() throws Exception {
         WebTarget base = client.target(generateURL("/params/customers/333/phonenumbers"));
         Response response = base.request().options();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -77,45 +79,39 @@ public class OptionsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Method Not Allowed")
     public void testMethodNotAllowed() throws Exception {
         WebTarget base = client.target(generateURL("/params/customers/333/phonenumbers"));
         Response response = base.request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
-
         base = client.target(generateURL("/users"));
         response = base.request().delete();
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
-
         base = client.target(generateURL("/users/53"));
         response = base.request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
-
         base = client.target(generateURL("/users/53/contacts"));
         response = base.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         base = client.target(generateURL("/users/53/contacts"));
         response = base.request().options();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         base = client.target(generateURL("/users/53/contacts"));
         response = base.request().delete();
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
-
         base = client.target(generateURL("/users/53/contacts/carl"));
         response = base.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         base = client.target(generateURL("/users/53/contacts/carl"));
         response = base.request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -124,10 +120,11 @@ public class OptionsTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Allow Header OK")
     public void testAllowHeaderOK() {
         WebTarget base = client.target(generateURL("/users/53/contacts"));
         Response response = base.request().options();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         checkOptions(response, "GET", "POST", "HEAD", "OPTIONS");
         response.close();
     }
@@ -137,24 +134,25 @@ public class OptionsTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Allow Header Method Not Allowed")
     public void testAllowHeaderMethodNotAllowed() {
         WebTarget base = client.target(generateURL("/params/customers/333/phonenumbers"));
         Response response = base.request().post(Entity.text(new String()));
-        Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         checkOptions(response, "GET", "HEAD", "OPTIONS");
         response.close();
     }
 
     private void checkOptions(Response response, String... verbs) {
         String allowed = response.getHeaderString("Allow");
-        Assert.assertNotNull(allowed);
+        Assertions.assertNotNull(allowed);
         HashSet<String> vals = new HashSet<String>();
         for (String v : allowed.split(",")) {
             vals.add(v.trim());
         }
-        Assert.assertEquals(verbs.length, vals.size());
+        Assertions.assertEquals(verbs.length, vals.size());
         for (String verb : verbs) {
-            Assert.assertTrue(vals.contains(verb));
+            Assertions.assertTrue(vals.contains(verb));
         }
     }
 }

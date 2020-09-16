@@ -13,10 +13,11 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -34,32 +35,33 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Check jaxb requests with collection
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Collection Core Test")
 public class CollectionCoreTest {
+
     private static final String WRONG_RESPONSE = "Response contains wrong data";
+
     protected static final Logger logger = Logger.getLogger(CollectionCoreTest.class.getName());
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(CollectionCustomer.class, CollectionNamespacedCustomer.class);
-                    return TestUtil.finishContainerPrepare(war, null, CollectionResource.class,
-                            CollectionNamespacedResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(CollectionCustomer.class, CollectionNamespacedCustomer.class);
+            return TestUtil.finishContainerPrepare(war, null, CollectionResource.class, CollectionNamespacedResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -73,15 +75,16 @@ public class CollectionCoreTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Array")
     public void testArray() throws Exception {
         Invocation.Builder request = client.target(generateURL("/array")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();
         response = request.put(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -90,15 +93,16 @@ public class CollectionCoreTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test List")
     public void testList() throws Exception {
         Invocation.Builder request = client.target(generateURL("/list")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();
         response = request.put(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -107,10 +111,11 @@ public class CollectionCoreTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Response")
     public void testResponse() throws Exception {
         Invocation.Builder request = client.target(generateURL("/list/response")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         logger.info(String.format("Response: %s", response.readEntity(String.class)));
     }
 
@@ -119,15 +124,16 @@ public class CollectionCoreTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Namespaced Array")
     public void testNamespacedArray() throws Exception {
         Invocation.Builder request = client.target(generateURL("/namespaced/array")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();
         response = request.put(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
         Assert.assertThat(WRONG_RESPONSE, str, containsString("http://customer.com"));
     }
@@ -137,15 +143,16 @@ public class CollectionCoreTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Namespaced List")
     public void testNamespacedList() throws Exception {
         Invocation.Builder request = client.target(generateURL("/namespaced/list")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();
         response = request.put(Entity.entity(str, "application/xml"));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
         Assert.assertThat(WRONG_RESPONSE, str, containsString("http://customer.com"));
     }
@@ -155,14 +162,14 @@ public class CollectionCoreTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Namespaced Response")
     public void testNamespacedResponse() throws Exception {
         Invocation.Builder request = client.target(generateURL("/namespaced/list/response")).request();
         Response response = request.get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String str = response.readEntity(String.class);
         logger.info(String.format("Response: %s", str));
         response.close();
         Assert.assertThat(WRONG_RESPONSE, str, containsString("http://customer.com"));
     }
-
 }

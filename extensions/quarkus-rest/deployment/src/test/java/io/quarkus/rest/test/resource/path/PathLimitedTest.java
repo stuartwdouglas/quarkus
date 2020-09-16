@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.path.resource.PathLimitedBasicResource;
@@ -30,31 +31,30 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for limited and unlimited path
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Path Limited Test")
 public class PathLimitedTest {
 
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, PathLimitedUnlimitedOnPathResource.class,
-                            PathLimitedUnlimitedResource.class,
-                            PathLimitedLocatorResource.class, PathLimitedLocatorUriResource.class,
-                            PathLimitedBasicResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, PathLimitedUnlimitedOnPathResource.class,
+                    PathLimitedUnlimitedResource.class, PathLimitedLocatorResource.class, PathLimitedLocatorUriResource.class,
+                    PathLimitedBasicResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -62,7 +62,7 @@ public class PathLimitedTest {
     private void basicTest(String path) {
         Response response = client.target(PortProviderUtil.generateURL(path, PathLimitedTest.class.getSimpleName())).request()
                 .get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -71,6 +71,7 @@ public class PathLimitedTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Unlimited On Class")
     public void testUnlimitedOnClass() {
         basicTest("/unlimited");
         basicTest("/unlimited/on/and/on");
@@ -81,6 +82,7 @@ public class PathLimitedTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Unlimited On Method")
     public void testUnlimitedOnMethod() {
         basicTest("/unlimited2/on/and/on");
         basicTest("/unlimited2/runtime/org.jbpm:HR:1.0/process/hiring/start");
@@ -92,6 +94,7 @@ public class PathLimitedTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Locator")
     public void testLocator() {
         basicTest("/locator");
         basicTest("/locator/on/and/on");
@@ -99,7 +102,5 @@ public class PathLimitedTest {
         basicTest("/locator3/unlimited/unlimited2/on/and/on");
         basicTest("/locator3/unlimited/uriparam/on/and/on?expected=on%2Fand%2Fon");
         basicTest("/locator3/uriparam/1/uriparam/on/and/on?firstExpected=1&expected=on%2Fand%2Fon");
-
     }
-
 }

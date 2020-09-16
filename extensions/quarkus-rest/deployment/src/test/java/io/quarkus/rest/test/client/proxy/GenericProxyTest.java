@@ -14,10 +14,10 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -44,12 +44,12 @@ import io.quarkus.test.QuarkusUnitTest;
 public class GenericProxyTest {
     private static QuarkusRestClient client;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }

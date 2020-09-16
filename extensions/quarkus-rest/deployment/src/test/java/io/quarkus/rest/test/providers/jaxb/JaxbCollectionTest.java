@@ -10,10 +10,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -31,31 +32,30 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Jaxb Collection Test")
 public class JaxbCollectionTest {
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(JaxbCollectionTest.class);
-                    return TestUtil.finishContainerPrepare(war, null, JaxbCollectionResource.class,
-                            JaxbCollectionNamespacedResource.class,
-                            JaxbCollectionFoo.class, JaxbCollectionNamespacedFoo.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(JaxbCollectionTest.class);
+            return TestUtil.finishContainerPrepare(war, null, JaxbCollectionResource.class,
+                    JaxbCollectionNamespacedResource.class, JaxbCollectionFoo.class, JaxbCollectionNamespacedFoo.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -71,16 +71,16 @@ public class JaxbCollectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Naked Array")
     public void testNakedArray() throws Exception {
         String xml = "<resteasy:collection xmlns:resteasy=\"http://jboss.org/resteasy\">"
                 + "<foo test=\"hello\"/></resteasy:collection>";
-
         QuarkusRestWebTarget target = client.target(generateURL("/array"));
         Response response = target.request().accept("application/xml").post(Entity.xml(xml));
         List<JaxbCollectionFoo> list = response.readEntity(new javax.ws.rs.core.GenericType<List<JaxbCollectionFoo>>() {
         });
-        Assert.assertEquals("The response doesn't contain 1 item, which is expected", 1, list.size());
-        Assert.assertEquals("The response doesn't contain correct element value", list.get(0).getTest(), "hello");
+        Assertions.assertEquals(1, list.size(), "The response doesn't contain 1 item, which is expected");
+        Assertions.assertEquals(list.get(0).getTest(), "hello", "The response doesn't contain correct element value");
         response.close();
     }
 
@@ -93,18 +93,16 @@ public class JaxbCollectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test List")
     public void testList() throws Exception {
-        String xml = "<list>"
-                + "<foo test=\"hello\"/></list>";
-
+        String xml = "<list>" + "<foo test=\"hello\"/></list>";
         QuarkusRestWebTarget target = client.target(generateURL("/list"));
         Response response = target.request().post(Entity.xml(xml));
         JaxbCollectionFoo[] list = response.readEntity(new javax.ws.rs.core.GenericType<JaxbCollectionFoo[]>() {
         });
-        Assert.assertEquals("The response doesn't contain 1 item, which is expected", 1, list.length);
-        Assert.assertEquals("The response doesn't contain correct element value", list[0].getTest(), "hello");
+        Assertions.assertEquals(1, list.length, "The response doesn't contain 1 item, which is expected");
+        Assertions.assertEquals(list[0].getTest(), "hello", "The response doesn't contain correct element value");
         response.close();
-
     }
 
     /**
@@ -115,19 +113,17 @@ public class JaxbCollectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Namespaced Naked Array")
     public void testNamespacedNakedArray() throws Exception {
-        String xml = "<collection xmlns:foo=\"http://foo.com\">"
-                + "<foo:foo test=\"hello\"/></collection>";
-
+        String xml = "<collection xmlns:foo=\"http://foo.com\">" + "<foo:foo test=\"hello\"/></collection>";
         QuarkusRestWebTarget target = client.target(generateURL("/namespaced/array"));
         Response response = target.request().post(Entity.xml(xml));
         List<JaxbCollectionNamespacedFoo> list = response
                 .readEntity(new javax.ws.rs.core.GenericType<List<JaxbCollectionNamespacedFoo>>() {
                 });
-        Assert.assertEquals("The response doesn't contain 1 item, which is expected", 1, list.size());
-        Assert.assertEquals("The response doesn't contain correct element value", list.get(0).getTest(), "hello");
+        Assertions.assertEquals(1, list.size(), "The response doesn't contain 1 item, which is expected");
+        Assertions.assertEquals(list.get(0).getTest(), "hello", "The response doesn't contain correct element value");
         response.close();
-
     }
 
     /**
@@ -140,17 +136,16 @@ public class JaxbCollectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Namespaced List")
     public void testNamespacedList() throws Exception {
-        String xml = "<list xmlns:foo=\"http://foo.com\">"
-                + "<foo:foo test=\"hello\"/></list>";
-
+        String xml = "<list xmlns:foo=\"http://foo.com\">" + "<foo:foo test=\"hello\"/></list>";
         QuarkusRestWebTarget target = client.target(generateURL("/namespaced/list"));
         Response response = target.request().post(Entity.xml(xml));
         JaxbCollectionNamespacedFoo[] list = response
                 .readEntity(new javax.ws.rs.core.GenericType<JaxbCollectionNamespacedFoo[]>() {
                 });
-        Assert.assertEquals("The response doesn't contain 1 item, which is expected", 1, list.length);
-        Assert.assertEquals("The response doesn't contain correct element value", list[0].getTest(), "hello");
+        Assertions.assertEquals(1, list.length, "The response doesn't contain 1 item, which is expected");
+        Assertions.assertEquals(list[0].getTest(), "hello", "The response doesn't contain correct element value");
         response.close();
     }
 
@@ -160,14 +155,12 @@ public class JaxbCollectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Bad List")
     public void testBadList() throws Exception {
-        String xml = "<bad-list>"
-                + "<foo test=\"hello\"/></bad-list>";
-
+        String xml = "<bad-list>" + "<foo test=\"hello\"/></bad-list>";
         QuarkusRestWebTarget target = client.target(generateURL("/list"));
         Response response = target.request().post(Entity.xml(xml));
-        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         response.close();
     }
-
 }

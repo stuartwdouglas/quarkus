@@ -12,10 +12,11 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.custom.resource.ResponseContainerResource;
@@ -31,36 +32,36 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Response Container Filter Test")
 public class ResponseContainerFilterTest {
 
     protected static final Logger logger = Logger.getLogger(ResponseContainerFilterTest.class.getName());
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         client = ClientBuilder.newClient();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(ResponseContainerTemplateFilter.class);
-                    return TestUtil.finishContainerPrepare(war, null, ResponseContainerResource.class,
-                            ResponseContainerResponseFilter.class, ResponseContainerSecondResponseFilter.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(ResponseContainerTemplateFilter.class);
+            return TestUtil.finishContainerPrepare(war, null, ResponseContainerResource.class,
+                    ResponseContainerResponseFilter.class, ResponseContainerSecondResponseFilter.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, ResponseContainerFilterTest.class.getSimpleName());
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() throws Exception {
         client.close();
     }
@@ -74,15 +75,14 @@ public class ResponseContainerFilterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Has Entity")
     public void testHasEntity() {
-        Response response = client.target(generateURL("/resource/hasentity")).request("*/*")
-                .header("OPERATION", "hasentity").post(Entity.entity("entity", MediaType.WILDCARD_TYPE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The ResponseFilters were used in different order than expected", MediaType.TEXT_PLAIN_TYPE,
-                response.getMediaType());
+        Response response = client.target(generateURL("/resource/hasentity")).request("*/*").header("OPERATION", "hasentity")
+                .post(Entity.entity("entity", MediaType.WILDCARD_TYPE));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(MediaType.TEXT_PLAIN_TYPE, response.getMediaType(),
+                "The ResponseFilters were used in different order than expected");
         logger.info(response.readEntity(String.class));
         response.close();
-
     }
-
 }

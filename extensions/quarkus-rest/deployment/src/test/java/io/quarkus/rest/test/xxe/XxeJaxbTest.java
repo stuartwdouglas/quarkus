@@ -14,10 +14,11 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -35,59 +36,46 @@ import io.quarkus.rest.test.xxe.resource.xxeJaxb.XxeJaxbMovieResource;
  *                    RestEasy is vulnerable to XML Entity Denial of Service XXE is disabled.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Xxe Jaxb Test")
 public class XxeJaxbTest {
 
     static QuarkusRestClient client;
+
     private Logger logger = Logger.getLogger(XxeJaxbTest.class);
+
     private static final String URL_PREFIX = "RESTEASY-1103-";
+
     private String passwdFile = new File(TestUtil.getResourcePath(XxeJaxbTest.class, "XxeJaxbPasswd")).getAbsolutePath();
 
-    String strMovie = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + passwdFile + "\">\r" +
-            "]>\r" +
-            "<xxeJaxbFavoriteMovie><title>&xxe;</title></xxeJaxbFavoriteMovie>";
+    String strMovie = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \"" + passwdFile + "\">\r"
+            + "]>\r" + "<xxeJaxbFavoriteMovie><title>&xxe;</title></xxeJaxbFavoriteMovie>";
 
-    String strMovieRootElement = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + passwdFile + "\">\r" +
-            "]>\r" +
-            "<xxeJaxbFavoriteMovieXmlRootElement><title>&xxe;</title></xxeJaxbFavoriteMovieXmlRootElement>";
+    String strMovieRootElement = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \"" + passwdFile
+            + "\">\r" + "]>\r"
+            + "<xxeJaxbFavoriteMovieXmlRootElement><title>&xxe;</title></xxeJaxbFavoriteMovieXmlRootElement>";
 
-    String strMovieXmlType = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + passwdFile + "\">\r" +
-            "]>\r" +
-            "<xxeJaxbFavoriteMovieXmlType><title>&xxe;</title></xxeJaxbFavoriteMovieXmlType>";
+    String strMovieXmlType = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \"" + passwdFile + "\">\r"
+            + "]>\r" + "<xxeJaxbFavoriteMovieXmlType><title>&xxe;</title></xxeJaxbFavoriteMovieXmlType>";
 
-    String strMovieRootElementCollection = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + passwdFile + "\">\r" +
-            "]>\r" +
-            "<collection>" +
-            "<xxeJaxbFavoriteMovieXmlRootElement><title>&xxe;</title></xxeJaxbFavoriteMovieXmlRootElement>" +
-            "<xxeJaxbFavoriteMovieXmlRootElement><title>Le Regle de Jeu</title></xxeJaxbFavoriteMovieXmlRootElement>" +
-            "</collection>";
+    String strMovieRootElementCollection = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \""
+            + passwdFile + "\">\r" + "]>\r" + "<collection>"
+            + "<xxeJaxbFavoriteMovieXmlRootElement><title>&xxe;</title></xxeJaxbFavoriteMovieXmlRootElement>"
+            + "<xxeJaxbFavoriteMovieXmlRootElement><title>Le Regle de Jeu</title></xxeJaxbFavoriteMovieXmlRootElement>"
+            + "</collection>";
 
-    String strMovieRootElementMap = "<?xml version=\"1.0\"?>\r" +
-            "<!DOCTYPE foo\r" +
-            "[<!ENTITY xxe SYSTEM \"" + passwdFile + "\">\r" +
-            "]>\r" +
-            "<map>" +
-            "<entry key=\"american\">" +
-            "<xxeJaxbFavoriteMovieXmlRootElement><title>&xxe;</title></xxeJaxbFavoriteMovieXmlRootElement>" +
-            "</entry>" +
-            "<entry key=\"french\">" +
-            "<xxeJaxbFavoriteMovieXmlRootElement><title>La Regle de Jeu</title></xxeJaxbFavoriteMovieXmlRootElement>" +
-            "</entry>" +
-            "</map>";
+    String strMovieRootElementMap = "<?xml version=\"1.0\"?>\r" + "<!DOCTYPE foo\r" + "[<!ENTITY xxe SYSTEM \"" + passwdFile
+            + "\">\r" + "]>\r" + "<map>" + "<entry key=\"american\">"
+            + "<xxeJaxbFavoriteMovieXmlRootElement><title>&xxe;</title></xxeJaxbFavoriteMovieXmlRootElement>" + "</entry>"
+            + "<entry key=\"french\">"
+            + "<xxeJaxbFavoriteMovieXmlRootElement><title>La Regle de Jeu</title></xxeJaxbFavoriteMovieXmlRootElement>"
+            + "</entry>" + "</map>";
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
         client = null;
@@ -153,6 +141,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("f")
+    @DisplayName("Test Xml Root Element Default False")
     public void testXmlRootElementDefaultFalse() throws Exception {
         doTestXmlRootElementDefault("f");
     }
@@ -165,6 +154,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("t")
+    @DisplayName("Test Xml Root Element Default True")
     public void testXmlRootElementDefaultTrue() throws Exception {
         doTestXmlRootElementDefault("t");
     }
@@ -178,6 +168,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ff")
+    @DisplayName("Test Xml Root Element Without Expansion False")
     public void testXmlRootElementWithoutExpansionFalse() throws Exception {
         doTestXmlRootElementWithoutExpansion("ff");
     }
@@ -191,6 +182,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ft")
+    @DisplayName("Test Xml Root Element Without Expansion True")
     public void testXmlRootElementWithoutExpansionTrue() throws Exception {
         doTestXmlRootElementWithoutExpansion("ft");
     }
@@ -204,6 +196,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tf")
+    @DisplayName("Test Xml Root Element With Expansion False")
     public void testXmlRootElementWithExpansionFalse() throws Exception {
         doTestXmlRootElementWithExpansion("tf");
     }
@@ -217,6 +210,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tt")
+    @DisplayName("Test Xml Root Element With Expansion True")
     public void testXmlRootElementWithExpansionTrue() throws Exception {
         doTestXmlRootElementWithExpansion("tt");
     }
@@ -229,6 +223,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("f")
+    @DisplayName("Test Xml Type Default False")
     public void testXmlTypeDefaultFalse() throws Exception {
         doTestXmlTypeDefault("f");
     }
@@ -241,6 +236,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("t")
+    @DisplayName("Test Xml Type Default True")
     public void testXmlTypeDefaultTrue() throws Exception {
         doTestXmlTypeDefault("t");
     }
@@ -254,6 +250,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ff")
+    @DisplayName("Test Xml Type Without Expansion False")
     public void testXmlTypeWithoutExpansionFalse() throws Exception {
         doTestXmlTypeWithoutExpansion("ff");
     }
@@ -267,6 +264,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ft")
+    @DisplayName("Test Xml Type Without Expansion True")
     public void testXmlTypeWithoutExpansionTrue() throws Exception {
         doTestXmlTypeWithoutExpansion("ft");
     }
@@ -280,6 +278,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tf")
+    @DisplayName("Test Xml Type With Expansion False")
     public void testXmlTypeWithExpansionFalse() throws Exception {
         doTestXmlTypeWithExpansion("tf");
     }
@@ -293,6 +292,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tt")
+    @DisplayName("Test Xml Type With Expansion True")
     public void testXmlTypeWithExpansionTrue() throws Exception {
         doTestXmlTypeWithExpansion("tt");
     }
@@ -305,6 +305,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("f")
+    @DisplayName("Test JAXB Element Default False")
     public void testJAXBElementDefaultFalse() throws Exception {
         doTestJAXBElementDefault("f");
     }
@@ -317,6 +318,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("t")
+    @DisplayName("Test JAXB Element Default True")
     public void testJAXBElementDefaultTrue() throws Exception {
         doTestJAXBElementDefault("t");
     }
@@ -330,6 +332,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ff")
+    @DisplayName("Test JAXB Element Without Expansion False")
     public void testJAXBElementWithoutExpansionFalse() throws Exception {
         doTestJAXBElementWithoutExpansion("ff");
     }
@@ -343,6 +346,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ft")
+    @DisplayName("Test JAXB Element Without Expansion True")
     public void testJAXBElementWithoutExpansionTrue() throws Exception {
         doTestJAXBElementWithoutExpansion("ft");
     }
@@ -356,6 +360,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tf")
+    @DisplayName("Test JAXB Element With Expansion False")
     public void testJAXBElementWithExpansionFalse() throws Exception {
         doTestJAXBElementWithExpansion("tf");
     }
@@ -369,6 +374,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tt")
+    @DisplayName("Test JAXB Element With Expansion True")
     public void testJAXBElementWithExpansionTrue() throws Exception {
         doTestJAXBElementWithExpansion("tt");
     }
@@ -383,6 +389,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("f")
+    @DisplayName("Test List Default False")
     public void testListDefaultFalse() throws Exception {
         doCollectionTestWithoutExpansion("f", "list");
     }
@@ -397,6 +404,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("t")
+    @DisplayName("Test List Default True")
     public void testListDefaultTrue() throws Exception {
         doCollectionTestWithoutExpansion("t", "list");
     }
@@ -412,6 +420,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ff")
+    @DisplayName("Test List Without Expansion False")
     public void testListWithoutExpansionFalse() throws Exception {
         doCollectionTestWithoutExpansion("ff", "list");
     }
@@ -427,6 +436,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ft")
+    @DisplayName("Test List Without Expansion True")
     public void testListWithoutExpansionTrue() throws Exception {
         doCollectionTestWithoutExpansion("ft", "list");
     }
@@ -442,6 +452,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tf")
+    @DisplayName("Test List With Expansion False")
     public void testListWithExpansionFalse() throws Exception {
         doCollectionTestWithExpansion("tf", "list");
     }
@@ -457,6 +468,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tt")
+    @DisplayName("Test List With Expansion True")
     public void testListWithExpansionTrue() throws Exception {
         doCollectionTestWithExpansion("tt", "list");
     }
@@ -471,6 +483,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("f")
+    @DisplayName("Test Set Default False")
     public void testSetDefaultFalse() throws Exception {
         doCollectionTestWithoutExpansion("f", "set");
     }
@@ -485,6 +498,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("t")
+    @DisplayName("Test Set Default True")
     public void testSetDefaultTrue() throws Exception {
         doCollectionTestWithoutExpansion("t", "set");
     }
@@ -500,6 +514,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ff")
+    @DisplayName("Test Set Without Expansion False")
     public void testSetWithoutExpansionFalse() throws Exception {
         doCollectionTestWithoutExpansion("ff", "set");
     }
@@ -515,6 +530,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ft")
+    @DisplayName("Test Set Without Expansion True")
     public void testSetWithoutExpansionTrue() throws Exception {
         doCollectionTestWithoutExpansion("ft", "set");
     }
@@ -530,6 +546,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tf")
+    @DisplayName("Test Set With Expansion False")
     public void testSetWithExpansionFalse() throws Exception {
         doCollectionTestWithExpansion("tf", "set");
     }
@@ -545,6 +562,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tt")
+    @DisplayName("Test Set With Expansion True")
     public void testSetWithExpansionTrue() throws Exception {
         doCollectionTestWithExpansion("tt", "set");
     }
@@ -559,6 +577,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("f")
+    @DisplayName("Test Array Default False")
     public void testArrayDefaultFalse() throws Exception {
         doCollectionTestWithoutExpansion("f", "array");
     }
@@ -573,6 +592,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("t")
+    @DisplayName("Test Array Default True")
     public void testArrayDefaultTrue() throws Exception {
         doCollectionTestWithoutExpansion("t", "array");
     }
@@ -588,6 +608,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ff")
+    @DisplayName("Test Array Without Expansion False")
     public void testArrayWithoutExpansionFalse() throws Exception {
         doCollectionTestWithoutExpansion("ff", "array");
     }
@@ -603,6 +624,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ft")
+    @DisplayName("Test Array Without Expansion True")
     public void testArrayWithoutExpansionTrue() throws Exception {
         doCollectionTestWithoutExpansion("ft", "array");
     }
@@ -618,6 +640,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tf")
+    @DisplayName("Test Array With Expansion False")
     public void testArrayWithExpansionFalse() throws Exception {
         doCollectionTestWithExpansion("tf", "array");
     }
@@ -633,6 +656,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tt")
+    @DisplayName("Test Array With Expansion True")
     public void testArrayWithExpansionTrue() throws Exception {
         doCollectionTestWithExpansion("tt", "array");
     }
@@ -646,6 +670,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("f")
+    @DisplayName("Test Map Default False")
     public void testMapDefaultFalse() throws Exception {
         doMapTestWithoutExpansion("f");
     }
@@ -659,6 +684,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("t")
+    @DisplayName("Test Map Default True")
     public void testMapDefaultTrue() throws Exception {
         doMapTestWithoutExpansion("t");
     }
@@ -673,6 +699,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ff")
+    @DisplayName("Test Map Without Expansion False")
     public void testMapWithoutExpansionFalse() throws Exception {
         doMapTestWithoutExpansion("ff");
     }
@@ -687,6 +714,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("ft")
+    @DisplayName("Test Map Without Expansion True")
     public void testMapWithoutExpansionTrue() throws Exception {
         doMapTestWithoutExpansion("ft");
     }
@@ -701,6 +729,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tf")
+    @DisplayName("Test Map With Expansion False")
     public void testMapWithExpansionFalse() throws Exception {
         doMapTestWithExpansion("tf");
     }
@@ -715,6 +744,7 @@ public class XxeJaxbTest {
      */
     @Test
     @OperateOnDeployment("tt")
+    @DisplayName("Test Map With Expansion True")
     public void testMapWithExpansionTrue() throws Exception {
         doMapTestWithExpansion("tt");
     }
@@ -723,129 +753,129 @@ public class XxeJaxbTest {
         WebTarget target = client.target(PortProviderUtil.generateURL("/xmlRootElement", URL_PREFIX + ext));
         logger.info(strMovieRootElement);
         Response response = target.request().post(Entity.entity(strMovieRootElement, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity was expanded and it shouldn't be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0, "The entity was expanded and it shouldn't be");
     }
 
     void doTestXmlRootElementWithoutExpansion(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/xmlRootElement", URL_PREFIX + ext));
         logger.info(strMovieRootElement);
         Response response = target.request().post(Entity.entity(strMovieRootElement, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity was expanded and it shouldn't be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0, "The entity was expanded and it shouldn't be");
     }
 
     void doTestXmlRootElementWithExpansion(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/xmlRootElement", URL_PREFIX + ext));
         logger.info(strMovieRootElement);
         Response response = target.request().post(Entity.entity(strMovieRootElement, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("result: " + entity);
-        Assert.assertTrue("The entity wasn't expanded and it should be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0, "The entity wasn't expanded and it should be");
     }
 
     void doTestXmlTypeDefault(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/xmlType", URL_PREFIX + ext));
         logger.info(strMovie);
         Response response = target.request().post(Entity.entity(strMovie, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity was expanded and it shouldn't be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0, "The entity was expanded and it shouldn't be");
     }
 
     void doTestXmlTypeWithoutExpansion(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/xmlType", URL_PREFIX + ext));
         logger.info(strMovie);
         Response response = target.request().post(Entity.entity(strMovie, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity was expanded and it shouldn't be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0, "The entity was expanded and it shouldn't be");
     }
 
     void doTestXmlTypeWithExpansion(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/xmlType", URL_PREFIX + ext));
         logger.info(strMovie);
         Response response = target.request().post(Entity.entity(strMovie, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("result: " + entity);
-        Assert.assertTrue("The entity wasn't expanded and it should be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0, "The entity wasn't expanded and it should be");
     }
 
     void doTestJAXBElementDefault(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/JAXBElement", URL_PREFIX + ext));
         logger.info(strMovieXmlType);
         Response response = target.request().post(Entity.entity(strMovieXmlType, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity was expanded and it shouldn't be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0, "The entity was expanded and it shouldn't be");
     }
 
     void doTestJAXBElementWithoutExpansion(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/JAXBElement", URL_PREFIX + ext));
         logger.info(strMovieXmlType);
         Response response = target.request().post(Entity.entity(strMovieXmlType, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity was expanded and it shouldn't be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0, "The entity was expanded and it shouldn't be");
     }
 
     void doTestJAXBElementWithExpansion(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/JAXBElement", URL_PREFIX + ext));
         logger.info(strMovieXmlType);
         Response response = target.request().post(Entity.entity(strMovieXmlType, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity wasn't expanded and it should be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0, "The entity wasn't expanded and it should be");
     }
 
     void doCollectionTestWithoutExpansion(String ext, String path) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/" + path, URL_PREFIX + ext));
         logger.info(strMovieRootElementCollection);
         Response response = target.request().post(Entity.entity(strMovieRootElementCollection, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity was expanded and it shouldn't be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0, "The entity was expanded and it shouldn't be");
     }
 
     void doCollectionTestWithExpansion(String ext, String path) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/" + path, URL_PREFIX + ext));
         logger.info(strMovieRootElementCollection);
         Response response = target.request().post(Entity.entity(strMovieRootElementCollection, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity wasn't expanded and it should be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0, "The entity wasn't expanded and it should be");
     }
 
     void doMapTestWithoutExpansion(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/map", URL_PREFIX + ext));
         logger.info(strMovieRootElementMap);
         Response response = target.request().post(Entity.entity(strMovieRootElementMap, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity was expanded and it shouldn't be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") < 0, "The entity was expanded and it shouldn't be");
     }
 
     void doMapTestWithExpansion(String ext) throws Exception {
         WebTarget target = client.target(PortProviderUtil.generateURL("/map", URL_PREFIX + ext));
         logger.info(strMovieRootElementMap);
         Response response = target.request().post(Entity.entity(strMovieRootElementMap, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info("Result: " + entity);
-        Assert.assertTrue("The entity wasn't expanded and it should be", entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0);
+        Assertions.assertTrue(entity.indexOf("xx:xx:xx:xx:xx:xx:xx") >= 0, "The entity wasn't expanded and it should be");
     }
 }

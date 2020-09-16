@@ -12,10 +12,11 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.interceptor.resource.PriorityExecutionClientRequestFilter1;
@@ -49,50 +50,39 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression test for RESTEASY-1294
  */
-
+@DisplayName("Priority Execution Test")
 public class PriorityExecutionTest {
+
     public static volatile Queue<String> interceptors = new ConcurrentLinkedQueue<String>();
+
     public static Logger logger = Logger.getLogger(PriorityExecutionTest.class);
+
     private static final String WRONG_ORDER_ERROR_MSG = "Wrong order of interceptor execution";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(TestUtil.class, PortProviderUtil.class);
-                    war.addClasses(PriorityExecutionClientResponseFilterMin.class,
-                            PriorityExecutionClientResponseFilter1.class,
-                            PriorityExecutionClientRequestFilter2.class,
-                            PriorityExecutionClientRequestFilterMax.class,
-                            PriorityExecutionClientRequestFilter1.class,
-                            PriorityExecutionClientResponseFilter2.class,
-                            PriorityExecutionClientRequestFilter3.class,
-                            PriorityExecutionClientResponseFilter3.class,
-                            PriorityExecutionClientResponseFilterMax.class,
-                            PriorityExecutionClientRequestFilterMin.class);
-                    // Arquillian in the deployment
-
-                    // finish preparation of war container, define end-point and filters
-                    return TestUtil.finishContainerPrepare(war, null,
-                            // end-point
-                            PriorityExecutionResource.class,
-                            // server filters
-                            PriorityExecutionContainerResponseFilter2.class,
-                            PriorityExecutionContainerResponseFilter1.class,
-                            PriorityExecutionContainerResponseFilter3.class,
-                            PriorityExecutionContainerResponseFilterMin.class,
-                            PriorityExecutionContainerResponseFilterMax.class,
-                            PriorityExecutionContainerRequestFilter2.class,
-                            PriorityExecutionContainerRequestFilter1.class,
-                            PriorityExecutionContainerRequestFilter3.class,
-                            PriorityExecutionContainerRequestFilterMin.class,
-                            PriorityExecutionContainerRequestFilterMax.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(TestUtil.class, PortProviderUtil.class);
+            war.addClasses(PriorityExecutionClientResponseFilterMin.class, PriorityExecutionClientResponseFilter1.class,
+                    PriorityExecutionClientRequestFilter2.class, PriorityExecutionClientRequestFilterMax.class,
+                    PriorityExecutionClientRequestFilter1.class, PriorityExecutionClientResponseFilter2.class,
+                    PriorityExecutionClientRequestFilter3.class, PriorityExecutionClientResponseFilter3.class,
+                    PriorityExecutionClientResponseFilterMax.class, PriorityExecutionClientRequestFilterMin.class);
+            // Arquillian in the deployment
+            // finish preparation of war container, define end-point and filters
+            return TestUtil.finishContainerPrepare(war, null, // end-point
+                    PriorityExecutionResource.class, // server filters
+                    PriorityExecutionContainerResponseFilter2.class, PriorityExecutionContainerResponseFilter1.class,
+                    PriorityExecutionContainerResponseFilter3.class, PriorityExecutionContainerResponseFilterMin.class,
+                    PriorityExecutionContainerResponseFilterMax.class, PriorityExecutionContainerRequestFilter2.class,
+                    PriorityExecutionContainerRequestFilter1.class, PriorityExecutionContainerRequestFilter3.class,
+                    PriorityExecutionContainerRequestFilterMin.class, PriorityExecutionContainerRequestFilterMax.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, PriorityExecutionTest.class.getSimpleName());
@@ -100,12 +90,12 @@ public class PriorityExecutionTest {
 
     static Client client;
 
-    @Before
+    @BeforeEach
     public void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         client.close();
     }
@@ -115,6 +105,7 @@ public class PriorityExecutionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Priority")
     public void testPriority() throws Exception {
         client.register(PriorityExecutionClientResponseFilter3.class);
         client.register(PriorityExecutionClientResponseFilter1.class);
@@ -126,37 +117,33 @@ public class PriorityExecutionTest {
         client.register(PriorityExecutionClientRequestFilter2.class);
         client.register(PriorityExecutionClientRequestFilterMin.class);
         client.register(PriorityExecutionClientRequestFilterMax.class);
-
         Response response = client.target(generateURL("/test")).request().get();
         response.bufferEntity();
         logger.info(response.readEntity(String.class));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong content of response", "test", response.getEntity());
-
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("test", response.getEntity(), "Wrong content of response");
         // client filters
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilterMin", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilter1", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilter2", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilter3", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilterMax", interceptors.poll());
-
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilterMin", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilter1", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilter2", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilter3", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientRequestFilterMax", interceptors.poll());
         // server filters
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilterMin", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilter1", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilter2", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilter3", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilterMax", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilterMax", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilter3", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilter2", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilter1", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilterMin", interceptors.poll());
-
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilterMin", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilter1", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilter2", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilter3", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerRequestFilterMax", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilterMax", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilter3", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilter2", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilter1", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionContainerResponseFilterMin", interceptors.poll());
         // client filters
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilterMax", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilter3", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilter2", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilter1", interceptors.poll());
-        Assert.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilterMin", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilterMax", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilter3", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilter2", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilter1", interceptors.poll());
+        Assertions.assertEquals(WRONG_ORDER_ERROR_MSG, "PriorityExecutionClientResponseFilterMin", interceptors.poll());
     }
 }

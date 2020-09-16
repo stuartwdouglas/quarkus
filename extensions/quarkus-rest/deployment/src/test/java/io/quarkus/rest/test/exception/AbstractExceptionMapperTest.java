@@ -12,10 +12,11 @@ import javax.ws.rs.ext.ExceptionMapper;
 import org.jboss.resteasy.spi.util.Types;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.exception.resource.AbstractMapper;
@@ -33,32 +34,31 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression test for RESTEASY-666
  */
+@DisplayName("Abstract Exception Mapper Test")
 public class AbstractExceptionMapperTest {
 
     private Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(PortProviderUtil.class);
-                    war.addClasses(AbstractMapper.class, AbstractMapperException.class);
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(PortProviderUtil.class);
+            war.addClasses(AbstractMapper.class, AbstractMapperException.class);
+            return TestUtil.finishContainerPrepare(war, null, AbstractMapperDefault.class, AbstractMapperMyCustom.class,
+                    AbstractMapperResource.class);
+        }
+    });
 
-                    return TestUtil.finishContainerPrepare(war, null, AbstractMapperDefault.class,
-                            AbstractMapperMyCustom.class, AbstractMapperResource.class);
-                }
-            });
-
-    @Before
+    @BeforeEach
     public void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         client.close();
     }
@@ -68,13 +68,14 @@ public class AbstractExceptionMapperTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Custom Used")
     public void testCustomUsed() {
         Type exceptionType = Types.getActualTypeArgumentsOfAnInterface(AbstractMapperMyCustom.class, ExceptionMapper.class)[0];
-        Assert.assertEquals(AbstractMapperException.class, exceptionType);
-
-        Response response = client.target(PortProviderUtil.generateURL("/resource/custom",
-                AbstractExceptionMapperTest.class.getSimpleName())).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("custom", response.readEntity(String.class));
+        Assertions.assertEquals(AbstractMapperException.class, exceptionType);
+        Response response = client
+                .target(PortProviderUtil.generateURL("/resource/custom", AbstractExceptionMapperTest.class.getSimpleName()))
+                .request().get();
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "custom");
     }
 }

@@ -11,10 +11,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.request.resource.RequestResource;
@@ -28,33 +29,34 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Tests for ResteasyRequest
  * @tpSince RESTEasy 4.3.2
  */
+@DisplayName("Resteasy Request Test")
 public class ResteasyRequestTest {
 
     static Client client;
+
     static WebTarget requestWebTarget;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = ClientBuilder.newClient();
         requestWebTarget = client.target(generateURL("/request"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, RequestResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, RequestResource.class);
+        }
+    });
 
     private static String generateURL(String path) {
         return PortProviderUtil.generateURL(path, ResteasyRequestTest.class.getSimpleName());
@@ -65,13 +67,14 @@ public class ResteasyRequestTest {
      * @tpSince RESTEasy 4.3.2
      */
     @Test
+    @DisplayName("Test Request")
     public void testRequest() {
         try {
             Response response = requestWebTarget.request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             final String val = response.readEntity(String.class);
             final String pattern = "^127.0.0.1/.+";
-            Assert.assertTrue(String.format("Expected value '%s' to match pattern '%s'", val, pattern),
+            Assertions.assertTrue(String.format("Expected value '%s' to match pattern '%s'", val, pattern),
                     Pattern.matches(pattern, val));
             response.close();
         } catch (Exception e) {

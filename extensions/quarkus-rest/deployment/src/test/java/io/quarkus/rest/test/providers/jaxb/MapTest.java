@@ -18,10 +18,11 @@ import javax.xml.transform.stream.StreamSource;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.w3c.dom.Element;
 
@@ -39,29 +40,30 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Map Test")
 public class MapTest {
 
     private static Logger logger = Logger.getLogger(MapTest.class.getName());
+
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, MapFoo.class, MapJaxb.class, MapResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, MapFoo.class, MapJaxb.class, MapResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -75,31 +77,24 @@ public class MapTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Map")
     public void testMap() throws Exception {
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
                 + "<resteasy:map xmlns=\"http://foo.com\" xmlns:resteasy=\"http://jboss.org/resteasy\">"
-                + "<resteasy:entry key=\"bill\"><mapFoo name=\"hello\"/></resteasy:entry>"
-                + "</resteasy:map>";
-
+                + "<resteasy:entry key=\"bill\"><mapFoo name=\"hello\"/></resteasy:entry>" + "</resteasy:map>";
         JAXBContext ctx = JAXBContext.newInstance(MapJaxb.class, MapJaxb.Entry.class, MapFoo.class);
-
         MapJaxb map = new MapJaxb("entry", "key", "http://jboss.org/resteasy");
         map.addEntry("bill", new MapFoo("hello"));
-
         JAXBElement<MapJaxb> element = new JAXBElement<MapJaxb>(new QName("http://jboss.org/resteasy", "map", "resteasy"),
                 MapJaxb.class, map);
-
         StringWriter writer = new StringWriter();
         ctx.createMarshaller().marshal(element, writer);
-        Assert.assertEquals(xml, writer.toString());
-
+        Assertions.assertEquals(xml, writer.toString());
         ByteArrayInputStream is = new ByteArrayInputStream(writer.toString().getBytes());
         StreamSource source = new StreamSource(is);
         JAXBContext ctx2 = JAXBContext.newInstance(MapJaxb.class);
         element = ctx2.createUnmarshaller().unmarshal(source, MapJaxb.class);
-
         Element entry = (Element) element.getValue().getValue().get(0);
-
         JAXBContext ctx3 = JAXBContext.newInstance(MapJaxb.Entry.class);
         JAXBElement<MapJaxb.Entry> e = ctx3.createUnmarshaller().unmarshal(entry, MapJaxb.Entry.class);
     }
@@ -109,27 +104,23 @@ public class MapTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Provider")
     public void testProvider() throws Exception {
         String xml = "<resteasy:map xmlns:resteasy=\"http://jboss.org/resteasy\">"
-                + "<resteasy:entry key=\"bill\" xmlns=\"http://foo.com\">"
-                + "<mapFoo name=\"bill\"/></resteasy:entry>"
-                + "<resteasy:entry key=\"monica\" xmlns=\"http://foo.com\">"
-                + "<mapFoo name=\"monica\"/></resteasy:entry>"
+                + "<resteasy:entry key=\"bill\" xmlns=\"http://foo.com\">" + "<mapFoo name=\"bill\"/></resteasy:entry>"
+                + "<resteasy:entry key=\"monica\" xmlns=\"http://foo.com\">" + "<mapFoo name=\"monica\"/></resteasy:entry>"
                 + "</resteasy:map>";
-
         QuarkusRestWebTarget target = client.target(generateURL("/map"));
-
         Map<String, MapFoo> entity = target.request().post(Entity.xml(xml), new GenericType<Map<String, MapFoo>>() {
         });
-        Assert.assertEquals("The response from the server has unexpected content", 2, entity.size());
-        Assert.assertNotNull("The response from the server has unexpected content", entity.get("bill"));
-        Assert.assertNotNull("The response from the server has unexpected content", entity.get("monica"));
-        Assert.assertEquals("The response from the server has unexpected content", entity.get("bill").getName(), "bill");
-        Assert.assertEquals("The response from the server has unexpected content", entity.get("monica").getName(), "monica");
-
+        Assertions.assertEquals(2, entity.size(), "The response from the server has unexpected content");
+        Assertions.assertNotNull(entity.get("bill"), "The response from the server has unexpected content");
+        Assertions.assertNotNull(entity.get("monica"), "The response from the server has unexpected content");
+        Assertions.assertEquals(entity.get("bill").getName(), "bill", "The response from the server has unexpected content");
+        Assertions.assertEquals(entity.get("monica").getName(), "monica",
+                "The response from the server has unexpected content");
         String entityString = target.request().post(Entity.xml(xml), String.class);
         logger.info(entityString);
-
     }
 
     /**
@@ -138,34 +129,27 @@ public class MapTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Provider Map Integer Foo")
     public void testProviderMapIntegerFoo() throws Exception {
         String xml = "<resteasy:map xmlns:resteasy=\"http://jboss.org/resteasy\">"
-                + "<resteasy:entry key=\"1\" xmlns=\"http://foo.com\">"
-                + "<mapFoo name=\"bill\"/></resteasy:entry>"
-                + "<resteasy:entry key=\"2\" xmlns=\"http://foo.com\">"
-                + "<mapFoo name=\"monica\"/></resteasy:entry>"
+                + "<resteasy:entry key=\"1\" xmlns=\"http://foo.com\">" + "<mapFoo name=\"bill\"/></resteasy:entry>"
+                + "<resteasy:entry key=\"2\" xmlns=\"http://foo.com\">" + "<mapFoo name=\"monica\"/></resteasy:entry>"
                 + "</resteasy:map>";
-
         QuarkusRestWebTarget target = client.target(generateURL("/map/integerFoo"));
         Response response = target.request().post(Entity.xml(xml));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Map<String, MapFoo> entity = response.readEntity(new GenericType<Map<String, MapFoo>>() {
         });
-        Assert.assertEquals("The response from the server has unexpected content", 2, entity.size());
-        Assert.assertNotNull("The response from the server has unexpected content", entity.get("1"));
-        Assert.assertNotNull("The response from the server has unexpected content", entity.get("2"));
-        Assert.assertEquals("The response from the server has unexpected content", entity.get("1").getName(), "bill");
-        Assert.assertEquals("The response from the server has unexpected content", entity.get("2").getName(), "monica");
-
+        Assertions.assertEquals(2, entity.size(), "The response from the server has unexpected content");
+        Assertions.assertNotNull(entity.get("1"), "The response from the server has unexpected content");
+        Assertions.assertNotNull(entity.get("2"), "The response from the server has unexpected content");
+        Assertions.assertEquals(entity.get("1").getName(), "bill", "The response from the server has unexpected content");
+        Assertions.assertEquals(entity.get("2").getName(), "monica", "The response from the server has unexpected content");
         String entityString = target.request().post(Entity.xml(xml), String.class);
-
-        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-                + "<map xmlns:ns2=\"http://foo.com\">"
+        String result = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + "<map xmlns:ns2=\"http://foo.com\">"
                 + "<entry key=\"1\"><ns2:mapFoo name=\"bill\"/></entry>"
-                + "<entry key=\"2\"><ns2:mapFoo name=\"monica\"/></entry>"
-                + "</map>";
-        Assert.assertEquals(result, entityString);
+                + "<entry key=\"2\"><ns2:mapFoo name=\"monica\"/></entry>" + "</map>";
+        Assertions.assertEquals(result, entityString);
     }
 
     /**
@@ -174,24 +158,19 @@ public class MapTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Wrapped")
     public void testWrapped() throws Exception {
-        String xml = "<map xmlns:mapFoo=\"http://foo.com\">"
-                + "<entry key=\"bill\">"
-                + "<mapFoo:mapFoo name=\"bill\"/></entry>"
-                + "<entry key=\"monica\">"
-                + "<mapFoo:mapFoo name=\"monica\"/></entry>"
-                + "</map>";
-
+        String xml = "<map xmlns:mapFoo=\"http://foo.com\">" + "<entry key=\"bill\">" + "<mapFoo:mapFoo name=\"bill\"/></entry>"
+                + "<entry key=\"monica\">" + "<mapFoo:mapFoo name=\"monica\"/></entry>" + "</map>";
         QuarkusRestWebTarget target = client.target(generateURL("/map/wrapped"));
         Map<String, MapFoo> entity = target.request().post(Entity.xml(xml), new GenericType<Map<String, MapFoo>>() {
         });
-
-        Assert.assertEquals("The response from the server has unexpected content", 2, entity.size());
-        Assert.assertNotNull("The response from the server has unexpected content", entity.get("bill"));
-        Assert.assertNotNull("The response from the server has unexpected content", entity.get("monica"));
-        Assert.assertEquals("The response from the server has unexpected content", entity.get("bill").getName(), "bill");
-        Assert.assertEquals("The response from the server has unexpected content", entity.get("monica").getName(), "monica");
-
+        Assertions.assertEquals(2, entity.size(), "The response from the server has unexpected content");
+        Assertions.assertNotNull(entity.get("bill"), "The response from the server has unexpected content");
+        Assertions.assertNotNull(entity.get("monica"), "The response from the server has unexpected content");
+        Assertions.assertEquals(entity.get("bill").getName(), "bill", "The response from the server has unexpected content");
+        Assertions.assertEquals(entity.get("monica").getName(), "monica",
+                "The response from the server has unexpected content");
     }
 
     /**
@@ -199,17 +178,14 @@ public class MapTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Bad Wrapped")
     public void testBadWrapped() throws Exception {
         String xml = "<resteasy:map xmlns:resteasy=\"http://jboss.org/resteasy\">"
-                + "<resteasy:entry key=\"bill\" xmlns=\"http://foo.com\">"
-                + "<mapFoo name=\"bill\"/></resteasy:entry>"
-                + "<resteasy:entry key=\"monica\" xmlns=\"http://foo.com\">"
-                + "<mapFoo name=\"monica\"/></resteasy:entry>"
+                + "<resteasy:entry key=\"bill\" xmlns=\"http://foo.com\">" + "<mapFoo name=\"bill\"/></resteasy:entry>"
+                + "<resteasy:entry key=\"monica\" xmlns=\"http://foo.com\">" + "<mapFoo name=\"monica\"/></resteasy:entry>"
                 + "</resteasy:map>";
-
         QuarkusRestWebTarget target = client.target(generateURL("/map/wrapped"));
         Response response = target.request().post(Entity.xml(xml));
-        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-
+        Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
     }
 }

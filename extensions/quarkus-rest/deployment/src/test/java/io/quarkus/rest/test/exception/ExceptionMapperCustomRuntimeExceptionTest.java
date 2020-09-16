@@ -8,8 +8,9 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -27,21 +28,21 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Regression test for RESTEASY-421
  */
+@DisplayName("Exception Mapper Custom Runtime Exception Test")
 public class ExceptionMapperCustomRuntimeExceptionTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(ExceptionMapperCustomRuntimeException.class);
-                    return TestUtil.finishContainerPrepare(war, null, ExceptionMapperCustomRuntimeCustomMapper.class,
-                            ExceptionMapperCustomRuntimeResource.class, ExceptionMapperCustomRuntimeMapper.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ExceptionMapperCustomRuntimeException.class);
+            return TestUtil.finishContainerPrepare(war, null, ExceptionMapperCustomRuntimeCustomMapper.class,
+                    ExceptionMapperCustomRuntimeResource.class, ExceptionMapperCustomRuntimeMapper.class);
+        }
+    });
 
     /**
      * @tpTestDetails Check ExceptionMapper for Custom RuntimeException. Check the response contains headers and entity
@@ -49,18 +50,17 @@ public class ExceptionMapperCustomRuntimeExceptionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Mapper With Quarkus Rest Client")
     public void testMapperWithQuarkusRestClient() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         WebTarget base = client
                 .target(PortProviderUtil.generateURL("/test", ExceptionMapperCustomRuntimeExceptionTest.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Response.Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong headers", response.getHeaders().getFirst("custom"), "header");
-        Assert.assertEquals("The response doesn't contain the entity from custom exception mapper",
-                "My custom message", response.readEntity(String.class));
-
+        Assertions.assertEquals(Response.Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.getHeaders().getFirst("custom"), "header", "Wrong headers");
+        Assertions.assertEquals("My custom message", response.readEntity(String.class),
+                "The response doesn't contain the entity from custom exception mapper");
         response.close();
         client.close();
     }
-
 }

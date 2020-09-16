@@ -31,12 +31,13 @@ import org.jboss.resteasy.security.doseta.Verifier;
 import org.jboss.resteasy.spi.MarshalledEntity;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -53,76 +54,78 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Signing test for RESTEasy-crypto
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Signing Test")
 public class SigningTest {
+
     public static KeyPair keys;
+
     public static DosetaKeyRepository repository;
+
     public static PrivateKey badKey;
+
     private static QuarkusRestClient client;
 
     protected final Logger logger = Logger.getLogger(PKCS7SignatureSmokeTest.class.getName());
 
     private static final String RESPONSE_ERROR_MSG = "Response contains wrong content";
+
     static final String testJksPath;
 
     static {
         testJksPath = TestUtil.getResourcePath(SigningTest.class, "SigningTest.jks");
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void close() {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(SigningProxy.class);
-                    war.addAsResource(SigningTest.class.getPackage(), "SigningTest.jks", "test.jks");
-
-                    Map<String, String> contextParams = new HashMap<>();
-                    contextParams.put("resteasy.doseta.keystore.classpath", "test.jks");
-                    contextParams.put("resteasy.doseta.keystore.password", "password");
-                    contextParams.put("resteasy.context.objects",
-                            "org.jboss.resteasy.security.doseta.KeyRepository : org.jboss.resteasy.security.doseta.ConfiguredDosetaKeyRepository");
-                    contextParams.put("resteasy.doseta.use.dns", "false");
-                    return TestUtil.finishContainerPrepare(war, contextParams, SigningResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(SigningProxy.class);
+            war.addAsResource(SigningTest.class.getPackage(), "SigningTest.jks", "test.jks");
+            Map<String, String> contextParams = new HashMap<>();
+            contextParams.put("resteasy.doseta.keystore.classpath", "test.jks");
+            contextParams.put("resteasy.doseta.keystore.password", "password");
+            contextParams.put("resteasy.context.objects",
+                    "org.jboss.resteasy.security.doseta.KeyRepository : org.jboss.resteasy.security.doseta.ConfiguredDosetaKeyRepository");
+            contextParams.put("resteasy.doseta.use.dns", "false");
+            return TestUtil.finishContainerPrepare(war, contextParams, SigningResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, SigningTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         repository = new DosetaKeyRepository();
         repository.setKeyStoreFile(testJksPath);
         repository.setKeyStorePassword("password");
         repository.setUseDns(false);
         repository.start();
-
         PrivateKey privateKey = repository.getKeyStore().getPrivateKey("test._domainKey.samplezone.org");
         if (privateKey == null) {
             throw new Exception("Private Key is null!!!");
         }
         PublicKey publicKey = repository.getKeyStore().getPublicKey("test._domainKey.samplezone.org");
         keys = new KeyPair(publicKey, privateKey);
-
         KeyPair keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
         badKey = keyPair.getPrivate();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterIt() throws Exception {
         client.close();
         client = null;
@@ -133,6 +136,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Request Only")
     public void testRequestOnly() throws Exception {
         WebTarget target = client.target(generateURL("/signed/request-only"));
         DKIMSignature contentSignature = new DKIMSignature();
@@ -144,8 +148,7 @@ public class SigningTest {
         contentSignature.setAttribute("uri", "/signed/request-only");
         contentSignature.setAttribute("token", "1122");
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature).delete();
-
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String signatureHeader = response.getHeaderString(DKIMSignature.DKIM_SIGNATURE);
         contentSignature = new DKIMSignature(signatureHeader);
         Verification verification = new Verification(keys.getPublic());
@@ -160,18 +163,17 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Signing Manual")
     public void testSigningManual() throws Exception {
         WebTarget target = client.target(generateURL("/signed"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         MarshalledEntity<String> marshalledEntity = response.readEntity(new GenericType<MarshalledEntity<String>>() {
         });
-        Assert.assertEquals(RESPONSE_ERROR_MSG, "hello world", marshalledEntity.getEntity());
+        Assertions.assertEquals(RESPONSE_ERROR_MSG, "hello world", marshalledEntity.getEntity());
         String signatureHeader = response.getHeaderString(DKIMSignature.DKIM_SIGNATURE);
         logger.info(DKIMSignature.DKIM_SIGNATURE + ":  " + signatureHeader);
-
-        Assert.assertNotNull("Missing DKIM_SIGNATURE header", signatureHeader);
-
+        Assertions.assertNotNull(signatureHeader, "Missing DKIM_SIGNATURE header");
         DKIMSignature contentSignature = new DKIMSignature(signatureHeader);
         contentSignature.verify(response.getStringHeaders(), marshalledEntity.getMarshalledBytes(), keys.getPublic());
         response.close();
@@ -182,6 +184,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Basic Verification")
     public void testBasicVerification() throws Exception {
         WebTarget target = client.target(generateURL("/signed"));
         DKIMSignature contentSignature = new DKIMSignature();
@@ -190,7 +193,7 @@ public class SigningTest {
         contentSignature.setPrivateKey(keys.getPrivate());
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature)
                 .post(Entity.text("hello world"));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -199,6 +202,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Manual Verification")
     public void testManualVerification() throws Exception {
         WebTarget target = client.target(generateURL("/signed/verify-manual"));
         DKIMSignature contentSignature = new DKIMSignature();
@@ -208,7 +212,7 @@ public class SigningTest {
         contentSignature.setPrivateKey(keys.getPrivate());
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature)
                 .post(Entity.text("hello world"));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -217,6 +221,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Basic Verification Repository")
     public void testBasicVerificationRepository() throws Exception {
         WebTarget target = client.target(generateURL("/signed"));
         target.property(KeyRepository.class.getName(), repository);
@@ -225,7 +230,7 @@ public class SigningTest {
         contentSignature.setDomain("samplezone.org");
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature)
                 .post(Entity.text("hello world"));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -234,6 +239,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Basic Verification Bad Signature")
     public void testBasicVerificationBadSignature() throws Exception {
         WebTarget target = client.target(generateURL("/signed"));
         DKIMSignature contentSignature = new DKIMSignature();
@@ -242,7 +248,7 @@ public class SigningTest {
         contentSignature.setPrivateKey(badKey);
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature)
                 .post(Entity.text("hello world"));
-        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -251,10 +257,11 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Basic Verification No Signature")
     public void testBasicVerificationNoSignature() throws Exception {
         WebTarget target = client.target(generateURL("/signed"));
         Response response = target.request().post(Entity.text("hello world"));
-        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -263,6 +270,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Timestamp Signature")
     public void testTimestampSignature() throws Exception {
         DKIMSignature signature = new DKIMSignature();
         signature.setTimestamp();
@@ -279,6 +287,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Timestamp")
     public void testTimestamp() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -290,7 +299,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         try {
             response.readEntity(String.class);
         } catch (Exception e) {
@@ -304,6 +313,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Stale Timestamp")
     public void testStaleTimestamp() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -315,7 +325,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Thread.sleep(1500);
         try {
             response.readEntity(String.class);
@@ -333,6 +343,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Expires Hour")
     public void testExpiresHour() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -342,7 +353,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -352,6 +363,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Expires Minutes")
     public void testExpiresMinutes() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -361,7 +373,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -371,6 +383,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Expires Days")
     public void testExpiresDays() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -380,7 +393,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -390,6 +403,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Expires Months")
     public void testExpiresMonths() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -399,7 +413,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -409,6 +423,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Expires Years")
     public void testExpiresYears() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -418,7 +433,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.readEntity(String.class);
         response.close();
     }
@@ -428,6 +443,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Expires Fail")
     public void testExpiresFail() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -437,7 +453,7 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         Thread.sleep(1500);
         try {
             response.readEntity(String.class);
@@ -455,11 +471,11 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Manual Fail")
     public void testManualFail() throws Exception {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(1024);
         KeyPair keyPair = kpg.genKeyPair();
-
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
         verification.setKey(keyPair.getPublic());
@@ -468,8 +484,8 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertNotNull("DKIM_SIGNATURE header is missing", response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertNotNull(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE), "DKIM_SIGNATURE header is missing");
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         try {
             response.readEntity(String.class);
             throw new Exception("unreachable!");
@@ -487,6 +503,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Manual")
     public void testManual() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -496,10 +513,10 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertNotNull("Missing header DKIM_SIGNATURE", response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertNotNull(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE), "Missing header DKIM_SIGNATURE");
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String output = response.readEntity(String.class);
-        Assert.assertEquals(RESPONSE_ERROR_MSG, "hello", output);
+        Assertions.assertEquals(RESPONSE_ERROR_MSG, "hello", output);
         response.close();
     }
 
@@ -508,6 +525,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Manual With Header")
     public void testManualWithHeader() throws Exception {
         Verifier verifier = new Verifier();
         Verification verification = verifier.addNew();
@@ -517,10 +535,10 @@ public class SigningTest {
         request.property(Verifier.class.getName(), verifier);
         Response response = request.get();
         logger.info(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertNotNull("Missing header DKIM_SIGNATURE", response.getHeaderString(DKIMSignature.DKIM_SIGNATURE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertNotNull(response.getHeaderString(DKIMSignature.DKIM_SIGNATURE), "Missing header DKIM_SIGNATURE");
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String output = response.readEntity(String.class);
-        Assert.assertEquals(RESPONSE_ERROR_MSG, "hello world", output);
+        Assertions.assertEquals(RESPONSE_ERROR_MSG, "hello world", output);
         response.close();
     }
 
@@ -529,19 +547,17 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Bad Signature")
     public void testBadSignature() throws Exception {
         WebTarget target = client.target(generateURL("/signed/bad-signature"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String signatureHeader = response.getHeaderString(DKIMSignature.DKIM_SIGNATURE);
-        Assert.assertNotNull("Missing header DKIM_SIGNATURE", signatureHeader);
+        Assertions.assertNotNull(signatureHeader, "Missing header DKIM_SIGNATURE");
         logger.info(DKIMSignature.DKIM_SIGNATURE + ":  " + signatureHeader);
-
         DKIMSignature contentSignature = new DKIMSignature(signatureHeader);
-
         MarshalledEntity<String> entity = response.readEntity(new GenericType<MarshalledEntity<String>>() {
         });
-
         try {
             contentSignature.verify(response.getStringHeaders(), entity.getMarshalledBytes(), keys.getPublic());
             Assert.fail("Signing error excepted");
@@ -556,19 +572,17 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Bad Hash")
     public void testBadHash() throws Exception {
         WebTarget target = client.target(generateURL("/signed/bad-hash"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String signatureHeader = response.getHeaderString(DKIMSignature.DKIM_SIGNATURE);
-        Assert.assertNotNull(signatureHeader);
+        Assertions.assertNotNull(signatureHeader);
         logger.info(DKIMSignature.DKIM_SIGNATURE + ":  " + signatureHeader);
-
         DKIMSignature contentSignature = new DKIMSignature(signatureHeader);
-
         MarshalledEntity<String> entity = response.readEntity(new GenericType<MarshalledEntity<String>>() {
         });
-
         try {
             contentSignature.verify(response.getStringHeaders(), entity.getMarshalledBytes(), keys.getPublic());
             Assert.fail("Signing error excepted");
@@ -583,6 +597,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Proxy")
     public void testProxy() throws Exception {
         QuarkusRestWebTarget target = client.target(generateURL("/"));
         target.property(KeyRepository.class.getName(), repository);
@@ -596,6 +611,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Bad Signature Proxy")
     public void testBadSignatureProxy() throws Exception {
         QuarkusRestWebTarget target = client.target(generateURL("/"));
         target.property(KeyRepository.class.getName(), repository);
@@ -613,6 +629,7 @@ public class SigningTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Basic Verification Bad Signature No Body")
     public void testBasicVerificationBadSignatureNoBody() throws Exception {
         WebTarget target = client.target(generateURL("/signed/nobody"));
         DKIMSignature contentSignature = new DKIMSignature();
@@ -620,7 +637,7 @@ public class SigningTest {
         contentSignature.setDomain("samplezone.org");
         contentSignature.setPrivateKey(badKey);
         Response response = target.request().header(DKIMSignature.DKIM_SIGNATURE, contentSignature).get();
-        Assert.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
         response.close();
     }
 }

@@ -15,10 +15,11 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -28,30 +29,30 @@ import io.quarkus.rest.test.sourceProvider.resource.BookResource;
 import io.quarkus.rest.test.sourceProvider.resource.SourceProviderApp;
 import io.quarkus.test.QuarkusUnitTest;
 
+@DisplayName("Source Provider Test")
 public class SourceProviderTest {
 
     private static Client client;
+
     private String book = "<book><title>Monkey kingdom</title></book>";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, SourceProviderApp.class,
-                            BookResource.class, Book.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, SourceProviderApp.class, BookResource.class, Book.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void close() throws Exception {
         client.close();
     }
@@ -61,23 +62,25 @@ public class SourceProviderTest {
     }
 
     @Test
+    @DisplayName("Test Source With String Reader")
     public void testSourceWithStringReader() throws Exception {
         Response response = client.target(generateURL("/test")).request()
                 .post(Entity.entity(new StreamSource(new StringReader(book)), "application/*+xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 entity.contentEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><book><title>Monkey kingdom</title></book>"));
     }
 
     @Test
+    @DisplayName("Test Source With Input Stream")
     public void testSourceWithInputStream() throws Exception {
         InputStream stream = new ByteArrayInputStream(book.getBytes(StandardCharsets.UTF_8));
         Response response = client.target(generateURL("/test")).request()
                 .post(Entity.entity(new StreamSource(stream), "application/*+xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 entity.contentEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><book><title>Monkey kingdom</title></book>"));
     }
 }

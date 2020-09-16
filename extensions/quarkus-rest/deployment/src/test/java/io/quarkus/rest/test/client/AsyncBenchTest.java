@@ -14,10 +14,10 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import io.quarkus.rest.test.client.resource.AsyncInvokeResource;
@@ -29,7 +29,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpTestCaseDetails https://issues.jboss.org/browse/RESTEASY-1025
  * @tpSince RESTEasy 3.5.0
  */
-@Ignore("Not a functional test")
+@Disabled("Not a functional test")
 public class AsyncBenchTest extends ClientTestBase {
 
     static Client client;
@@ -47,7 +47,7 @@ public class AsyncBenchTest extends ClientTestBase {
         return TestUtil.finishContainerPrepare(war, null, AsyncInvokeResource.class);
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         if (client != null)
             client.close();

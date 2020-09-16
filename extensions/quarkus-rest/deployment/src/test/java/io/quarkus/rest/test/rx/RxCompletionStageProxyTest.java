@@ -15,11 +15,11 @@ import org.jboss.resteasy.client.jaxrs.internal.CompletionStageRxInvokerProvider
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -82,13 +82,13 @@ public class RxCompletionStageProxyTest {
     }
 
     //////////////////////////////////////////////////////////////////////////////
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
         proxy = client.target(generateURL("/")).proxy(RxCompletionStageResource.class);
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -196,21 +196,21 @@ public class RxCompletionStageProxyTest {
     }
 
     @Test
-    @Ignore // TRACE is disabled by default in Wildfly
+    @Disabled // TRACE is disabled by default in Wildfly
     public void testTrace() throws Exception {
         CompletionStage<String> completionStage = proxy.trace();
         Assert.assertEquals("x", completionStage.toCompletableFuture().get());
     }
 
     @Test
-    @Ignore // TRACE is disabled by default in Wildfly
+    @Disabled // TRACE is disabled by default in Wildfly
     public void testTraceThing() throws Exception {
         CompletionStage<Thing> completionStage = proxy.traceThing();
         Assert.assertEquals(new Thing("x"), completionStage.toCompletableFuture().get());
     }
 
     @Test
-    @Ignore // TRACE is disabled by default in Wildfly
+    @Disabled // TRACE is disabled by default in Wildfly
     public void testTraceThingList() throws Exception {
         CompletionStage<List<Thing>> completionStage = proxy.traceThingList();
         Assert.assertEquals(xThingList, completionStage.toCompletableFuture().get());

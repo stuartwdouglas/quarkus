@@ -11,10 +11,11 @@ import javax.ws.rs.core.MediaType;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.jsonb.basic.resource.Dog;
@@ -28,6 +29,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration test
  * @tpSince RESTEasy 3.6.2.Final
  */
+@DisplayName("Set Method With More Arguments Test")
 public class SetMethodWithMoreArgumentsTest {
 
     protected static final Logger LOG = Logger.getLogger(SetMethodWithMoreArgumentsTest.class.getName());
@@ -37,24 +39,23 @@ public class SetMethodWithMoreArgumentsTest {
     private static final String DEFAULT = "war_default";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(Dog.class);
-                    return TestUtil.finishContainerPrepare(war, null, SetMethodWithMoreArgumentsResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(Dog.class);
+            return TestUtil.finishContainerPrepare(war, null, SetMethodWithMoreArgumentsResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -66,14 +67,14 @@ public class SetMethodWithMoreArgumentsTest {
      * @tpSince RESTEasy 3.6.2.Final
      */
     @Test
+    @DisplayName("Test")
     public void test() {
         WebTarget target = client.target(PortProviderUtil.generateURL("/dog", DEFAULT));
-        Entity<Dog> entity = Entity.entity(
-                new Dog("Rex", "german shepherd"), MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8"));
+        Entity<Dog> entity = Entity.entity(new Dog("Rex", "german shepherd"),
+                MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8"));
         Dog dog = target.request().post(entity, Dog.class);
         LOG.info(dog);
-        Assert.assertTrue(dog.getName().equals("Jethro"));
-        Assert.assertTrue(dog.getSort().equals("stafford"));
+        Assertions.assertTrue(dog.getName().equals("Jethro"));
+        Assertions.assertTrue(dog.getSort().equals("stafford"));
     }
-
 }

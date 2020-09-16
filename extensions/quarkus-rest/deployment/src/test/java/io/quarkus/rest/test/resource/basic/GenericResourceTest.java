@@ -40,20 +40,20 @@ public class GenericResourceTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClass(GenericResourceStudent.class);
-                    war.addClass(PortProviderUtil.class);
-                    war.addClass(GenericResourceStudentInterface.class);
-                    war.addClass(GenericResourceCrudResource.class);
-                    war.addClasses(GenericResourceStudentCrudResource.class, GenericResourceStudentReader.class,
-                            GenericResourceStudentWriter.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClass(GenericResourceStudent.class);
+            war.addClass(PortProviderUtil.class);
+            war.addClass(GenericResourceStudentInterface.class);
+            war.addClass(GenericResourceCrudResource.class);
+            war.addClasses(GenericResourceStudentCrudResource.class, GenericResourceStudentReader.class,
+                    GenericResourceStudentWriter.class);
+            return war;
+        }
+    });
 
     private static String generateURL(String path) {
         return PortProviderUtil.generateURL(path, GenericResourceTest.class.getSimpleName());
@@ -63,14 +63,14 @@ public class GenericResourceTest {
     @DisplayName("Test Get")
     @Disabled
     public void testGet() {
-        //Assertions.assertTrue(proxy.get(1).getName().equals("Jozef Hartinger"));
+        // Assertions.assertTrue(proxy.get(1).getName().equals("Jozef Hartinger"));
     }
 
     @Test
     @DisplayName("Test Put")
     @Disabled
     public void testPut() {
-        //proxy.put(2, new GenericResourceStudent("John Doe"));
-        //Assertions.assertTrue(proxy.get(2).getName().equals("John Doe"));
+        // proxy.put(2, new GenericResourceStudent("John Doe"));
+        // Assertions.assertTrue(proxy.get(2).getName().equals("John Doe"));
     }
 }

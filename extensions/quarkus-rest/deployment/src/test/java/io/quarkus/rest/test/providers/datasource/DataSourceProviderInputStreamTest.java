@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.providers.datasource;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,9 +24,10 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.DataSourceProvider;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.datasource.resource.DataSourceProviderInputStreamResource;
@@ -40,21 +41,21 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for https://issues.jboss.org/browse/RESTEASY-779
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Data Source Provider Input Stream Test")
 public class DataSourceProviderInputStreamTest {
 
     public static Logger logger = Logger.getLogger(DataSourceProviderInputStreamTest.class);
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, DataSourceProviderInputStreamResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, DataSourceProviderInputStreamResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, DataSourceProviderInputStreamTest.class.getSimpleName());
@@ -65,34 +66,31 @@ public class DataSourceProviderInputStreamTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Data Source Provider Rest Client")
     public void testDataSourceProviderRestClient() throws Exception {
         Client client = ClientBuilder.newClient();
         client.register(DataSourceProvider.class);
         WebTarget target = client.target(generateURL("/"));
         int expectedLength = DataSourceProviderInputStreamResource.KBs * 1024;
-
         // as DataSource
         Response response = target.request().get();
         DataSource dataSource = response.readEntity(DataSource.class);
         int length = TestUtil.readString(dataSource.getInputStream()).length();
         logger.info(String.format("Length as DataSource: %d", length));
-        Assert.assertEquals("Wrong length of response", expectedLength, length);
-
+        Assertions.assertEquals(expectedLength, length, "Wrong length of response");
         // as String
         response = target.request().get();
         String string = response.readEntity(String.class);
         length = string.length();
         logger.info(String.format("Length as String: %d", length));
-        Assert.assertEquals("Wrong length of response", expectedLength, length);
-
+        Assertions.assertEquals(expectedLength, length, "Wrong length of response");
         // as InputStream
         response = target.request().get();
         InputStream inputStream = response.readEntity(InputStream.class);
         dataSource = DataSourceProvider.readDataSource(inputStream, MediaType.TEXT_PLAIN_TYPE);
         length = TestUtil.readString(dataSource.getInputStream()).length();
         logger.info(String.format("Length as InputStream: %d", length));
-        Assert.assertEquals("Wrong length of response", expectedLength, length);
-
+        Assertions.assertEquals(expectedLength, length, "Wrong length of response");
         client.close();
     }
 
@@ -101,6 +99,7 @@ public class DataSourceProviderInputStreamTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Data Source Provider")
     public void testDataSourceProvider() throws Exception {
         ConnectionConfig config = ConnectionConfig.custom()
                 .setBufferSize((DataSourceProviderInputStreamResource.KBs - 1) * 1024).build();
@@ -111,8 +110,8 @@ public class DataSourceProviderInputStreamTest {
         try {
             inputStream = response.getEntity().getContent();
             DataSourceProvider.readDataSource(inputStream, MediaType.TEXT_PLAIN_TYPE);
-            assertEquals("DataSourceProvider does not properly read InputStream", 0,
-                    findSizeOfRemainingDataInStream(inputStream));
+            assertEquals(0, findSizeOfRemainingDataInStream(inputStream),
+                    "DataSourceProvider does not properly read InputStream");
         } finally {
             IOUtils.closeQuietly(inputStream);
         }
@@ -127,7 +126,7 @@ public class DataSourceProviderInputStreamTest {
         return totalBytesRead;
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         String tmpdir = System.getProperty("java.io.tmpdir");
         File dir = new File(tmpdir);
@@ -137,5 +136,4 @@ public class DataSourceProviderInputStreamTest {
             }
         }
     }
-
 }

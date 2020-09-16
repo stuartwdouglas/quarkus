@@ -33,16 +33,16 @@ public class InheritanceTest {
     private static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClass(InheritenceParentResource.class);
-                    war.addClasses(PortProviderUtil.class, InheritenceParentResourceImpl.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClass(InheritenceParentResource.class);
+            war.addClasses(PortProviderUtil.class, InheritenceParentResourceImpl.class);
+            return war;
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, InheritanceTest.class.getSimpleName());

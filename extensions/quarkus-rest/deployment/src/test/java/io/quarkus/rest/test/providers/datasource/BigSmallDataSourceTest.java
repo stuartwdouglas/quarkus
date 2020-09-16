@@ -16,10 +16,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -33,9 +34,11 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Big Small Data Source Test")
 public class BigSmallDataSourceTest {
 
     static QuarkusRestClient client;
+
     static final String testFilePath;
 
     static {
@@ -43,23 +46,22 @@ public class BigSmallDataSourceTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, BigSmallDataSourceResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, BigSmallDataSourceResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -73,14 +75,15 @@ public class BigSmallDataSourceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post Data Source")
     public void testPostDataSource() throws Exception {
         File file = new File(testFilePath);
-        Assert.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
+        Assertions.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
         WebTarget target = client.target(generateURL("/jaf"));
         Response response = target.request().post(Entity.entity(file, "image/jpeg"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Unexpected content type returned from the server", "image/jpeg",
-                response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("image/jpeg", response.readEntity(String.class),
+                "Unexpected content type returned from the server");
     }
 
     /**
@@ -88,13 +91,13 @@ public class BigSmallDataSourceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Echo Data Source Big Data")
     public void testEchoDataSourceBigData() throws Exception {
         WebTarget target = client.target(generateURL("/jaf/echo"));
         File file = new File(testFilePath);
-        Assert.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
+        Assertions.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
         Response response = target.request().post(Entity.entity(file, "image/jpeg"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         InputStream ris = null;
         InputStream fis = null;
         try {
@@ -124,12 +127,12 @@ public class BigSmallDataSourceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Echo Data Source Small Data")
     public void testEchoDataSourceSmallData() throws Exception {
         WebTarget target = client.target(generateURL("/jaf/echo"));
         byte[] input = "Hello World!".getBytes(StandardCharsets.UTF_8);
         Response response = target.request().post(Entity.entity(input, MediaType.APPLICATION_OCTET_STREAM));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         InputStream ris = null;
         InputStream bis = null;
         try {
@@ -159,11 +162,12 @@ public class BigSmallDataSourceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Data Source")
     public void testGetDataSource() throws Exception {
         String value = "foo";
         WebTarget target = client.target(generateURL("/jaf") + "/" + value);
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The unexpected value returned from InputStream", value, response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(value, response.readEntity(String.class), "The unexpected value returned from InputStream");
     }
 }

@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.ContentLanguageHeaderResource;
@@ -26,28 +27,28 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Check presence of Content-Language header in a response
  * @tpSince RESTEasy 3.8.0
  */
+@DisplayName("Content Language Header Test")
 public class ContentLanguageHeaderTest {
 
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, ContentLanguageHeaderResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ContentLanguageHeaderResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newBuilder().build();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() {
         client.close();
     }
@@ -57,15 +58,16 @@ public class ContentLanguageHeaderTest {
      * @tpSince RESTEasy 3.8.0
      */
     @Test
+    @DisplayName("Test Language")
     public void testLanguage() {
         Response response = client
                 .target(PortProviderUtil.generateURL("/language", ContentLanguageHeaderTest.class.getSimpleName())).request()
                 .get();
         MultivaluedMap<String, Object> headers = response.getHeaders();
-
-        Assert.assertTrue("Content-Language header is not present in response", headers.keySet().contains("Content-Language"));
-        Assert.assertEquals("Content-Language header does not have expected value", "en-us",
-                headers.getFirst("Content-Language"));
+        Assertions.assertTrue(headers.keySet().contains("Content-Language"),
+                "Content-Language header is not present in response");
+        Assertions.assertEquals("en-us", headers.getFirst("Content-Language"),
+                "Content-Language header does not have expected value");
     }
 
     /**
@@ -73,15 +75,16 @@ public class ContentLanguageHeaderTest {
      * @tpSince RESTEasy 3.8.0
      */
     @Test
+    @DisplayName("Test Language Ok")
     public void testLanguageOk() {
         Response response = client
                 .target(PortProviderUtil.generateURL("/language-ok", ContentLanguageHeaderTest.class.getSimpleName())).request()
                 .get();
         MultivaluedMap<String, Object> headers = response.getHeaders();
-
-        Assert.assertTrue("Content-Language header is not present in response", headers.keySet().contains("Content-Language"));
-        Assert.assertEquals("Content-Language header does not have expected value", "en-us",
-                headers.getFirst("Content-Language"));
+        Assertions.assertTrue(headers.keySet().contains("Content-Language"),
+                "Content-Language header is not present in response");
+        Assertions.assertEquals("en-us", headers.getFirst("Content-Language"),
+                "Content-Language header does not have expected value");
     }
 
     /**
@@ -89,15 +92,15 @@ public class ContentLanguageHeaderTest {
      * @tpSince RESTEasy 3.8.0
      */
     @Test
+    @DisplayName("Test Language Variant")
     public void testLanguageVariant() {
         Response response = client
                 .target(PortProviderUtil.generateURL("/language-variant", ContentLanguageHeaderTest.class.getSimpleName()))
                 .request().get();
         MultivaluedMap<String, Object> headers = response.getHeaders();
-
-        Assert.assertTrue("Content-Language header is not present in response", headers.keySet().contains("Content-Language"));
-        Assert.assertEquals("Content-Language header does not have expected value", "en-us",
-                headers.getFirst("Content-Language"));
+        Assertions.assertTrue(headers.keySet().contains("Content-Language"),
+                "Content-Language header is not present in response");
+        Assertions.assertEquals("en-us", headers.getFirst("Content-Language"),
+                "Content-Language header does not have expected value");
     }
-
 }

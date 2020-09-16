@@ -10,10 +10,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.interceptor.resource.PriorityExecutionResource;
@@ -26,40 +27,39 @@ import io.quarkus.test.QuarkusUnitTest;
  * Demonstrates that a Response filter can process the entity data in a response object
  * and the entity can be properly accessed by the client call.
  */
+@DisplayName("Client Filter Response Builder Test")
 public class ClientFilterResponseBuilderTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(ResponseBuilderCustomResponseFilter.class,
-                            PriorityExecutionResource.class);
-                    return TestUtil.finishContainerPrepare(war, null);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(ResponseBuilderCustomResponseFilter.class, PriorityExecutionResource.class);
+            return TestUtil.finishContainerPrepare(war, null);
+        }
+    });
 
     static Client client;
 
-    @Before
+    @BeforeEach
     public void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         client.close();
     }
 
     private String generateURL(String path) {
-        return PortProviderUtil.generateURL(path,
-                ClientFilterResponseBuilderTest.class.getSimpleName());
+        return PortProviderUtil.generateURL(path, ClientFilterResponseBuilderTest.class.getSimpleName());
     }
 
     @Test
+    @DisplayName("Test Response")
     public void testResponse() throws Exception {
         try {
             client.register(ResponseBuilderCustomResponseFilter.class);
@@ -67,8 +67,8 @@ public class ClientFilterResponseBuilderTest {
             Object resultObj = response.getEntity();
             String result = response.readEntity(String.class);
             int status = response.getStatus();
-            Assert.assertEquals("test", result);
-            Assert.assertEquals(200, status);
+            Assertions.assertEquals(result, "test");
+            Assertions.assertEquals(200, status);
         } catch (ProcessingException pe) {
             Assert.fail(pe.getMessage());
         }

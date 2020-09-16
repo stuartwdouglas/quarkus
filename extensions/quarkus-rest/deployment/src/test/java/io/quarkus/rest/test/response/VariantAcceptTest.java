@@ -15,9 +15,10 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.VariantAcceptResource;
@@ -31,10 +32,13 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-994
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Variant Accept Test")
 public class VariantAcceptTest {
 
     public static final MediaType WILDCARD_WITH_PARAMS;
+
     public static final MediaType TEXT_HTML_WITH_PARAMS;
+
     public static final MediaType TEXT_PLAIN_WITH_PARAMS;
 
     static {
@@ -44,13 +48,11 @@ public class VariantAcceptTest {
         params.put("b", "2");
         params.put("c", "3");
         WILDCARD_WITH_PARAMS = new MediaType("*", "*", params);
-
         params.clear();
         params.put("a", "1");
         params.put("b", "2");
         params.put("c", "3");
         TEXT_HTML_WITH_PARAMS = new MediaType("text", "html", params);
-
         params.clear();
         params.put("a", "1");
         params.put("b", "2");
@@ -59,26 +61,25 @@ public class VariantAcceptTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(VariantAcceptTest.class);
-                    return TestUtil.finishContainerPrepare(war, null, VariantAcceptResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(VariantAcceptTest.class);
+            return TestUtil.finishContainerPrepare(war, null, VariantAcceptResource.class);
+        }
+    });
 
     protected Client client;
 
-    @Before
+    @BeforeEach
     public void beforeTest() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void afterTest() {
         client.close();
         client = null;
@@ -93,6 +94,7 @@ public class VariantAcceptTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Variant")
     public void testVariant() throws Exception {
         Invocation.Builder request = client.target(generateURL("/variant")).request();
         request.accept(MediaType.WILDCARD_TYPE);
@@ -100,7 +102,7 @@ public class VariantAcceptTest {
         Response response = request.get();
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
-        assertEquals("Wrong media type on response", MediaType.TEXT_HTML, entity);
+        assertEquals(MediaType.TEXT_HTML, entity, "Wrong media type on response");
     }
 
     /**
@@ -108,6 +110,7 @@ public class VariantAcceptTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Variant With Parameters")
     public void testVariantWithParameters() throws Exception {
         Invocation.Builder request = client.target(generateURL("/params")).request();
         request.accept(WILDCARD_WITH_PARAMS);
@@ -115,7 +118,7 @@ public class VariantAcceptTest {
         Response response = request.get();
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
-        assertEquals("Wrong media type on response", TEXT_HTML_WITH_PARAMS.toString(), entity);
+        assertEquals(TEXT_HTML_WITH_PARAMS.toString(), entity, "Wrong media type on response");
     }
 
     /**
@@ -124,16 +127,16 @@ public class VariantAcceptTest {
      * @tpSince RESTEasy 3.0.25
      */
     @Test
+    @DisplayName("Test Variant With Q Parameter")
     public void testVariantWithQParameter() throws Exception {
         Invocation.Builder request = client.target(generateURL("/simple")).request();
         request.accept("application/json;q=0.3, application/xml;q=0.2");
         Response response = request.get();
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        assertEquals("application/json", response.getHeaderString("Content-Type"));
-
+        assertEquals(response.getHeaderString("Content-Type"), "application/json");
         request = client.target(generateURL("/simpleqs")).request();
         response = request.get();
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        assertEquals("application/xml;charset=UTF-8", response.getHeaderString("Content-Type"));
+        assertEquals(response.getHeaderString("Content-Type"), "application/xml;charset=UTF-8");
     }
 }

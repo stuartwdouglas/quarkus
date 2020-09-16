@@ -17,12 +17,12 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.extras.creaper.core.online.OnlineManagementClient;
 import org.wildfly.extras.creaper.core.online.operations.Address;
@@ -53,7 +53,7 @@ public class TraceTest extends ClientTestBase {
     public @interface TRACE {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setMaxPostSize() throws Exception {
         OnlineManagementClient client = TestUtil.clientInit();
         Administration admin = new Administration(client);
@@ -69,7 +69,7 @@ public class TraceTest extends ClientTestBase {
         client.close();
     }
 
-    @AfterClass
+    @AfterAll
     public static void resetToDefault() throws Exception {
         OnlineManagementClient client = TestUtil.clientInit();
         Administration admin = new Administration(client);
@@ -96,12 +96,12 @@ public class TraceTest extends ClientTestBase {
                 }
             });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }

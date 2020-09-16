@@ -13,10 +13,11 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -30,20 +31,20 @@ import io.quarkus.rest.test.xxe.resource.XXEBasicResource;
  *                    Basic XXE test.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Xxe Basic Test")
 public class XXEBasicTest {
 
     static String request;
+
     static {
         String filename = TestUtil.getResourcePath(XXEBasicTest.class, "testpasswd.txt");
-        request = new StringBuilder()
-                .append("<?xml version=\"1.0\"?>\r")
-                .append("<!DOCTYPE foo\r")
-                .append("[<!ENTITY xxe SYSTEM \"").append(filename).append("\">\r")
-                .append("]>\r")
+        request = new StringBuilder().append("<?xml version=\"1.0\"?>\r").append("<!DOCTYPE foo\r")
+                .append("[<!ENTITY xxe SYSTEM \"").append(filename).append("\">\r").append("]>\r")
                 .append("<search><user>&xxe;</user></search>").toString();
     }
 
     static QuarkusRestClient client;
+
     protected final Logger logger = Logger.getLogger(XXEBasicTest.class.getName());
 
     public static Archive<?> deploy(String expandEntityReferences) {
@@ -64,12 +65,12 @@ public class XXEBasicTest {
         return deploy("false");
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
         client = null;
@@ -80,15 +81,14 @@ public class XXEBasicTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test XXE Without Expansion")
     public void testXXEWithoutExpansion() throws Exception {
         logger.info(String.format("Request body: %s", request));
-
         Response response = client.target(PortProviderUtil.generateURL("/", "false")).request()
                 .post(Entity.entity(request, "application/xml"));
-
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
-        Assert.assertEquals(entity, null);
+        Assertions.assertEquals(entity, null);
         response.close();
     }
 
@@ -97,12 +97,13 @@ public class XXEBasicTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test XXE With Expansion")
     public void testXXEWithExpansion() throws Exception {
         Response response = client.target(PortProviderUtil.generateURL("/", "true")).request()
                 .post(Entity.entity(request, "application/xml"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
-        Assert.assertEquals("xx:xx:xx:xx:xx:xx:xx", entity);
+        Assertions.assertEquals(entity, "xx:xx:xx:xx:xx:xx:xx");
         response.close();
     }
 }

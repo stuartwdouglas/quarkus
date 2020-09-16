@@ -8,10 +8,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -27,33 +28,34 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for anonymous classes as resource added to REST singletons
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Singleton Custom Provider Test")
 public class SingletonCustomProviderTest {
+
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(SingletonCustomProviderApplication.class, SingletonCustomProviderObject.class,
-                            SingletonCustomProviderResource.class);
-                    return war;
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(SingletonCustomProviderApplication.class, SingletonCustomProviderObject.class,
+                    SingletonCustomProviderResource.class);
+            return war;
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, SingletonCustomProviderTest.class.getSimpleName());
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -63,10 +65,11 @@ public class SingletonCustomProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Message Reader Throwing Web Application Exception")
     public void testMessageReaderThrowingWebApplicationException() throws Exception {
         Response response = client.target(generateURL("/test")).request()
                 .post(Entity.entity("foo", "application/octet-stream"));
-        Assert.assertEquals("Wrong response status", 999, response.getStatus());
+        Assertions.assertEquals(999, response.getStatus(), "Wrong response status");
         response.close();
     }
 
@@ -75,9 +78,10 @@ public class SingletonCustomProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Message Writer Throwing Web Application Exception")
     public void testMessageWriterThrowingWebApplicationException() throws Exception {
         Response response = client.target(generateURL("/test")).request().get();
-        Assert.assertEquals("Wrong response status", 999, response.getStatus());
+        Assertions.assertEquals(999, response.getStatus(), "Wrong response status");
         response.close();
     }
 }

@@ -25,10 +25,11 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
 import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletApp;
@@ -48,18 +49,19 @@ import io.quarkus.rest.test.simple.PortProviderUtil;
  *                    property.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Comprehensive Jaxrs Test")
 public class ComprehensiveJaxrsTest {
+
     protected static final Logger logger = Logger.getLogger(ComprehensiveJaxrsTest.class.getName());
 
     @Deployment
     public static Archive<?> createTestArchive() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, AsyncServletTest.class.getSimpleName() + ".war");
         war.addClasses(JaxrsAsyncServletXmlData.class, JaxrsAsyncServletAsyncResponseBlockingQueue.class,
-                JaxrsAsyncServletJaxrsResource.class, JaxrsAsyncServletApp.class,
-                JaxrsAsyncServletPrintingErrorHandler.class, JaxrsAsyncServletTimeoutHandler.class,
-                JaxrsAsyncServletResource.class, JaxrsAsyncServletServiceUnavailableExceptionMapper.class,
-                JaxrsAsyncServletXmlData.class);
-        //        war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
+                JaxrsAsyncServletJaxrsResource.class, JaxrsAsyncServletApp.class, JaxrsAsyncServletPrintingErrorHandler.class,
+                JaxrsAsyncServletTimeoutHandler.class, JaxrsAsyncServletResource.class,
+                JaxrsAsyncServletServiceUnavailableExceptionMapper.class, JaxrsAsyncServletXmlData.class);
+        // war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "JaxrsAsyncServletWeb.xml", "web.xml");
         return war;
     }
 
@@ -69,12 +71,12 @@ public class ComprehensiveJaxrsTest {
 
     protected Client client;
 
-    @Before
+    @BeforeEach
     public void beforeTest() {
         client = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).connectionPoolSize(10).build();
     }
 
-    @After
+    @AfterEach
     public void afterTest() {
         client.close();
     }
@@ -92,7 +94,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     protected static void checkEquals(Object expected, Object actual, Object... msg) {
-        Assert.assertEquals(objectsToString(msg), expected, actual);
+        Assertions.assertEquals(objectsToString(msg), expected, actual);
     }
 
     public static final TimeZone findTimeZoneInDate(String date) {
@@ -152,7 +154,6 @@ public class ComprehensiveJaxrsTest {
     private void cancelDateTestInternal() throws Exception {
         long milis = (System.currentTimeMillis() / 1000) * 1000 + 20000;
         invokeClear();
-
         Future<Response> suspend = invokeRequest("suspend");
         Future<Response> cancel = invokeRequest("canceldate?stage=0", milis);
         Response response = getResponse(suspend);
@@ -166,23 +167,21 @@ public class ComprehensiveJaxrsTest {
         } catch (ParseException e) {
             throw new Exception(e);
         }
-        checkEquals(new Date(milis), retry, "Unexpected", HttpHeaders.RETRY_AFTER, "header value received",
-                retry.getTime(), "expected", milis);
+        checkEquals(new Date(milis), retry, "Unexpected", HttpHeaders.RETRY_AFTER, "header value received", retry.getTime(),
+                "expected", milis);
         logMsg("Found expected", HttpHeaders.RETRY_AFTER, "=", header);
     }
 
     private void cancelIntTestInternal() throws Exception {
         String seconds = "20";
         invokeClear();
-
         Future<Response> suspend = invokeRequest("suspend");
         Future<Response> cancel = invokeRequest("cancelretry?stage=0", seconds);
         Response response = getResponse(suspend);
         checktStatus(response, Status.SERVICE_UNAVAILABLE);
         checkString(cancel, JaxrsAsyncServletResource.TRUE);
         String retry = response.getHeaderString(HttpHeaders.RETRY_AFTER);
-        checkEquals(seconds, retry, "Unexpected", HttpHeaders.RETRY_AFTER, "header value received", retry, "expected",
-                seconds);
+        checkEquals(seconds, retry, "Unexpected", HttpHeaders.RETRY_AFTER, "header value received", retry, "expected", seconds);
         logMsg("Found expected", HttpHeaders.RETRY_AFTER, "=", retry);
     }
 
@@ -190,13 +189,14 @@ public class ComprehensiveJaxrsTest {
      * @tpTestDetails Complex test. Check stage=0 and stage=1 values.
      * @tpSince RESTEasy 3.0.16
      */
-
     @Test
+    @DisplayName("Cancel Void Test")
     public void cancelVoidTest() throws Exception {
         cancelVoidTestInternal();
     }
 
     @Test
+    @DisplayName("Cancel Void On Resumed Test")
     public void cancelVoidOnResumedTest() throws Exception {
         suspendResumeTestInternal();
         Future<Response> cancel = invokeRequest("cancelvoid?stage=1");
@@ -204,6 +204,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Cancel Void On Canceled Test")
     public void cancelVoidOnCanceledTest() throws Exception {
         cancelVoidTestInternal();
         Future<Response> cancel = invokeRequest("cancelvoid?stage=1");
@@ -211,6 +212,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Resume Canceled Test")
     public void resumeCanceledTest() throws Exception {
         cancelVoidTestInternal();
         Future<Response> resumeCanceled = invokeRequest("resume?stage=1", "");
@@ -218,11 +220,13 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Cancel Int Test")
     public void cancelIntTest() throws Exception {
         cancelIntTestInternal();
     }
 
     @Test
+    @DisplayName("Cancel Int On Resumed Test")
     public void cancelIntOnResumedTest() throws Exception {
         suspendResumeTestInternal();
         Future<Response> cancel = invokeRequest("cancelretry?stage=1", "20");
@@ -230,6 +234,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Cancel Int On Canceled Test")
     public void cancelIntOnCanceledTest() throws Exception {
         cancelVoidTestInternal();
         Future<Response> cancel = invokeRequest("cancelretry?stage=1", "20");
@@ -237,6 +242,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Resume Canceled Int Test")
     public void resumeCanceledIntTest() throws Exception {
         cancelIntTestInternal();
         Future<Response> resume = invokeRequest("resume?stage=1", "");
@@ -244,11 +250,13 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Cancel Date Test")
     public void cancelDateTest() throws Exception {
         cancelDateTestInternal();
     }
 
     @Test
+    @DisplayName("Cancel Date On Resumed Test")
     public void cancelDateOnResumedTest() throws Exception {
         suspendResumeTestInternal();
         Future<Response> cancel = invokeRequest("canceldate?stage=1", System.currentTimeMillis());
@@ -256,6 +264,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Cancel Date On Canceled Test")
     public void cancelDateOnCanceledTest() throws Exception {
         cancelVoidTestInternal();
         Future<Response> cancel = invokeRequest("canceldate?stage=1", System.currentTimeMillis());
@@ -263,6 +272,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Resume Canceled Date Test")
     public void resumeCanceledDateTest() throws Exception {
         cancelDateTestInternal();
         Future<Response> resumeResumed = invokeRequest("resume?stage=1", "");
@@ -270,6 +280,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Canceled When Canceled Test")
     public void isCanceledWhenCanceledTest() throws Exception {
         cancelVoidTestInternal();
         Future<Response> is = invokeRequest("iscanceled?stage=1");
@@ -277,6 +288,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Canceled When Suspended Test")
     public void isCanceledWhenSuspendedTest() throws Exception {
         invokeClear();
         invokeRequest("suspend");
@@ -285,6 +297,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Canceled When Resumed Test")
     public void isCanceledWhenResumedTest() throws Exception {
         suspendResumeTestInternal();
         Future<Response> is = invokeRequest("iscanceled?stage=1");
@@ -292,6 +305,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Done When Resumed Test")
     public void isDoneWhenResumedTest() throws Exception {
         suspendResumeTestInternal();
         Future<Response> is = invokeRequest("isdone?stage=1");
@@ -299,6 +313,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Done When Suspended Test")
     public void isDoneWhenSuspendedTest() throws Exception {
         invokeClear();
         invokeRequest("suspend");
@@ -307,6 +322,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Done When Canceled Test")
     public void isDoneWhenCanceledTest() throws Exception {
         cancelVoidTestInternal();
         Future<Response> is = invokeRequest("isdone?stage=1");
@@ -314,6 +330,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Done When Timed Out Test")
     public void isDoneWhenTimedOutTest() throws Exception {
         setTimeoutTestInternal();
         Future<Response> is = invokeRequest("isdone?stage=1");
@@ -321,6 +338,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Suspended When Suspended Test")
     public void isSuspendedWhenSuspendedTest() throws Exception {
         invokeClear();
         invokeRequest("suspend");
@@ -329,6 +347,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Suspended When Canceled Test")
     public void isSuspendedWhenCanceledTest() throws Exception {
         cancelVoidTestInternal();
         Future<Response> is = invokeRequest("issuspended?stage=1");
@@ -336,6 +355,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Is Suspended When Resumed Test")
     public void isSuspendedWhenResumedTest() throws Exception {
         suspendResumeTestInternal();
         Future<Response> is = invokeRequest("issuspended?stage=1");
@@ -343,11 +363,13 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Suspend Resume Test")
     public void suspendResumeTest() throws Exception {
         suspendResumeTestInternal();
     }
 
     @Test
+    @DisplayName("Resume Any Java Object Input Stream Test")
     public void resumeAnyJavaObjectInputStreamTest() throws Exception {
         invokeClear();
         String expectedResponse = "Expected response";
@@ -358,13 +380,16 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Resume Resumed Test")
     public void resumeResumedTest() throws Exception {
-        suspendResumeTestInternal(); // resume & store
+        // resume & store
+        suspendResumeTestInternal();
         Future<Response> resumeResumed = invokeRequest("resume?stage=1", "");
         checkString(resumeResumed, JaxrsAsyncServletResource.FALSE);
     }
 
     @Test
+    @DisplayName("Resume With Checked Exception Test")
     public void resumeWithCheckedExceptionTest() throws Exception {
         invokeClear();
         Future<Response> suspend = invokeRequest("suspend");
@@ -374,6 +399,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Resume With Runtime Exception Test")
     public void resumeWithRuntimeExceptionTest() throws Exception {
         invokeClear();
         Future<Response> suspend = invokeRequest("suspend");
@@ -383,6 +409,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Resume With Exception Returns False When Resumed Test")
     public void resumeWithExceptionReturnsFalseWhenResumedTest() throws Exception {
         suspendResumeTestInternal();
         Future<Response> resume = invokeRequest("resumechecked?stage=1");
@@ -390,11 +417,13 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Set Timeout Test")
     public void setTimeoutTest() throws Exception {
         setTimeoutTestInternal();
     }
 
     @Test
+    @DisplayName("Update Timeout Test")
     public void updateTimeoutTest() throws Exception {
         invokeClear();
         Future<Response> suspend = invokeRequest("suspend");
@@ -413,6 +442,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Handle Time Out Waits Forever Test")
     public void handleTimeOutWaitsForeverTest() throws Exception {
         String responseMsg = "handleTimeOutWaitsForeverTest";
         invokeClear();
@@ -425,6 +455,7 @@ public class ComprehensiveJaxrsTest {
     }
 
     @Test
+    @DisplayName("Handle Timeout Cancels Test")
     public void handleTimeoutCancelsTest() throws Exception {
         invokeClear();
         Future<Response> suspend = invokeRequest("suspend");
@@ -433,10 +464,10 @@ public class ComprehensiveJaxrsTest {
         checktStatus(getResponse(suspend), Status.SERVICE_UNAVAILABLE);
         Future<Response> resume = invokeRequest("issuspended?stage=1");
         checkString(resume, JaxrsAsyncServletResource.FALSE);
-
     }
 
     @Test
+    @DisplayName("Handle Timeout Resumes Test")
     public void handleTimeoutResumesTest() throws Exception {
         invokeClear();
         Future<Response> suspend = invokeRequest("suspend");
@@ -446,15 +477,15 @@ public class ComprehensiveJaxrsTest {
         Future<Response> resume = invokeRequest("issuspended?stage=1");
         checkString(resume, JaxrsAsyncServletResource.FALSE);
     }
-    // }
 
+    // }
     protected String getAbsoluteUrl() {
         return generateURL("/resource");
     }
 
     private void invokeClear() throws Exception {
         Response response = client.target(getAbsoluteUrl()).path("clear").request().get();
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
     }
 
     private Future<Response> invokeRequest(String resource) {
@@ -519,5 +550,4 @@ public class ComprehensiveJaxrsTest {
     public static void checkFalse(boolean condition, Object... message) throws Exception {
         checkTrue(!condition, message);
     }
-
 }

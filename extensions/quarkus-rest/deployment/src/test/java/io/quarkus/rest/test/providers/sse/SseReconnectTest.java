@@ -20,8 +20,9 @@ import javax.ws.rs.sse.SseEventSource;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.sse.resource.SseReconnectResource;
@@ -29,19 +30,19 @@ import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.test.QuarkusUnitTest;
 
+@DisplayName("Sse Reconnect Test")
 public class SseReconnectTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, SseReconnectResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, SseReconnectResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, SseReconnectTest.class.getSimpleName());
@@ -54,13 +55,14 @@ public class SseReconnectTest {
      * @tpSince RESTEasy 3.5.0
      */
     @Test
+    @DisplayName("Test Reconnect Delay Is Not Set")
     public void testReconnectDelayIsNotSet() throws Exception {
         Client client = ClientBuilder.newClient();
         try {
             WebTarget baseTarget = client.target(generateURL("/reconnect/defaultReconnectDelay"));
             try (Response response = baseTarget.request().get()) {
-                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-                Assert.assertEquals(SseEvent.RECONNECT_NOT_SET, (long) response.readEntity(long.class));
+                Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+                Assertions.assertEquals(SseEvent.RECONNECT_NOT_SET, (long) response.readEntity(long.class));
             }
         } finally {
             client.close();
@@ -74,13 +76,14 @@ public class SseReconnectTest {
      * @tpSince RESTEasy 3.5.0
      */
     @Test
+    @DisplayName("Test Reconnect Delay Is Set")
     public void testReconnectDelayIsSet() throws Exception {
         Client client = ClientBuilder.newClient();
         try {
             WebTarget baseTarget = client.target(generateURL("/reconnect/reconnectDelaySet"));
             try (Response response = baseTarget.request().get()) {
-                Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-                Assert.assertEquals(1000L, (long) response.readEntity(long.class));
+                Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+                Assertions.assertEquals(1000L, (long) response.readEntity(long.class));
             }
         } finally {
             client.close();
@@ -94,6 +97,7 @@ public class SseReconnectTest {
      * @tpSince RESTEasy 3.5.0
      */
     @Test
+    @DisplayName("Test Sse Endpoint Unavailable")
     public void testSseEndpointUnavailable() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicInteger errors = new AtomicInteger(0);
@@ -108,15 +112,14 @@ public class SseReconnectTest {
                     latch.countDown();
                 }, ex -> {
                     errors.incrementAndGet();
-                    Assert.assertTrue("ServiceUnavalile exception is expected", ex instanceof ServiceUnavailableException);
+                    Assertions.assertTrue(ex instanceof ServiceUnavailableException, "ServiceUnavalile exception is expected");
                 });
                 eventSource.open();
-
                 boolean waitResult = latch.await(30, TimeUnit.SECONDS);
-                Assert.assertEquals(1, errors.get());
-                Assert.assertTrue("Waiting for event to be delivered has timed out.", waitResult);
+                Assertions.assertEquals(1, errors.get());
+                Assertions.assertTrue(waitResult, "Waiting for event to be delivered has timed out.");
             }
-            Assert.assertTrue("ServiceAvailable message is expected", results.get(0).equals("ServiceAvailable"));
+            Assertions.assertTrue(results.get(0).equals("ServiceAvailable"), "ServiceAvailable message is expected");
         } finally {
             client.close();
         }
@@ -129,6 +132,7 @@ public class SseReconnectTest {
      * @tpSince RESTEasy
      */
     @Test
+    @DisplayName("Test Reconnect Delay Is Used")
     public void testReconnectDelayIsUsed() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         List<InboundSseEvent> results = new ArrayList<>();
@@ -136,8 +140,7 @@ public class SseReconnectTest {
         Client client = ClientBuilder.newBuilder().build();
         try {
             WebTarget target = client.target(generateURL("/reconnect/testReconnectDelayIsUsed"));
-            SseEventSource sseEventSource = SseEventSource.target(target).reconnectingEvery(500, TimeUnit.MILLISECONDS)
-                    .build();
+            SseEventSource sseEventSource = SseEventSource.target(target).reconnectingEvery(500, TimeUnit.MILLISECONDS).build();
             sseEventSource.register(event -> {
                 results.add(event);
             }, error -> {
@@ -153,16 +156,15 @@ public class SseReconnectTest {
             try (SseEventSource eventSource = sseEventSource) {
                 eventSource.open();
                 boolean waitResult = latch.await(30, TimeUnit.SECONDS);
-                Assert.assertTrue("Waiting for event to be delivered has timed out.", waitResult);
-                Assert.assertEquals(0, errorCount.get());
-                Assert.assertEquals(2, results.size());
-                Assert.assertTrue(results.get(0).isReconnectDelaySet());
-                Assert.assertEquals(TimeUnit.SECONDS.toMillis(3), results.get(0).getReconnectDelay());
-                Assert.assertFalse(results.get(1).isReconnectDelaySet());
+                Assertions.assertTrue(waitResult, "Waiting for event to be delivered has timed out.");
+                Assertions.assertEquals(0, errorCount.get());
+                Assertions.assertEquals(2, results.size());
+                Assertions.assertTrue(results.get(0).isReconnectDelaySet());
+                Assertions.assertEquals(TimeUnit.SECONDS.toMillis(3), results.get(0).getReconnectDelay());
+                Assertions.assertFalse(results.get(1).isReconnectDelaySet());
             }
         } finally {
             client.close();
         }
     }
-
 }

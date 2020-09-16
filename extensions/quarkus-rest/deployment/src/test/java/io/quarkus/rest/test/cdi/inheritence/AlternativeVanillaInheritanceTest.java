@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.cdi.inheritence;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.function.Supplier;
 
@@ -13,7 +13,8 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.cdi.inheritence.resource.CDIInheritenceBook;
@@ -32,26 +33,26 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails This class tests CDI inheritance (BookVanilaAlternative should not be used)
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Alternative Vanilla Inheritance Test")
 public class AlternativeVanillaInheritanceTest {
+
     protected static final Logger log = Logger.getLogger(AlternativeVanillaInheritanceTest.class.getName());
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(UtilityProducer.class)
-                            .addClasses(CDIInheritenceBook.class, CDIInheritenceSelectBook.class,
-                                    CDIInheritenceStereotypeAlternative.class, CDIInheritenceBookVanillaAlternative.class,
-                                    CDIInheritenceInheritanceResource.class);
-                    //                            .addAsWebInfResource(SpecializedInheritanceTest.class.getPackage(), "alternativeVanillaBeans.xml",
-                    //                                "beans.xml");
-                    return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(UtilityProducer.class).addClasses(CDIInheritenceBook.class, CDIInheritenceSelectBook.class,
+                    CDIInheritenceStereotypeAlternative.class, CDIInheritenceBookVanillaAlternative.class,
+                    CDIInheritenceInheritanceResource.class);
+            // .addAsWebInfResource(SpecializedInheritanceTest.class.getPackage(), "alternativeVanillaBeans.xml",
+            // "beans.xml");
+            return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
+        }
+    });
 
     /**
      * @tpTestDetails Client get request. Resource check inheritance bean on server.
@@ -59,6 +60,7 @@ public class AlternativeVanillaInheritanceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Alternative")
     public void testAlternative() throws Exception {
         Client client = ClientBuilder.newClient();
         log.info("starting testAlternative()");

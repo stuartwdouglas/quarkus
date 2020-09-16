@@ -8,11 +8,11 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.ClientConfiguration;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.runners.MethodSorters;
 
@@ -78,7 +78,7 @@ public class MultiValuedParamDefaultParamConverterTest {
         return PortProviderUtil.generateURL(path, MultiValuedParamDefaultParamConverterTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         client = ClientBuilder.newClient();
         ClientConfiguration config = ((ClientConfiguration) client.getConfiguration());
@@ -86,7 +86,7 @@ public class MultiValuedParamDefaultParamConverterTest {
         config.addHeaderDelegate(MultiValuedParamDefaultParamConverterHeaderDelegateClass.class, delegate);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         client.close();
     }

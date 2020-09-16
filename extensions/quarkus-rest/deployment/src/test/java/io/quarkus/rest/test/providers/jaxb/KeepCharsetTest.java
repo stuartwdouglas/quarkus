@@ -15,10 +15,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.providers.jaxb.resource.KeepCharsetFavoriteMovieXmlRootElement;
@@ -32,14 +33,19 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpTestCaseDetails Regression test for RESTEASY-1066. If the content-type of the response is not specified in the request,
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Keep Charset Test")
 public class KeepCharsetTest {
 
     protected final Logger logger = Logger.getLogger(KeepCharsetTest.class.getName());
+
     static QuarkusRestClient client;
+
     protected static final MediaType APPLICATION_XML_UTF16_TYPE;
 
     private static final String EXPAND = "war_expand";
+
     private static final String NO_EXPAND = "war_no_expand";
+
     private static final String entityXml = "<?xml version=\"1.0\"?>\r"
             + "<keepCharsetFavoriteMovieXmlRootElement><title>La Règle du Jeu</title></keepCharsetFavoriteMovieXmlRootElement>";
 
@@ -69,12 +75,12 @@ public class KeepCharsetTest {
                 KeepCharsetFavoriteMovieXmlRootElement.class);
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -86,6 +92,7 @@ public class KeepCharsetTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Xml Default Expand")
     public void testXmlDefaultExpand() throws Exception {
         xmlDefault(EXPAND);
     }
@@ -97,6 +104,7 @@ public class KeepCharsetTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Xml Default No Expand")
     public void testXmlDefaultNoExpand() throws Exception {
         xmlDefault(NO_EXPAND);
     }
@@ -109,10 +117,10 @@ public class KeepCharsetTest {
         Response response = target.request().accept(MediaType.APPLICATION_XML_TYPE)
                 .post(Entity.entity(entityXml, MediaType.APPLICATION_XML_TYPE));
         logger.info("Received response");
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         KeepCharsetFavoriteMovieXmlRootElement entity = response.readEntity(KeepCharsetFavoriteMovieXmlRootElement.class);
         logger.info("Result: " + entity);
-        Assert.assertEquals("Incorrect xml entity was returned from the server", "La Règle du Jeu", entity.getTitle());
+        Assertions.assertEquals("La Règle du Jeu", entity.getTitle(), "Incorrect xml entity was returned from the server");
     }
 
     /**
@@ -123,6 +131,7 @@ public class KeepCharsetTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Xml Produces Expand")
     public void testXmlProducesExpand() throws Exception {
         XmlProduces(EXPAND);
     }
@@ -135,6 +144,7 @@ public class KeepCharsetTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Xml Produces No Expand")
     public void testXmlProducesNoExpand() throws Exception {
         XmlProduces(NO_EXPAND);
     }
@@ -144,10 +154,10 @@ public class KeepCharsetTest {
         logger.info(entityXml);
         logger.info("client default charset: " + Charset.defaultCharset());
         Response response = target.request().post(Entity.entity(entityXml, APPLICATION_XML_UTF16_TYPE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         KeepCharsetFavoriteMovieXmlRootElement entity = response.readEntity(KeepCharsetFavoriteMovieXmlRootElement.class);
         logger.info("Result: " + entity);
-        Assert.assertEquals("Incorrect xml entity was returned from the server", "La Règle du Jeu", entity.getTitle());
+        Assertions.assertEquals("La Règle du Jeu", entity.getTitle(), "Incorrect xml entity was returned from the server");
     }
 
     /**
@@ -158,6 +168,7 @@ public class KeepCharsetTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Xml Accepts Expand")
     public void testXmlAcceptsExpand() throws Exception {
         XmlAccepts(EXPAND);
     }
@@ -170,6 +181,7 @@ public class KeepCharsetTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Xml Accepts No Expand")
     public void testXmlAcceptsNoExpand() throws Exception {
         XmlAccepts(NO_EXPAND);
     }
@@ -180,9 +192,9 @@ public class KeepCharsetTest {
         logger.info("client default charset: " + Charset.defaultCharset());
         Response response = target.request().accept(APPLICATION_XML_UTF16_TYPE)
                 .post(Entity.entity(entityXml, APPLICATION_XML_UTF16_TYPE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         KeepCharsetFavoriteMovieXmlRootElement entity = response.readEntity(KeepCharsetFavoriteMovieXmlRootElement.class);
         logger.info("Result: " + entity);
-        Assert.assertEquals("Incorrect xml entity was returned from the server", "La Règle du Jeu", entity.getTitle());
+        Assertions.assertEquals("La Règle du Jeu", entity.getTitle(), "Incorrect xml entity was returned from the server");
     }
 }

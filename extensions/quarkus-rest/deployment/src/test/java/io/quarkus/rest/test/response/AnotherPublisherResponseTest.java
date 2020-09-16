@@ -15,8 +15,9 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.AsyncResponseCallback;
@@ -32,27 +33,25 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.0
  */
-
+@DisplayName("Another Publisher Response Test")
 public class AnotherPublisherResponseTest {
+
     private static final Logger logger = Logger.getLogger(AnotherPublisherResponseTest.class);
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(AnotherPublisherResponseTest.class);
-                    war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                            + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.reactivestreams\n"));
-
-                    return TestUtil.finishContainerPrepare(war, null, PublisherResponseResource.class,
-                            AsyncResponseCallback.class, AsyncResponseExceptionMapper.class, AsyncResponseException.class,
-                            PortProviderUtil.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(AnotherPublisherResponseTest.class);
+            war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
+                    + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.reactivestreams\n"));
+            return TestUtil.finishContainerPrepare(war, null, PublisherResponseResource.class, AsyncResponseCallback.class,
+                    AsyncResponseExceptionMapper.class, AsyncResponseException.class, PortProviderUtil.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, AnotherPublisherResponseTest.class.getSimpleName());
@@ -63,6 +62,7 @@ public class AnotherPublisherResponseTest {
      * @tpSince RESTEasy 4.0
      */
     @Test
+    @DisplayName("Test Sse")
     public void testSse() throws Exception {
         for (int i = 0; i < 40; i++) {
             internalTestSse(i);
@@ -91,10 +91,10 @@ public class AnotherPublisherResponseTest {
             });
             source.open();
             future.get(5000, TimeUnit.SECONDS);
-            Assert.assertEquals(30, collector.size());
-            Assert.assertEquals(0, errors.size());
-            Assert.assertTrue(collector.contains("0-1"));
-            Assert.assertTrue(collector.contains("1-1"));
+            Assertions.assertEquals(30, collector.size());
+            Assertions.assertEquals(0, errors.size());
+            Assertions.assertTrue(collector.contains("0-1"));
+            Assertions.assertTrue(collector.contains("1-1"));
         }
         client.close();
     }

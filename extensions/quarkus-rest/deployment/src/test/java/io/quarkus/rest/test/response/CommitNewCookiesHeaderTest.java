@@ -18,19 +18,22 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.test.QuarkusUnitTest;
 
+@DisplayName("Commit New Cookies Header Test")
 public class CommitNewCookiesHeaderTest {
 
     @Path("echo")
+    @DisplayName("Echo Resource")
     public static class EchoResource {
 
         @Produces(MediaType.TEXT_PLAIN)
@@ -38,9 +41,7 @@ public class CommitNewCookiesHeaderTest {
         public Response echo(@QueryParam("msg") String msg) {
             // send cookie as a simple string
             return Response.ok(msg).header(HttpHeaders.SET_COOKIE, "Cookie 1=Cookie 1 value;Version=1;Path=/")
-                    .cookie(new NewCookie("Cookie 2", "Cookie 2 value"),
-                            new NewCookie("Cookie 3", "Cookie 3 value"))
-                    .build();
+                    .cookie(new NewCookie("Cookie 2", "Cookie 2 value"), new NewCookie("Cookie 3", "Cookie 3 value")).build();
         }
 
         @Path("two")
@@ -48,15 +49,13 @@ public class CommitNewCookiesHeaderTest {
         @GET
         public Response echoTwo(@QueryParam("msg") String msg) {
             // Any class that provides a toString can be provided as a cookie
-            return Response.ok().header(HttpHeaders.SET_COOKIE,
-                    new Object() {
-                        @Override
-                        public String toString() {
-                            return "Cookie 1=Cookie 1 value;Version=1;Path=/";
-                        }
-                    })
-                    .cookie(new NewCookie("Cookie 2", "Cookie 2 value"))
-                    .build();
+            return Response.ok().header(HttpHeaders.SET_COOKIE, new Object() {
+
+                @Override
+                public String toString() {
+                    return "Cookie 1=Cookie 1 value;Version=1;Path=/";
+                }
+            }).cookie(new NewCookie("Cookie 2", "Cookie 2 value")).build();
         }
 
         @Path("three")
@@ -65,35 +64,32 @@ public class CommitNewCookiesHeaderTest {
         public Response echoThree(@QueryParam("msg") String msg) {
             // Cookie should really only be used with request but it is an object with a toString impl
             return Response.ok(msg).header(HttpHeaders.SET_COOKIE, new Cookie("Cookie 1", "Cookie 1 value"))
-                    .cookie(new NewCookie("Cookie 2", "Cookie 2 value"))
-                    .build();
+                    .cookie(new NewCookie("Cookie 2", "Cookie 2 value")).build();
         }
-
     }
 
     private static Client client;
+
     private static final String DEP = "CommitCookiesHeaderTest";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(EchoResource.class);
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(EchoResource.class);
+            return TestUtil.finishContainerPrepare(war, null, EchoResource.class);
+        }
+    });
 
-                    return TestUtil.finishContainerPrepare(war, null, EchoResource.class);
-                }
-            });
-
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         client.close();
     }
@@ -103,39 +99,42 @@ public class CommitNewCookiesHeaderTest {
     }
 
     @Test
+    @DisplayName("Test Accept Application Star")
     public void testAcceptApplicationStar() throws Exception {
         Invocation.Builder request = client.target(generateURL()).path("echo").queryParam("msg", "Hello world")
                 .request(MediaType.TEXT_PLAIN_TYPE);
         try (Response response = request.get()) {
             Map<String, NewCookie> cookies = response.getCookies();
-            Assert.assertEquals(3, cookies.size());
-            Assert.assertEquals("Cookie 1 value", cookies.get("Cookie 1").getValue());
-            Assert.assertEquals("Cookie 2 value", cookies.get("Cookie 2").getValue());
-            Assert.assertEquals("Cookie 3 value", cookies.get("Cookie 3").getValue());
+            Assertions.assertEquals(3, cookies.size());
+            Assertions.assertEquals(cookies.get("Cookie 1").getValue(), "Cookie 1 value");
+            Assertions.assertEquals(cookies.get("Cookie 2").getValue(), "Cookie 2 value");
+            Assertions.assertEquals(cookies.get("Cookie 3").getValue(), "Cookie 3 value");
         }
     }
 
     @Test
+    @DisplayName("Test Second Case")
     public void testSecondCase() throws Exception {
         Invocation.Builder request = client.target(generateURL()).path("echo/two").queryParam("msg", "Hello world")
                 .request(MediaType.TEXT_PLAIN_TYPE);
         try (Response response = request.get()) {
             Map<String, NewCookie> cookies = response.getCookies();
-            Assert.assertEquals(2, cookies.size());
-            Assert.assertEquals("Cookie 1 value", cookies.get("Cookie 1").getValue());
-            Assert.assertEquals("Cookie 2 value", cookies.get("Cookie 2").getValue());
+            Assertions.assertEquals(2, cookies.size());
+            Assertions.assertEquals(cookies.get("Cookie 1").getValue(), "Cookie 1 value");
+            Assertions.assertEquals(cookies.get("Cookie 2").getValue(), "Cookie 2 value");
         }
     }
 
     @Test
+    @DisplayName("Test Three Case")
     public void testThreeCase() throws Exception {
         Invocation.Builder request = client.target(generateURL()).path("echo/three").queryParam("msg", "Hello world")
                 .request(MediaType.TEXT_PLAIN_TYPE);
         try (Response response = request.get()) {
             Map<String, NewCookie> cookies = response.getCookies();
-            Assert.assertEquals(2, cookies.size());
-            Assert.assertEquals("Cookie 1 value", cookies.get("Cookie 1").getValue());
-            Assert.assertEquals("Cookie 2 value", cookies.get("Cookie 2").getValue());
+            Assertions.assertEquals(2, cookies.size());
+            Assertions.assertEquals(cookies.get("Cookie 1").getValue(), "Cookie 1 value");
+            Assertions.assertEquals(cookies.get("Cookie 2").getValue(), "Cookie 2 value");
         }
     }
 }

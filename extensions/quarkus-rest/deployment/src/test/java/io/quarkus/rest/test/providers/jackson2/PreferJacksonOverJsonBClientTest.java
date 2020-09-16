@@ -16,10 +16,10 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.test.providers.jackson2.resource.MyEntity;
 import io.quarkus.rest.test.providers.jackson2.resource.PreferJacksonOverJsonBClientResource;
@@ -31,6 +31,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpChapter Integration test
  * @tpSince RESTEasy 3.3
  */
+@DisplayName("Prefer Jackson Over Json B Client Test")
 public class PreferJacksonOverJsonBClientTest {
 
     protected static final Logger LOG = Logger.getLogger(PreferJacksonOverJsonBClientTest.class.getName());
@@ -38,6 +39,7 @@ public class PreferJacksonOverJsonBClientTest {
     static Client client;
 
     private static final String WAR_WITH_JSONB = "war_with_jsonb";
+
     private static final String WAR_WITH_JACKSON2 = "war_with_jackson2";
 
     /**
@@ -64,17 +66,17 @@ public class PreferJacksonOverJsonBClientTest {
         war.addClass(MyEntity.class);
         Map<String, String> contextParams = new HashMap<>();
         contextParams.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, useJackson.toString());
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                + "Dependencies: org.jboss.resteasy.resteasy-json-binding-provider services\n"));
+        war.setManifest(new StringAsset(
+                "Manifest-Version: 1.0\n" + "Dependencies: org.jboss.resteasy.resteasy-json-binding-provider services\n"));
         return TestUtil.finishContainerPrepare(war, contextParams, PreferJacksonOverJsonBClientResource.class);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         client.close();
     }
@@ -84,6 +86,7 @@ public class PreferJacksonOverJsonBClientTest {
      * @tpSince RESTEasy 3.6.1.Final
      */
     @Test
+    @DisplayName("Test Json B")
     public void testJsonB() {
         test(WAR_WITH_JSONB);
     }
@@ -93,6 +96,7 @@ public class PreferJacksonOverJsonBClientTest {
      * @tpSince RESTEasy 3.6.1.Final
      */
     @Test
+    @DisplayName("Test Jackson")
     public void testJackson() {
         test(WAR_WITH_JACKSON2);
     }
@@ -104,14 +108,10 @@ public class PreferJacksonOverJsonBClientTest {
      * 1539358801324
      */
     private void test(String deployment) {
-
         WebTarget target = client.target(PortProviderUtil.generateURL("/call", deployment));
-        Response response = target.request()
-                .header("clientURL", PortProviderUtil.generateURL("/core", deployment))
-                .get();
+        Response response = target.request().header("clientURL", PortProviderUtil.generateURL("/core", deployment)).get();
         String responseText = response.readEntity(String.class);
         LOG.info("Response: " + responseText);
-
         if (deployment.equals(WAR_WITH_JACKSON2)) {
             Assert.assertThat("Jackson2 not used.", responseText.matches("^[0-9]*$"), is(true));
         } else {

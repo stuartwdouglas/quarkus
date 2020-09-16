@@ -21,8 +21,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -34,25 +35,24 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Xml JAXB Context Finder Test")
 public class XmlJAXBContextFinderTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, BeanWrapper.class,
-                            FirstBean.class, SecondBean.class,
-                            FirstTestResource.class, SecondTestResource.class,
-                            MyJAXBContextResolver.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, BeanWrapper.class, FirstBean.class, SecondBean.class,
+                    FirstTestResource.class, SecondTestResource.class, MyJAXBContextResolver.class);
+        }
+    });
 
     @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
+    @DisplayName("Bean Wrapper")
     public static final class BeanWrapper {
 
         @XmlAnyElement(lax = true)
@@ -65,11 +65,11 @@ public class XmlJAXBContextFinderTest {
         public void setBean(Object bean) {
             this.bean = bean;
         }
-
     }
 
     @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
+    @DisplayName("First Bean")
     public static final class FirstBean {
 
         private String data;
@@ -81,11 +81,11 @@ public class XmlJAXBContextFinderTest {
         public void setData(String data) {
             this.data = data;
         }
-
     }
 
     @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
+    @DisplayName("Second Bean")
     public static final class SecondBean {
 
         private String data;
@@ -97,11 +97,11 @@ public class XmlJAXBContextFinderTest {
         public void setData(String data) {
             this.data = data;
         }
-
     }
 
     @Path("/firstTestResource")
     @Produces(MediaType.APPLICATION_XML)
+    @DisplayName("First Test Resource")
     public static final class FirstTestResource {
 
         @GET
@@ -112,11 +112,11 @@ public class XmlJAXBContextFinderTest {
             beanWrapper.setBean(firstBean);
             return Response.ok(beanWrapper).build();
         }
-
     }
 
     @Path("/secondTestResource")
     @Produces(MediaType.APPLICATION_XML)
+    @DisplayName("Second Test Resource")
     public static final class SecondTestResource {
 
         @GET
@@ -127,20 +127,20 @@ public class XmlJAXBContextFinderTest {
             beanWrapper.setBean(secondBean);
             return Response.ok(beanWrapper).build();
         }
-
     }
 
     @Provider
     @Produces(MediaType.APPLICATION_XML)
+    @DisplayName("My JAXB Context Resolver")
     public static class MyJAXBContextResolver implements ContextResolver<JAXBContext> {
+
         private JAXBContext jaxbContext;
 
         @Override
         public JAXBContext getContext(Class<?> type) {
             if (this.jaxbContext == null) {
                 try {
-                    this.jaxbContext = JAXBContext.newInstance(BeanWrapper.class,
-                            FirstBean.class, SecondBean.class);
+                    this.jaxbContext = JAXBContext.newInstance(BeanWrapper.class, FirstBean.class, SecondBean.class);
                 } catch (JAXBException e) {
                 }
             }
@@ -161,6 +161,7 @@ public class XmlJAXBContextFinderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test")
     public void test() {
         Client client = ClientBuilder.newClient();
         try {
@@ -174,21 +175,18 @@ public class XmlJAXBContextFinderTest {
                 public JAXBContext getContext(Class<?> type) {
                     if (this.jaxbContext == null) {
                         try {
-                            this.jaxbContext = JAXBContext.newInstance(BeanWrapper.class,
-                                    FirstBean.class);
+                            this.jaxbContext = JAXBContext.newInstance(BeanWrapper.class, FirstBean.class);
                         } catch (JAXBException e) {
                         }
                     }
                     return this.jaxbContext;
                 }
-
             };
-            Response firstResponse = firstWebTarget.register(firstJaxbContextResolver)
-                    .request(MediaType.APPLICATION_XML_TYPE).get();
+            Response firstResponse = firstWebTarget.register(firstJaxbContextResolver).request(MediaType.APPLICATION_XML_TYPE)
+                    .get();
             BeanWrapper firstBeanWrapper = firstResponse.readEntity(BeanWrapper.class);
-            Assert.assertTrue("First bean is not assignable from the parent bean",
-                    FirstBean.class.isAssignableFrom(firstBeanWrapper.getBean().getClass()));
-
+            Assertions.assertTrue(FirstBean.class.isAssignableFrom(firstBeanWrapper.getBean().getClass()),
+                    "First bean is not assignable from the parent bean");
             // Second webTarget
             WebTarget secondWebTarget = client.target(generateURL("/secondTestResource"));
             // Will never be called
@@ -200,23 +198,20 @@ public class XmlJAXBContextFinderTest {
                 public JAXBContext getContext(Class<?> type) {
                     if (this.jaxbContext == null) {
                         try {
-                            this.jaxbContext = JAXBContext.newInstance(BeanWrapper.class,
-                                    SecondBean.class);
+                            this.jaxbContext = JAXBContext.newInstance(BeanWrapper.class, SecondBean.class);
                         } catch (JAXBException e) {
                         }
                     }
                     return this.jaxbContext;
                 }
-
             };
             Response secondResponse = secondWebTarget.register(secondJaxbContextResolver)
                     .request(MediaType.APPLICATION_XML_TYPE).get();
             BeanWrapper secondBeanWrapper = secondResponse.readEntity(BeanWrapper.class);
-            Assert.assertTrue("Second bean is not assignable from the parent bean",
-                    SecondBean.class.isAssignableFrom(secondBeanWrapper.getBean().getClass()));
+            Assertions.assertTrue(SecondBean.class.isAssignableFrom(secondBeanWrapper.getBean().getClass()),
+                    "Second bean is not assignable from the parent bean");
         } finally {
             client.close();
         }
     }
-
 }

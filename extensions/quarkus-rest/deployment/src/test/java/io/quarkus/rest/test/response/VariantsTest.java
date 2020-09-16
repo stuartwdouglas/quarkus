@@ -14,10 +14,11 @@ import org.jboss.resteasy.plugins.delegates.LocaleDelegate;
 import org.jboss.resteasy.util.HttpHeaderNames;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.VariantComplexResource;
@@ -33,6 +34,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Tests that correct variant headers are returned in the response
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Variants Test")
 public class VariantsTest {
 
     protected static final Logger logger = Logger.getLogger(VariantsTest.class.getName());
@@ -40,25 +42,24 @@ public class VariantsTest {
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(VariantsTest.class);
-                    return TestUtil.finishContainerPrepare(war, null, VariantLanguageResource.class,
-                            VariantComplexResource.class, VariantEncodingResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(VariantsTest.class);
+            return TestUtil.finishContainerPrepare(war, null, VariantLanguageResource.class, VariantComplexResource.class,
+                    VariantEncodingResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -72,11 +73,11 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Evaluate Preconditions Tag Null And Simple Get Test")
     public void evaluatePreconditionsTagNullAndSimpleGetTest() {
         logger.info(generateURL("/preconditionsSimpleGet"));
-        Response response = client.target(generateURL("/preconditionsSimpleGet")).request()
-                .get();
-        Assert.assertEquals(200, response.getStatus());
+        Response response = client.target(generateURL("/preconditionsSimpleGet")).request().get();
+        Assertions.assertEquals(200, response.getStatus());
         response.close();
     }
 
@@ -86,11 +87,11 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Select Variant Put Request Test")
     public void selectVariantPutRequestTest() {
-        Response response = client.target(generateURL("/SelectVariantTestPut")).request()
-                .put(null);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals("PASSED", response.readEntity(String.class));
+        Response response = client.target(generateURL("/SelectVariantTestPut")).request().put(null);
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "PASSED");
         response.close();
     }
 
@@ -99,18 +100,18 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Select Variant Response Vary Test")
     public void selectVariantResponseVaryTest() {
-        Response response = client.target(generateURL("/SelectVariantTestResponse")).request()
-                .accept("application/json")
+        Response response = client.target(generateURL("/SelectVariantTestResponse")).request().accept("application/json")
                 .acceptEncoding("*").get();
-        Assert.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(200, response.getStatus());
         List<String> headers = response.getStringHeaders().get("Vary");
-        Assert.assertEquals(1, headers.size());
+        Assertions.assertEquals(1, headers.size());
         String vary = headers.get(0);
         logger.info(vary);
-        Assert.assertTrue(vary.contains("Accept-Language"));
-        Assert.assertTrue(vary.contains("Accept-Encoding"));
-        Assert.assertTrue(vary.matches(".*Accept.*Accept.*Accept.*"));
+        Assertions.assertTrue(vary.contains("Accept-Language"));
+        Assertions.assertTrue(vary.contains("Accept-Encoding"));
+        Assertions.assertTrue(vary.matches(".*Accept.*Accept.*Accept.*"));
         response.close();
     }
 
@@ -119,11 +120,12 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Language En")
     public void testGetLanguageEn() throws Exception {
         Response response = client.target(generateURL("/")).request().acceptLanguage("en").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("en", response.readEntity(String.class));
-        Assert.assertEquals("en", response.getLanguage().toString());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "en");
+        Assertions.assertEquals(response.getLanguage().toString(), "en");
         response.close();
     }
 
@@ -133,10 +135,11 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Language Wildcard")
     public void testGetLanguageWildcard() throws Exception {
         Response response = client.target(generateURL("/")).request().acceptLanguage("*").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertNotNull(response.getLanguage());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertNotNull(response.getLanguage());
         response.close();
     }
 
@@ -146,11 +149,11 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Language Sub Local")
     public void testGetLanguageSubLocal() throws Exception {
-        Response response = client.target(generateURL("/brazil")).request()
-                .acceptLanguage("pt").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertNotNull(response.getLanguage());
+        Response response = client.target(generateURL("/brazil")).request().acceptLanguage("pt").get();
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertNotNull(response.getLanguage());
         response.close();
     }
 
@@ -159,10 +162,10 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Language Zero")
     public void testGetLanguageZero() throws Exception {
-        Response response = client.target(generateURL("/")).request()
-                .acceptLanguage("*", "zh;q=0", "en;q=0", "fr;q=0").get();
-        Assert.assertEquals(Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
+        Response response = client.target(generateURL("/")).request().acceptLanguage("*", "zh;q=0", "en;q=0", "fr;q=0").get();
+        Assertions.assertEquals(Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -171,11 +174,12 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Language Zh")
     public void testGetLanguageZh() throws Exception {
         Response response = client.target(generateURL("/")).request().acceptLanguage("zh").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("zh", response.readEntity(String.class));
-        Assert.assertEquals("zh", response.getLanguage().toString());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "zh");
+        Assertions.assertEquals(response.getLanguage().toString(), "zh");
         response.close();
     }
 
@@ -185,12 +189,12 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Language Multiple")
     public void testGetLanguageMultiple() throws Exception {
-        Response response = client.target(generateURL("/")).request()
-                .acceptLanguage("en;q=0.3", "zh;q=0.4", "fr").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("fr", response.readEntity(String.class));
-        Assert.assertEquals("fr", response.getLanguage().toString());
+        Response response = client.target(generateURL("/")).request().acceptLanguage("en;q=0.3", "zh;q=0.4", "fr").get();
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "fr");
+        Assertions.assertEquals(response.getLanguage().toString(), "fr");
         response.close();
     }
 
@@ -199,15 +203,16 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Complex Accept Language En")
     public void testGetComplexAcceptLanguageEn() throws Exception {
-        Response response = client.target(generateURL("/complex")).request()
-                .accept("text/xml", "application/xml", "application/xhtml+xml", "image/png", "text/html;q=0.9",
-                        "text/plain;q=0.8", "*/*;q=0.5")
+        Response response = client
+                .target(generateURL("/complex")).request().accept("text/xml", "application/xml", "application/xhtml+xml",
+                        "image/png", "text/html;q=0.9", "text/plain;q=0.8", "*/*;q=0.5")
                 .acceptLanguage("en-us", "en;q=0.5").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("GET", response.readEntity(String.class));
-        Assert.assertEquals(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
-        Assert.assertEquals("en-us", new LocaleDelegate().toString(response.getLanguage()));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "GET");
+        Assertions.assertEquals(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
+        Assertions.assertEquals(new LocaleDelegate().toString(response.getLanguage()), "en-us");
         response.close();
     }
 
@@ -216,15 +221,15 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Complex Accept Language En Us")
     public void testGetComplexAcceptLanguageEnUs() throws Exception {
-        Response response = client.target(generateURL("/complex")).request()
-                .accept("text/xml", "application/xml", "application/xhtml+xml", "image/png", "text/html;q=0.9",
-                        "text/plain;q=0.8", "*/*;q=0.5")
+        Response response = client.target(generateURL("/complex")).request().accept("text/xml", "application/xml",
+                "application/xhtml+xml", "image/png", "text/html;q=0.9", "text/plain;q=0.8", "*/*;q=0.5")
                 .acceptLanguage("en", "en-us").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("GET", response.readEntity(String.class));
-        Assert.assertEquals(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
-        Assert.assertEquals("en-us", new LocaleDelegate().toString(response.getLanguage()));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "GET");
+        Assertions.assertEquals(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
+        Assertions.assertEquals(new LocaleDelegate().toString(response.getLanguage()), "en-us");
         response.close();
     }
 
@@ -233,15 +238,16 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Complex Shuffle Accept Media")
     public void testGetComplexShuffleAcceptMedia() throws Exception {
-        Response response = client.target(generateURL("/complex")).request()
-                .accept("application/xml", "text/xml", "application/xhtml+xml", "image/png", "text/html;q=0.9",
-                        "text/plain;q=0.8", "*/*;q=0.5")
+        Response response = client
+                .target(generateURL("/complex")).request().accept("application/xml", "text/xml", "application/xhtml+xml",
+                        "image/png", "text/html;q=0.9", "text/plain;q=0.8", "*/*;q=0.5")
                 .acceptLanguage("en-us", "en;q=0.5").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("GET", response.readEntity(String.class));
-        Assert.assertEquals(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
-        Assert.assertEquals("en-us", new LocaleDelegate().toString(response.getLanguage()));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "GET");
+        Assertions.assertEquals(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
+        Assertions.assertEquals(new LocaleDelegate().toString(response.getLanguage()), "en-us");
         response.close();
     }
 
@@ -251,15 +257,16 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Complex Accept Language En Us With Preference")
     public void testGetComplexAcceptLanguageEnUsWithPreference() throws Exception {
-        Response response = client.target(generateURL("/complex")).request()
-                .accept("application/xml", "text/xml", "application/xhtml+xml", "image/png", "text/html;q=0.9",
-                        "text/plain;q=0.8", "*/*;q=0.5")
+        Response response = client
+                .target(generateURL("/complex")).request().accept("application/xml", "text/xml", "application/xhtml+xml",
+                        "image/png", "text/html;q=0.9", "text/plain;q=0.8", "*/*;q=0.5")
                 .acceptLanguage("en", "en-us;q=0.5").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("GET", response.readEntity(String.class));
-        Assert.assertEquals("en", response.getLanguage().toString());
-        Assert.assertEquals(MediaType.TEXT_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "GET");
+        Assertions.assertEquals(response.getLanguage().toString(), "en");
+        Assertions.assertEquals(MediaType.TEXT_XML_TYPE.withCharset("UTF-8"), response.getMediaType());
         response.close();
     }
 
@@ -268,32 +275,28 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Complex Not Acceptable")
     public void testGetComplexNotAcceptable() throws Exception {
         {
-            Response response = client.target(generateURL("/complex")).request()
-                    .accept("application/atom+xml")
+            Response response = client.target(generateURL("/complex")).request().accept("application/atom+xml")
                     .acceptLanguage("en-us", "en").get();
-            Assert.assertEquals(406, response.getStatus());
-
+            Assertions.assertEquals(406, response.getStatus());
             String vary = response.getHeaderString(HttpHeaderNames.VARY);
-            Assert.assertNotNull(vary);
+            Assertions.assertNotNull(vary);
             logger.info("vary: " + vary);
-            Assert.assertTrue(contains(vary, "Accept"));
-            Assert.assertTrue(contains(vary, "Accept-Language"));
+            Assertions.assertTrue(contains(vary, "Accept"));
+            Assertions.assertTrue(contains(vary, "Accept-Language"));
             response.close();
         }
-
         {
-            Response response = client.target(generateURL("/complex")).request()
-                    .accept("application/xml")
-                    .acceptLanguage("fr").get();
-            Assert.assertEquals(406, response.getStatus());
-
+            Response response = client.target(generateURL("/complex")).request().accept("application/xml").acceptLanguage("fr")
+                    .get();
+            Assertions.assertEquals(406, response.getStatus());
             String vary = response.getHeaderString(HttpHeaderNames.VARY);
-            Assert.assertNotNull(vary);
+            Assertions.assertNotNull(vary);
             logger.info("vary: " + vary);
-            Assert.assertTrue(contains(vary, "Accept"));
-            Assert.assertTrue(contains(vary, "Accept-Language"));
+            Assertions.assertTrue(contains(vary, "Accept"));
+            Assertions.assertTrue(contains(vary, "Accept-Language"));
             response.close();
         }
     }
@@ -303,13 +306,12 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Encoding Custom Enc 1")
     public void testGetEncodingCustomEnc1() throws Exception {
-        Response response = client.target(generateURL("/encoding")).request()
-                .acceptEncoding("enc1").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
-        Assert.assertEquals("enc1", response.readEntity(String.class));
-        Assert.assertEquals("enc1", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));
+        Response response = client.target(generateURL("/encoding")).request().acceptEncoding("enc1").get();
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "enc1");
+        Assertions.assertEquals(response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING), "enc1");
         response.close();
     }
 
@@ -318,13 +320,12 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Encoding Custom Enc 2")
     public void testGetEncodingCustomEnc2() throws Exception {
-        Response response = client.target(generateURL("/encoding")).request()
-                .acceptEncoding("enc2").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
-        Assert.assertEquals("enc2", response.readEntity(String.class));
-        Assert.assertEquals("enc2", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));
+        Response response = client.target(generateURL("/encoding")).request().acceptEncoding("enc2").get();
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "enc2");
+        Assertions.assertEquals(response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING), "enc2");
         response.close();
     }
 
@@ -333,13 +334,12 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Encoding Custom Enc 3")
     public void testGetEncodingCustomEnc3() throws Exception {
-        Response response = client.target(generateURL("/encoding")).request()
-                .acceptEncoding("enc3").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
-        Assert.assertEquals("enc3", response.readEntity(String.class));
-        Assert.assertEquals("enc3", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));
+        Response response = client.target(generateURL("/encoding")).request().acceptEncoding("enc3").get();
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "enc3");
+        Assertions.assertEquals(response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING), "enc3");
         response.close();
     }
 
@@ -348,13 +348,12 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Encoding Custom Preference")
     public void testGetEncodingCustomPreference() throws Exception {
-        Response response = client.target(generateURL("/encoding")).request()
-                .acceptEncoding("enc1;q=0.5", "enc2;q=0.9").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
-        Assert.assertEquals("enc2", response.readEntity(String.class));
-        Assert.assertEquals("enc2", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));
+        Response response = client.target(generateURL("/encoding")).request().acceptEncoding("enc1;q=0.5", "enc2;q=0.9").get();
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "enc2");
+        Assertions.assertEquals(response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING), "enc2");
         response.close();
     }
 
@@ -363,13 +362,13 @@ public class VariantsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Encoding Custom Preference Zero")
     public void testGetEncodingCustomPreferenceZero() throws Exception {
         Response response = client.target(generateURL("/encoding")).request()
                 .acceptEncoding("enc1;q=0", "enc2;q=0.888", "enc3;q=0.889").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
-        Assert.assertEquals("enc3", response.readEntity(String.class));
-        Assert.assertEquals("enc3", response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "enc3");
+        Assertions.assertEquals(response.getHeaderString(HttpHeaderNames.CONTENT_ENCODING), "enc3");
         response.close();
     }
 
@@ -381,7 +380,6 @@ public class VariantsTest {
                 return true;
             }
         }
-
         return false;
     }
 }

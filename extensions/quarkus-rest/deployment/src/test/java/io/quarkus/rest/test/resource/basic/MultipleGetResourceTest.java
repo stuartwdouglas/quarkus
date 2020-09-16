@@ -15,10 +15,11 @@ import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.resteasy.utils.LogCounter;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.ContainerConstants;
@@ -31,7 +32,9 @@ import io.quarkus.rest.test.simple.TestUtil;
  * resteasy to report error and not warning.
  * This feature is provided for quarkus.
  */
+@DisplayName("Multiple Get Resource Test")
 public class MultipleGetResourceTest {
+
     static QuarkusRestClient client;
 
     @Deployment
@@ -39,16 +42,15 @@ public class MultipleGetResourceTest {
         WebArchive war = TestUtil.prepareArchive(MultipleGetResourceTest.class.getSimpleName());
         Map<String, String> contextParam = new HashMap<>();
         contextParam.put(ResteasyContextParameters.RESTEASY_FAIL_FAST_ON_MULTIPLE_RESOURCES_MATCHING, "true");
-
         return TestUtil.finishContainerPrepare(war, contextParam, MultipleGetResource.class);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
         client = null;
@@ -59,13 +61,12 @@ public class MultipleGetResourceTest {
     }
 
     @Test
+    @DisplayName("Test Fail Fast")
     public void testFailFast() throws Exception {
-        LogCounter errorStringLog = new LogCounter("RESTEASY005042",
-                false, ContainerConstants.DEFAULT_CONTAINER_QUALIFIER);
-
+        LogCounter errorStringLog = new LogCounter("RESTEASY005042", false, ContainerConstants.DEFAULT_CONTAINER_QUALIFIER);
         WebTarget base = client.target(generateURL("/api"));
         Response response = base.request().get();
-        Assert.assertEquals(500, response.getStatus());
+        Assertions.assertEquals(500, response.getStatus());
         response.close();
         Assert.assertThat(errorStringLog.count(), is(2));
     }

@@ -8,10 +8,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -38,43 +39,32 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.0.0
  */
+@DisplayName("Homecontrol Custom JAXB Context Test")
 public class HomecontrolCustomJAXBContextTest {
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(HomecontrolCustomJAXBContext.class,
-                            HomecontrolApplication.class,
-                            HomecontrolService.class,
-                            HomecontrolJaxbProvider.class,
-                            ObjectFactory.class,
-                            ErrorDomainType.class,
-                            BinaryType.class,
-                            ErrorType.class,
-                            Base64Binary.class,
-                            RoleType.class,
-                            UserType.class,
-                            IDType.class,
-                            ErrorMessageType.class);
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(HomecontrolCustomJAXBContext.class, HomecontrolApplication.class, HomecontrolService.class,
+                    HomecontrolJaxbProvider.class, ObjectFactory.class, ErrorDomainType.class, BinaryType.class,
+                    ErrorType.class, Base64Binary.class, RoleType.class, UserType.class, IDType.class, ErrorMessageType.class);
+            // war.addAsWebInfResource(HomecontrolCustomJAXBContextTest.class.getPackage(), "homecontrol/web.xml");
+            return TestUtil.finishContainerPrepare(war, null, HomecontrolCustomJAXBContextTest.class);
+        }
+    });
 
-                    //                    war.addAsWebInfResource(HomecontrolCustomJAXBContextTest.class.getPackage(), "homecontrol/web.xml");
-                    return TestUtil.finishContainerPrepare(war, null, HomecontrolCustomJAXBContextTest.class);
-                }
-            });
-
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -89,17 +79,15 @@ public class HomecontrolCustomJAXBContextTest {
      * @tpSince RESTEasy 4.0.0
      */
     @Test
+    @DisplayName("Test Marshallering")
     public void testMarshallering() throws Exception {
-
         String xmlStr = "<user xmlns=\"http://creaity.de/homecontrol/rest/types/v1\"> <id>id</id>"
-                + " <credentials> <loginId>test</loginId> </credentials>"
-                + " <roles><role>USER</role></roles></user>";
-
+                + " <credentials> <loginId>test</loginId> </credentials>" + " <roles><role>USER</role></roles></user>";
         QuarkusRestWebTarget target = client.target(generateURL("/service/users"));
         Response response = target.request().accept("application/xml").post(Entity.xml(xmlStr));
         UserType entity = response.readEntity(UserType.class);
-        Assert.assertNotNull(entity);
-        Assert.assertTrue("id DemoService_visited".equals(entity.getId()));
+        Assertions.assertNotNull(entity);
+        Assertions.assertTrue("id DemoService_visited".equals(entity.getId()));
         response.close();
     }
 }

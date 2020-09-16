@@ -12,8 +12,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.file.resource.TempFileDeletionResource;
@@ -26,19 +27,19 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.1.3.Final
  */
+@DisplayName("Temp File Deletion Test")
 public class TempFileDeletionTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, TempFileDeletionResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, TempFileDeletionResource.class);
+        }
+    });
 
     /**
      * @tpTestDetails Resource method contains parameter of the type File. This triggers File provider, which creates
@@ -48,14 +49,15 @@ public class TempFileDeletionTest {
      * @tpSince RESTEasy 3.1.3.Final
      */
     @Test
+    @DisplayName("Test Delete On Server")
     public void testDeleteOnServer() throws Exception {
         Client client = ClientBuilder.newClient();
         WebTarget base = client.target(PortProviderUtil.generateURL("/test/post", TempFileDeletionTest.class.getSimpleName()));
         Response response = base.request().post(Entity.entity("hello", "text/plain"));
-        Assert.assertEquals(response.getStatus(), Status.OK.getStatusCode());
+        Assertions.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         String path = response.readEntity(String.class);
         File file = new File(path);
-        Assert.assertFalse(file.exists());
+        Assertions.assertFalse(file.exists());
         client.close();
     }
 }

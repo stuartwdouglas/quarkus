@@ -21,10 +21,11 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.test.ContainerConstants;
 import io.quarkus.rest.test.providers.jsonb.basic.resource.Cat;
@@ -43,6 +44,7 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpChapter Integration test
  * @tpSince RESTEasy 4.0.0
  */
+@DisplayName("Json Binding Test")
 public class JsonBindingTest {
 
     protected static final Logger logger = Logger.getLogger(JsonBindingTest.class.getName());
@@ -50,7 +52,9 @@ public class JsonBindingTest {
     static Client client;
 
     private static final String WAR_WITH_JSONB = "war_with_jsonb";
+
     private static final String CUSTOM_JSON_PROVIDER = "custom_json_provider";
+
     private static final String WAR_WITH_JSONB_ASCII_ENCODING = "war_with_jsonb_ascii_encoding";
 
     @Deployment(name = WAR_WITH_JSONB)
@@ -80,12 +84,12 @@ public class JsonBindingTest {
         return TestUtil.finishContainerPrepare(war, null, JsonBindingResource.class, JsonBindingCustomRepeaterProvider.class);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
         client = null;
@@ -103,21 +107,21 @@ public class JsonBindingTest {
      * @tpSince RESTEasy 4.0.0
      */
     @Test
+    @DisplayName("Jsonb On Server And Client Test")
     public void jsonbOnServerAndClientTest() throws Exception {
         String charset = "UTF-8";
         WebTarget target = client.target(PortProviderUtil.generateURL("/test/jsonBinding/cat/transient", WAR_WITH_JSONB));
         MediaType mediaType = MediaType.APPLICATION_JSON_TYPE.withCharset(charset);
-        Entity<Cat> entity = Entity.entity(
-                new Cat("Rosa", "semi-british", "tabby", true, JsonBindingResource.CLIENT_TRANSIENT_VALUE), mediaType);
+        Entity<Cat> entity = Entity
+                .entity(new Cat("Rosa", "semi-british", "tabby", true, JsonBindingResource.CLIENT_TRANSIENT_VALUE), mediaType);
         Cat json = target.request().post(entity, Cat.class);
         logger.info("Request entity: " + entity);
-        Assert.assertTrue("Failed to return the correct name", "Alfred".equals(json.getName()));
+        Assertions.assertTrue("Alfred".equals(json.getName()), "Failed to return the correct name");
         Assert.assertThat("Variable with JsonbTransient annotation should be transient, if JSON-B is used",
                 json.getTransientVar(), is(Cat.DEFAULT_TRANSIENT_VAR_VALUE));
-
         String jsonbResponse = target.request().post(entity).readEntity(String.class);
-        Assert.assertEquals("JsonBindingProvider is not enabled",
-                "{\"color\":\"ginger\",\"sort\":\"semi-british\",\"name\":\"Alfred\",\"domesticated\":true}", jsonbResponse);
+        Assertions.assertEquals("{\"color\":\"ginger\",\"sort\":\"semi-british\",\"name\":\"Alfred\",\"domesticated\":true}",
+                jsonbResponse, "JsonBindingProvider is not enabled");
     }
 
     /**
@@ -131,15 +135,14 @@ public class JsonBindingTest {
      * @tpSince RESTEasy 3.5
      */
     @Test
+    @DisplayName("Jsonb On Client Test")
     public void jsonbOnClientTest() throws Exception {
         String charset = "UTF-8";
         WebTarget target = client
                 .target(PortProviderUtil.generateURL("/test/jsonBinding/client/test/transient", CUSTOM_JSON_PROVIDER));
         MediaType mediaType = MediaType.APPLICATION_JSON_TYPE.withCharset(charset);
-        Entity<Cat> entity = Entity.entity(
-                new Cat("Rosa", "semi-british", "tabby", true,
-                        JsonBindingResource.CLIENT_TRANSIENT_VALUE),
-                mediaType);
+        Entity<Cat> entity = Entity
+                .entity(new Cat("Rosa", "semi-british", "tabby", true, JsonBindingResource.CLIENT_TRANSIENT_VALUE), mediaType);
         Cat response = target.request().post(entity, Cat.class);
         Assert.assertThat("Failed to return the correct name", response.getName(), is("Rosa"));
         Assert.assertThat("Variable with JsonbTransient annotation should be transient, if JSON-B is used",
@@ -160,18 +163,16 @@ public class JsonBindingTest {
      */
     @Test
     @OperateOnDeployment(WAR_WITH_JSONB_ASCII_ENCODING)
+    @DisplayName("Jsonb On Client Test Without Encoding")
     public void jsonbOnClientTestWithoutEncoding() throws Exception {
         URI url = new URI("http://" + PortProviderUtil.getHost() + ":"
-                + (PortProviderUtil.getPort() + ContainerConstants.ENCODING_CONTAINER_PORT_OFFSET)
-                + "/" + WAR_WITH_JSONB_ASCII_ENCODING + "/test/jsonBinding/repeater");
+                + (PortProviderUtil.getPort() + ContainerConstants.ENCODING_CONTAINER_PORT_OFFSET) + "/"
+                + WAR_WITH_JSONB_ASCII_ENCODING + "/test/jsonBinding/repeater");
         WebTarget target = client.target(url);
         MediaType mediaType = MediaType.APPLICATION_JSON_TYPE;
-        Entity<Cat> entity = Entity.entity(
-                new Cat("Graça", "brazilian", "gray", true,
-                        JsonBindingResource.CLIENT_TRANSIENT_VALUE),
-                mediaType);
+        Entity<Cat> entity = Entity
+                .entity(new Cat("Graça", "brazilian", "gray", true, JsonBindingResource.CLIENT_TRANSIENT_VALUE), mediaType);
         Cat response = target.request().post(entity, Cat.class);
-
         Assert.assertThat("Failed to return the correct name", response.getName(), is("Graça"));
         Assert.assertThat("Variable with JsonbTransient annotation should be transient, if JSON-B is used",
                 response.getTransientVar(), is(Cat.DEFAULT_TRANSIENT_VAR_VALUE));
@@ -191,18 +192,16 @@ public class JsonBindingTest {
      */
     @Test
     @OperateOnDeployment(WAR_WITH_JSONB_ASCII_ENCODING)
+    @DisplayName("Jsonb On Client Test With Ascii Encoding")
     public void jsonbOnClientTestWithAsciiEncoding() throws Exception {
         URI url = new URI("http://" + PortProviderUtil.getHost() + ":"
-                + (PortProviderUtil.getPort() + ContainerConstants.ENCODING_CONTAINER_PORT_OFFSET)
-                + "/" + WAR_WITH_JSONB_ASCII_ENCODING + "/test/jsonBinding/repeater");
+                + (PortProviderUtil.getPort() + ContainerConstants.ENCODING_CONTAINER_PORT_OFFSET) + "/"
+                + WAR_WITH_JSONB_ASCII_ENCODING + "/test/jsonBinding/repeater");
         WebTarget target = client.target(url);
         MediaType mediaType = MediaType.APPLICATION_JSON_TYPE.withCharset("us-ascii");
-        Entity<Cat> entity = Entity.entity(
-                new Cat("Graça", "brazilian", "gray", true,
-                        JsonBindingResource.CLIENT_TRANSIENT_VALUE),
-                mediaType);
+        Entity<Cat> entity = Entity
+                .entity(new Cat("Graça", "brazilian", "gray", true, JsonBindingResource.CLIENT_TRANSIENT_VALUE), mediaType);
         Cat response = target.request().post(entity, Cat.class);
-
         Assert.assertThat("Failed to return the correct name", response.getName(), is("Graça"));
         Assert.assertThat("Variable with JsonbTransient annotation should be transient, if JSON-B is used",
                 response.getTransientVar(), is(Cat.DEFAULT_TRANSIENT_VAR_VALUE));
@@ -219,6 +218,7 @@ public class JsonBindingTest {
      * @tpSince RESTEasy 3.5
      */
     @Test
+    @DisplayName("Negative Scenario On Client")
     public void negativeScenarioOnClient() throws Exception {
         // call and log get request
         WebTarget target = client.target(PortProviderUtil.generateURL("/test/jsonBinding/get/cat", CUSTOM_JSON_PROVIDER));
@@ -228,7 +228,6 @@ public class JsonBindingTest {
                 containsString(Cat.CUSTOM_TO_STRING_FORMAT));
         logger.info("Response as a String: " + responseAsString);
         response.close();
-
         // call get request, try to get Cat data
         response = target.request().get();
         try {

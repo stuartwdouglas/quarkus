@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.WriterMatchingBoolWriter;
@@ -26,6 +27,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Writer Matching Test")
 public class WriterMatchingTest {
 
     static Client client;
@@ -35,24 +37,22 @@ public class WriterMatchingTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, WriterMatchingResource.class,
-                            WriterMatchingBoolWriter.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, WriterMatchingResource.class, WriterMatchingBoolWriter.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         client.close();
     }
@@ -62,13 +62,13 @@ public class WriterMatchingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Match")
     public void testMatch() {
         // writers sorted by type, mediatype, and then by app over builtin
         Response response = client.target(generateURL("/bool")).request("text/plain").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String data = response.readEntity(String.class);
         response.close();
-        Assert.assertEquals("RESTEasy returns wrong data", data, "true");
+        Assertions.assertEquals(data, "true", "RESTEasy returns wrong data");
     }
-
 }

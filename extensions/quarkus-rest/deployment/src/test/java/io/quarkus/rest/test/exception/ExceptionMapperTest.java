@@ -12,10 +12,11 @@ import javax.ws.rs.ext.ExceptionMapper;
 import org.jboss.resteasy.spi.util.Types;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.exception.resource.ExceptionMapperAbstractExceptionMapper;
@@ -34,36 +35,36 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Exception Mapper Test")
 public class ExceptionMapperTest {
 
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(ExceptionMapperAbstractExceptionMapper.class);
-                    return TestUtil.finishContainerPrepare(war, null, ExceptionMapperResource.class,
-                            ExceptionMapperWebAppExceptionMapper.class,
-                            ExceptionMapperMyCustomExceptionMapper.class, ExceptionMapperMyCustomException.class,
-                            ExceptionMapperMyCustomSubException.class, NotFoundExceptionMapper.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(ExceptionMapperAbstractExceptionMapper.class);
+            return TestUtil.finishContainerPrepare(war, null, ExceptionMapperResource.class,
+                    ExceptionMapperWebAppExceptionMapper.class, ExceptionMapperMyCustomExceptionMapper.class,
+                    ExceptionMapperMyCustomException.class, ExceptionMapperMyCustomSubException.class,
+                    NotFoundExceptionMapper.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, ExceptionMapperTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -78,15 +79,16 @@ public class ExceptionMapperTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Custom Exceptions Used")
     public void testCustomExceptionsUsed() {
         Type exceptionType = Types.getActualTypeArgumentsOfAnInterface(ExceptionMapperMyCustomExceptionMapper.class,
                 ExceptionMapper.class)[0];
-        Assert.assertEquals(ExceptionMapperMyCustomException.class, exceptionType);
+        Assertions.assertEquals(ExceptionMapperMyCustomException.class, exceptionType);
         Response response = client.target(generateURL("/resource/custom")).request().get();
-        Assert.assertNotEquals("General RuntimeException mapper was used instead of more specific one",
-                Status.NOT_ACCEPTABLE, response.getStatus());
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("custom", response.readEntity(String.class));
+        Assertions.assertNotEquals(Status.NOT_ACCEPTABLE, response.getStatus(),
+                "General RuntimeException mapper was used instead of more specific one");
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "custom");
     }
 
     /**
@@ -96,10 +98,11 @@ public class ExceptionMapperTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test WAE Response Used")
     public void testWAEResponseUsed() {
         Response response = client.target(generateURL("/resource/responseok")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("hello", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "hello");
     }
 
     /**
@@ -110,10 +113,11 @@ public class ExceptionMapperTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Custom Sub Exceptions Used")
     public void testCustomSubExceptionsUsed() {
         Response response = client.target(generateURL("/resource/sub")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("custom", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "custom");
     }
 
     /**
@@ -123,9 +127,10 @@ public class ExceptionMapperTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Not Found Exception Mapping")
     public void testNotFoundExceptionMapping() {
         Response response = client.target(generateURL("/bogus")).request().get();
-        Assert.assertEquals(410, response.getStatus());
+        Assertions.assertEquals(410, response.getStatus());
         response.close();
     }
 }

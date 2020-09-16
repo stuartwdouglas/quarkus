@@ -7,10 +7,11 @@ import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.path.resource.ResourceMatchingMultipleUserCertResource;
@@ -25,6 +26,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Resource Matching Multiple Test")
 public class ResourceMatchingMultipleTest {
 
     private String generateURL(String path) {
@@ -32,27 +34,25 @@ public class ResourceMatchingMultipleTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, ResourceMatchingMultipleUserResource.class,
-                            ResourceMatchingMultipleUserCertResource.class,
-                            ResourceMatchingMultipleUserMembershipResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ResourceMatchingMultipleUserResource.class,
+                    ResourceMatchingMultipleUserCertResource.class, ResourceMatchingMultipleUserMembershipResource.class);
+        }
+    });
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -64,9 +64,10 @@ public class ResourceMatchingMultipleTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Matching Users")
     public void testMatchingUsers() throws Exception {
         String answer = client.target(generateURL("/users/1")).request().get(String.class);
-        Assert.assertEquals("The incorrect resource path was chosen", "users/{id} 1", answer);
+        Assertions.assertEquals("users/{id} 1", answer, "The incorrect resource path was chosen");
     }
 
     /**
@@ -76,9 +77,10 @@ public class ResourceMatchingMultipleTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Matching Member Ships")
     public void testMatchingMemberShips() throws Exception {
         String answer = client.target(generateURL("/users/1/memberships")).request().get(String.class);
-        Assert.assertEquals("The incorrect resource path was chosen", "users/{id}/memberships 1", answer);
+        Assertions.assertEquals("users/{id}/memberships 1", answer, "The incorrect resource path was chosen");
     }
 
     /**
@@ -88,9 +90,9 @@ public class ResourceMatchingMultipleTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Matching Certs")
     public void testMatchingCerts() throws Exception {
         String answer = client.target(generateURL("/users/1/certs")).request().get(String.class);
-        Assert.assertEquals("The incorrect resource path was chosen", "users/{id}/certs 1", answer);
+        Assertions.assertEquals("users/{id}/certs 1", answer, "The incorrect resource path was chosen");
     }
-
 }

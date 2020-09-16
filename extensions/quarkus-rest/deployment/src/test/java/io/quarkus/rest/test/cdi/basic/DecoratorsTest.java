@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.cdi.basic;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.function.Supplier;
 
@@ -16,9 +16,10 @@ import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.cdi.basic.resource.EJBBook;
@@ -32,25 +33,25 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for integration of RESTEasy and CDI decorators.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Decorators Test")
 public class DecoratorsTest {
 
     private static Logger log = Logger.getLogger(DecoratorsTest.class);
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return war;
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return war;
+        }
+    });
 
     private ResteasyProviderFactory factory;
 
-    @Before
+    @BeforeEach
     public void setup() {
         // Create an instance and set it as the singleton to use
         factory = ResteasyProviderFactory.newInstance();
@@ -58,7 +59,7 @@ public class DecoratorsTest {
         RegisterBuiltin.register(factory);
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         // Clear the singleton
         ResteasyProviderFactory.clearInstanceIfEqual(factory);
@@ -73,9 +74,9 @@ public class DecoratorsTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Decorators")
     public void testDecorators() throws Exception {
         Client client = ClientBuilder.newClient();
-
         // Create book.
         WebTarget base = client.target(generateURL("/create/"));
         EJBBook book = new EJBBook("RESTEasy: the Sequel");
@@ -84,24 +85,21 @@ public class DecoratorsTest {
         log.info("Status: " + response.getStatus());
         int id = response.readEntity(int.class);
         log.info("id: " + id);
-        assertEquals("Wrong id of received book", 0, id);
+        assertEquals(0, id, "Wrong id of received book");
         response.close();
-
         // Retrieve book.
         base = client.target(generateURL("/book/" + id));
         response = base.request().accept(Constants.MEDIA_TYPE_TEST_XML).get();
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         EJBBook result = response.readEntity(EJBBook.class);
         log.info("book: " + book);
-        assertEquals("Wrong received book", book, result);
+        assertEquals(book, result, "Wrong received book");
         response.close();
-
         // Test order of decorator invocations.
         base = client.target(generateURL("/test/"));
         response = base.request().post(Entity.text(new String()));
-        assertEquals("Wrong decorator usage", Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus(), "Wrong decorator usage");
         response.close();
-
         client.close();
     }
 }

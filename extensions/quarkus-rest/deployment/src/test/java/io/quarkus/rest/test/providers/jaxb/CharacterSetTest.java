@@ -1,7 +1,7 @@
 package io.quarkus.rest.test.providers.jaxb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URISyntaxException;
 import java.util.function.Supplier;
@@ -11,9 +11,10 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -29,29 +30,30 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Character Set Test")
 public class CharacterSetTest {
 
     private final String[] characterSets = { "US-ASCII", "UTF-8", "ISO-8859-1" };
+
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, CharacterSetData.class, CharacterSetResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, CharacterSetData.class, CharacterSetResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -65,6 +67,7 @@ public class CharacterSetTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Variant Selection")
     public void variantSelection() throws URISyntaxException {
         assertCharset("/variant-selection");
     }
@@ -73,21 +76,16 @@ public class CharacterSetTest {
         for (String characterSet : characterSets) {
             QuarkusRestWebTarget target = client.target(generateURL(path));
             Response response = target.request().accept("application/xml").header("Accept-Charset", characterSet).get();
-
-            assertEquals("Status code", 200, response.getStatus());
-
+            assertEquals(200, response.getStatus(), "Status code");
             String contentType = response.getHeaders().getFirst("Content-Type").toString();
             String charsetPattern = "application/xml\\s*;\\s*charset\\s*=\\s*\"?" + characterSet + "\"?";
             String charsetErrorMessage = contentType + " does not match " + charsetPattern;
             assertTrue(charsetErrorMessage, contentType.matches(charsetPattern));
-
             String xml = response.readEntity(String.class);
             String encodingPattern = "<\\?xml[^>]*encoding\\s*=\\s*['\"]" + characterSet + "['\"].*";
             String encodingErrorMessage = xml + " does not match " + encodingPattern;
             assertTrue(encodingErrorMessage, xml.matches(encodingPattern));
-
             response.close();
         }
     }
-
 }

@@ -12,10 +12,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.asynch.resource.AsynchCounterResource;
@@ -29,34 +30,34 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Tests use of SecureRandom to generate location job ids, RESTEASY-1483
  * @tpSince RESTEasy 3.1.0.Final
  */
+@DisplayName("Asynch Counter Test")
 public class AsynchCounterTest {
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    Map<String, String> contextParam = new HashMap<>();
-                    contextParam.put("resteasy.async.job.service.enabled", "true");
-                    contextParam.put("resteasy.secure.random.max.use", "2");
-                    return TestUtil.finishContainerPrepare(war, contextParam, AsynchCounterResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            Map<String, String> contextParam = new HashMap<>();
+            contextParam.put("resteasy.async.job.service.enabled", "true");
+            contextParam.put("resteasy.secure.random.max.use", "2");
+            return TestUtil.finishContainerPrepare(war, contextParam, AsynchCounterResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, AsynchCounterTest.class.getSimpleName());
@@ -68,18 +69,18 @@ public class AsynchCounterTest {
      * @tpSince RESTEasy 3.1.0.Final
      */
     @Test
+    @DisplayName("Test Asynch Counter")
     public void testAsynchCounter() throws Exception {
-
         Response response = client.target(generateURL("?asynch=true")).request().get();
-        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         String jobUrl = response.getHeaderString(HttpHeaders.LOCATION);
         int job1 = Integer.parseInt(jobUrl.substring(jobUrl.lastIndexOf('-') + 1));
         response.close();
         response = client.target(generateURL("?asynch=true")).request().get();
-        Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
         jobUrl = response.getHeaderString(HttpHeaders.LOCATION);
         int job2 = Integer.parseInt(jobUrl.substring(jobUrl.lastIndexOf('-') + 1));
-        Assert.assertTrue(job2 != job1 + 1);
+        Assertions.assertTrue(job2 != job1 + 1);
         response.close();
     }
 }

@@ -17,25 +17,28 @@ import javax.ws.rs.core.MediaType;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 
+@DisplayName("Retrieve Registered Classes Test")
 public class RetrieveRegisteredClassesTest {
 
     @Path("/testResource")
     @Produces(MediaType.APPLICATION_XML)
+    @DisplayName("Test Resource")
     public static final class TestResource {
 
         @GET
         public String get() {
             return TestResource.class.getName();
         }
-
     }
 
+    @DisplayName("My Filter")
     private static class MyFilter implements ClientRequestFilter {
 
         // To discard empty constructor
@@ -45,7 +48,6 @@ public class RetrieveRegisteredClassesTest {
         @Override
         public void filter(ClientRequestContext clientRequestContext) throws IOException {
         }
-
     }
 
     @Deployment
@@ -55,22 +57,19 @@ public class RetrieveRegisteredClassesTest {
     }
 
     @Test
+    @DisplayName("Test")
     public void test() {
-
         Client client = ClientBuilder.newClient();
         try {
-            String uri = PortProviderUtil
-                    .generateURL("/testResource", RetrieveRegisteredClassesTest.class.getSimpleName());
+            String uri = PortProviderUtil.generateURL("/testResource", RetrieveRegisteredClassesTest.class.getSimpleName());
             MyFilter myFilter = new MyFilter(new Object());
-
             WebTarget firstWebTarget = client.target(uri).register(myFilter);
             String firstResult = firstWebTarget.request(MediaType.APPLICATION_XML).get(String.class);
             Configuration firstWebTargetConfiguration = firstWebTarget.getConfiguration();
             Set<Class<?>> classes = firstWebTargetConfiguration.getClasses();
             Set<Object> instances = firstWebTargetConfiguration.getInstances();
-            Assert.assertFalse(classes.contains(MyFilter.class));
-            Assert.assertTrue(instances.contains(myFilter));
-
+            Assertions.assertFalse(classes.contains(MyFilter.class));
+            Assertions.assertTrue(instances.contains(myFilter));
             WebTarget secondWebTarget = client.target(uri);
             Configuration secondWebTargetConfiguration = secondWebTarget.getConfiguration();
             for (Class<?> classz : classes) {
@@ -86,13 +85,11 @@ public class RetrieveRegisteredClassesTest {
             String secondeResult = secondWebTarget.request(MediaType.APPLICATION_XML).get(String.class);
             classes = secondWebTargetConfiguration.getClasses();
             instances = secondWebTargetConfiguration.getInstances();
-            Assert.assertFalse(classes.contains(MyFilter.class));
-            Assert.assertTrue(instances.contains(myFilter));
-            Assert.assertEquals(firstResult, secondeResult);
+            Assertions.assertFalse(classes.contains(MyFilter.class));
+            Assertions.assertTrue(instances.contains(myFilter));
+            Assertions.assertEquals(firstResult, secondeResult);
         } finally {
             client.close();
         }
-
     }
-
 }

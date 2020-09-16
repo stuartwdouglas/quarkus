@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.cdi.generic;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.function.Supplier;
 
@@ -12,7 +12,8 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.cdi.generic.resource.Animal;
@@ -39,28 +40,29 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails RESTEasy integration test for CDI && decorators
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Concrete Decorator Test")
 public class ConcreteDecoratorTest {
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
 
-                    war.addClasses(UtilityProducer.class, VisitList.class);
-                    war.addClasses(ObjectHolder.class, ConcreteResourceIntf.class);
-                    war.addClasses(HolderBinding.class, HierarchyHolder.class);
-                    war.addClasses(GenericsProducer.class);
-                    war.addClasses(ConcreteResource.class);
-                    war.addClasses(NestedHierarchyHolder.class);
-                    war.addClasses(UpperBoundHierarchyHolder.class, LowerBoundHierarchyHolder.class);
-                    war.addClasses(Animal.class, Primate.class, Australopithecus.class);
-                    war.addClasses(ConcreteDecorator.class);
-                    //                    war.addAsWebInfResource(ConcreteDecoratorTest.class.getPackage(), "concrete_beans.xml", "beans.xml");
-                    return war;
-                }
-            });
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(UtilityProducer.class, VisitList.class);
+            war.addClasses(ObjectHolder.class, ConcreteResourceIntf.class);
+            war.addClasses(HolderBinding.class, HierarchyHolder.class);
+            war.addClasses(GenericsProducer.class);
+            war.addClasses(ConcreteResource.class);
+            war.addClasses(NestedHierarchyHolder.class);
+            war.addClasses(UpperBoundHierarchyHolder.class, LowerBoundHierarchyHolder.class);
+            war.addClasses(Animal.class, Primate.class, Australopithecus.class);
+            war.addClasses(ConcreteDecorator.class);
+            // war.addAsWebInfResource(ConcreteDecoratorTest.class.getPackage(), "concrete_beans.xml", "beans.xml");
+            return war;
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, "resteasy-cdi-ejb-test");
@@ -71,24 +73,21 @@ public class ConcreteDecoratorTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Concrete Concrete Decorator")
     public void testConcreteConcreteDecorator() throws Exception {
         Client client = ClientBuilder.newClient();
-
         WebTarget base = client.target(generateURL("/concrete/decorators/clear"));
         Response response = base.request().get();
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         base = client.target(generateURL("/concrete/decorators/execute"));
         response = base.request().get();
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         base = client.target(generateURL("/concrete/decorators/test"));
         response = base.request().get();
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         client.close();
     }
 }

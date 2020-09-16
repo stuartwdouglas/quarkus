@@ -40,16 +40,16 @@ public class DefaultMediaTypeTest {
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClass(DefaultMediaTypeCustomObject.class);
-                    war.addClasses(PortProviderUtil.class, DefaultMediaTypeResource.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClass(DefaultMediaTypeCustomObject.class);
+            war.addClasses(PortProviderUtil.class, DefaultMediaTypeResource.class);
+            return war;
+        }
+    });
 
     @BeforeEach
     public void init() {
@@ -90,7 +90,6 @@ public class DefaultMediaTypeTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
-
     @DisplayName("Post Date")
     public void postDate() throws Exception {
         WebTarget target = client.target(generateURL("/postDate"));
@@ -99,8 +98,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK.getStatusCode(),
-                response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
     }
@@ -129,7 +127,6 @@ public class DefaultMediaTypeTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
-
     @DisplayName("Post Foo")
     public void postFoo() throws Exception {
         WebTarget target = client.target(generateURL("/postFoo"));
@@ -138,8 +135,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK.getStatusCode(),
-                response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
     }
@@ -175,8 +171,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK.getStatusCode(),
-                response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
     }
@@ -212,8 +207,7 @@ public class DefaultMediaTypeTest {
             baos.write(i);
         }
         Response response = target.request().post(Entity.entity(baos.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
-        Assertions.assertEquals(Status.OK.getStatusCode(),
-                response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseContent = response.readEntity(String.class);
         logger.info(String.format("Response: %s", responseContent));
     }

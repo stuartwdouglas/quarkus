@@ -29,18 +29,18 @@ import io.quarkus.test.QuarkusUnitTest;
 public class MultiInterfaceResLocatorTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClass(MultiInterfaceResLocatorIntf1.class);
-                    war.addClass(MultiInterfaceResLocatorIntf2.class);
-                    war.addClasses(PortProviderUtil.class, MultiInterfaceResLocatorResource.class,
-                            MultiInterfaceResLocatorSubresource.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClass(MultiInterfaceResLocatorIntf1.class);
+            war.addClass(MultiInterfaceResLocatorIntf2.class);
+            war.addClasses(PortProviderUtil.class, MultiInterfaceResLocatorResource.class,
+                    MultiInterfaceResLocatorSubresource.class);
+            return war;
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, MultiInterfaceResLocatorTest.class.getSimpleName());
@@ -57,11 +57,11 @@ public class MultiInterfaceResLocatorTest {
         Response response = client.target(generateURL("/test/hello1")).request().get();
         String entity = response.readEntity(String.class);
         Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assertions.assertEquals("resourceMethod1", entity, "Wrong content of response");
+        Assertions.assertEquals(entity, "Wrong content of response", "resourceMethod1");
         response = client.target(generateURL("/test/hello2")).request().get();
         entity = response.readEntity(String.class);
         Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assertions.assertEquals("resourceMethod2", entity, "Wrong content of response");
+        Assertions.assertEquals(entity, "Wrong content of response", "resourceMethod2");
         client.close();
     }
 }

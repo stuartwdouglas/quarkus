@@ -42,20 +42,19 @@ public class UriInfoTest {
     private static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest quarkusUnitTest = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClass(PortProviderUtil.class);
-                    // Use of PortProviderUtil in the deployment
-                    war.addClasses(UriInfoSimpleResource.class, UriInfoEncodedQueryResource.class,
-                            UriInfoQueryParamsResource.class, UriInfoSimpleSingletonResource.class,
-                            UriInfoEncodedTemplateResource.class, UriInfoEscapedMatrParamResource.class,
-                            UriInfoEncodedTemplateResource.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest quarkusUnitTest = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClass(PortProviderUtil.class);
+            // Use of PortProviderUtil in the deployment
+            war.addClasses(UriInfoSimpleResource.class, UriInfoEncodedQueryResource.class, UriInfoQueryParamsResource.class,
+                    UriInfoSimpleSingletonResource.class, UriInfoEncodedTemplateResource.class,
+                    UriInfoEscapedMatrParamResource.class, UriInfoEncodedTemplateResource.class);
+            return war;
+        }
+    });
 
     @BeforeAll
     public static void before() throws Exception {
@@ -136,7 +135,7 @@ public class UriInfoTest {
         WebTarget target = client.target(uri);
         String result;
         result = target.path("a/b/c").queryParam("to", "a/d/e").request().get(String.class);
-        Assertions.assertEquals("../../d/e", result);
+        Assertions.assertEquals(result, "../../d/e");
         result = target.path("a/b/c").queryParam("to", UriBuilder.fromUri(uri).path("a/d/e").build().toString()).request()
                 .get(String.class);
         Assertions.assertEquals(result, "../../d/e");

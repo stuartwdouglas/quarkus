@@ -14,10 +14,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.response.resource.DuplicitePathDupliciteApplicationOne;
@@ -35,7 +36,9 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpTestCaseDetails Regression test for JBEAP-3459
  * @tpSince RESTEasy 3.0.17
  */
+@DisplayName("Duplicite Path Test")
 public class DuplicitePathTest {
+
     static QuarkusRestClient client;
 
     /**
@@ -72,12 +75,12 @@ public class DuplicitePathTest {
         return war;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
         client = null;
@@ -93,12 +96,13 @@ public class DuplicitePathTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Duplication Two App Two Resource Same Method Path")
     public void testDuplicationTwoAppTwoResourceSameMethodPath() throws Exception {
         WebTarget base = client.target(generateURL("/a/b/c"));
         Response response = null;
         try {
             response = base.request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String strResponse = response.readEntity(String.class);
             Assert.assertThat("Wrong body of response", strResponse,
                     either(is(DuplicitePathDupliciteResourceOne.DUPLICITE_RESPONSE))
@@ -106,7 +110,7 @@ public class DuplicitePathTest {
         } finally {
             response.close();
         }
-        Assert.assertEquals(TestUtil.getErrorMessageForKnownIssue("RESTEASY-1445", "Wrong count of warnings in server log"),
+        Assertions.assertEquals(TestUtil.getErrorMessageForKnownIssue("RESTEASY-1445", "Wrong count of warnings in server log"),
                 1, getServletMappingWarningCount() - initServletWarningsCount);
     }
 
@@ -116,21 +120,21 @@ public class DuplicitePathTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Duplication More Accepts")
     public void testDuplicationMoreAccepts() throws Exception {
         int initWarningsCount = getWarningCount();
         WebTarget base = client.target(generateURL("/f/g/i"));
         Response response = null;
         try {
             response = base.request().accept(MediaType.TEXT_PLAIN, MediaType.WILDCARD).get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String strResponse = response.readEntity(String.class);
-            Assert.assertThat("Wrong body of response", strResponse,
-                    is(DuplicitePathMethodResource.NO_DUPLICITE_RESPONSE));
+            Assert.assertThat("Wrong body of response", strResponse, is(DuplicitePathMethodResource.NO_DUPLICITE_RESPONSE));
         } finally {
             response.close();
         }
-        Assert.assertEquals(TestUtil.getErrorMessageForKnownIssue("JBEAP-3459", "Wrong count of warnings in server log"),
-                0, getWarningCount() - initWarningsCount);
+        Assertions.assertEquals(TestUtil.getErrorMessageForKnownIssue("JBEAP-3459", "Wrong count of warnings in server log"), 0,
+                getWarningCount() - initWarningsCount);
     }
 
     /**
@@ -139,21 +143,21 @@ public class DuplicitePathTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Duplication Moretypes")
     public void testDuplicationMoretypes() throws Exception {
         int initWarningsCount = getWarningCount();
         WebTarget base = client.target(generateURL("/f/g/j"));
         Response response = null;
         try {
             response = base.request().accept(MediaType.TEXT_PLAIN, MediaType.WILDCARD).get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String strResponse = response.readEntity(String.class);
-            Assert.assertThat("Wrong body of response", strResponse,
-                    is(DuplicitePathMethodResource.DUPLICITE_TYPE_GET));
+            Assert.assertThat("Wrong body of response", strResponse, is(DuplicitePathMethodResource.DUPLICITE_TYPE_GET));
         } finally {
             response.close();
         }
-        Assert.assertEquals(TestUtil.getErrorMessageForKnownIssue("JBEAP-3459", "Wrong count of warnings in server log"),
-                0, getWarningCount() - initWarningsCount);
+        Assertions.assertEquals(TestUtil.getErrorMessageForKnownIssue("JBEAP-3459", "Wrong count of warnings in server log"), 0,
+                getWarningCount() - initWarningsCount);
     }
 
     /**
@@ -162,13 +166,14 @@ public class DuplicitePathTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Duplication One App Two Resources With Same Path")
     public void testDuplicationOneAppTwoResourcesWithSamePath() throws Exception {
         int initWarningsCount = getWarningCount();
         WebTarget base = client.target(generateURL("/f/b/c"));
         Response response = null;
         try {
             response = base.request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String strResponse = response.readEntity(String.class);
             Assert.assertThat("Wrong body of response", strResponse,
                     either(is(DuplicitePathDupliciteResourceOne.DUPLICITE_RESPONSE))
@@ -176,7 +181,7 @@ public class DuplicitePathTest {
         } finally {
             response.close();
         }
-        Assert.assertEquals("Wrong count of warnings in server log", 1, getWarningCount() - initWarningsCount);
+        Assertions.assertEquals(1, getWarningCount() - initWarningsCount, "Wrong count of warnings in server log");
     }
 
     /**
@@ -184,20 +189,21 @@ public class DuplicitePathTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Duplication Path In Method")
     public void testDuplicationPathInMethod() throws Exception {
         int initWarningsCount = getWarningCount();
         WebTarget base = client.target(generateURL("/f/g/h"));
         Response response = null;
         try {
             response = base.request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Assert.assertThat("Wrong body of response", response.readEntity(String.class),
                     either(is(DuplicitePathMethodResource.DUPLICITE_RESPONSE_1))
                             .or(is(DuplicitePathMethodResource.DUPLICITE_RESPONSE_2)));
         } finally {
             response.close();
         }
-        Assert.assertEquals("Wrong count of warnings in server log", 1, getWarningCount() - initWarningsCount);
+        Assertions.assertEquals(1, getWarningCount() - initWarningsCount, "Wrong count of warnings in server log");
     }
 
     /**
@@ -206,18 +212,19 @@ public class DuplicitePathTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test No Duplication Path In Method")
     public void testNoDuplicationPathInMethod() throws Exception {
         int initWarningsCount = getWarningCount();
         WebTarget base = client.target(generateURL("/f/g/i"));
         Response response = null;
         try {
             response = base.request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-            Assert.assertEquals("Wrong body of response", DuplicitePathMethodResource.NO_DUPLICITE_RESPONSE,
-                    response.readEntity(String.class));
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(DuplicitePathMethodResource.NO_DUPLICITE_RESPONSE, response.readEntity(String.class),
+                    "Wrong body of response");
         } finally {
             response.close();
         }
-        Assert.assertEquals("Wrong count of warnings in server log", 0, getWarningCount() - initWarningsCount);
+        Assertions.assertEquals(0, getWarningCount() - initWarningsCount, "Wrong count of warnings in server log");
     }
 }

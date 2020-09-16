@@ -14,10 +14,11 @@ import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -38,40 +39,49 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Jaxb Xml Root Element Provider Test")
 public class JaxbXmlRootElementProviderTest {
 
     private String JAXB_URL = generateURL("/jaxb");
+
     private static final String JSON_PARENT = "JSON Parent";
+
     private static final String XML_PARENT = "XML Parent";
+
     private static Logger logger = Logger.getLogger(XmlHeaderTest.class.getName());
 
     private static final String ERR_PARENT_NULL = "Parent is null";
+
     private static final String ERR_PARENT_NAME = "The name of the parent is not the expected one";
 
     static QuarkusRestClient client;
+
     private JaxbXmlRootElementClient jaxbClient;
+
     private JaxbElementClient jaxbElementClient;
+
     private JaxbJsonXmlRootElementClient jsonClient;
+
     private JaxbJsonElementClient jsonElementClient;
+
     private JaxbJunkXmlOrderClient junkClient;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(Parent.class);
-                    war.addClass(Child.class);
-                    Map<String, String> contextParams = new HashMap<>();
-                    contextParams.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, "true");
-                    return TestUtil.finishContainerPrepare(war, contextParams, JaxbXmlRootElementProviderResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(Parent.class);
+            war.addClass(Child.class);
+            Map<String, String> contextParams = new HashMap<>();
+            contextParams.put(ResteasyContextParameters.RESTEASY_PREFER_JACKSON_OVER_JSONB, "true");
+            return TestUtil.finishContainerPrepare(war, contextParams, JaxbXmlRootElementProviderResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
         jaxbClient = ProxyBuilder.builder(JaxbXmlRootElementClient.class, client.target(JAXB_URL)).build();
@@ -81,7 +91,7 @@ public class JaxbXmlRootElementProviderTest {
         junkClient = ProxyBuilder.builder(JaxbJunkXmlOrderClient.class, client.target(JAXB_URL)).build();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -96,9 +106,10 @@ public class JaxbXmlRootElementProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Parent")
     public void testGetParent() {
         Parent parent = jaxbClient.getParent(XML_PARENT);
-        Assert.assertEquals(ERR_PARENT_NAME, parent.getName(), XML_PARENT);
+        Assertions.assertEquals(ERR_PARENT_NAME, parent.getName(), XML_PARENT);
     }
 
     /**
@@ -108,9 +119,10 @@ public class JaxbXmlRootElementProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Parent Junk")
     public void testGetParentJunk() {
         Parent parent = junkClient.getParent(XML_PARENT);
-        Assert.assertEquals(ERR_PARENT_NAME, parent.getName(), XML_PARENT);
+        Assertions.assertEquals(ERR_PARENT_NAME, parent.getName(), XML_PARENT);
     }
 
     /**
@@ -119,10 +131,11 @@ public class JaxbXmlRootElementProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Parent Element")
     public void testGetParentElement() {
         JAXBElement<Parent> element = jaxbElementClient.getParent(XML_PARENT);
         Parent parent = element.getValue();
-        Assert.assertEquals(ERR_PARENT_NAME, parent.getName(), XML_PARENT);
+        Assertions.assertEquals(ERR_PARENT_NAME, parent.getName(), XML_PARENT);
     }
 
     /**
@@ -131,6 +144,7 @@ public class JaxbXmlRootElementProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Parent Json")
     public void testGetParentJson() throws Exception {
         Parent parent = null;
         try {
@@ -138,13 +152,12 @@ public class JaxbXmlRootElementProviderTest {
         } catch (ResponseProcessingException exc) {
             Assert.fail(String.format("Regression of JBEAP-3530, see %s", exc.getCause().toString()));
         }
-        Assert.assertNotNull(ERR_PARENT_NULL, parent);
-        Assert.assertEquals(ERR_PARENT_NAME, parent.getName(), JSON_PARENT);
-
+        Assertions.assertNotNull(ERR_PARENT_NULL, parent);
+        Assertions.assertEquals(ERR_PARENT_NAME, parent.getName(), JSON_PARENT);
         String mapped = jsonClient.getParentString(JSON_PARENT);
-        Assert.assertEquals("Wrong response from the server",
+        Assertions.assertEquals(
                 "{\"name\":\"JSON Parent\",\"child\":[{\"name\":\"Child 1\"},{\"name\":\"Child 2\"},{\"name\":\"Child 3\"}]}",
-                mapped);
+                mapped, "Wrong response from the server");
     }
 
     /**
@@ -152,6 +165,7 @@ public class JaxbXmlRootElementProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post Parent")
     public void testPostParent() {
         jaxbClient.postParent(Parent.createTestParent("TEST"));
     }
@@ -161,11 +175,10 @@ public class JaxbXmlRootElementProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Post Parent Element")
     public void testPostParentElement() {
         Parent parent = Parent.createTestParent("TEST ELEMENT");
-        JAXBElement<Parent> parentElement = new JAXBElement<Parent>(new QName("parent"),
-                Parent.class, parent);
+        JAXBElement<Parent> parentElement = new JAXBElement<Parent>(new QName("parent"), Parent.class, parent);
         jaxbElementClient.postParent(parentElement);
     }
-
 }

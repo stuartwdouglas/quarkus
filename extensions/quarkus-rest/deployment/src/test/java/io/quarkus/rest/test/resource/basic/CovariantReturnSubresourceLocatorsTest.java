@@ -30,18 +30,18 @@ import io.quarkus.test.QuarkusUnitTest;
 public class CovariantReturnSubresourceLocatorsTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(CovariantReturnSubresourceLocatorsRootProxy.class, PortProviderUtil.class,
-                            CovariantReturnSubresourceLocatorsSubProxy.class);
-                    war.addClasses(CovariantReturnSubresourceLocatorsSubProxyRootImpl.class,
-                            CovariantReturnSubresourceLocatorsSubProxySubImpl.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(CovariantReturnSubresourceLocatorsRootProxy.class, PortProviderUtil.class,
+                    CovariantReturnSubresourceLocatorsSubProxy.class);
+            war.addClasses(CovariantReturnSubresourceLocatorsSubProxyRootImpl.class,
+                    CovariantReturnSubresourceLocatorsSubProxySubImpl.class);
+            return war;
+        }
+    });
 
     /**
      * @tpTestDetails Test basic path
@@ -55,7 +55,7 @@ public class CovariantReturnSubresourceLocatorsTest {
                 PortProviderUtil.generateURL("/path/sub/xyz", CovariantReturnSubresourceLocatorsTest.class.getSimpleName()))
                 .request().get();
         Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assertions.assertEquals("Boo! - xyz", response.readEntity(String.class), "Wrong content of response");
+        Assertions.assertEquals(response.readEntity(String.class), "Wrong content of response", "Boo! - xyz");
         response.close();
         client.close();
     }

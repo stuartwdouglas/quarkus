@@ -23,11 +23,12 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
@@ -42,6 +43,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Tests for SSL - server secured with certificate with wildcard hostname "*host"
  * @tpSince RESTEasy 3.7.0
  */
+@DisplayName("Ssl Server With Wildcard Hostname Certificate Test")
 public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
 
     private static final Logger LOG = Logger.getLogger(SslServerWithWildcardHostnameCertificateTest.class.getName());
@@ -49,23 +51,24 @@ public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
     private static KeyStore truststore;
 
     private static final String SERVER_KEYSTORE_PATH = RESOURCES + "/server-wildcard-hostname.keystore";
+
     private static final String CLIENT_TRUSTSTORE_PATH = RESOURCES + "/client-wildcard-hostname.truststore";
+
     private static final String URL = generateHttpsURL(SSL_CONTAINER_PORT_OFFSET_WILDCARD);
 
     @TargetsContainer(SSL_CONTAINER_QUALIFIER_WILDCARD)
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, SslResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, SslResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void prepareTruststore()
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         truststore = KeyStore.getInstance("jks");
@@ -74,7 +77,7 @@ public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
         }
     }
 
-    @Before
+    @BeforeEach
     public void startContainer() throws Exception {
         if (!containerController.isStarted(SSL_CONTAINER_QUALIFIER_WILDCARD)) {
             containerController.start(SSL_CONTAINER_QUALIFIER_WILDCARD);
@@ -92,16 +95,15 @@ public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
      * @tpSince RESTEasy 3.7.0
      */
     @Test
+    @DisplayName("Test Hostname Verification Policy Wildcard")
     public void testHostnameVerificationPolicyWildcard() {
         QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
         QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
-
         QuarkusRestClientBuilder.hostnameVerification(QuarkusRestClientBuilder.HostnameVerificationPolicy.WILDCARD);
-
         client = QuarkusRestClientBuilder.trustStore(truststore).build();
         Response response = client.target(URL).request().get();
-        Assert.assertEquals("Hello World!", response.readEntity(String.class));
-        Assert.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "Hello World!");
+        Assertions.assertEquals(200, response.getStatus());
     }
 
     /**
@@ -113,12 +115,11 @@ public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
      * @tpSince RESTEasy 3.7.0
      */
     @Test
+    @DisplayName("Test Hostname Verification Policy Strict")
     public void testHostnameVerificationPolicyStrict() throws Exception {
         QuarkusRestClientBuilder = (QuarkusRestClientBuilder) ClientBuilder.newBuilder();
         QuarkusRestClientBuilder.setIsTrustSelfSignedCertificates(false);
-
         QuarkusRestClientBuilder.hostnameVerification(QuarkusRestClientBuilder.HostnameVerificationPolicy.STRICT);
-
         client = QuarkusRestClientBuilder.trustStore(truststore).build();
         try {
             if (InetAddress.getByName("localhost.localdomain") != null) {
@@ -127,7 +128,7 @@ public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
                     client.target(anotherURL).request().get();
                     Assert.fail("ProcessingException ie expected");
                 } catch (ProcessingException e) {
-                    //expected
+                    // expected
                 }
             }
         } catch (UnknownHostException e) {
@@ -138,19 +139,17 @@ public class SslServerWithWildcardHostnameCertificateTest extends SslTestBase {
                         client.target(anotherURL).request().get();
                         Assert.fail("ProcessingException ie expected");
                     } catch (ProcessingException e1) {
-                        //expected
+                        // expected
                     }
                 }
             } catch (UnknownHostException e2) {
-                LOG.warn("Neither 'localhost.localdomain' nor 'local.localhost'can be resolved, "
-                        + "nothing is checked");
+                LOG.warn("Neither 'localhost.localdomain' nor 'local.localhost'can be resolved, " + "nothing is checked");
             }
         }
     }
 
-    @After
+    @AfterEach
     public void after() {
         client.close();
     }
-
 }

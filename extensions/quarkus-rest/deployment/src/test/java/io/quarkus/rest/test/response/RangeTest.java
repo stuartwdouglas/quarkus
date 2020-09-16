@@ -16,10 +16,11 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.RangeResource;
@@ -32,32 +33,31 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Range Test")
 public class RangeTest {
 
     protected final Logger logger = Logger.getLogger(VariantsTest.class.getName());
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    // Deployment creates file in the filesystem
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            // Deployment creates file in the filesystem
+            return TestUtil.finishContainerPrepare(war, null, RangeResource.class);
+        }
+    });
 
-                    return TestUtil.finishContainerPrepare(war, null, RangeResource.class);
-                }
-            });
-
-    @AfterClass
+    @AfterAll
     public static void close() {
         Response response = client.target(generateURL("/deletefile")).request().get();
         response.close();
@@ -77,6 +77,7 @@ public class RangeTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Date")
     public void testDate() {
         SimpleDateFormat dateFormatRFC822 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
         dateFormatRFC822.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -97,13 +98,14 @@ public class RangeTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Range 0 to 3")
     public void testRange0to3() {
-        Response response = client.target(generateURL("/file")).request()
-                .header("Range", "bytes=0-3").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response doesn't contain the expected length of the answer", 4, response.getLength());
+        Response response = client.target(generateURL("/file")).request().header("Range", "bytes=0-3").get();
+        Assertions.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(4, response.getLength(), "The response doesn't contain the expected length of the answer");
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
-        Assert.assertEquals("The response doesn't contain the expected substring", response.readEntity(String.class), "hell");
+        Assertions.assertEquals(response.readEntity(String.class), "hell",
+                "The response doesn't contain the expected substring");
         response.close();
     }
 
@@ -114,13 +116,14 @@ public class RangeTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Range 1 to 4")
     public void testRange1to4() {
-        Response response = client.target(generateURL("/file")).request()
-                .header("Range", "bytes=1-4").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response doesn't contain the expected length of the answer", 4, response.getLength());
+        Response response = client.target(generateURL("/file")).request().header("Range", "bytes=1-4").get();
+        Assertions.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(4, response.getLength(), "The response doesn't contain the expected length of the answer");
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
-        Assert.assertEquals("The response doesn't contain the expected substring", response.readEntity(String.class), "ello");
+        Assertions.assertEquals(response.readEntity(String.class), "ello",
+                "The response doesn't contain the expected substring");
         response.close();
     }
 
@@ -131,15 +134,15 @@ public class RangeTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Range 0 to 3000")
     public void testRange0to3000() {
-        Response response = client.target(generateURL("/file")).request()
-                .header("Range", "bytes=0-3000").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response doesn't contain the expected length of the answer", 3001, response.getLength());
+        Response response = client.target(generateURL("/file")).request().header("Range", "bytes=0-3000").get();
+        Assertions.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(3001, response.getLength(), "The response doesn't contain the expected length of the answer");
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
         byte[] bytes = response.readEntity(new GenericType<byte[]>() {
         });
-        Assert.assertEquals("The response doesn't contain the expected length of entity", 3001, bytes.length);
+        Assertions.assertEquals(3001, bytes.length, "The response doesn't contain the expected length of entity");
         response.close();
     }
 
@@ -151,13 +154,14 @@ public class RangeTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Negative Range 4")
     public void testNegativeRange4() {
-        Response response = client.target(generateURL("/file")).request()
-                .header("Range", "bytes=-4").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response doesn't contain the expected length of the answer", 4, response.getLength());
+        Response response = client.target(generateURL("/file")).request().header("Range", "bytes=-4").get();
+        Assertions.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(4, response.getLength(), "The response doesn't contain the expected length of the answer");
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
-        Assert.assertEquals("The response doesn't contain the expected substring", response.readEntity(String.class), "1234");
+        Assertions.assertEquals(response.readEntity(String.class), "1234",
+                "The response doesn't contain the expected substring");
         response.close();
     }
 
@@ -169,10 +173,10 @@ public class RangeTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Negative Range 6000 Out Of Size")
     public void testNegativeRange6000OutOfSize() {
-        Response response = client.target(generateURL("/file")).request()
-                .header("Range", "bytes=-6000").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Response response = client.target(generateURL("/file")).request().header("Range", "bytes=-6000").get();
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -185,15 +189,14 @@ public class RangeTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Full Range")
     public void testFullRange() {
-        Response response = client.target(generateURL("/smallfile")).request()
-                .header("Range", "bytes=0-8").get();
-        Assert.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response doesn't contain the expected length of the answer", 9, response.getLength());
+        Response response = client.target(generateURL("/smallfile")).request().header("Range", "bytes=0-8").get();
+        Assertions.assertEquals(Status.PARTIAL_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(9, response.getLength(), "The response doesn't contain the expected length of the answer");
         logger.info("Content-Range: " + response.getHeaderString("Content-Range"));
-        Assert.assertEquals("The response doesn't contain the expected substring", response.readEntity(String.class),
-                "123456789");
+        Assertions.assertEquals(response.readEntity(String.class), "123456789",
+                "The response doesn't contain the expected substring");
         response.close();
     }
-
 }

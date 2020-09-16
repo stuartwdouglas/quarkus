@@ -22,10 +22,11 @@ import javax.xml.bind.JAXBException;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
@@ -42,49 +43,51 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails JAXB shouldn't have a concurrent problem and should unmarshall a Map property all the time
  * @tpSince RESTEasy 3.0.16
  */
-
+@DisplayName("Jaxb Marshalling Soak Test")
 public class JaxbMarshallingSoakTest {
+
     private static Logger logger = Logger.getLogger(JaxbMarshallingSoakTest.class);
+
     public static int iterator = 500;
+
     public static AtomicInteger counter = new AtomicInteger();
+
     public static CountDownLatch latch;
+
     public static JAXBContext ctx;
+
     public static String itemString;
+
     int timeout = TimeoutUtil.adjust(60);
 
     static Client client;
 
-    @Before
+    @BeforeEach
     public void init() {
-        client = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder())
-                .connectTimeout(5000, TimeUnit.MILLISECONDS)
-                .connectionCheckoutTimeout(5000, TimeUnit.MILLISECONDS)
-                .readTimeout(5000, TimeUnit.MILLISECONDS)
-                .maxPooledPerRoute(500)
-                .build();
+        client = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).connectTimeout(5000, TimeUnit.MILLISECONDS)
+                .connectionCheckoutTimeout(5000, TimeUnit.MILLISECONDS).readTimeout(5000, TimeUnit.MILLISECONDS)
+                .maxPooledPerRoute(500).build();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(JaxbMarshallingSoakItem.class, TestUtil.class, PortProviderUtil.class, TimeoutUtil.class);
-                    Map<String, String> contextParam = new HashMap<>();
-                    contextParam.put("resteasy.async.job.service.enabled", "true");
-                    // Arquillian in the deployment use if TimeoutUtil in the deployment
-
-                    return TestUtil.finishContainerPrepare(war, contextParam, JaxbMarshallingSoakAsyncService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(JaxbMarshallingSoakItem.class, TestUtil.class, PortProviderUtil.class, TimeoutUtil.class);
+            Map<String, String> contextParam = new HashMap<>();
+            contextParam.put("resteasy.async.job.service.enabled", "true");
+            // Arquillian in the deployment use if TimeoutUtil in the deployment
+            return TestUtil.finishContainerPrepare(war, contextParam, JaxbMarshallingSoakAsyncService.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, JaxbMarshallingSoakTest.class.getSimpleName());
@@ -95,6 +98,7 @@ public class JaxbMarshallingSoakTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Basic Test")
     public void basicTest() throws Exception {
         latch = new CountDownLatch(iterator);
         ctx = JAXBContext.newInstance(JaxbMarshallingSoakItem.class);
@@ -104,13 +108,13 @@ public class JaxbMarshallingSoakTest {
         for (int i = 0; i < iterator; i++) {
             WebTarget target = client.target(generateURL("/mpac/add?oneway=true"));
             Response response = target.request().post(Entity.entity(itemString, "application/xml"));
-            Assert.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.ACCEPTED.getStatusCode(), response.getStatus());
             response.close();
         }
         latch.await(10, TimeUnit.SECONDS);
         String message = String.format(new StringBuilder().append("RESTEasy should successes with marshalling %d times.")
                 .append("But RESTEasy successes only %d times.").toString(), iterator, counter.get());
-        Assert.assertEquals(message, iterator, counter.get());
+        Assertions.assertEquals(message, iterator, counter.get());
     }
 
     /**
@@ -118,15 +122,15 @@ public class JaxbMarshallingSoakTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Compare")
     public void compare() throws Exception {
         itemString = setString();
         ctx = JAXBContext.newInstance(JaxbMarshallingSoakItem.class);
-
         counter.set(0);
-
         Thread[] threads = new Thread[iterator];
         for (int i = 0; i < iterator; i++) {
             Thread thread = new Thread() {
+
                 @Override
                 public void run() {
                     byte[] bytes = itemString.getBytes();
@@ -139,7 +143,6 @@ public class JaxbMarshallingSoakTest {
                     }
                     item.toString();
                     counter.incrementAndGet();
-
                 }
             };
             threads[i] = thread;
@@ -158,7 +161,7 @@ public class JaxbMarshallingSoakTest {
         }
         String message = String.format(new StringBuilder().append("RESTEasy should successes with marshalling %d times.")
                 .append("But RESTEasy successes only %d times.").toString(), iterator, counter.get());
-        Assert.assertEquals(message, iterator, counter.get());
+        Assertions.assertEquals(message, iterator, counter.get());
     }
 
     private String setString() {
@@ -169,7 +172,6 @@ public class JaxbMarshallingSoakTest {
         sbuffer.append("<requestID>");
         sbuffer.append("i");
         sbuffer.append("</requestID>");
-
         sbuffer.append("<dummy1>DUMMY1</dummy1>");
         sbuffer.append("<dummy2>DUMMY2</dummy2>");
         sbuffer.append("<dummy3>DUMMY3</dummy3>");
@@ -178,7 +180,6 @@ public class JaxbMarshallingSoakTest {
         sbuffer.append("<dummy6>DUMMY6</dummy6>");
         sbuffer.append("<dummy7>DUMMY7</dummy7>");
         sbuffer.append("<dummy8>DUMMY8</dummy8>");
-
         sbuffer.append("<harness>");
         sbuffer.append("<entry>");
         sbuffer.append("<key>P_REGIONCD</key>");
@@ -193,7 +194,6 @@ public class JaxbMarshallingSoakTest {
         sbuffer.append("<value>C</value>");
         sbuffer.append("</entry>");
         sbuffer.append("</harness>");
-
         sbuffer.append("</item>");
         return sbuffer.toString();
     }

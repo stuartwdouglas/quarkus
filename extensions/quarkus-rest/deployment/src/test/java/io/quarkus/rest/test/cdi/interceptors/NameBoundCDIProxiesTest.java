@@ -8,8 +8,9 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.cdi.interceptors.resource.NameBoundCDIProxiesApplication;
@@ -26,22 +27,21 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Name bound interceptors and Application CDI proxies
  * @tpSince RESTEasy 4.0.0
  */
+@DisplayName("Name Bound CDI Proxies Test")
 public class NameBoundCDIProxiesTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(NameBoundProxiesAnnotation.class);
-
-                    return TestUtil.finishContainerPrepare(war, null, NameBoundCDIProxiesResource.class,
-                            NameBoundCDIProxiesInterceptor.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(NameBoundProxiesAnnotation.class);
+            return TestUtil.finishContainerPrepare(war, null, NameBoundCDIProxiesResource.class,
+                    NameBoundCDIProxiesInterceptor.class);
+        }
+    });
 
     // Use specific Application subclass
     private static WebArchive prepareArchive(String deploymentName) {
@@ -59,10 +59,11 @@ public class NameBoundCDIProxiesTest {
      * @tpSince RESTEasy 4.0.0
      */
     @Test
+    @DisplayName("Test Name Bound Interceptor")
     public void testNameBoundInterceptor() throws Exception {
         Client client = ClientBuilder.newClient();
         String answer = client.target(generateURL("/test")).request().get(String.class);
-        Assert.assertEquals("in-test-out", answer);
+        Assertions.assertEquals(answer, "in-test-out");
         client.close();
     }
 }

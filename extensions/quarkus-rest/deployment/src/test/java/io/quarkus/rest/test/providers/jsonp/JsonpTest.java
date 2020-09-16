@@ -17,10 +17,11 @@ import javax.ws.rs.core.MediaType;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.jsonp.resource.JsonpResource;
@@ -33,6 +34,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Jsonp Test")
 public class JsonpTest {
 
     protected static final Logger logger = Logger.getLogger(JsonpTest.class.getName());
@@ -40,24 +42,23 @@ public class JsonpTest {
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(JsonpTest.class);
-                    return TestUtil.finishContainerPrepare(war, null, JsonpResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(JsonpTest.class);
+            return TestUtil.finishContainerPrepare(war, null, JsonpResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
         client = null;
@@ -75,6 +76,7 @@ public class JsonpTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Object")
     public void testObject() throws Exception {
         doTestObject("UTF-8");
         doTestObject("UTF-16");
@@ -88,16 +90,14 @@ public class JsonpTest {
         Entity<String> entity = Entity.entity("{ \"name\" : \"Bill\" }", mediaType);
         String json = target.request().post(entity, String.class);
         logger.info("Request entity: " + json);
-
         JsonObject obj = Json.createObjectBuilder().add("name", "Bill").add("id", 10001).build();
-
         obj = target.request().post(Entity.json(obj), JsonObject.class);
-        Assert.assertTrue("JsonObject from the response doesn't contain field 'name'", obj.containsKey("name"));
-        Assert.assertEquals("JsonObject from the response doesn't contain correct value for the field 'name'",
-                obj.getJsonString("name").getString(), "Bill");
-        Assert.assertTrue("JsonObject from the response doesn't contain field 'id'", obj.containsKey("id"));
-        Assert.assertEquals("JsonObject from the response doesn't contain correct value for the field 'id'",
-                obj.getJsonNumber("id").longValue(), 10001);
+        Assertions.assertTrue(obj.containsKey("name"), "JsonObject from the response doesn't contain field 'name'");
+        Assertions.assertEquals(obj.getJsonString("name").getString(), "Bill",
+                "JsonObject from the response doesn't contain correct value for the field 'name'");
+        Assertions.assertTrue(obj.containsKey("id"), "JsonObject from the response doesn't contain field 'id'");
+        Assertions.assertEquals(obj.getJsonNumber("id").longValue(), 10001,
+                "JsonObject from the response doesn't contain correct value for the field 'id'");
     }
 
     /**
@@ -108,6 +108,7 @@ public class JsonpTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Array")
     public void testArray() throws Exception {
         doTestArray("UTF-8");
         doTestArray("UTF-16");
@@ -119,22 +120,21 @@ public class JsonpTest {
         WebTarget target = client.target(generateURL("/test/json/array"));
         MediaType mediaType = MediaType.APPLICATION_JSON_TYPE.withCharset(charset);
         Entity<String> entity = Entity.entity("[{ \"name\" : \"Bill\" },{ \"name\" : \"Monica\" }]", mediaType);
-        String json = target.request().post(entity, String.class);//        String json = target.request().post(Entity.json("[{ \"name\" : \"Bill\" },{ \"name\" : \"Monica\" }]"), String.class);
+        // String json = target.request().post(Entity.json("[{ \"name\" : \"Bill\" },{ \"name\" : \"Monica\" }]"), String.class);
+        String json = target.request().post(entity, String.class);
         logger.info("Request entity: " + json);
-
         JsonArray array = Json.createArrayBuilder().add(Json.createObjectBuilder().add("name", "Bill").build())
                 .add(Json.createObjectBuilder().add("name", "Monica").build()).build();
         array = target.request().post(Entity.json(array), JsonArray.class);
-        Assert.assertEquals("JsonArray from the response doesn't contain two elements as it should", 2, array.size());
+        Assertions.assertEquals(2, array.size(), "JsonArray from the response doesn't contain two elements as it should");
         JsonObject obj = array.getJsonObject(0);
-        Assert.assertTrue("JsonObject[0] from the response doesn't contain field 'name'", obj.containsKey("name"));
-        Assert.assertEquals("JsonObject[0] from the response doesn't contain correct value for the field 'name'",
-                obj.getJsonString("name").getString(), "Bill");
+        Assertions.assertTrue(obj.containsKey("name"), "JsonObject[0] from the response doesn't contain field 'name'");
+        Assertions.assertEquals(obj.getJsonString("name").getString(), "Bill",
+                "JsonObject[0] from the response doesn't contain correct value for the field 'name'");
         obj = array.getJsonObject(1);
-        Assert.assertTrue("JsonObject[1] from the response doesn't contain field 'name'", obj.containsKey("name"));
-        Assert.assertEquals("JsonObject[1] from the response doesn't contain correct value for the field 'name'",
-                obj.getJsonString("name").getString(), "Monica");
-
+        Assertions.assertTrue(obj.containsKey("name"), "JsonObject[1] from the response doesn't contain field 'name'");
+        Assertions.assertEquals(obj.getJsonString("name").getString(), "Monica",
+                "JsonObject[1] from the response doesn't contain correct value for the field 'name'");
     }
 
     /**
@@ -145,6 +145,7 @@ public class JsonpTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Structure")
     public void testStructure() throws Exception {
         doTestStructure("UTF-8");
         doTestStructure("UTF-16");
@@ -153,20 +154,22 @@ public class JsonpTest {
     }
 
     @Test
+    @DisplayName("Test Json String")
     public void testJsonString() throws Exception {
         WebTarget target = client.target(generateURL("/test/json/string"));
         JsonString jsonString = Json.createValue("Resteasy");
         JsonString result = target.request().post(Entity.json(jsonString), JsonString.class);
-        Assert.assertTrue("JsonString object with Hello Resteasy value is expected",
-                result.getString().equals("Hello Resteasy"));
+        Assertions.assertTrue(result.getString().equals("Hello Resteasy"),
+                "JsonString object with Hello Resteasy value is expected");
     }
 
     @Test
+    @DisplayName("Test Json Number")
     public void testJsonNumber() throws Exception {
         WebTarget target = client.target(generateURL("/test/json/number"));
         JsonNumber jsonNumber = Json.createValue(100);
         JsonNumber result = target.request().post(Entity.json(jsonNumber), JsonNumber.class);
-        Assert.assertTrue("JsonNumber object with 200 value is expected", result.intValue() == 200);
+        Assertions.assertTrue(result.intValue() == 200, "JsonNumber object with 200 value is expected");
     }
 
     private void doTestStructure(String charset) {
@@ -175,12 +178,11 @@ public class JsonpTest {
         Entity<String> entity = Entity.entity("{ \"name\" : \"Bill\" }", mediaType);
         String json = target.request().post(entity, String.class);
         logger.info("Request entity: " + json);
-
         JsonStructure str = (JsonStructure) Json.createObjectBuilder().add("name", "Bill").build();
         JsonStructure structure = target.request().post(Entity.json(str), JsonStructure.class);
         JsonObject obj = (JsonObject) structure;
-        Assert.assertTrue("JsonObject from the response doesn't contain field 'name'", obj.containsKey("name"));
-        Assert.assertEquals("JsonObject from the response doesn't contain correct value for the field 'name'",
-                obj.getJsonString("name").getString(), "Bill");
+        Assertions.assertTrue(obj.containsKey("name"), "JsonObject from the response doesn't contain field 'name'");
+        Assertions.assertEquals(obj.getJsonString("name").getString(), "Bill",
+                "JsonObject from the response doesn't contain correct value for the field 'name'");
     }
 }

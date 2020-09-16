@@ -8,10 +8,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -26,31 +27,31 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for asyncHttpServlet module
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Async Servlet Test")
 public class AsyncServletTest {
 
     static QuarkusRestClient client;
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, AsyncServletResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, AsyncServletResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, AsyncServletTest.class.getSimpleName());
@@ -61,10 +62,11 @@ public class AsyncServletTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Async")
     public void testAsync() throws Exception {
         Response response = client.target(generateURL("/async")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong response content", "hello", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("hello", response.readEntity(String.class), "Wrong response content");
     }
 
     /**
@@ -72,8 +74,9 @@ public class AsyncServletTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Timeout")
     public void testTimeout() throws Exception {
         Response response = client.target(generateURL("/async/timeout")).request().get();
-        Assert.assertEquals(Status.SERVICE_UNAVAILABLE.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.SERVICE_UNAVAILABLE.getStatusCode(), response.getStatus());
     }
 }

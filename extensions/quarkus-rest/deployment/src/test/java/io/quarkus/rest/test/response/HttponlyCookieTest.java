@@ -10,10 +10,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.HttponlyCookieResource;
@@ -26,52 +27,54 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.1.0.Final
  */
+@DisplayName("Httponly Cookie Test")
 public class HttponlyCookieTest {
 
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, HttponlyCookieResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, HttponlyCookieResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, HttponlyCookieTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
         client = null;
     }
 
     @Test
+    @DisplayName("Test Httponly True")
     public void testHttponlyTrue() {
         WebTarget target = client.target(generateURL("/cookie/true"));
         Response response = target.request().get();
         NewCookie cookie = response.getCookies().entrySet().iterator().next().getValue();
-        Assert.assertNotNull(cookie);
-        Assert.assertTrue(cookie.isHttpOnly());
+        Assertions.assertNotNull(cookie);
+        Assertions.assertTrue(cookie.isHttpOnly());
     }
 
     @Test
+    @DisplayName("Test Httponly Default")
     public void testHttponlyDefault() {
         WebTarget target = client.target(generateURL("/cookie/default"));
         Response response = target.request().get();
         NewCookie cookie = response.getCookies().entrySet().iterator().next().getValue();
-        Assert.assertNotNull(cookie);
-        Assert.assertFalse(cookie.isHttpOnly());
+        Assertions.assertNotNull(cookie);
+        Assertions.assertFalse(cookie.isHttpOnly());
     }
 }

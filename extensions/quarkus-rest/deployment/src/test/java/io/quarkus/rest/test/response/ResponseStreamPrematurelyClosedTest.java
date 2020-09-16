@@ -19,15 +19,17 @@ import org.apache.commons.io.IOUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.test.response.resource.TestResourceImpl;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 
+@DisplayName("Response Stream Prematurely Closed Test")
 public class ResponseStreamPrematurelyClosedTest {
 
     static Client client;
@@ -38,12 +40,12 @@ public class ResponseStreamPrematurelyClosedTest {
         return TestUtil.finishContainerPrepare(war, null, TestResourceImpl.class);
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -53,20 +55,19 @@ public class ResponseStreamPrematurelyClosedTest {
     }
 
     @Test
+    @DisplayName("Test Stream")
     public void testStream() throws Exception {
         Builder builder = client.target(generateURL("/test/document/abc/content")).request();
-
         try (MyByteArrayOutputStream baos = new MyByteArrayOutputStream()) {
-
             if (!TestUtil.isIbmJdk()) {
-                //builder.get().readEntity explicitly on the same line below and not saved in any temp variable
-                //to let the JVM try finalizing the ClientResponse object
+                // builder.get().readEntity explicitly on the same line below and not saved in any temp variable
+                // to let the JVM try finalizing the ClientResponse object
                 InputStream ins = builder.get().readEntity(InputStream.class);
-                //suggest jvm to do gc and wait the gc notification
+                // suggest jvm to do gc and wait the gc notification
                 final CountDownLatch coutDown = new CountDownLatch(1);
-
                 List<GarbageCollectorMXBean> gcbeans = ManagementFactory.getGarbageCollectorMXBeans();
                 NotificationListener listener = new NotificationListener() {
+
                     public void handleNotification(Notification notification, Object handback) {
                         coutDown.countDown();
                     }
@@ -78,24 +79,25 @@ public class ResponseStreamPrematurelyClosedTest {
                     }
                     System.gc();
                     coutDown.await(10, TimeUnit.SECONDS);
-
                     IOUtils.copy(ins, baos);
-                    Assert.assertEquals("Received string: " + baos.toShortString(), 10000000, baos.size());
+                    Assertions.assertEquals("Received string: " + baos.toShortString(), 10000000, baos.size());
                 } finally {
-                    //remove the listener
+                    // remove the listener
                     for (GarbageCollectorMXBean gcbean : gcbeans) {
                         ((NotificationEmitter) gcbean).removeNotificationListener(listener);
                     }
                 }
-            } else { // workaround for Ibm jdk - doesn't allow to use NotificationEmitter with GarbageCollectorMXBean
-                //builder.get().readEntity explicitly on the same line below and not saved in any temp variable
-                //to let the JVM try finalizing the ClientResponse object
+            } else {
+                // workaround for Ibm jdk - doesn't allow to use NotificationEmitter with GarbageCollectorMXBean
+                // builder.get().readEntity explicitly on the same line below and not saved in any temp variable
+                // to let the JVM try finalizing the ClientResponse object
                 IOUtils.copy(builder.get().readEntity(InputStream.class), baos);
-                Assert.assertEquals(100000000, baos.size());
+                Assertions.assertEquals(100000000, baos.size());
             }
         }
     }
 
+    @DisplayName("My Byte Array Output Stream")
     private static class MyByteArrayOutputStream extends ByteArrayOutputStream {
 
         public String getSubstring(int from, int to) {

@@ -9,8 +9,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -25,19 +26,19 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for javax.ws.rs.WebApplicationException class
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Web Application Exception Test")
 public class WebApplicationExceptionTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, WebApplicationExceptionResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, WebApplicationExceptionResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, WebApplicationExceptionTest.class.getSimpleName());
@@ -47,7 +48,7 @@ public class WebApplicationExceptionTest {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         WebTarget base = client.target(generateURL(path));
         Response response = base.request().get();
-        Assert.assertEquals(code, response.getStatus());
+        Assertions.assertEquals(code, response.getStatus());
         response.close();
         client.close();
     }
@@ -57,6 +58,7 @@ public class WebApplicationExceptionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Exception")
     public void testException() {
         basicTest("/exception", Status.UNAUTHORIZED);
     }
@@ -67,8 +69,8 @@ public class WebApplicationExceptionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Exception With Entity")
     public void testExceptionWithEntity() {
         basicTest("/exception/entity", Status.UNAUTHORIZED);
     }
-
 }

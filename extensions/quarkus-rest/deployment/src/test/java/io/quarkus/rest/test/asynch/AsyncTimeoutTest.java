@@ -8,10 +8,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -20,26 +21,28 @@ import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.test.QuarkusUnitTest;
 
+@DisplayName("Async Timeout Test")
 public class AsyncTimeoutTest {
+
     static QuarkusRestClient client;
+
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, AsyncTimeoutResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, AsyncTimeoutResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
         client = null;
@@ -50,13 +53,13 @@ public class AsyncTimeoutTest {
     }
 
     @Test
+    @DisplayName("Test Async Time Out")
     public void testAsyncTimeOut() throws Exception {
         WebTarget base = client.target(generateURL("/async"));
         Response response = base.request().get();
-        Assert.assertEquals("Async hello", response.readEntity(String.class));
+        Assertions.assertEquals(response.readEntity(String.class), "Async hello");
         Response timeoutRes = client.target(generateURL("/timeout")).request().get();
-        Assert.assertTrue("Wrongly call Timeout Handler", timeoutRes.readEntity(String.class).contains("false"));
+        Assertions.assertTrue(timeoutRes.readEntity(String.class).contains("false"), "Wrongly call Timeout Handler");
         response.close();
     }
-
 }

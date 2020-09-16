@@ -14,10 +14,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.path.resource.LocatorSubResourceReturningThisParamEntityPrototype;
@@ -31,9 +32,11 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Locator Sub Resource Returning This Test")
 public class LocatorSubResourceReturningThisTest {
 
     @Path("resource")
+    @DisplayName("Locator Sub Resource Returning This Sub Resource")
     public static class LocatorSubResourceReturningThisSubResource extends LocatorSubResourceReturningThisPathParamTest {
 
         @Path("subresource")
@@ -43,6 +46,7 @@ public class LocatorSubResourceReturningThisTest {
     }
 
     @Path(value = "/PathParamTest")
+    @DisplayName("Locator Sub Resource Returning This Path Param Test")
     public static class LocatorSubResourceReturningThisPathParamTest {
 
         @Produces(MediaType.TEXT_PLAIN)
@@ -55,28 +59,27 @@ public class LocatorSubResourceReturningThisTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(LocatorSubResourceReturningThisPathParamTest.class,
-                            LocatorSubResourceReturningThisParamEntityPrototype.class,
-                            LocatorSubResourceReturningThisParamEntityWithConstructor.class);
-                    return TestUtil.finishContainerPrepare(war, null, LocatorSubResourceReturningThisSubResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(LocatorSubResourceReturningThisPathParamTest.class,
+                    LocatorSubResourceReturningThisParamEntityPrototype.class,
+                    LocatorSubResourceReturningThisParamEntityWithConstructor.class);
+            return TestUtil.finishContainerPrepare(war, null, LocatorSubResourceReturningThisSubResource.class);
+        }
+    });
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -88,12 +91,12 @@ public class LocatorSubResourceReturningThisTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Locator With Sub With Path Annotation Test")
     public void LocatorWithSubWithPathAnnotationTest() {
         Response response = client.target(PortProviderUtil.generateURL(
                 "/resource/subresource/ParamEntityWithConstructor/ParamEntityWithConstructor=JAXRS",
                 LocatorSubResourceReturningThisTest.class.getSimpleName())).request().get();
-        Assert.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(200, response.getStatus());
         response.close();
     }
-
 }

@@ -21,10 +21,10 @@ import org.jboss.resteasy.client.jaxrs.internal.CompletionStageRxInvokerImpl;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.wildfly.extras.creaper.core.online.OnlineManagementClient;
 import org.wildfly.extras.creaper.core.online.operations.Address;
@@ -62,7 +62,7 @@ public class RxInvokerTest extends ClientTestBase {
                 }
             });
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         OnlineManagementClient mgmtClient = TestUtil.clientInit();
         Administration admin = new Administration(mgmtClient);
@@ -78,7 +78,7 @@ public class RxInvokerTest extends ClientTestBase {
         mgmtClient.close();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         OnlineManagementClient mgmtClient = TestUtil.clientInit();
         Administration admin = new Administration(mgmtClient);

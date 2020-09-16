@@ -35,19 +35,18 @@ import io.quarkus.test.QuarkusUnitTest;
 public class SubResourceLocatorTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class, SubResourceLocatorBaseCrudService.class,
-                            SubResourceLocatorBaseService.class,
-                            SubResourceLocatorFoo.class, SubResourceLocatorOhaUserModel.class,
-                            SubResourceLocatorPlatformServiceResource.class, SubResourceLocatorUserResource.class);
-                    war.addClasses(SubResourceLocatorImpFoo.class, SubResourceLocatorPlatformServiceImpl.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class, SubResourceLocatorBaseCrudService.class, SubResourceLocatorBaseService.class,
+                    SubResourceLocatorFoo.class, SubResourceLocatorOhaUserModel.class,
+                    SubResourceLocatorPlatformServiceResource.class, SubResourceLocatorUserResource.class);
+            war.addClasses(SubResourceLocatorImpFoo.class, SubResourceLocatorPlatformServiceImpl.class);
+            return war;
+        }
+    });
 
     /**
      * @tpTestDetails Sub resource locator should not fail
@@ -61,7 +60,7 @@ public class SubResourceLocatorTest {
                 SubResourceLocatorTest.class.getSimpleName()));
         Response response = base.request().get();
         String s = response.readEntity(String.class);
-        Assertions.assertEquals("bill", s);
+        Assertions.assertEquals(s, "bill");
         response.close();
         client.close();
     }

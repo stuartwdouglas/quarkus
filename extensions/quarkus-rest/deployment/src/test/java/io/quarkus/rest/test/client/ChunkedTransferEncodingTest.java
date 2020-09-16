@@ -12,10 +12,10 @@ import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocationBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -56,7 +56,7 @@ public class ChunkedTransferEncodingTest {
                 }
             });
 
-    @Before
+    @BeforeEach
     public void init() {
         file = new File(testFilePath);
         fileLength = file.length();
@@ -65,7 +65,7 @@ public class ChunkedTransferEncodingTest {
                 .build();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         clientDefault.close();
         clientEngine43.close();

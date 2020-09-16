@@ -6,8 +6,9 @@ import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -23,32 +24,33 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Form Body Resource Test")
 public class FormBodyResourceTest {
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
 
-                    war.addClasses(FormBodyResourceClient.class);
-                    war.addClasses(FormBodyResourceForm.class);
-                    return TestUtil.finishContainerPrepare(war, null, FormBodyResourceResource.class);
-                }
-            });
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(FormBodyResourceClient.class);
+            war.addClasses(FormBodyResourceForm.class);
+            return TestUtil.finishContainerPrepare(war, null, FormBodyResourceResource.class);
+        }
+    });
 
     /**
      * @tpTestDetails Check body of form.
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test")
     public void test() {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
-        FormBodyResourceClient proxy = client.target(
-                PortProviderUtil.generateBaseUrl(FormParameterTest.class.getSimpleName()))
+        FormBodyResourceClient proxy = client.target(PortProviderUtil.generateBaseUrl(FormParameterTest.class.getSimpleName()))
                 .proxyBuilder(FormBodyResourceClient.class).build();
-        Assert.assertEquals("foo.gotIt", proxy.put("foo"));
+        Assertions.assertEquals(proxy.put("foo"), "foo.gotIt");
         client.close();
     }
 }

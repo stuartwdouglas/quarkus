@@ -23,37 +23,37 @@ import javax.ws.rs.ext.Provider;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.util.DynamicFeatureContextDelegate;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-/***
- *
+/**
  * @author Nicolas NESMON
- *
  */
+@DisplayName("Dynamic Feature Context Delegate Test")
 public class DynamicFeatureContextDelegateTest {
 
+    @DisplayName("Custom Object")
     public static class CustomObject {
-
     }
 
+    @DisplayName("Custom Exception")
     public static class CustomException extends Exception {
-
     }
 
     @Provider
     @Produces(MediaType.WILDCARD)
+    @DisplayName("Custom Object Context Resolver")
     public static class CustomObjectContextResolver implements ContextResolver<CustomObject> {
 
         @Override
         public CustomObject getContext(Class<?> type) {
             return new CustomObject();
         }
-
     }
 
     @Provider
     @Produces(MediaType.APPLICATION_JSON)
+    @DisplayName("Custom Object Message Body Writer")
     public static class CustomObjectMessageBodyWriter implements MessageBodyWriter<CustomObject> {
 
         @Override
@@ -62,21 +62,20 @@ public class DynamicFeatureContextDelegateTest {
         }
 
         @Override
-        public void writeTo(CustomObject t, Class<?> type, Type genericType, Annotation[] annotations,
-                MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
+        public void writeTo(CustomObject t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+                MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
                 throws IOException, WebApplicationException {
         }
 
         @Override
-        public long getSize(CustomObject t, Class<?> type, Type genericType, Annotation[] annotations,
-                MediaType mediaType) {
+        public long getSize(CustomObject t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
             return 0;
         }
-
     }
 
     @Provider
     @Consumes(MediaType.APPLICATION_JSON)
+    @DisplayName("Custom Object Message Body Reader")
     public static class CustomObjectMessageBodyReader implements MessageBodyReader<CustomObject> {
 
         @Override
@@ -85,34 +84,34 @@ public class DynamicFeatureContextDelegateTest {
         }
 
         @Override
-        public CustomObject readFrom(Class<CustomObject> type, Type genericType, Annotation[] annotations,
-                MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
+        public CustomObject readFrom(Class<CustomObject> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+                MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
                 throws IOException, WebApplicationException {
             return null;
         }
-
     }
 
     @Provider
+    @DisplayName("Custom Exception Mapper")
     public static class CustomExceptionMapper implements ExceptionMapper<CustomException> {
 
         @Override
         public Response toResponse(CustomException exception) {
             return null;
         }
-
     }
 
     @Provider
+    @DisplayName("Custom Dynamic Feature")
     public static class CustomDynamicFeature implements DynamicFeature {
 
         @Override
         public void configure(ResourceInfo resourceInfo, FeatureContext context) {
         }
-
     }
 
     @Test
+    @DisplayName("Test Context Resolver Registration")
     public void testContextResolverRegistration() throws Exception {
         ResteasyProviderFactory resteasyProviderFactory = ResteasyProviderFactory.newInstance();
         DynamicFeatureContextDelegate featureContext = new DynamicFeatureContextDelegate(resteasyProviderFactory);
@@ -123,6 +122,7 @@ public class DynamicFeatureContextDelegateTest {
     }
 
     @Test
+    @DisplayName("Test Exception Mapper Registration")
     public void testExceptionMapperRegistration() throws Exception {
         ResteasyProviderFactory resteasyProviderFactory = ResteasyProviderFactory.newInstance();
         DynamicFeatureContextDelegate featureContext = new DynamicFeatureContextDelegate(resteasyProviderFactory);
@@ -133,6 +133,7 @@ public class DynamicFeatureContextDelegateTest {
     }
 
     @Test
+    @DisplayName("Test Message Body Writer Registration")
     public void testMessageBodyWriterRegistration() throws Exception {
         ResteasyProviderFactory resteasyProviderFactory = ResteasyProviderFactory.newInstance();
         DynamicFeatureContextDelegate featureContext = new DynamicFeatureContextDelegate(resteasyProviderFactory);
@@ -145,6 +146,7 @@ public class DynamicFeatureContextDelegateTest {
     }
 
     @Test
+    @DisplayName("Test Message Body Reader Registration")
     public void testMessageBodyReaderRegistration() throws Exception {
         ResteasyProviderFactory resteasyProviderFactory = ResteasyProviderFactory.newInstance();
         DynamicFeatureContextDelegate featureContext = new DynamicFeatureContextDelegate(resteasyProviderFactory);
@@ -157,6 +159,7 @@ public class DynamicFeatureContextDelegateTest {
     }
 
     @Test
+    @DisplayName("Test Dynamic Feature Registration")
     public void testDynamicFeatureRegistration() throws Exception {
         ResteasyProviderFactory resteasyProviderFactory = ResteasyProviderFactory.newInstance();
         DynamicFeatureContextDelegate featureContext = new DynamicFeatureContextDelegate(resteasyProviderFactory);
@@ -165,5 +168,4 @@ public class DynamicFeatureContextDelegateTest {
         featureContext.register(CustomDynamicFeature.class);
         Assert.assertNull(resteasyProviderFactory.getServerDynamicFeatures());
     }
-
 }

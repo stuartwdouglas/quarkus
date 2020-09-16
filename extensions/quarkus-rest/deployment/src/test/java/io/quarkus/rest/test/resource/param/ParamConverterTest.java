@@ -6,7 +6,8 @@ import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -27,24 +28,24 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for ParamConverter
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Param Converter Test")
 public class ParamConverterTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(ParamConverterPOJOConverter.class);
-                    war.addClass(ParamConverterPOJO.class);
-                    war.addClass(ParamConverterDefaultClient.class);
-                    war.addClass(ParamConverterClient.class);
-                    return TestUtil.finishContainerPrepare(war, null, ParamConverterPOJOConverterProvider.class,
-                            ParamConverterResource.class, ParamConverterDefaultResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ParamConverterPOJOConverter.class);
+            war.addClass(ParamConverterPOJO.class);
+            war.addClass(ParamConverterDefaultClient.class);
+            war.addClass(ParamConverterClient.class);
+            return TestUtil.finishContainerPrepare(war, null, ParamConverterPOJOConverterProvider.class,
+                    ParamConverterResource.class, ParamConverterDefaultResource.class);
+        }
+    });
 
     private String generateBaseUrl() {
         return PortProviderUtil.generateBaseUrl(ParamConverterTest.class.getSimpleName());
@@ -55,6 +56,7 @@ public class ParamConverterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test It")
     public void testIt() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         ParamConverterClient proxy = client.target(generateBaseUrl()).proxy(ParamConverterClient.class);
@@ -67,6 +69,7 @@ public class ParamConverterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Default")
     public void testDefault() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         ParamConverterDefaultClient proxy = client.target(generateBaseUrl()).proxy(ParamConverterDefaultClient.class);

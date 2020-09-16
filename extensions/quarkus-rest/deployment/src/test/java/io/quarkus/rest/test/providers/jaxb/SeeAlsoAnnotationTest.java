@@ -10,9 +10,10 @@ import javax.xml.bind.JAXBContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -30,31 +31,31 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("See Also Annotation Test")
 public class SeeAlsoAnnotationTest {
 
     private final Logger logger = Logger.getLogger(SeeAlsoAnnotationTest.class.getName());
+
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, SeeAlsoAnnotationResource.class,
-                            SeeAlsoAnnotationRealFoo.class,
-                            SeeAlsoAnnotationBaseFoo.class, SeeAlsoAnnotationFooIntf.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, SeeAlsoAnnotationResource.class, SeeAlsoAnnotationRealFoo.class,
+                    SeeAlsoAnnotationBaseFoo.class, SeeAlsoAnnotationFooIntf.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
         client = null;
@@ -69,6 +70,7 @@ public class SeeAlsoAnnotationTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Intf")
     public void testIntf() throws Exception {
         String url = generateURL("/see/intf");
         runTest(url);
@@ -79,6 +81,7 @@ public class SeeAlsoAnnotationTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Test")
     public void testTest() throws Exception {
         String url = generateURL("/see/base");
         runTest(url);
@@ -89,14 +92,10 @@ public class SeeAlsoAnnotationTest {
         StringWriter writer = new StringWriter();
         SeeAlsoAnnotationRealFoo foo = new SeeAlsoAnnotationRealFoo();
         foo.setName("bill");
-
         ctx.createMarshaller().marshal(foo, writer);
-
         String s = writer.getBuffer().toString();
         logger.info(s);
-
         QuarkusRestWebTarget target = client.target(generateURL(url));
         target.request().header("Content-Type", "application/xml").put(Entity.xml(s));
     }
-
 }

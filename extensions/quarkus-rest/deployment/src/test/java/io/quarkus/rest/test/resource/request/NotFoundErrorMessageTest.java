@@ -12,10 +12,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.core.basic.resource.DuplicateDeploymentResource;
@@ -29,15 +30,17 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.17
  * @tpTestCaseDetails Regression test for JBEAP-3725
  */
+@DisplayName("Not Found Error Message Test")
 public class NotFoundErrorMessageTest {
+
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -47,16 +50,15 @@ public class NotFoundErrorMessageTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, DuplicateDeploymentResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, DuplicateDeploymentResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, NotFoundErrorMessageTest.class.getSimpleName());
@@ -67,12 +69,12 @@ public class NotFoundErrorMessageTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Deploy")
     public void testDeploy() throws IOException {
         int initWarningCount = getWarningCount();
         Response response = client.target(generateURL("/nonsence")).request().get();
-        Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
         response.close();
-
-        Assert.assertEquals("Wrong count of warning messages in logs", 0, getWarningCount() - initWarningCount);
+        Assertions.assertEquals(0, getWarningCount() - initWarningCount, "Wrong count of warning messages in logs");
     }
 }

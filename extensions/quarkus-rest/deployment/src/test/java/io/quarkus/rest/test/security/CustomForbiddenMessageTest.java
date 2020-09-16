@@ -23,11 +23,12 @@ import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
 import org.jboss.resteasy.setup.AbstractUsersRolesSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -45,7 +46,9 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.1.0
  */
 @ServerSetup({ CustomForbiddenMessageTest.SecurityDomainSetup.class })
-@Category({ ExpectedFailingOnWildFly18.class }) //WFLY-12655
+// WFLY-12655
+@Category({ ExpectedFailingOnWildFly18.class })
+@DisplayName("Custom Forbidden Message Test")
 public class CustomForbiddenMessageTest {
 
     private static QuarkusRestClient authorizedClient;
@@ -53,25 +56,22 @@ public class CustomForbiddenMessageTest {
     private static final String ACCESS_FORBIDDEN_MESSAGE = "My custom message from CustomForbiddenMessageExceptionMapper: Access forbidden: role not allowed";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    Hashtable<String, String> contextParams = new Hashtable<String, String>();
-                    contextParams.put("resteasy.role.based.security", "true");
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            Hashtable<String, String> contextParams = new Hashtable<String, String>();
+            contextParams.put("resteasy.role.based.security", "true");
+            // war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
+            // .addAsWebInfResource(BasicAuthTest.class.getPackage(), "web.xml", "/web.xml");
+            return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class,
+                    CustomForbiddenMessageExceptionMapper.class);
+        }
+    });
 
-                    //                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
-                    //                            .addAsWebInfResource(BasicAuthTest.class.getPackage(), "web.xml", "/web.xml");
-
-                    return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class,
-                            CustomForbiddenMessageExceptionMapper.class);
-                }
-            });
-
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         // authorizedClient
         {
@@ -84,7 +84,7 @@ public class CustomForbiddenMessageTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         authorizedClient.close();
     }
@@ -98,14 +98,16 @@ public class CustomForbiddenMessageTest {
      * @tpSince RESTEasy 3.1.0
      */
     @Test
+    @DisplayName("Test Custom Exception Mapper")
     public void testCustomExceptionMapper() throws Exception {
         Response response = authorizedClient.target(generateURL("/secured/deny")).request().get();
-        Assert.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
-        Assert.assertEquals(ACCESS_FORBIDDEN_MESSAGE, response.readEntity(String.class));
+        Assertions.assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(ACCESS_FORBIDDEN_MESSAGE, response.readEntity(String.class));
         String ct = response.getHeaderString("Content-Type");
-        Assert.assertEquals("text/plain;charset=UTF-8", ct);
+        Assertions.assertEquals(ct, "text/plain;charset=UTF-8");
     }
 
+    @DisplayName("Security Domain Setup")
     static class SecurityDomainSetup extends AbstractUsersRolesSecurityDomainSetup {
 
         @Override

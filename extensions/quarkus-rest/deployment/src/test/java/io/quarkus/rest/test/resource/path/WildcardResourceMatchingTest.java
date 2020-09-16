@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.path.resource.WildcardMatchingResource;
@@ -28,29 +29,29 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Check class name of sub-resources, which process client request
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Wildcard Resource Matching Test")
 public class WildcardResourceMatchingTest {
 
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, WildcardMatchingResource.class,
-                            WildcardMatchingSubResource.class, WildcardMatchingSubSubResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, WildcardMatchingResource.class, WildcardMatchingSubResource.class,
+                    WildcardMatchingSubSubResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() {
         client.close();
     }
@@ -64,10 +65,11 @@ public class WildcardResourceMatchingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Main")
     public void testMain() {
         Response response = client.target(generateURL("/main")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("WildcardMatchingResource", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "WildcardMatchingResource");
         response.close();
     }
 
@@ -76,10 +78,11 @@ public class WildcardResourceMatchingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Main Sub")
     public void testMainSub() {
         Response response = client.target(generateURL("/main/sub")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("WildcardMatchingSubResource", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "WildcardMatchingSubResource");
         response.close();
     }
 
@@ -88,11 +91,11 @@ public class WildcardResourceMatchingTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Main Sub Sub")
     public void testMainSubSub() {
         Response response = client.target(generateURL("/main/sub/sub")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("WildcardMatchingSubSubResource", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "WildcardMatchingSubSubResource");
         response.close();
     }
-
 }

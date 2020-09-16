@@ -15,11 +15,12 @@ import org.jboss.resteasy.plugins.cache.server.ServerCacheInterceptor;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.cache.resource.ServerCacheInterceptorResource;
@@ -33,9 +34,11 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpSince RESTEasy 3.0.16
  */
 @Category({ ExpectedFailingOnWildFly19.class })
+@DisplayName("Server Cache Interceptor Test")
 public class ServerCacheInterceptorTest {
 
     private static QuarkusRestClient clientA;
+
     private static QuarkusRestClient clientB;
 
     @Deployment
@@ -44,7 +47,6 @@ public class ServerCacheInterceptorTest {
         singletons.add(ServerCacheFeature.class);
         WebArchive war = TestUtil.prepareArchive(ServerCacheInterceptorTest.class.getSimpleName());
         // This test is not supposed to run with security manager
-
         war.addClasses(ServerCache.class, InfinispanCache.class, ServerCacheHitFilter.class, ServerCacheInterceptor.class);
         war.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\n" + "Dependencies: org.infinispan\n"), "MANIFEST.MF");
         return TestUtil.finishContainerPrepare(war, null, singletons, ServerCacheInterceptorResource.class);
@@ -54,13 +56,13 @@ public class ServerCacheInterceptorTest {
         return PortProviderUtil.generateURL(path, ServerCacheInterceptorTest.class.getSimpleName());
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         clientA = (QuarkusRestClient) ClientBuilder.newClient();
         clientB = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         clientA.close();
         clientB.close();
@@ -71,10 +73,11 @@ public class ServerCacheInterceptorTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Cache Public Resource")
     public void cachePublicResource() {
         String responseA = clientA.target(generateURL("/public")).request().get(String.class);
         String responseB = clientB.target(generateURL("/public")).request().get(String.class);
-        Assert.assertEquals(responseA, responseB);
+        Assertions.assertEquals(responseA, responseB);
     }
 
     /**
@@ -82,10 +85,11 @@ public class ServerCacheInterceptorTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Do Not Cache Private Resource")
     public void doNotCachePrivateResource() {
         String responseA = clientA.target(generateURL("/private")).request().get(String.class);
         String responseB = clientB.target(generateURL("/private")).request().get(String.class);
-        Assert.assertNotEquals(responseA, responseB);
+        Assertions.assertNotEquals(responseA, responseB);
     }
 
     /**
@@ -93,10 +97,10 @@ public class ServerCacheInterceptorTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Do Not Cache No Store Resource")
     public void doNotCacheNoStoreResource() {
         String responseA = clientA.target(generateURL("/no-store")).request().get(String.class);
         String responseB = clientB.target(generateURL("/no-store")).request().get(String.class);
-        Assert.assertNotEquals(responseA, responseB);
+        Assertions.assertNotEquals(responseA, responseB);
     }
-
 }

@@ -23,11 +23,12 @@ import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
 import org.jboss.resteasy.setup.AbstractUsersRolesSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -46,51 +47,50 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.21
  */
 @ServerSetup({ TwoSecurityDomainsTest.SecurityDomainSetup1.class, TwoSecurityDomainsTest.SecurityDomainSetup2.class })
-@Category({ ExpectedFailingOnWildFly18.class }) //WFLY-12655
+// WFLY-12655
+@Category({ ExpectedFailingOnWildFly18.class })
+@DisplayName("Two Security Domains Test")
 public class TwoSecurityDomainsTest {
 
     private static QuarkusRestClient authorizedClient;
+
     private static final String SECURITY_DOMAIN_DEPLOYMENT_1 = "jaxrsSecDomain";
+
     private static final String SECURITY_DOMAIN_DEPLOYMENT_2 = "jaxrsSecDomain2";
+
     private static final String WRONG_RESPONSE = "Wrong response content.";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    Hashtable<String, String> contextParams = new Hashtable<String, String>();
-                    contextParams.put("resteasy.role.based.security", "true");
-
-                    //                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
-                    //                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
-
-                    return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            Hashtable<String, String> contextParams = new Hashtable<String, String>();
+            contextParams.put("resteasy.role.based.security", "true");
+            // war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
+            // .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
+            return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    Hashtable<String, String> contextParams = new Hashtable<String, String>();
-                    contextParams.put("resteasy.role.based.security", "true");
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            Hashtable<String, String> contextParams = new Hashtable<String, String>();
+            contextParams.put("resteasy.role.based.security", "true");
+            // war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web2.xml", "/jboss-web.xml")
+            // .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
+            return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
+        }
+    });
 
-                    //                    war.addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web2.xml", "/jboss-web.xml")
-                    //                            .addAsWebInfResource(TwoSecurityDomainsTest.class.getPackage(), "web.xml", "/web.xml");
-
-                    return TestUtil.finishContainerPrepare(war, contextParams, BasicAuthBaseResource.class);
-                }
-            });
-
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         // authorizedClient
         {
@@ -103,7 +103,7 @@ public class TwoSecurityDomainsTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         authorizedClient.close();
     }
@@ -113,18 +113,19 @@ public class TwoSecurityDomainsTest {
      * @tpSince RESTEasy 3.0.21
      */
     @Test
+    @DisplayName("Test One Client Two Deployments Two Security Domains")
     public void testOneClientTwoDeploymentsTwoSecurityDomains() throws Exception {
         Response response = authorizedClient.target(PortProviderUtil.generateURL("/secured",
                 TwoSecurityDomainsTest.class.getSimpleName() + SECURITY_DOMAIN_DEPLOYMENT_1)).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals(WRONG_RESPONSE, "hello", response.readEntity(String.class));
-
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(WRONG_RESPONSE, "hello", response.readEntity(String.class));
         response = authorizedClient.target(PortProviderUtil.generateURL("/secured",
                 TwoSecurityDomainsTest.class.getSimpleName() + SECURITY_DOMAIN_DEPLOYMENT_2)).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals(WRONG_RESPONSE, "hello", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(WRONG_RESPONSE, "hello", response.readEntity(String.class));
     }
 
+    @DisplayName("Security Domain Setup 1")
     static class SecurityDomainSetup1 extends AbstractUsersRolesSecurityDomainSetup {
 
         @Override
@@ -137,6 +138,7 @@ public class TwoSecurityDomainsTest {
         }
     }
 
+    @DisplayName("Security Domain Setup 2")
     static class SecurityDomainSetup2 extends AbstractUsersRolesSecurityDomainSetup {
 
         @Override

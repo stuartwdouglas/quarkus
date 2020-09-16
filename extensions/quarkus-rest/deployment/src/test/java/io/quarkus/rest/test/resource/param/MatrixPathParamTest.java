@@ -9,13 +9,15 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 
+@DisplayName("Matrix Path Param Test")
 public class MatrixPathParamTest {
 
     @Deployment
@@ -29,14 +31,18 @@ public class MatrixPathParamTest {
     }
 
     @Path("/")
+    @DisplayName("Test Resource Server")
     public static class TestResourceServer {
+
         @Path("matrix1")
         public TestSubResourceServer getM1(@MatrixParam("m1") String m1) {
             return new TestSubResourceServer(m1);
         }
     }
 
+    @DisplayName("Test Sub Resource Server")
     public static class TestSubResourceServer {
+
         protected String m1;
 
         TestSubResourceServer(final String m1) {
@@ -51,26 +57,29 @@ public class MatrixPathParamTest {
     }
 
     @Path("/")
+    @DisplayName("Test Interface Client")
     public interface TestInterfaceClient {
+
         @Path("matrix1")
         TestSubInterfaceClient getM1(@MatrixParam("m1") String m1);
     }
 
+    @DisplayName("Test Sub Interface Client")
     public interface TestSubInterfaceClient {
+
         @GET
         @Path("matrix2")
         String getM2(@MatrixParam("m2") String m2);
     }
 
     @Test
+    @DisplayName("Test Single Accept Header")
     public void testSingleAcceptHeader() throws Exception {
         Client client = ClientBuilder.newClient();
         QuarkusRestWebTarget target = (QuarkusRestWebTarget) client.target(generateBaseUrl());
         TestInterfaceClient proxy = target.proxy(TestInterfaceClient.class);
-
         String result = proxy.getM1("a").getM2("b");
-        Assert.assertEquals("ab", result);
+        Assertions.assertEquals(result, "ab");
         client.close();
     }
-
 }

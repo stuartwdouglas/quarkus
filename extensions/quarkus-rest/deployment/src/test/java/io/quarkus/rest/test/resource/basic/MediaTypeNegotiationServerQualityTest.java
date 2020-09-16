@@ -70,7 +70,9 @@ public class MediaTypeNegotiationServerQualityTest {
     }
 
     @Path("/foo")
+    @DisplayName("Fake Resource")
     public static class FakeResource {
+
         @GET
         public String fake() {
             return "";
@@ -80,16 +82,16 @@ public class MediaTypeNegotiationServerQualityTest {
     private static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class, CustomMessageBodyWriter.class, FakeResource.class,
-                            NotFoundExceptionMapper.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class, CustomMessageBodyWriter.class, FakeResource.class,
+                    NotFoundExceptionMapper.class);
+            return war;
+        }
+    });
 
     @BeforeAll
     public static void setup() {
@@ -113,8 +115,8 @@ public class MediaTypeNegotiationServerQualityTest {
         try {
             Assertions.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
             MediaType mediaType = response.getMediaType();
-            Assertions.assertEquals("text", mediaType.getType());
-            Assertions.assertEquals("y", mediaType.getSubtype());
+            Assertions.assertEquals(mediaType.getType(), "text");
+            Assertions.assertEquals(mediaType.getSubtype(), "y");
         } finally {
             response.close();
         }

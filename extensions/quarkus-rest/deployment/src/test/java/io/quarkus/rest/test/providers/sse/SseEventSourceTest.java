@@ -17,8 +17,9 @@ import org.hamcrest.CoreMatchers;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.sse.resource.SseSmokeResource;
@@ -26,20 +27,21 @@ import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 import io.quarkus.test.QuarkusUnitTest;
 
+@DisplayName("Sse Event Source Test")
 public class SseEventSourceTest {
+
     private static final Logger logger = Logger.getLogger(SseEventSourceTest.class);
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, SseSmokeResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, SseSmokeResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, SseEventSourceTest.class.getSimpleName());
@@ -51,6 +53,7 @@ public class SseEventSourceTest {
      * @tpSince RESTEasy 3.5.0
      */
     @Test
+    @DisplayName("Test Sse Event Source On Event Callback")
     public void testSseEventSourceOnEventCallback() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final List<InboundSseEvent> results = new ArrayList<InboundSseEvent>();
@@ -64,11 +67,10 @@ public class SseEventSourceTest {
                     latch.countDown();
                 });
                 eventSource.open();
-
                 boolean waitResult = latch.await(30, TimeUnit.SECONDS);
-                Assert.assertTrue("Waiting for event to be delivered has timed out.", waitResult);
+                Assertions.assertTrue(waitResult, "Waiting for event to be delivered has timed out.");
             }
-            Assert.assertEquals("One message was expected.", 1, results.size());
+            Assertions.assertEquals(1, results.size(), "One message was expected.");
             Assert.assertThat("The message doesn't have expected content.", "data",
                     CoreMatchers.is(CoreMatchers.equalTo(results.get(0).readData(String.class))));
         } finally {
@@ -82,6 +84,7 @@ public class SseEventSourceTest {
      * @tpSince RESTEasy 3.5.0
      */
     @Test
+    @DisplayName("Test Sse Event Source On Event On Error Callback")
     public void testSseEventSourceOnEventOnErrorCallback() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final List<InboundSseEvent> results = new ArrayList<InboundSseEvent>();
@@ -100,11 +103,10 @@ public class SseEventSourceTest {
                     throw new RuntimeException(ex);
                 });
                 eventSource.open();
-
                 boolean waitResult = latch.await(30, TimeUnit.SECONDS);
-                Assert.assertTrue("Waiting for event to be delivered has timed out.", waitResult);
+                Assertions.assertTrue(waitResult, "Waiting for event to be delivered has timed out.");
             }
-            Assert.assertEquals("One message was expected.", 1, results.size());
+            Assertions.assertEquals(1, results.size(), "One message was expected.");
             Assert.assertThat("The message doesn't have expected content.", "data",
                     CoreMatchers.is(CoreMatchers.equalTo(results.get(0).readData(String.class))));
         } finally {
@@ -119,6 +121,7 @@ public class SseEventSourceTest {
      * @tpSince RESTEasy 3.5.0
      */
     @Test
+    @DisplayName("Test Sse Event Source On Event On Error On Complete Callback")
     public void testSseEventSourceOnEventOnErrorOnCompleteCallback() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final List<InboundSseEvent> results = new ArrayList<InboundSseEvent>();
@@ -140,18 +143,16 @@ public class SseEventSourceTest {
                     completed.incrementAndGet();
                 });
                 eventSource.open();
-
                 boolean waitResult = latch.await(30, TimeUnit.SECONDS);
-                Assert.assertTrue("Waiting for event to be delivered has timed out.", waitResult);
+                Assertions.assertTrue(waitResult, "Waiting for event to be delivered has timed out.");
             }
-            Assert.assertEquals(0, errors.get());
-            Assert.assertEquals("One message was expected.", 1, results.size());
+            Assertions.assertEquals(0, errors.get());
+            Assertions.assertEquals(1, results.size(), "One message was expected.");
             Assert.assertThat("The message doesn't have expected content.", "data",
                     CoreMatchers.is(CoreMatchers.equalTo(results.get(0).readData(String.class))));
-            Assert.assertEquals("On complete callback should be called one time", 1, completed.get());
+            Assertions.assertEquals(1, completed.get(), "On complete callback should be called one time");
         } finally {
             client.close();
         }
     }
-
 }

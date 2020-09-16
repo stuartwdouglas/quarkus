@@ -24,16 +24,17 @@ import io.quarkus.test.QuarkusUnitTest;
 public class ClassLevelMediaTypeTest {
 
     private static Client client;
+
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class, ClassLevelMediaTypeResource.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class, ClassLevelMediaTypeResource.class);
+            return war;
+        }
+    });
 
     @BeforeAll
     public static void init() {

@@ -15,10 +15,10 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.util.DateUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -73,14 +73,14 @@ public class HeaderDelegateTest {
 
     private ResteasyProviderFactory factory;
 
-    @Before
+    @BeforeEach
     public void init() {
         factory = ResteasyProviderFactory.newInstance();
         RegisterBuiltin.register(factory);
         ResteasyProviderFactory.setInstance(factory);
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         // Clear the singleton
         ResteasyProviderFactory.clearInstanceIfEqual(factory);

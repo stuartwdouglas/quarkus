@@ -10,10 +10,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.InheritedContextNewService;
@@ -29,29 +30,29 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-952
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Inherited Context Test")
 public class InheritedContextTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, InheritedContextService.class,
-                            InheritedContextNewService.class, InheritedContextNewSubService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InheritedContextService.class, InheritedContextNewService.class,
+                    InheritedContextNewSubService.class);
+        }
+    });
 
     protected Client client;
 
-    @Before
+    @BeforeEach
     public void beforeTest() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void afterTest() {
         client.close();
         client = null;
@@ -66,12 +67,13 @@ public class InheritedContextTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Context")
     public void testContext() throws Exception {
         Invocation.Builder request = client.target(generateURL("/super/test/BaseService")).request();
         Response response = request.get();
         String s = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("true", s);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(s, "true");
         response.close();
     }
 
@@ -80,12 +82,13 @@ public class InheritedContextTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Inherited Context One Level")
     public void testInheritedContextOneLevel() throws Exception {
         Invocation.Builder request = client.target(generateURL("/sub/test/SomeService")).request();
         Response response = request.get();
         String s = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("true", s);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(s, "true");
         response.close();
     }
 
@@ -94,12 +97,13 @@ public class InheritedContextTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Inherited Context Two Levels")
     public void testInheritedContextTwoLevels() throws Exception {
         Invocation.Builder request = client.target(generateURL("/subsub/test/SomeSubService")).request();
         Response response = request.get();
         String s = response.readEntity(String.class);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("true", s);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(s, "true");
         response.close();
     }
 }

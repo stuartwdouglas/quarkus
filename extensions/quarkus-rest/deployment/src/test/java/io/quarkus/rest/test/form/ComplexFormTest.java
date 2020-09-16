@@ -11,8 +11,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -29,39 +30,36 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test complex inner form parameters. Check return value, it is based on form.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Complex Form Test")
 public class ComplexFormTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(ComplexFormPerson.class, ComplexFormAddress.class);
-                    return TestUtil.finishContainerPrepare(war, null, ComplexFormResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(ComplexFormPerson.class, ComplexFormAddress.class);
+            return TestUtil.finishContainerPrepare(war, null, ComplexFormResource.class);
+        }
+    });
 
     /**
      * @tpTestDetails Set all relevant parameters to form and check return value.
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Should Support Nested Form")
     public void shouldSupportNestedForm() throws Exception {
-        javax.ws.rs.core.Form form = new javax.ws.rs.core.Form()
-                .param("name", "John Doe")
-                .param("invoice.street", "Main Street")
-                .param("shipping.street", "Station Street");
-
+        javax.ws.rs.core.Form form = new javax.ws.rs.core.Form().param("name", "John Doe")
+                .param("invoice.street", "Main Street").param("shipping.street", "Station Street");
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         WebTarget base = client.target(PortProviderUtil.generateURL("/person", CollectionsFormTest.class.getSimpleName()));
         Response response = base.request().accept(MediaType.TEXT_PLAIN).post(Entity.form(form));
-
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("Wrong content of response", "name:'John Doe', invoice:'Main Street', shipping:'Station Street'",
-                response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "Wrong content of response",
+                "name:'John Doe', invoice:'Main Street', shipping:'Station Street'");
         client.close();
     }
 }

@@ -57,22 +57,21 @@ public class ResourceLocatorTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClass(ResourceLocatorQueueReceiver.class).addClass(ResourceLocatorReceiver.class)
-                            .addClass(ResourceLocatorRootInterface.class).addClass(ResourceLocatorSubInterface.class)
-                            .addClass(ResourceLocatorSubresource3Interface.class);
-                    war.addClasses(PortProviderUtil.class, ResourceLocatorAbstractAnnotationFreeResouce.class,
-                            ResourceLocatorAnnotationFreeSubResource.class, ResourceLocatorBaseResource.class,
-                            ResourceLocatorCollectionResource.class, ResourceLocatorDirectory.class,
-                            ResourceLocatorSubresource.class, ResourceLocatorSubresource2.class,
-                            ResourceLocatorSubresource3.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClass(ResourceLocatorQueueReceiver.class).addClass(ResourceLocatorReceiver.class)
+                    .addClass(ResourceLocatorRootInterface.class).addClass(ResourceLocatorSubInterface.class)
+                    .addClass(ResourceLocatorSubresource3Interface.class);
+            war.addClasses(PortProviderUtil.class, ResourceLocatorAbstractAnnotationFreeResouce.class,
+                    ResourceLocatorAnnotationFreeSubResource.class, ResourceLocatorBaseResource.class,
+                    ResourceLocatorCollectionResource.class, ResourceLocatorDirectory.class, ResourceLocatorSubresource.class,
+                    ResourceLocatorSubresource2.class, ResourceLocatorSubresource3.class);
+            return war;
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, ResourceLocatorTest.class.getSimpleName());
@@ -135,14 +134,13 @@ public class ResourceLocatorTest {
             Assertions.assertEquals(response.readEntity(String.class), "got");
             Assertions.assertNotNull(response.getHeaderString("Content-Type"));
             Assertions.assertNotNull(response.getHeaderString("Content-Type"));
-            Assertions.assertEquals(MediaType.TEXT_PLAIN_TYPE.toString(),
-                    response.getHeaderString("Content-Type"));
+            Assertions.assertEquals(MediaType.TEXT_PLAIN_TYPE.toString(), response.getHeaderString("Content-Type"));
         }
         {
             Builder request = client.target(generateURL("/collection/annotation_free_subresource")).request();
             Response response = request.post(Entity.entity("hello!".getBytes(), MediaType.TEXT_PLAIN));
             Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-            Assertions.assertEquals("posted: hello!", response.readEntity(String.class));
+            Assertions.assertEquals(response.readEntity(String.class), "posted: hello!");
         }
     }
 }

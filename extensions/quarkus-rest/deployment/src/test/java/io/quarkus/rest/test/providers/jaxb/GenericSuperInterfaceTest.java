@@ -7,8 +7,9 @@ import org.jboss.resteasy.spi.util.Types;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.jaxb.resource.GenericSuperInterfaceAbstractBackendCollectionResource;
@@ -43,64 +44,57 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-636
  * @tpSince RESTEasy 3.0.16
  */
-
+@DisplayName("Generic Super Interface Test")
 public class GenericSuperInterfaceTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(GenericSuperInterfaceBackendDataCentersResource.class,
-                            GenericSuperInterfaceAbstractBackendCollectionResource.class,
-                            GenericSuperInterfaceAbstractBackendResource.class,
-                            GenericSuperInterfaceAbstractBackendSubResource.class,
-                            GenericSuperInterfaceAction.class, GenericSuperInterfaceAssignedPermissionsResource.class,
-                            GenericSuperInterfaceBackendDataCenterResource.class,
-                            GenericSuperInterfaceBackendDataCentersResource.class,
-                            GenericSuperInterfaceBackendResource.class,
-                            GenericSuperInterfaceBaseResource.class, GenericSuperInterfaceBaseResources.class,
-                            GenericSuperInterfaceBusinessEntity.class,
-                            GenericSuperInterfaceDataCenter.class, GenericSuperInterfaceDataCenterResource.class,
-                            GenericSuperInterfaceDataCenters.class,
-                            GenericSuperInterfaceDataCentersResource.class, GenericSuperInterfaceGuid.class,
-                            GenericSuperInterfaceINotifyPropertyChanged.class, GenericSuperInterfaceIVdcQueryable.class,
-                            GenericSuperInterfaceStoragePool.class, GenericSuperInterfaceUpdatableResource.class,
-                            GenericSuperInterfaceBaseBackendResource.class,
-                            TestUtil.class);
-                    // Arquillian in the deployment
-
-                    return TestUtil.finishContainerPrepare(war, null, GenericSuperInterfaceTop.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(GenericSuperInterfaceBackendDataCentersResource.class,
+                    GenericSuperInterfaceAbstractBackendCollectionResource.class,
+                    GenericSuperInterfaceAbstractBackendResource.class, GenericSuperInterfaceAbstractBackendSubResource.class,
+                    GenericSuperInterfaceAction.class, GenericSuperInterfaceAssignedPermissionsResource.class,
+                    GenericSuperInterfaceBackendDataCenterResource.class, GenericSuperInterfaceBackendDataCentersResource.class,
+                    GenericSuperInterfaceBackendResource.class, GenericSuperInterfaceBaseResource.class,
+                    GenericSuperInterfaceBaseResources.class, GenericSuperInterfaceBusinessEntity.class,
+                    GenericSuperInterfaceDataCenter.class, GenericSuperInterfaceDataCenterResource.class,
+                    GenericSuperInterfaceDataCenters.class, GenericSuperInterfaceDataCentersResource.class,
+                    GenericSuperInterfaceGuid.class, GenericSuperInterfaceINotifyPropertyChanged.class,
+                    GenericSuperInterfaceIVdcQueryable.class, GenericSuperInterfaceStoragePool.class,
+                    GenericSuperInterfaceUpdatableResource.class, GenericSuperInterfaceBaseBackendResource.class,
+                    TestUtil.class);
+            // Arquillian in the deployment
+            return TestUtil.finishContainerPrepare(war, null, GenericSuperInterfaceTop.class);
+        }
+    });
 
     /**
      * @tpTestDetails Test on server.
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get Implementation Reflection")
     public void testGetImplementationReflection() throws Exception {
         Class updatableResource = GenericSuperInterfaceBackendDataCenterResource.class.getInterfaces()[0].getInterfaces()[0];
-        Assert.assertEquals(updatableResource, GenericSuperInterfaceUpdatableResource.class);
+        Assertions.assertEquals(updatableResource, GenericSuperInterfaceUpdatableResource.class);
         Method update = null;
         for (Method method : updatableResource.getMethods()) {
             if (method.getName().equals("update")) {
                 update = method;
             }
         }
-        Assert.assertNotNull("Updated method was not found", update);
-
+        Assertions.assertNotNull(update, "Updated method was not found");
         Method implemented = Types.getImplementingMethod(GenericSuperInterfaceBackendDataCenterResource.class, update);
-
         Method actual = null;
         for (Method method : GenericSuperInterfaceBackendDataCenterResource.class.getMethods()) {
             if (method.getName().equals("update") && !method.isSynthetic()) {
                 actual = method;
             }
         }
-        Assert.assertEquals("Interface was not detected", implemented, actual);
+        Assertions.assertEquals(implemented, actual, "Interface was not detected");
     }
 }

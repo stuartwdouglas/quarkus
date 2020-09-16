@@ -10,10 +10,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.TestPortProvider;
@@ -27,32 +28,30 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Constructed Injection Test")
 public class ConstructedInjectionTest {
 
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(TestPortProvider.class);
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(TestPortProvider.class);
+            // Use of PortProviderUtil in the deployment
+            return TestUtil.finishContainerPrepare(war, null, ConstructedInjectionResource.class);
+        }
+    });
 
-                    // Use of PortProviderUtil in the deployment
-
-                    return TestUtil.finishContainerPrepare(war, null, ConstructedInjectionResource.class);
-                }
-            });
-
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -65,7 +64,7 @@ public class ConstructedInjectionTest {
         WebTarget base = client.target(generateURL(path));
         try {
             Response response = base.request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -77,8 +76,8 @@ public class ConstructedInjectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Uri Info")
     public void testUriInfo() throws Exception {
         _test("/simple");
     }
-
 }

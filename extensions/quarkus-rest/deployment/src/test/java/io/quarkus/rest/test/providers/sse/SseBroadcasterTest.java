@@ -22,44 +22,41 @@ import org.jboss.resteasy.plugins.providers.sse.SseBroadcasterImpl;
 import org.jboss.resteasy.plugins.providers.sse.SseEventOutputImpl;
 import org.jboss.resteasy.spi.HttpRequest;
 import org.jboss.resteasy.spi.ResteasyAsynchronousContext;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-/***
- *
+/**
  * @author Nicolas NESMON
- *
  */
+@DisplayName("Sse Broadcaster Test")
 public class SseBroadcasterTest {
 
     // We are expecting this test to throw an IllegalStateException every time a
     // method from SseBroadcasterImpl is invoked on a closed instance.
     @Test
+    @DisplayName("Test Illegal State Exception For Closed Broadcaster")
     public void testIllegalStateExceptionForClosedBroadcaster() throws Exception {
         SseBroadcasterImpl sseBroadcasterImpl = new SseBroadcasterImpl();
         sseBroadcasterImpl.close();
-
         try {
             sseBroadcasterImpl.broadcast(new OutboundSseEventImpl.BuilderImpl().data("Test").build());
             Assert.fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
         }
-
         try {
             sseBroadcasterImpl.onClose(sseEventSink -> {
             });
             Assert.fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
         }
-
         try {
             sseBroadcasterImpl.onError((sseEventSink, error) -> {
             });
             Assert.fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
         }
-
         try {
             sseBroadcasterImpl.register(newSseEventSink());
             Assert.fail("Should have thrown IllegalStateException");
@@ -70,14 +67,13 @@ public class SseBroadcasterTest {
     // We are expecting this test to close all registered event sinks and invoke
     // close listeners when broadcaster is closed
     @Test
+    @DisplayName("Test Close")
     public void testClose() throws Exception {
         SseBroadcasterImpl sseBroadcasterImpl = new SseBroadcasterImpl();
-
         SseEventSink sseEventSink1 = newSseEventSink();
         sseBroadcasterImpl.register(sseEventSink1);
         SseEventSink sseEventSink2 = newSseEventSink();
         sseBroadcasterImpl.register(sseEventSink2);
-
         CountDownLatch countDownLatch = new CountDownLatch(4);
         sseBroadcasterImpl.onClose(sseEventSink -> {
             countDownLatch.countDown();
@@ -85,26 +81,24 @@ public class SseBroadcasterTest {
         sseBroadcasterImpl.onClose(sseEventSink -> {
             countDownLatch.countDown();
         });
-
         sseBroadcasterImpl.close();
         if (!countDownLatch.await(3, TimeUnit.SECONDS)) {
             Assert.fail("All close listeners should have been notified");
         }
-        Assert.assertTrue(sseEventSink1.isClosed());
-        Assert.assertTrue(sseEventSink2.isClosed());
+        Assertions.assertTrue(sseEventSink1.isClosed());
+        Assertions.assertTrue(sseEventSink2.isClosed());
     }
 
     // We are expecting this test to invoke both close and error listeners when
     // event sink has been closed on server side
     @Test
+    @DisplayName("Test Close And Error Listeners For Closed Event Sink")
     public void testCloseAndErrorListenersForClosedEventSink() throws Exception {
         SseBroadcasterImpl sseBroadcasterImpl = new SseBroadcasterImpl();
-
         SseEventSink sseEventSink = newSseEventSink();
         sseBroadcasterImpl.register(sseEventSink);
         sseEventSink.close();
-        Assert.assertTrue(sseEventSink.isClosed());
-
+        Assertions.assertTrue(sseEventSink.isClosed());
         CountDownLatch countDownLatch = new CountDownLatch(3);
         sseBroadcasterImpl.onClose(ses -> {
             countDownLatch.countDown();
@@ -115,7 +109,6 @@ public class SseBroadcasterTest {
         sseBroadcasterImpl.onError((ses, error) -> {
             countDownLatch.countDown();
         });
-
         sseBroadcasterImpl.broadcast(new OutboundSseEventImpl.BuilderImpl().data("Test").build());
         if (!countDownLatch.await(3, TimeUnit.SECONDS)) {
             Assert.fail("All close and error listeners should have been notified");
@@ -125,13 +118,12 @@ public class SseBroadcasterTest {
     // We are expecting this test to invoke both close and error listeners when
     // event sink has been closed on client side (disconnected)
     @Test
+    @DisplayName("Test Close And Error Listeners For Disconnected Event Sink")
     public void testCloseAndErrorListenersForDisconnectedEventSink() throws Exception {
         SseBroadcasterImpl sseBroadcasterImpl = new SseBroadcasterImpl();
-
         SseEventSink sseEventSink = newSseEventSink(new IOException());
         sseBroadcasterImpl.register(sseEventSink);
-        Assert.assertFalse(sseEventSink.isClosed());
-
+        Assertions.assertFalse(sseEventSink.isClosed());
         CountDownLatch countDownLatch = new CountDownLatch(3);
         sseBroadcasterImpl.onClose(ses -> {
             countDownLatch.countDown();
@@ -142,7 +134,6 @@ public class SseBroadcasterTest {
         sseBroadcasterImpl.onError((ses, error) -> {
             countDownLatch.countDown();
         });
-
         sseBroadcasterImpl.broadcast(new OutboundSseEventImpl.BuilderImpl().data("Test").build());
         if (!countDownLatch.await(3, TimeUnit.SECONDS)) {
             Assert.fail("All close and error listeners should have been notified");
@@ -152,18 +143,16 @@ public class SseBroadcasterTest {
     // We are expecting this test to only invoke error listeners on broadcasting
     // error other than IOException
     @Test
+    @DisplayName("Test Error Listeners")
     public void testErrorListeners() throws Exception {
         SseBroadcasterImpl sseBroadcasterImpl = new SseBroadcasterImpl();
-
         SseEventSink sseEventSink = newSseEventSink(new RuntimeException());
         sseBroadcasterImpl.register(sseEventSink);
-        Assert.assertFalse(sseEventSink.isClosed());
-
+        Assertions.assertFalse(sseEventSink.isClosed());
         AtomicBoolean onCloseListenerInvoked = new AtomicBoolean(false);
         sseBroadcasterImpl.onClose(ses -> {
             onCloseListenerInvoked.set(true);
         });
-
         CountDownLatch countDownLatch = new CountDownLatch(2);
         sseBroadcasterImpl.onError((ses, error) -> {
             countDownLatch.countDown();
@@ -171,7 +160,6 @@ public class SseBroadcasterTest {
         sseBroadcasterImpl.onError((ses, error) -> {
             countDownLatch.countDown();
         });
-
         sseBroadcasterImpl.broadcast(new OutboundSseEventImpl.BuilderImpl().data("Test").build());
         if (!countDownLatch.await(5, TimeUnit.SECONDS)) {
             Assert.fail("All error listeners should have been notified");
@@ -181,47 +169,39 @@ public class SseBroadcasterTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         HttpRequest request = mock(HttpRequest.class);
         ResteasyAsynchronousContext resteasyAsynchronousContext = mock(ResteasyAsynchronousContext.class);
         doReturn(resteasyAsynchronousContext).when(request).getAsyncContext();
-
-        //prevent NPE in SseEventOutputImpl ctr
+        // prevent NPE in SseEventOutputImpl ctr
         ResteasyContext.pushContext(org.jboss.resteasy.spi.HttpRequest.class, request);
     }
 
     @Test
+    @DisplayName("Test Remove Disconnected Event Sink")
     public void testRemoveDisconnectedEventSink() throws Exception {
         SseBroadcasterImpl sseBroadcasterImpl = new SseBroadcasterImpl();
-
         final ConcurrentLinkedQueue<SseEventSink> outputQueue = getOutputQueue(sseBroadcasterImpl);
         CountDownLatch countDownLatch = new CountDownLatch(2);
-
-        //we want to test against actual SseEventOutputImpl
+        // we want to test against actual SseEventOutputImpl
         final SseEventSink sseEventSink1 = new SseEventOutputImpl(null);
         final SseEventSink sseEventSink2 = new SseEventOutputImpl(null);
-
         sseBroadcasterImpl.register(sseEventSink1);
         sseBroadcasterImpl.register(sseEventSink2);
-
         sseBroadcasterImpl.onClose(ses -> {
             countDownLatch.countDown();
         });
-
         sseBroadcasterImpl.onError((ses, error) -> {
-            //error is an NPE thrown by SseEventOutputImpl#send
+            // error is an NPE thrown by SseEventOutputImpl#send
             countDownLatch.countDown();
         });
-
         sseEventSink2.close();
-
         sseBroadcasterImpl.broadcast(new OutboundSseEventImpl.BuilderImpl().data("Test").build());
-
         if (!countDownLatch.await(5, TimeUnit.SECONDS)) {
             fail("All close listeners should have been notified");
         } else {
-            Assert.assertTrue(outputQueue.size() == 1);
+            Assertions.assertTrue(outputQueue.size() == 1);
             Assert.assertSame(outputQueue.peek(), sseEventSink1);
         }
     }
@@ -234,9 +214,9 @@ public class SseBroadcasterTest {
         return (ConcurrentLinkedQueue<SseEventSink>) fld.get(sseBroadcasterImpl);
     }
 
-    @org.junit.After
+    @org.junit.jupiter.api.AfterEach
     public void after() {
-        //revert contextual data
+        // revert contextual data
         ResteasyContext.pushContext(org.jboss.resteasy.spi.HttpRequest.class, null);
     }
 
@@ -274,5 +254,4 @@ public class SseBroadcasterTest {
             }
         };
     }
-
 }

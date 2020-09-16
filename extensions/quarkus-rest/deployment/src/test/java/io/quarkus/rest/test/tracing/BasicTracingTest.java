@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.tracing;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,34 +12,30 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.tracing.api.RESTEasyTracing;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
+@DisplayName("Basic Tracing Test")
 public class BasicTracingTest extends TracingTestBase {
 
     private static final Logger LOG = Logger.getLogger(BasicTracingTest.class);
 
     @Test
     @OperateOnDeployment(WAR_BASIC_TRACING_FILE)
+    @DisplayName("Test Presences Of Server Tracing Events")
     public void testPresencesOfServerTracingEvents() {
         String url = generateURL("/locator/foo", WAR_BASIC_TRACING_FILE);
-
         WebTarget base = client.target(url);
-
         try {
             Response response = base.request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             Map<String, Boolean> results = new HashMap<String, Boolean>();
-
             putTestEvents(results);
-
             verifyResults(response, results);
-
             for (String k : results.keySet()) {
                 assertTrue(k + ": " + results.get(k), results.get(k));
             }
-
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -48,16 +44,17 @@ public class BasicTracingTest extends TracingTestBase {
 
     @Test
     @OperateOnDeployment(WAR_BASIC_TRACING_FILE)
+    @DisplayName("Test Basic")
     public void testBasic() {
-        //        war.as(ZipExporter.class).exportTo(new File("/tmp/" + war.getName()), true);
-        //        Thread.currentThread().join();
+        // war.as(ZipExporter.class).exportTo(new File("/tmp/" + war.getName()), true);
+        // Thread.currentThread().join();
         String url = generateURL("/logger", WAR_BASIC_TRACING_FILE);
-        //        LOG.info("::: " + url);
-        //        Thread.currentThread().join();
+        // LOG.info("::: " + url);
+        // Thread.currentThread().join();
         WebTarget base = client.target(url);
         try {
             Response response = base.request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             boolean hasTracing = false;
             for (Map.Entry entry : response.getStringHeaders().entrySet()) {
                 if (entry.getKey().toString().startsWith(RESTEasyTracing.HEADER_TRACING_PREFIX)) {
@@ -72,5 +69,4 @@ public class BasicTracingTest extends TracingTestBase {
             throw new RuntimeException(e);
         }
     }
-
 }

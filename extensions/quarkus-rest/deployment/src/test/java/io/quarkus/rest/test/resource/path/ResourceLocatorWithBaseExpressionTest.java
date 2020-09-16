@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.path.resource.ResourceLocatorWithBaseExpressionResource;
@@ -30,43 +31,43 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Check resources with locator with base expression
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Resource Locator With Base Expression Test")
 public class ResourceLocatorWithBaseExpressionTest {
+
     private static final String ERROR_MSG = "Response contain wrong content";
+
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         client = ClientBuilder.newClient();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(ResourceLocatorWithBaseExpressionSubresource.class,
-                            ResourceLocatorWithBaseExpressionSubresource2.class,
-                            ResourceLocatorWithBaseExpressionSubresource3.class,
-                            ResourceLocatorWithBaseExpressionSubresource3Interface.class);
-                    return TestUtil.finishContainerPrepare(war, null, ResourceLocatorWithBaseExpressionResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(ResourceLocatorWithBaseExpressionSubresource.class,
+                    ResourceLocatorWithBaseExpressionSubresource2.class, ResourceLocatorWithBaseExpressionSubresource3.class,
+                    ResourceLocatorWithBaseExpressionSubresource3Interface.class);
+            return TestUtil.finishContainerPrepare(war, null, ResourceLocatorWithBaseExpressionResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, ResourceLocatorWithBaseExpressionTest.class.getSimpleName());
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() throws Exception {
         client.close();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
-
     }
 
     /**
@@ -74,21 +75,21 @@ public class ResourceLocatorWithBaseExpressionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Subresource")
     public void testSubresource() throws Exception {
         {
             Response response = client.target(generateURL("/a1/base/1/resources")).request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-            Assert.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource.class.getName(),
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource.class.getName(),
                     response.readEntity(String.class));
             response.close();
         }
         {
             Response response = client.target(generateURL("/a1/base/1/resources/subresource2/stuff/2/bar")).request().get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-            Assert.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource2.class.getName() + "-2",
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(ERROR_MSG, ResourceLocatorWithBaseExpressionSubresource2.class.getName() + "-2",
                     response.readEntity(String.class));
             response.close();
         }
     }
-
 }

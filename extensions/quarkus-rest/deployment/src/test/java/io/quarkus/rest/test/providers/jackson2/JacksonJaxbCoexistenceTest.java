@@ -11,11 +11,12 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -33,33 +34,33 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
-@Ignore
+@Disabled
+@DisplayName("Jackson Jaxb Coexistence Test")
 public class JacksonJaxbCoexistenceTest {
 
     static QuarkusRestClient client;
+
     protected static final Logger logger = Logger.getLogger(JacksonJaxbCoexistenceTest.class.getName());
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, JacksonJaxbCoexistenceJacksonResource.class,
-                            JacksonJaxbCoexistenceJacksonXmlResource.class, JacksonJaxbCoexistenceXmlResource.class,
-                            JacksonJaxbCoexistenceProduct2.class,
-                            JacksonJaxbCoexistenceXmlProduct.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, JacksonJaxbCoexistenceJacksonResource.class,
+                    JacksonJaxbCoexistenceJacksonXmlResource.class, JacksonJaxbCoexistenceXmlResource.class,
+                    JacksonJaxbCoexistenceProduct2.class, JacksonJaxbCoexistenceXmlProduct.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -75,24 +76,23 @@ public class JacksonJaxbCoexistenceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Jackson String")
     public void testJacksonString() throws Exception {
         WebTarget target = client.target(generateURL("/products/333"));
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response entity content doesn't match the expected",
-                "{\"name\":\"Iphone\",\"id\":333}", entity);
-
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("{\"name\":\"Iphone\",\"id\":333}", entity,
+                "The response entity content doesn't match the expected");
         response.close();
-
         target = client.target(generateURL("/products"));
         response = target.request().get();
         entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response entity content doesn't match the expected",
-                "[{\"name\":\"Iphone\",\"id\":333},{\"name\":\"macbook\",\"id\":44}]", entity);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("[{\"name\":\"Iphone\",\"id\":333},{\"name\":\"macbook\",\"id\":44}]", entity,
+                "The response entity content doesn't match the expected");
         response.close();
     }
 
@@ -101,23 +101,23 @@ public class JacksonJaxbCoexistenceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Jackson Xml String")
     public void testJacksonXmlString() throws Exception {
         WebTarget target = client.target(generateURL("/jxml/products/333"));
         Response response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response entity content doesn't match the expected",
-                "{\"name\":\"Iphone\",\"id\":333}", entity);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("{\"name\":\"Iphone\",\"id\":333}", entity,
+                "The response entity content doesn't match the expected");
         response.close();
-
         target = client.target(generateURL("/jxml/products"));
         response = target.request().get();
         entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The response entity content doesn't match the expected",
-                "[{\"name\":\"Iphone\",\"id\":333},{\"name\":\"macbook\",\"id\":44}]", entity);
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("[{\"name\":\"Iphone\",\"id\":333},{\"name\":\"macbook\",\"id\":44}]", entity,
+                "The response entity content doesn't match the expected");
         response.close();
     }
 
@@ -126,25 +126,24 @@ public class JacksonJaxbCoexistenceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Jackson")
     public void testJackson() throws Exception {
         WebTarget target = client.target(generateURL("/products/333"));
         Response response = target.request().get();
         JacksonJaxbCoexistenceProduct2 p = response.readEntity(JacksonJaxbCoexistenceProduct2.class);
-        Assert.assertEquals("JacksonJaxbCoexistenceProduct id value doesn't match", 333, p.getId());
-        Assert.assertEquals("JacksonJaxbCoexistenceProduct name value doesn't match", "Iphone", p.getName());
+        Assertions.assertEquals(333, p.getId(), "JacksonJaxbCoexistenceProduct id value doesn't match");
+        Assertions.assertEquals("Iphone", p.getName(), "JacksonJaxbCoexistenceProduct name value doesn't match");
         response.close();
-
         target = client.target(generateURL("/products"));
         response = target.request().get();
         String entity = response.readEntity(String.class);
         logger.info(entity);
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         target = client.target(generateURL("/products/333"));
         response = target.request().post(Entity.entity(p, "application/foo+json"));
         p = response.readEntity(JacksonJaxbCoexistenceProduct2.class);
-        Assert.assertEquals("JacksonJaxbCoexistenceProduct id value doesn't match", 333, p.getId());
-        Assert.assertEquals("JacksonJaxbCoexistenceProduct name value doesn't match", "Iphone", p.getName());
+        Assertions.assertEquals(333, p.getId(), "JacksonJaxbCoexistenceProduct id value doesn't match");
+        Assertions.assertEquals("Iphone", p.getName(), "JacksonJaxbCoexistenceProduct name value doesn't match");
     }
 }

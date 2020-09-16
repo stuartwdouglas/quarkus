@@ -14,10 +14,10 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.client.resource.ParameterListInterface;
@@ -39,12 +39,12 @@ public class ParameterListTest extends ClientTestBase {
     private static final String ERROR_MESSAGE = "Wrong parameters in response received";
     private static Client restClient;
 
-    @Before
+    @BeforeEach
     public void init() {
         restClient = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         restClient.close();
     }

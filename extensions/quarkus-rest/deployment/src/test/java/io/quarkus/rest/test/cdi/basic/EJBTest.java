@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.cdi.basic;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Hashtable;
 import java.util.function.Supplier;
@@ -18,9 +18,10 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.cdi.basic.resource.EJBApplication;
@@ -45,7 +46,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails EJB and RESTEasy integration test.
  * @tpSince RESTEasy 3.0.16
  */
-
+@DisplayName("Ejb Test")
 public class EJBTest {
 
     private static Logger log = Logger.getLogger(EJBTest.class);
@@ -61,27 +62,23 @@ public class EJBTest {
     private Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    // test needs to use special annotations in Application class, TestApplication class could not be used
-                    war.addClass(EJBApplication.class);
-                    war.addClass(PortProviderUtil.class);
-                    war.addClasses(EJBBook.class, Constants.class, Counter.class, UtilityProducer.class, Utilities.class)
-                            .addClasses(EJBBookReader.class, EJBBookReaderImpl.class)
-                            .addClasses(EJBBookWriterImpl.class)
-                            .addClasses(EJBResourceParent.class, EJBLocalResource.class, EJBRemoteResource.class,
-                                    EJBBookResource.class)
-                            .setWebXML(EJBTest.class.getPackage(), "ejbtest_web.xml");
-                    // Arquillian in the deployment
-
-                    return war;
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            // test needs to use special annotations in Application class, TestApplication class could not be used
+            war.addClass(EJBApplication.class);
+            war.addClass(PortProviderUtil.class);
+            war.addClasses(EJBBook.class, Constants.class, Counter.class, UtilityProducer.class, Utilities.class)
+                    .addClasses(EJBBookReader.class, EJBBookReaderImpl.class).addClasses(EJBBookWriterImpl.class)
+                    .addClasses(EJBResourceParent.class, EJBLocalResource.class, EJBRemoteResource.class, EJBBookResource.class)
+                    .setWebXML(EJBTest.class.getPackage(), "ejbtest_web.xml");
+            // Arquillian in the deployment
+            return war;
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, DEPLOYMENT_NAME);
@@ -91,12 +88,12 @@ public class EJBTest {
      * client needs to be non-static. BeforeClass and AfterClass methods are not executed on server ( annotation is
      * not used).
      */
-    @Before
+    @BeforeEach
     public void init() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void close() {
         client.close();
     }
@@ -107,13 +104,13 @@ public class EJBTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Verify Scopes Jax Rs")
     public void testVerifyScopesJaxRs() throws Exception {
         log.info("starting testVerifyScopesJaxRs()");
-
         WebTarget base = client.target(generateURL("/verifyScopes/"));
         Response response = base.request().get();
-        assertEquals("Wrong response status", Status.OK.getStatusCode(), response.getStatus());
-        assertEquals("Wrong response content", Status.OK.getStatusCode(), response.readEntity(Integer.class).intValue());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus(), "Wrong response status");
+        assertEquals(Status.OK.getStatusCode(), response.readEntity(Integer.class).intValue(), "Wrong response content");
     }
 
     /**
@@ -122,6 +119,7 @@ public class EJBTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Verify Scopes Local EJB")
     public void testVerifyScopesLocalEJB() throws Exception {
         log.info("starting testVerifyScopesLocalEJB()");
         int result = localResource.verifyScopes();
@@ -134,9 +132,9 @@ public class EJBTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Verify Scopes Remote EJB")
     public void testVerifyScopesRemoteEJB() throws Exception {
         log.info("starting testVerifyScopesRemoteEJB()");
-
         // Get proxy to JAX-RS resource as EJB.
         EJBRemoteResource remoteResource = getRemoteResource();
         log.info("remote: " + remoteResource);
@@ -151,12 +149,13 @@ public class EJBTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Verify Injection Jax Rs")
     public void testVerifyInjectionJaxRs() throws Exception {
         log.info("starting testVerifyInjectionJaxRs()");
         WebTarget base = client.target(generateURL("/verifyInjection/"));
         Response response = base.request().get();
-        assertEquals("Wrong response status", Status.OK.getStatusCode(), response.getStatus());
-        assertEquals("Wrong response content", Status.OK.getStatusCode(), response.readEntity(Integer.class).intValue());
+        assertEquals(Status.OK.getStatusCode(), response.getStatus(), "Wrong response status");
+        assertEquals(Status.OK.getStatusCode(), response.readEntity(Integer.class).intValue(), "Wrong response content");
     }
 
     /**
@@ -165,6 +164,7 @@ public class EJBTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Verify Injection Local EJB")
     public void testVerifyInjectionLocalEJB() throws Exception {
         log.info("starting testVerifyInjectionLocalEJB()");
         int result = localResource.verifyInjection();
@@ -178,9 +178,9 @@ public class EJBTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Verify Injection Remote EJB")
     public void testVerifyInjectionRemoteEJB() throws Exception {
         log.info("starting testVerifyInjectionRemoteEJB()");
-
         // Get proxy to JAX-RS resource as EJB.
         EJBRemoteResource remoteResource = getRemoteResource();
         log.info("remote: " + remoteResource);
@@ -194,9 +194,9 @@ public class EJBTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test As Jax RS Resource")
     public void testAsJaxRSResource() throws Exception {
         log.info("entering testAsJaxRSResource()");
-
         // Create book.
         WebTarget base = client.target(generateURL("/create/"));
         EJBBook book1 = new EJBBook("RESTEasy: the Sequel");
@@ -205,8 +205,7 @@ public class EJBTest {
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         int id1 = response.readEntity(int.class);
         log.info("id: " + id1);
-        assertEquals("Wrong id of Book1 id", Counter.INITIAL_VALUE, id1);
-
+        assertEquals(Counter.INITIAL_VALUE, id1, "Wrong id of Book1 id");
         // Create another book.
         EJBBook book2 = new EJBBook("RESTEasy: It's Alive");
         response = base.request().post(Entity.entity(book2, Constants.MEDIA_TYPE_TEST_XML));
@@ -214,8 +213,7 @@ public class EJBTest {
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         int id2 = response.readEntity(int.class);
         log.info("id: " + id2);
-        assertEquals("Wrong id of Book2 id", Counter.INITIAL_VALUE + 1, id2);
-
+        assertEquals(Counter.INITIAL_VALUE + 1, id2, "Wrong id of Book2 id");
         // Retrieve first book.
         base = client.target(generateURL("/book/" + id1));
         response = base.request().accept(Constants.MEDIA_TYPE_TEST_XML).get();
@@ -223,8 +221,7 @@ public class EJBTest {
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         EJBBook result = response.readEntity(EJBBook.class);
         log.info("book: " + book1);
-        assertEquals("Wrong book1 received from server", book1, result);
-
+        assertEquals(book1, result, "Wrong book1 received from server");
         // Retrieve second book.
         base = client.target(generateURL("/book/" + id2));
         response = base.request().accept(Constants.MEDIA_TYPE_TEST_XML).get();
@@ -232,15 +229,13 @@ public class EJBTest {
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         result = response.readEntity(EJBBook.class);
         log.info("book: " + book2);
-        assertEquals("Wrong book2 received from server", book2, result);
-
+        assertEquals(book2, result, "Wrong book2 received from server");
         // Verify that EJBBookReader and EJBBookWriter have been used, twice on each side.
         base = client.target(generateURL("/uses/4"));
         response = base.request().get();
         log.info("Status: " + response.getStatus());
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         // Reset counter.
         base = client.target(generateURL("/reset"));
         response = base.request().get();
@@ -254,34 +249,29 @@ public class EJBTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test As Local EJB")
     public void testAsLocalEJB() throws Exception {
         log.info("entering testAsLocalEJB()");
-
         // Create book.
         EJBBook book1 = new EJBBook("RESTEasy: the Sequel");
         int id1 = localResource.createBook(book1);
         log.info("id1: " + id1);
-        assertEquals("Wrong id of Book1 id", Counter.INITIAL_VALUE, id1);
-
+        assertEquals(Counter.INITIAL_VALUE, id1, "Wrong id of Book1 id");
         // Create another book.
         EJBBook book2 = new EJBBook("RESTEasy: It's Alive");
         int id2 = localResource.createBook(book2);
         log.info("id2: " + id2);
-        assertEquals("Wrong id of Book2 id", Counter.INITIAL_VALUE + 1, id2);
-
+        assertEquals(Counter.INITIAL_VALUE + 1, id2, "Wrong id of Book2 id");
         // Retrieve first book.
         EJBBook bookResponse1 = localResource.lookupBookById(id1);
         log.info("book1 response: " + bookResponse1);
-        assertEquals("Wrong book1 received from server", book1, bookResponse1);
-
+        assertEquals(book1, bookResponse1, "Wrong book1 received from server");
         // Retrieve second book.
         EJBBook bookResponse2 = localResource.lookupBookById(id2);
         log.info("book2 response: " + bookResponse2);
-        assertEquals("Wrong book2 received from server", book2, bookResponse2);
-
+        assertEquals(book2, bookResponse2, "Wrong book2 received from server");
         // Verify that EJBBookReader and EJBBookWriter haven't been used.
         localResource.testUse(0);
-
         // Reset counter.
         localResource.reset();
     }
@@ -291,38 +281,32 @@ public class EJBTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test As Remote EJB")
     public void testAsRemoteEJB() throws Exception {
         log.info("entering testAsRemoteEJB()");
-
         // Get proxy to JAX-RS resource as EJB.
         EJBRemoteResource remoteResource = getRemoteResource();
         log.info("remote: " + remoteResource);
-
         // Create book.
         EJBBook book1 = new EJBBook("RESTEasy: the Sequel");
         int id1 = remoteResource.createBook(book1);
         log.info("id1: " + id1);
-        assertEquals("Wrong id of Book1 id", Counter.INITIAL_VALUE, id1);
-
+        assertEquals(Counter.INITIAL_VALUE, id1, "Wrong id of Book1 id");
         // Create another book.
         EJBBook book2 = new EJBBook("RESTEasy: It's Alive");
         int id2 = remoteResource.createBook(book2);
         log.info("id2: " + id2);
-        assertEquals("Wrong id of Book2 id", Counter.INITIAL_VALUE + 1, id2);
-
+        assertEquals(Counter.INITIAL_VALUE + 1, id2, "Wrong id of Book2 id");
         // Retrieve first book.
         EJBBook bookResponse1 = remoteResource.lookupBookById(id1);
         log.info("book1 response: " + bookResponse1);
-        assertEquals("Wrong book1 received from server", book1, bookResponse1);
-
+        assertEquals(book1, bookResponse1, "Wrong book1 received from server");
         // Retrieve second book.
         EJBBook bookResponse2 = remoteResource.lookupBookById(id2);
         log.info("book2 response: " + bookResponse2);
-        assertEquals("Wrong book2 received from server", book2, bookResponse2);
-
+        assertEquals(book2, bookResponse2, "Wrong book2 received from server");
         // Verify that EJBBookReader and EJBBookWriter haven't been used.
         remoteResource.testUse(0);
-
         // Reset counter.
         remoteResource.reset();
     }

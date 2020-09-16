@@ -19,10 +19,10 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
@@ -41,12 +41,12 @@ public abstract class TracingTestBase {
     static WebArchive war;
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newClient();
     }
 
-    @Before
+    @BeforeEach
     public void startContainer() {
         if (!containerController.isStarted(TRACING_CONTAINER_QUALIFIER)) {
             containerController.start(TRACING_CONTAINER_QUALIFIER);
@@ -55,12 +55,12 @@ public abstract class TracingTestBase {
         deployer.deploy(WAR_ON_DEMAND_TRACING_FILE);
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() {
         client.close();
     }
 
-    @After
+    @AfterEach
     public void undeployAndStopContainerWithGzipEnabled() {
         if (containerController.isStarted(TRACING_CONTAINER_QUALIFIER)) {
             deployer.undeploy(WAR_BASIC_TRACING_FILE);

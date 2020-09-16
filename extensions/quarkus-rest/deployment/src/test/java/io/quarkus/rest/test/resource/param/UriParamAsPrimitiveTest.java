@@ -9,10 +9,10 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.resource.param.resource.UriParamAsPrimitiveResourceUriBoolean;
@@ -49,7 +49,7 @@ public class UriParamAsPrimitiveTest {
     private static UriParamAsPrimitiveResourceUriByteInterface resourceUriByte;
     private static QuarkusRestClient client;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
         resourceUriBoolean = ProxyBuilder
@@ -91,7 +91,7 @@ public class UriParamAsPrimitiveTest {
         return PortProviderUtil.generateBaseUrl(UriParamAsPrimitiveTest.class.getSimpleName());
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }

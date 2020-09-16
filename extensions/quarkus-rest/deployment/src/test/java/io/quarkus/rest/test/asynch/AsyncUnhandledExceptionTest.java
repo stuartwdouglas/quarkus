@@ -9,8 +9,9 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.asynch.resource.AsyncUnhandledExceptionResource;
@@ -24,19 +25,19 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Unhandled exceptions should return 500 status
  * @tpSince RESTEasy 4.0.0
  */
+@DisplayName("Async Unhandled Exception Test")
 public class AsyncUnhandledExceptionTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, AsyncUnhandledExceptionResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, AsyncUnhandledExceptionResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, AsyncUnhandledExceptionTest.class.getSimpleName());
@@ -47,11 +48,12 @@ public class AsyncUnhandledExceptionTest {
      * @tpSince RESTEasy 4.0.0
      */
     @Test
+    @DisplayName("Test Post")
     public void testPost() {
         Client client = ClientBuilder.newClient();
         try {
             Response response = client.target(generateURL("/listener")).request().post(Entity.entity("aaa", "text/plain"));
-            Assert.assertEquals(500, response.getStatus());
+            Assertions.assertEquals(500, response.getStatus());
         } finally {
             client.close();
         }
@@ -62,11 +64,12 @@ public class AsyncUnhandledExceptionTest {
      * @tpSince RESTEasy 4.0.0
      */
     @Test
+    @DisplayName("Test Get")
     public void testGet() {
         Client client = ClientBuilder.newClient();
         try {
             Response response = client.target(generateURL("/thread")).request().get();
-            Assert.assertEquals(500, response.getStatus());
+            Assertions.assertEquals(500, response.getStatus());
         } finally {
             client.close();
         }

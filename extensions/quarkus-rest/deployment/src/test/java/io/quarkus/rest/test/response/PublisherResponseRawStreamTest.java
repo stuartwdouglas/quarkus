@@ -13,10 +13,11 @@ import javax.ws.rs.core.Response;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.AsyncResponseCallback;
@@ -34,37 +35,36 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.0
  */
+@DisplayName("Publisher Response Raw Stream Test")
 public class PublisherResponseRawStreamTest {
 
     Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                            + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.reactivestreams\n"));
-
-                    return TestUtil.finishContainerPrepare(war, null, PublisherResponseRawStreamResource.class,
-                            SlowStringWriter.class, SlowString.class,
-                            AsyncResponseCallback.class, AsyncResponseExceptionMapper.class, AsyncResponseException.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
+                    + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services, org.reactivestreams\n"));
+            return TestUtil.finishContainerPrepare(war, null, PublisherResponseRawStreamResource.class, SlowStringWriter.class,
+                    SlowString.class, AsyncResponseCallback.class, AsyncResponseExceptionMapper.class,
+                    AsyncResponseException.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, PublisherResponseRawStreamTest.class.getSimpleName());
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void close() {
         client.close();
         client = null;
@@ -75,13 +75,14 @@ public class PublisherResponseRawStreamTest {
      * @tpSince RESTEasy 4.0
      */
     @Test
+    @DisplayName("Test Chunked")
     public void testChunked() throws Exception {
         Invocation.Builder request = client.target(generateURL("/chunked")).request();
         Response response = request.get();
         String entity = response.readEntity(String.class);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertTrue(entity.startsWith("0-11-12-1"));
-        Assert.assertTrue(entity.endsWith("29-1"));
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertTrue(entity.startsWith("0-11-12-1"));
+        Assertions.assertTrue(entity.endsWith("29-1"));
     }
 
     /**
@@ -89,6 +90,7 @@ public class PublisherResponseRawStreamTest {
      * @tpSince RESTEasy 4.0
      */
     @Test
+    @DisplayName("Test Infinite Streams Chunked")
     public void testInfiniteStreamsChunked() throws Exception {
         Invocation.Builder request = client.target(generateURL("/chunked-infinite")).request();
         Future<Response> futureResponse = request.async().get();
@@ -102,16 +104,17 @@ public class PublisherResponseRawStreamTest {
         request = client.target(generateURL("/infinite-done")).request();
         Response response = request.get();
         String entity = response.readEntity(String.class);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals("true", entity);
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(entity, "true");
     }
 
     @Test
+    @DisplayName("Test Slow Async Writer")
     public void testSlowAsyncWriter() throws Exception {
         Invocation.Builder request = client.target(generateURL("/slow-async-io")).request();
         Response response = request.get();
         String entity = response.readEntity(String.class);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals("onetwo", entity);
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(entity, "onetwo");
     }
 }

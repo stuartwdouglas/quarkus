@@ -29,10 +29,11 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartOutput;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartRelatedOutput;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.multipart.resource.MimeMultipartProviderClient;
@@ -47,20 +48,23 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Mime Multipart Provider Test")
 public class MimeMultipartProviderTest {
 
     private static Logger logger = Logger.getLogger(MimeMultipartProviderTest.class);
+
     private static final String TEST_URI = generateURL("/mime");
+
     static Client client;
 
     private static final String ERR_NUMBER = "The number of enclosed bodypart objects doesn't match to the expectation";
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -69,17 +73,16 @@ public class MimeMultipartProviderTest {
             "HeaderFlushedOutputStreamTestData.txt");
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, MimeMultipartProviderResource.class,
-                            MimeMultipartProviderCustomer.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, MimeMultipartProviderResource.class,
+                    MimeMultipartProviderCustomer.class);
+        }
+    });
 
     private static String generateURL(String path) {
         return PortProviderUtil.generateURL(path, MimeMultipartProviderTest.class.getSimpleName());
@@ -90,21 +93,19 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Put Form")
     public void testPutForm() throws Exception {
         // prepare file
         File file = new File(testFilePath);
-        Assert.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
-
+        Assertions.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
         MultipartFormDataOutput mpfdo = new MultipartFormDataOutput();
         mpfdo.addFormData("part1", "This is Value 1", MediaType.TEXT_PLAIN_TYPE);
         mpfdo.addFormData("part2", "This is Value 2", MediaType.TEXT_PLAIN_TYPE);
         mpfdo.addFormData("data.txt", file, MediaType.TEXT_PLAIN_TYPE);
-
-        Response response = client.target(TEST_URI).request()
-                .put(Entity.entity(mpfdo, MediaType.MULTIPART_FORM_DATA_TYPE));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Response response = client.target(TEST_URI).request().put(Entity.entity(mpfdo, MediaType.MULTIPART_FORM_DATA_TYPE));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseBody = response.readEntity(String.class);
-        Assert.assertEquals(ERR_NUMBER, responseBody, "Count: 3");
+        Assertions.assertEquals(ERR_NUMBER, responseBody, "Count: 3");
     }
 
     /**
@@ -112,22 +113,19 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Put")
     public void testPut() throws Exception {
         // prepare file
         File file = new File(testFilePath);
-        Assert.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
-
+        Assertions.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
         MultipartOutput mpo = new MultipartOutput();
         mpo.addPart("This is Value 1", MediaType.TEXT_PLAIN_TYPE);
         mpo.addPart("This is Value 2", MediaType.TEXT_PLAIN_TYPE);
         mpo.addPart(file, MediaType.TEXT_PLAIN_TYPE);
-
-        Response response = client.target(TEST_URI).request()
-                .put(Entity.entity(mpo, MediaType.MULTIPART_FORM_DATA_TYPE));
-
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Response response = client.target(TEST_URI).request().put(Entity.entity(mpo, MediaType.MULTIPART_FORM_DATA_TYPE));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String responseBody = response.readEntity(String.class);
-        Assert.assertEquals(ERR_NUMBER, responseBody, "Count: 3");
+        Assertions.assertEquals(ERR_NUMBER, responseBody, "Count: 3");
     }
 
     /**
@@ -135,6 +133,7 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Form")
     public void testForm() throws Exception {
         testMultipart(TEST_URI + "/form");
         testMultipart(TEST_URI + "/form/map");
@@ -147,10 +146,8 @@ public class MimeMultipartProviderTest {
         MultipartFormDataOutput mpfdo = new MultipartFormDataOutput();
         mpfdo.addFormData("bill", createCustomerData("bill"), MediaType.APPLICATION_XML_TYPE);
         mpfdo.addFormData("monica", createCustomerData("monica"), MediaType.APPLICATION_XML_TYPE);
-
-        Response response = client.target(uri).request()
-                .put(Entity.entity(mpfdo, MediaType.MULTIPART_FORM_DATA_TYPE));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Response response = client.target(uri).request().put(Entity.entity(mpfdo, MediaType.MULTIPART_FORM_DATA_TYPE));
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -159,6 +156,7 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Multipart Output")
     public void testMultipartOutput() throws Exception {
         MimeMultipartProviderClient proxy = ProxyBuilder
                 .builder(MimeMultipartProviderClient.class, client.target(generateURL(""))).build();
@@ -173,6 +171,7 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Multipart Form Data Output")
     public void testMultipartFormDataOutput() throws Exception {
         MimeMultipartProviderClient proxy = ProxyBuilder
                 .builder(MimeMultipartProviderClient.class, client.target(generateURL(""))).build();
@@ -187,29 +186,22 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Multipart Related Output")
     public void testMultipartRelatedOutput() throws Exception {
         MimeMultipartProviderClient proxy = ProxyBuilder
                 .builder(MimeMultipartProviderClient.class, client.target(generateURL(""))).build();
         MultipartRelatedOutput output = new MultipartRelatedOutput();
         output.setStartInfo("text/xml");
-
         Map<String, String> mediaTypeParameters = new LinkedHashMap<String, String>();
         mediaTypeParameters.put("charset", StandardCharsets.UTF_8.name());
         mediaTypeParameters.put("type", "text/xml");
-        output
-                .addPart(
-                        "<m:data xmlns:m='http://example.org/stuff'>"
-                                + "<m:photo><xop:Include xmlns:xop='http://www.w3.org/2004/08/xop/include' href='cid:http://example.org/me.png'/></m:photo>"
-                                + "<m:sig><xop:Include xmlns:xop='http://www.w3.org/2004/08/xop/include' href='cid:http://example.org/my.hsh'/></m:sig>"
-                                + "</m:data>",
-                        new MediaType("application",
-                                "xop+xml", mediaTypeParameters),
-                        "<mymessage.xml@example.org>", "8bit");
-        output.addPart("// binary octets for png",
-                new MediaType("image", "png"), "<http://example.org/me.png>",
-                "binary");
-        output.addPart("// binary octets for signature", new MediaType(
-                "application", "pkcs7-signature"),
+        output.addPart("<m:data xmlns:m='http://example.org/stuff'>"
+                + "<m:photo><xop:Include xmlns:xop='http://www.w3.org/2004/08/xop/include' href='cid:http://example.org/me.png'/></m:photo>"
+                + "<m:sig><xop:Include xmlns:xop='http://www.w3.org/2004/08/xop/include' href='cid:http://example.org/my.hsh'/></m:sig>"
+                + "</m:data>", new MediaType("application", "xop+xml", mediaTypeParameters), "<mymessage.xml@example.org>",
+                "8bit");
+        output.addPart("// binary octets for png", new MediaType("image", "png"), "<http://example.org/me.png>", "binary");
+        output.addPart("// binary octets for signature", new MediaType("application", "pkcs7-signature"),
                 "<http://example.org/me.hsh>", "binary");
         proxy.putRelated(output);
     }
@@ -219,6 +211,7 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Multipart List")
     public void testMultipartList() throws Exception {
         MimeMultipartProviderClient proxy = ProxyBuilder
                 .builder(MimeMultipartProviderClient.class, client.target(generateURL(""))).build();
@@ -233,6 +226,7 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Multipart Map")
     public void testMultipartMap() throws Exception {
         MimeMultipartProviderClient proxy = ProxyBuilder
                 .builder(MimeMultipartProviderClient.class, client.target(generateURL(""))).build();
@@ -247,6 +241,7 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Multipart Form")
     public void testMultipartForm() throws Exception {
         MimeMultipartProviderClient proxy = ProxyBuilder
                 .builder(MimeMultipartProviderClient.class, client.target(generateURL(""))).build();
@@ -260,15 +255,15 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Xop")
     public void testXop() throws Exception {
         MimeMultipartProviderClient proxy = ProxyBuilder
                 .builder(MimeMultipartProviderClient.class, client.target(generateURL(""))).build();
         MimeMultipartProviderResource.Xop xop = new MimeMultipartProviderResource.Xop(
                 new MimeMultipartProviderCustomer("bill\u00E9"), new MimeMultipartProviderCustomer("monica"),
-                "Hello Xop World!".getBytes(StandardCharsets.UTF_8), new DataHandler(
-                        new ByteArrayDataSource("Hello Xop World!"
-                                .getBytes(StandardCharsets.UTF_8),
-                                MediaType.APPLICATION_OCTET_STREAM)));
+                "Hello Xop World!".getBytes(StandardCharsets.UTF_8),
+                new DataHandler(new ByteArrayDataSource("Hello Xop World!".getBytes(StandardCharsets.UTF_8),
+                        MediaType.APPLICATION_OCTET_STREAM)));
         proxy.putXop(xop);
     }
 
@@ -285,14 +280,15 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Get")
     public void testGet() throws Exception {
         Response response = client.target(TEST_URI).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         BufferedInputStream in = new BufferedInputStream(response.readEntity(InputStream.class));
         String contentType = response.getStringHeaders().getFirst("content-type");
         ByteArrayDataSource ds = new ByteArrayDataSource(in, contentType);
         MimeMultipart mimeMultipart = new MimeMultipart(ds);
-        Assert.assertEquals(ERR_NUMBER, mimeMultipart.getCount(), 2);
+        Assertions.assertEquals(ERR_NUMBER, mimeMultipart.getCount(), 2);
         response.close();
     }
 
@@ -301,23 +297,17 @@ public class MimeMultipartProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test File")
     public void testFile() throws Exception {
-        Response response = client.target(TEST_URI + "/file/test").request()
-                .post(Entity.entity(form,
-                        "multipart/form-data; boundary=---------------------------52524491016334132001492192799"));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Response response = client.target(TEST_URI + "/file/test").request().post(
+                Entity.entity(form, "multipart/form-data; boundary=---------------------------52524491016334132001492192799"));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
     private static final String form = "-----------------------------52524491016334132001492192799\r\n"
-            + "Content-Disposition: form-data; name=\"submit-name\"\r\n"
-            + "\r\n"
-            + "Bill\r\n"
+            + "Content-Disposition: form-data; name=\"submit-name\"\r\n" + "\r\n" + "Bill\r\n"
             + "-----------------------------52524491016334132001492192799\r\n"
-            + "Content-Disposition: form-data; name=\"files\"; filename=\"stuff.txt\"\r\n"
-            + "Content-Type: text/plain\r\n"
-            + "\r\n"
-            + "hello world\r\n"
-            + "\r\n"
-            + "-----------------------------52524491016334132001492192799--";
+            + "Content-Disposition: form-data; name=\"files\"; filename=\"stuff.txt\"\r\n" + "Content-Type: text/plain\r\n"
+            + "\r\n" + "hello world\r\n" + "\r\n" + "-----------------------------52524491016334132001492192799--";
 }

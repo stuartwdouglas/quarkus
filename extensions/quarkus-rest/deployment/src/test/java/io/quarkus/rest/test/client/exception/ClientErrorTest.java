@@ -14,10 +14,11 @@ import org.jboss.resteasy.plugins.delegates.MediaTypeHeaderDelegate;
 import org.jboss.resteasy.util.HttpHeaderNames;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.client.exception.resource.ClientErrorResource;
@@ -31,33 +32,34 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.20
  * @tpTestCaseDetails Test client error caused by bad media type
  */
+@DisplayName("Client Error Test")
 public class ClientErrorTest {
+
     private static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(PortProviderUtil.class);
-                    war.addClass(TestUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null, ClientErrorResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(PortProviderUtil.class);
+            war.addClass(TestUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ClientErrorResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, ClientErrorTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -67,13 +69,14 @@ public class ClientErrorTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Complex")
     public void testComplex() {
         Builder builder = client.target(generateURL("/complex/match")).request();
         builder.header(HttpHeaderNames.ACCEPT, "text/xml");
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -86,13 +89,14 @@ public class ClientErrorTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Not Found")
     public void testNotFound() {
         Builder builder = client.target(generateURL("/foo/notthere")).request();
         builder.header(HttpHeaderNames.ACCEPT, "application/foo");
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.NOT_FOUND.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -105,13 +109,14 @@ public class ClientErrorTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Method Not Allowed")
     public void testMethodNotAllowed() {
         Builder builder = client.target(generateURL("")).request();
         builder.header(HttpHeaderNames.ACCEPT, "application/foo");
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -124,13 +129,14 @@ public class ClientErrorTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Not Acceptable")
     public void testNotAcceptable() {
         Builder builder = client.target(generateURL("")).request();
         builder.header(HttpHeaderNames.ACCEPT, "application/bar");
         Response response = null;
         try {
             response = builder.post(Entity.entity("content", "application/bar"));
-            Assert.assertEquals(Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.NOT_ACCEPTABLE.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -143,12 +149,13 @@ public class ClientErrorTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test No Content Post")
     public void testNoContentPost() {
         Builder builder = client.target(generateURL("/nocontent")).request();
         Response response = null;
         try {
             response = builder.post(Entity.entity("content", "text/plain"));
-            Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -161,12 +168,13 @@ public class ClientErrorTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test No Content")
     public void testNoContent() {
         Builder builder = client.target(generateURL("")).request();
         Response response = null;
         try {
             response = builder.delete();
-            Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -179,13 +187,14 @@ public class ClientErrorTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Unsupported Media Type")
     public void testUnsupportedMediaType() {
         Builder builder = client.target(generateURL("")).request();
         builder.header(HttpHeaderNames.ACCEPT, "application/foo");
         Response response = null;
         try {
             response = builder.post(Entity.entity("content", "text/plain"));
-            Assert.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.UNSUPPORTED_MEDIA_TYPE.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -198,13 +207,14 @@ public class ClientErrorTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Bad Accept Media Type No Sub Type")
     public void testBadAcceptMediaTypeNoSubType() {
         Builder builder = client.target(generateURL("/complex/match")).request();
         builder.header(HttpHeaderNames.ACCEPT, "text");
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -217,13 +227,14 @@ public class ClientErrorTest {
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Bad Accept Media Type Non Numeric Quality Value")
     public void testBadAcceptMediaTypeNonNumericQualityValue() {
         Builder builder = client.target(generateURL("/complex/match")).request();
         builder.header(HttpHeaderNames.ACCEPT, "text/plain; q=bad");
         Response response = null;
         try {
             response = builder.get();
-            Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -231,7 +242,9 @@ public class ClientErrorTest {
         }
     }
 
+    @DisplayName("Test Media Type Header Delegate")
     static class TestMediaTypeHeaderDelegate extends MediaTypeHeaderDelegate {
+
         public static MediaType parse(String type) {
             if ("text".equals(type)) {
                 return new MediaType("text", "");

@@ -8,10 +8,11 @@ import javax.ws.rs.core.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.test.resource.basic.resource.ResponseCommittedResource;
 import io.quarkus.rest.test.simple.PortProviderUtil;
@@ -23,8 +24,11 @@ import io.quarkus.rest.test.simple.TestUtil;
  * @tpTestCaseDetails Regression test for RESTEASY-1238
  * @tpSince RESTEasy 3.1.3.Final
  */
+@DisplayName("Response Committed Test")
 public class ResponseCommittedTest {
+
     public static int TEST_STATUS = 444;
+
     private static Client client;
 
     @Deployment
@@ -37,21 +41,22 @@ public class ResponseCommittedTest {
         return PortProviderUtil.generateBaseUrl(ResponseCommittedTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
 
     @Test
+    @DisplayName("Test Works")
     public void testWorks() throws Exception {
         Invocation.Builder request = client.target(generateBaseUrl()).request();
         Response response = request.get();
-        Assert.assertEquals(TEST_STATUS, response.getStatus());
+        Assertions.assertEquals(TEST_STATUS, response.getStatus());
         response.close();
         client.close();
     }

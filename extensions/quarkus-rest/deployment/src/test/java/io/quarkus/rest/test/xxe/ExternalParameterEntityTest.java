@@ -15,10 +15,11 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -39,64 +40,62 @@ import io.quarkus.test.QuarkusUnitTest;
  *                    running the application server, and potentially perform other more advanced XXE attacks.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("External Parameter Entity Test")
 public class ExternalParameterEntityTest {
 
     protected final Logger logger = Logger.getLogger(ExternalParameterEntityTest.class.getName());
+
     static QuarkusRestClient client;
 
     private static final String EXPAND = "war_expand";
+
     private static final String NO_EXPAND = "war_no_expand";
 
     private String passwdFile = new File(
             TestUtil.getResourcePath(ExternalParameterEntityTest.class, "ExternalParameterEntityPasswd")).getAbsolutePath();
+
     private String dtdFile = new File(
             TestUtil.getResourcePath(ExternalParameterEntityTest.class, "ExternalParameterEntity.dtd")).getAbsolutePath();
 
-    private String request = "<!DOCTYPE foo [\r" +
-            "  <!ENTITY % file SYSTEM \"" + passwdFile + "\">\r" +
-            "  <!ENTITY % start \"<![CDATA[\">\r" +
-            "  <!ENTITY % end \"]]>\">\r" +
-            "  <!ENTITY % dtd SYSTEM \"" + dtdFile + "\">\r" +
-            "%dtd;\r" +
-            "]>\r" +
-            "<externalParameterEntityWrapper><name>&xxe;</name></externalParameterEntityWrapper>";
+    private String request = "<!DOCTYPE foo [\r" + "  <!ENTITY % file SYSTEM \"" + passwdFile + "\">\r"
+            + "  <!ENTITY % start \"<![CDATA[\">\r" + "  <!ENTITY % end \"]]>\">\r" + "  <!ENTITY % dtd SYSTEM \"" + dtdFile
+            + "\">\r" + "%dtd;\r" + "]>\r"
+            + "<externalParameterEntityWrapper><name>&xxe;</name></externalParameterEntityWrapper>";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(ExternalParameterEntityWrapper.class);
-                    //                    war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
-                    //                            "ExternalParameterEntityExpandWeb.xml", "web.xml");
-                    return TestUtil.finishContainerPrepare(war, null, ExternalParameterEntityResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ExternalParameterEntityWrapper.class);
+            // war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
+            // "ExternalParameterEntityExpandWeb.xml", "web.xml");
+            return TestUtil.finishContainerPrepare(war, null, ExternalParameterEntityResource.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(ExternalParameterEntityWrapper.class);
-                    //                    war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
-                    //                            "ExternalParameterEntityNoExpandWeb.xml", "web.xml");
-                    return TestUtil.finishContainerPrepare(war, null, ExternalParameterEntityResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ExternalParameterEntityWrapper.class);
+            // war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
+            // "ExternalParameterEntityNoExpandWeb.xml", "web.xml");
+            return TestUtil.finishContainerPrepare(war, null, ExternalParameterEntityResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -107,14 +106,15 @@ public class ExternalParameterEntityTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test External Parameter Entity Expand")
     public void testExternalParameterEntityExpand() throws Exception {
         logger.info(String.format("Request body: %s", this.request.replace('\r', '\n')));
         Response response = client.target(generateURL("/test", EXPAND)).request()
                 .post(Entity.entity(this.request, MediaType.APPLICATION_XML));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info(String.format("Result: \"%s\"", entity.replace('\r', '\n')));
-        Assert.assertEquals("root:x:0:0:root:/root:/bin/bash", entity.trim());
+        Assertions.assertEquals(entity.trim(), "root:x:0:0:root:/root:/bin/bash");
     }
 
     /**
@@ -123,13 +123,14 @@ public class ExternalParameterEntityTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test External Parameter Entity No Expand")
     public void testExternalParameterEntityNoExpand() throws Exception {
         logger.info(String.format("Request body: %s", this.request.replace('\r', '\n')));
         Response response = client.target(generateURL("/test", NO_EXPAND)).request()
                 .post(Entity.entity(this.request, MediaType.APPLICATION_XML));
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String entity = response.readEntity(String.class);
         logger.info(String.format("Result: \"%s\"", entity.replace('\r', '\n')));
-        Assert.assertEquals("", entity.trim());
+        Assertions.assertEquals(entity.trim(), "");
     }
 }

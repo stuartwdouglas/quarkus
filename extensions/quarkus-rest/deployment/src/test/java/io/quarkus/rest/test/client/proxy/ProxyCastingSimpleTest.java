@@ -11,9 +11,9 @@ import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.proxy.QuarkusRestClientProxy;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
@@ -58,13 +58,13 @@ public class ProxyCastingSimpleTest {
         return PortProviderUtil.generateURL(path, ProxyCastingSimpleTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = ClientBuilder.newClient();
         target = (QuarkusRestWebTarget) client.target(generateURL("/foobar"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }

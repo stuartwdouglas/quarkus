@@ -12,8 +12,9 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -27,24 +28,25 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.6.0
  */
+@DisplayName("Encoding Mime Multipart Form Provider Test")
 public class EncodingMimeMultipartFormProviderTest {
 
     private static final String TEST_URI = generateURL("/encoding-mime");
+
     // file with non ASCII character
     private static final String testFilePath = TestUtil.getResourcePath(EncodingMimeMultipartFormProviderTest.class,
             "EncodingMimeMultipartFormProviderTestData.txt");
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, EncodingMimeMultipartFormProviderResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, EncodingMimeMultipartFormProviderResource.class);
+        }
+    });
 
     private static String generateURL(String path) {
         return PortProviderUtil.generateURL(path, EncodingMimeMultipartFormProviderTest.class.getSimpleName());
@@ -55,19 +57,18 @@ public class EncodingMimeMultipartFormProviderTest {
      * @tpSince RESTEasy 3.6.0
      */
     @Test
+    @DisplayName("Test Post Form File")
     public void testPostFormFile() throws Exception {
         // prepare file
         File file = new File(testFilePath);
-        Assert.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
-
+        Assertions.assertTrue("File " + testFilePath + " doesn't exists", file.exists());
         MultipartFormDataOutput mpfdo = new MultipartFormDataOutput();
         mpfdo.addFormData("file_upload", file, MediaType.APPLICATION_OCTET_STREAM_TYPE,
                 EncodingMimeMultipartFormProviderResource.FILENAME_NON_ASCII, true);
-
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Response response = client.target(TEST_URI + "/file").request()
                 .post(Entity.entity(mpfdo, MediaType.MULTIPART_FORM_DATA_TYPE));
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         client.close();
     }
 }

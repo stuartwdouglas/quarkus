@@ -8,10 +8,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -30,30 +31,29 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Inheritance Test")
 public class InheritanceTest {
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, InheritanceAnimal.class, InheritanceCat.class,
-                            InheritanceDog.class,
-                            InheritanceZoo.class, InheritanceResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InheritanceAnimal.class, InheritanceCat.class,
+                    InheritanceDog.class, InheritanceZoo.class, InheritanceResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -67,12 +67,13 @@ public class InheritanceTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Inheritance")
     public void testInheritance() throws Exception {
         QuarkusRestWebTarget target = client.target(generateURL("/zoo"));
         Response response = target.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         InheritanceZoo zoo = response.readEntity(InheritanceZoo.class);
-        Assert.assertEquals("The number of animals in the zoo doesn't match the expected count", 2, zoo.getAnimals().size());
+        Assertions.assertEquals(2, zoo.getAnimals().size(),
+                "The number of animals in the zoo doesn't match the expected count");
     }
-
 }

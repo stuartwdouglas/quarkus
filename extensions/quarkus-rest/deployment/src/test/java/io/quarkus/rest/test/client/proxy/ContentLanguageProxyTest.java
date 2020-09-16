@@ -5,10 +5,10 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
@@ -21,12 +21,12 @@ import io.quarkus.rest.test.simple.TestUtil;
 public class ContentLanguageProxyTest {
     private static QuarkusRestClient client;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }

@@ -33,16 +33,16 @@ public class GenericEntityTest {
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class, GenericEntityResource.class, GenericEntityDoubleWriter.class,
-                            GenericEntitytFloatWriter.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class, GenericEntityResource.class, GenericEntityDoubleWriter.class,
+                    GenericEntitytFloatWriter.class);
+            return war;
+        }
+    });
 
     @BeforeAll
     public static void init() {
@@ -71,7 +71,7 @@ public class GenericEntityTest {
             Response response = base.request().get();
             Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String body = response.readEntity(String.class);
-            Assertions.assertEquals("45.0D 50.0D ", body, "The response doesn't contain the expected entity");
+            Assertions.assertEquals(body, "The response doesn't contain the expected entity", "45.0D 50.0D ");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -89,7 +89,7 @@ public class GenericEntityTest {
             Response response = base.request().get();
             Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             String body = response.readEntity(String.class);
-            Assertions.assertEquals("45.0F 50.0F ", body, "The response doesn't contain the expected entity");
+            Assertions.assertEquals(body, "The response doesn't contain the expected entity", "45.0F 50.0F ");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -10,8 +10,9 @@ import javax.ws.rs.client.Invocation;
 import org.jboss.resteasy.annotations.StringParameterUnmarshallerBinder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -29,48 +30,52 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails Test for unmarshalling with string parameter. StringParameterUnmarshallerBinder annotation is used
  */
+@DisplayName("String Param Unmarshaller Test")
 public class StringParamUnmarshallerTest {
+
     @Retention(RetentionPolicy.RUNTIME)
     @StringParameterUnmarshallerBinder(StringParamUnmarshallerDateFormatter.class)
     public @interface StringParamUnmarshallerDateFormat {
+
         String value();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(StringParamUnmarshallerDateFormatter.class);
-                    war.addClass(StringParamUnmarshallerFruit.class);
-                    war.addClass(StringParamUnmarshallerSport.class);
-                    war.addClass(StringParamUnmarshallerDateFormat.class);
-                    return TestUtil.finishContainerPrepare(war, null, StringParamUnmarshallerService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(StringParamUnmarshallerDateFormatter.class);
+            war.addClass(StringParamUnmarshallerFruit.class);
+            war.addClass(StringParamUnmarshallerSport.class);
+            war.addClass(StringParamUnmarshallerDateFormat.class);
+            return TestUtil.finishContainerPrepare(war, null, StringParamUnmarshallerService.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, StringParamUnmarshallerTest.class.getSimpleName());
     }
 
     @Test
+    @DisplayName("Test Date")
     public void testDate() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Invocation.Builder request = client.target(generateURL("/datetest/04-23-1977")).request();
         String date = request.get(String.class);
-        Assert.assertTrue("Received wrong date", date.contains("Sat Apr 23 00:00:00"));
-        Assert.assertTrue("Received wrong date", date.contains("1977"));
+        Assertions.assertTrue(date.contains("Sat Apr 23 00:00:00"), "Received wrong date");
+        Assertions.assertTrue(date.contains("1977"), "Received wrong date");
         client.close();
     }
 
     @Test
+    @DisplayName("Test Fruit And Sport")
     public void testFruitAndSport() throws Exception {
         QuarkusRestClient client = (QuarkusRestClient) ClientBuilder.newClient();
         Invocation.Builder request = client.target(generateURL("/fromstring/ORANGE/football")).request();
-        Assert.assertEquals("Received wrong response", "footballORANGE", request.get(String.class));
+        Assertions.assertEquals(request.get(String.class), "Received wrong response", "footballORANGE");
         client.close();
     }
 }

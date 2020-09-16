@@ -6,10 +6,10 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.resource.param.resource.ParamInterfaceResource;
@@ -38,12 +38,12 @@ public class ParamTest {
 
     protected Client client;
 
-    @Before
+    @BeforeEach
     public void beforeTest() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void afterTest() {
         client.close();
     }

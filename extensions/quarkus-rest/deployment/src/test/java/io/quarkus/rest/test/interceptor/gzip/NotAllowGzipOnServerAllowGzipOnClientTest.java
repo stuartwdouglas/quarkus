@@ -4,9 +4,10 @@ import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 /**
  * @tpSubChapter Gzip
@@ -14,14 +15,15 @@ import org.junit.Test;
  * @tpTestCaseDetails Regression test for RESTEASY-1735
  * @tpSince RESTEasy 3.6
  */
+@DisplayName("Not Allow Gzip On Server Allow Gzip On Client Test")
 public class NotAllowGzipOnServerAllowGzipOnClientTest extends NotAllowGzipOnServerAbstractTestBase {
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         System.setProperty(PROPERTY_NAME, Boolean.TRUE.toString());
     }
 
-    @AfterClass
+    @AfterAll
     public static void clean() {
         System.clearProperty(PROPERTY_NAME);
     }
@@ -36,6 +38,7 @@ public class NotAllowGzipOnServerAllowGzipOnClientTest extends NotAllowGzipOnSer
      */
     @Test
     @OperateOnDeployment(WAR_WITHOUT_PROVIDERS_FILE)
+    @DisplayName("No Providers File On Server")
     public void noProvidersFileOnServer() throws Exception {
         testNormalClient(deploymentBaseUrl, false, "null", true, false);
     }
@@ -47,8 +50,8 @@ public class NotAllowGzipOnServerAllowGzipOnClientTest extends NotAllowGzipOnSer
      */
     @Test
     @OperateOnDeployment(WAR_WITH_PROVIDERS_FILE)
+    @DisplayName("Providers File On Server")
     public void providersFileOnServer() throws Exception {
         testNormalClient(deploymentBaseUrl, false, "null", true, true);
     }
-
 }

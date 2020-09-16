@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.client.proxy.resource.ProxyWithGenericReturnTypeInvocationHandler;

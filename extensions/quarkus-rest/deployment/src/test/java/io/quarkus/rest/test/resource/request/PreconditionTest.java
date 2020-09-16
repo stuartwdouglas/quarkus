@@ -11,10 +11,11 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.util.HttpHeaderNames;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.request.resource.PreconditionEtagResource;
@@ -30,35 +31,35 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Tests for preconditions specified in the header of the request
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Precondition Test")
 public class PreconditionTest {
 
     static Client client;
+
     static WebTarget precedenceWebTarget;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = ClientBuilder.newClient();
         precedenceWebTarget = client.target(generateURL("/precedence"));
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, PreconditionLastModifiedResource.class,
-                            PreconditionEtagResource.class,
-                            PreconditionPrecedenceResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, PreconditionLastModifiedResource.class,
+                    PreconditionEtagResource.class, PreconditionPrecedenceResource.class);
+        }
+    });
 
     private static String generateURL(String path) {
         return PortProviderUtil.generateURL(path, PreconditionTest.class.getSimpleName());
@@ -69,12 +70,13 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Unmodified Since Before Last Modified")
     public void testIfUnmodifiedSinceBeforeLastModified() {
         WebTarget base = client.target(generateURL("/"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_UNMODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT")
                     .get();
-            Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -86,12 +88,13 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Unmodified Since After Last Modified")
     public void testIfUnmodifiedSinceAfterLastModified() {
         WebTarget base = client.target(generateURL("/"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_UNMODIFIED_SINCE, "Tue, 2 Jan 2007 00:00:00 GMT")
                     .get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -103,11 +106,12 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Modified Since Before Last Modified")
     public void testIfModifiedSinceBeforeLastModified() {
         WebTarget base = client.target(generateURL("/"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT").get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -119,11 +123,12 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Modified Since After Last Modified")
     public void testIfModifiedSinceAfterLastModified() {
         WebTarget base = client.target(generateURL("/"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MODIFIED_SINCE, "Tue, 2 Jan 2007 00:00:00 GMT").get();
-            Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -135,12 +140,13 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Unmodified Since Before Last Modified _ If Modified Since Before Last Modified")
     public void testIfUnmodifiedSinceBeforeLastModified_IfModifiedSinceBeforeLastModified() {
         WebTarget base = client.target(generateURL("/"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_UNMODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT")
                     .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT").get();
-            Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -152,12 +158,13 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Unmodified Since Before Last Modified _ If Modified Since After Last Modified")
     public void testIfUnmodifiedSinceBeforeLastModified_IfModifiedSinceAfterLastModified() {
         WebTarget base = client.target(generateURL("/"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_UNMODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT")
                     .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Tue, 2 Jan 2007 00:00:00 GMT").get();
-            Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -169,12 +176,13 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Unmodified Since After Last Modified _ If Modified Since After Last Modified")
     public void testIfUnmodifiedSinceAfterLastModified_IfModifiedSinceAfterLastModified() {
         WebTarget base = client.target(generateURL("/"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_UNMODIFIED_SINCE, "Tue, 2 Jan 2007 00:00:00 GMT")
                     .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Tue, 2 Jan 2007 00:00:00 GMT").get();
-            Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -186,12 +194,13 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Unmodified Since After Last Modified _ If Modified Since Before Last Modified")
     public void testIfUnmodifiedSinceAfterLastModified_IfModifiedSinceBeforeLastModified() {
         WebTarget base = client.target(generateURL("/"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_UNMODIFIED_SINCE, "Tue, 2 Jan 2007 00:00:00 GMT")
                     .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT").get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -203,6 +212,7 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Match With Matching E Tag")
     public void testIfMatchWithMatchingETag() {
         testIfMatchWithMatchingETag("");
         testIfMatchWithMatchingETag("/fromField");
@@ -213,6 +223,7 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Match Without Matching E Tag")
     public void testIfMatchWithoutMatchingETag() {
         testIfMatchWithoutMatchingETag("");
         testIfMatchWithoutMatchingETag("/fromField");
@@ -223,6 +234,7 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Match Wild Card")
     public void testIfMatchWildCard() {
         testIfMatchWildCard("");
         testIfMatchWildCard("/fromField");
@@ -233,6 +245,7 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Non Match With Matching E Tag")
     public void testIfNonMatchWithMatchingETag() {
         testIfNonMatchWithMatchingETag("");
         testIfNonMatchWithMatchingETag("/fromField");
@@ -243,6 +256,7 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Non Match Without Matching E Tag")
     public void testIfNonMatchWithoutMatchingETag() {
         testIfNonMatchWithoutMatchingETag("");
         testIfNonMatchWithoutMatchingETag("/fromField");
@@ -253,6 +267,7 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Non Match Wild Card")
     public void testIfNonMatchWildCard() {
         testIfNonMatchWildCard("");
         testIfNonMatchWildCard("/fromField");
@@ -263,10 +278,10 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Match With Matching E Tag _ If Non Match With Matching E Tag")
     public void testIfMatchWithMatchingETag_IfNonMatchWithMatchingETag() {
         testIfMatchWithMatchingETag_IfNonMatchWithMatchingETag("");
         testIfMatchWithMatchingETag_IfNonMatchWithMatchingETag("/fromField");
-
     }
 
     /**
@@ -275,6 +290,7 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Match With Matching E Tag _ If Non Match Without Matching E Tag")
     public void testIfMatchWithMatchingETag_IfNonMatchWithoutMatchingETag() {
         testIfMatchWithMatchingETag_IfNonMatchWithoutMatchingETag("");
         testIfMatchWithMatchingETag_IfNonMatchWithoutMatchingETag("/fromField");
@@ -286,6 +302,7 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Match Without Matching E Tag _ If Non Match With Matching E Tag")
     public void testIfMatchWithoutMatchingETag_IfNonMatchWithMatchingETag() {
         testIfMatchWithoutMatchingETag_IfNonMatchWithMatchingETag("");
         testIfMatchWithoutMatchingETag_IfNonMatchWithMatchingETag("/fromField");
@@ -297,6 +314,7 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Match Without Matching E Tag _ If Non Match Without Matching E Tag")
     public void testIfMatchWithoutMatchingETag_IfNonMatchWithoutMatchingETag() {
         testIfMatchWithoutMatchingETag_IfNonMatchWithoutMatchingETag("");
         testIfMatchWithoutMatchingETag_IfNonMatchWithoutMatchingETag("/fromField");
@@ -307,11 +325,12 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Match With Matching Weak E Tag")
     public void testIfMatchWithMatchingWeakETag() {
         WebTarget base = client.target(generateURL("/etag/weak"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MATCH, "W/\"1\"").get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -323,24 +342,24 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test If Match With Non Matching Weak Etag")
     public void testIfMatchWithNonMatchingWeakEtag() {
         WebTarget base = client.target(generateURL("/etag/weak"));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MATCH, "W/\"2\"").get();
-            Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    ////////////
-
+    // //////////
     public void testIfMatchWithMatchingETag(String fromField) {
         WebTarget base = client.target(generateURL("/etag" + fromField));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MATCH, "\"1\"").get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -351,7 +370,7 @@ public class PreconditionTest {
         WebTarget base = client.target(generateURL("/etag" + fromField));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MATCH, "\"2\"").get();
-            Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -362,7 +381,7 @@ public class PreconditionTest {
         WebTarget base = client.target(generateURL("/etag" + fromField));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MATCH, "*").get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -373,9 +392,9 @@ public class PreconditionTest {
         WebTarget base = client.target(generateURL("/etag" + fromField));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_NONE_MATCH, "\"1\"").get();
-            Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
-            Assert.assertEquals("The eTag in the response doesn't match",
-                    "\"1\"", response.getStringHeaders().getFirst(HttpHeaderNames.ETAG));
+            Assertions.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals("\"1\"", response.getStringHeaders().getFirst(HttpHeaderNames.ETAG),
+                    "The eTag in the response doesn't match");
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -386,7 +405,7 @@ public class PreconditionTest {
         WebTarget base = client.target(generateURL("/etag" + fromField));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_NONE_MATCH, "2").get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -397,9 +416,9 @@ public class PreconditionTest {
         WebTarget base = client.target(generateURL("/etag" + fromField));
         try {
             Response response = base.request().header(HttpHeaderNames.IF_NONE_MATCH, "*").get();
-            Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
-            Assert.assertEquals("The eTag in the response doesn't match",
-                    "\"1\"", response.getStringHeaders().getFirst(HttpHeaderNames.ETAG));
+            Assertions.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals("\"1\"", response.getStringHeaders().getFirst(HttpHeaderNames.ETAG),
+                    "The eTag in the response doesn't match");
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -411,9 +430,9 @@ public class PreconditionTest {
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MATCH, "\"1\"")
                     .header(HttpHeaderNames.IF_NONE_MATCH, "\"1\"").get();
-            Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
-            Assert.assertEquals("The eTag in the response doesn't match",
-                    "\"1\"", response.getStringHeaders().getFirst(HttpHeaderNames.ETAG));
+            Assertions.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals("\"1\"", response.getStringHeaders().getFirst(HttpHeaderNames.ETAG),
+                    "The eTag in the response doesn't match");
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -425,7 +444,7 @@ public class PreconditionTest {
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MATCH, "\"1\"")
                     .header(HttpHeaderNames.IF_NONE_MATCH, "\"2\"").get();
-            Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -437,7 +456,7 @@ public class PreconditionTest {
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MATCH, "\"2\"")
                     .header(HttpHeaderNames.IF_NONE_MATCH, "\"1\"").get();
-            Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -449,7 +468,7 @@ public class PreconditionTest {
         try {
             Response response = base.request().header(HttpHeaderNames.IF_MATCH, "\"2\"")
                     .header(HttpHeaderNames.IF_NONE_MATCH, "\"2\"").get();
-            Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+            Assertions.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
             response.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -461,14 +480,17 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Precedence _ All Match")
     public void testPrecedence_AllMatch() {
-        Response response = precedenceWebTarget.request()
-                .header(HttpHeaderNames.IF_MATCH, "1") // true
-                .header(HttpHeaderNames.IF_UNMODIFIED_SINCE, "Mon, 1 Jan 2007 00:00:00 GMT") // true
-                .header(HttpHeaderNames.IF_NONE_MATCH, "2") // true
-                .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT") // true
+        Response response = precedenceWebTarget.request().header(HttpHeaderNames.IF_MATCH, // true
+                "1").header(HttpHeaderNames.IF_UNMODIFIED_SINCE, // true
+                        "Mon, 1 Jan 2007 00:00:00 GMT")
+                .header(HttpHeaderNames.IF_NONE_MATCH, // true
+                        "2")
+                .header(HttpHeaderNames.IF_MODIFIED_SINCE, // true
+                        "Sat, 30 Dec 2006 00:00:00 GMT")
                 .get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -477,14 +499,17 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Precedence _ If Match With Non Matching Etag")
     public void testPrecedence_IfMatchWithNonMatchingEtag() {
-        Response response = precedenceWebTarget.request()
-                .header(HttpHeaderNames.IF_MATCH, "2") // false
-                .header(HttpHeaderNames.IF_UNMODIFIED_SINCE, "Mon, 1 Jan 2007 00:00:00 GMT") // true
-                .header(HttpHeaderNames.IF_NONE_MATCH, "2") // true
-                .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT") // true
+        Response response = precedenceWebTarget.request().header(HttpHeaderNames.IF_MATCH, // false
+                "2").header(HttpHeaderNames.IF_UNMODIFIED_SINCE, // true
+                        "Mon, 1 Jan 2007 00:00:00 GMT")
+                .header(HttpHeaderNames.IF_NONE_MATCH, // true
+                        "2")
+                .header(HttpHeaderNames.IF_MODIFIED_SINCE, // true
+                        "Sat, 30 Dec 2006 00:00:00 GMT")
                 .get();
-        Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -493,14 +518,15 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Precedence _ If Match Not Present Unmodified Since Before Last Modified")
     public void testPrecedence_IfMatchNotPresentUnmodifiedSinceBeforeLastModified() {
-        Response response = precedenceWebTarget.request()
-
-                .header(HttpHeaderNames.IF_UNMODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT") //false
-                .header(HttpHeaderNames.IF_NONE_MATCH, "2") // true
-                .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT") // true
+        Response response = precedenceWebTarget.request().header(HttpHeaderNames.IF_UNMODIFIED_SINCE, // false
+                "Sat, 30 Dec 2006 00:00:00 GMT").header(HttpHeaderNames.IF_NONE_MATCH, // true
+                        "2")
+                .header(HttpHeaderNames.IF_MODIFIED_SINCE, // true
+                        "Sat, 30 Dec 2006 00:00:00 GMT")
                 .get();
-        Assert.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -509,12 +535,13 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Precedence _ If None Match With Matching Etag")
     public void testPrecedence_IfNoneMatchWithMatchingEtag() {
-        Response response = precedenceWebTarget.request()
-                .header(HttpHeaderNames.IF_NONE_MATCH, "1") // true
-                .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Mon, 1 Jan 2007 00:00:00 GMT") // true
+        Response response = precedenceWebTarget.request().header(HttpHeaderNames.IF_NONE_MATCH, // true
+                "1").header(HttpHeaderNames.IF_MODIFIED_SINCE, // true
+                        "Mon, 1 Jan 2007 00:00:00 GMT")
                 .get();
-        Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -523,12 +550,13 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Precedence _ If None Match With Non Matching Etag")
     public void testPrecedence_IfNoneMatchWithNonMatchingEtag() {
-        Response response = precedenceWebTarget.request()
-                .header(HttpHeaderNames.IF_NONE_MATCH, "2") // false
-                .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Mon, 1 Jan 2007 00:00:00 GMT") // true
+        Response response = precedenceWebTarget.request().header(HttpHeaderNames.IF_NONE_MATCH, // false
+                "2").header(HttpHeaderNames.IF_MODIFIED_SINCE, // true
+                        "Mon, 1 Jan 2007 00:00:00 GMT")
                 .get();
-        Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -537,12 +565,11 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Precedence _ If None Match Not Present _ If Modified Since Before Last Modified")
     public void testPrecedence_IfNoneMatchNotPresent_IfModifiedSinceBeforeLastModified() {
-        Response response = precedenceWebTarget.request()
-
-                .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Sat, 30 Dec 2006 00:00:00 GMT") // false
-                .get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Response response = precedenceWebTarget.request().header(HttpHeaderNames.IF_MODIFIED_SINCE, // false
+                "Sat, 30 Dec 2006 00:00:00 GMT").get();
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -551,11 +578,11 @@ public class PreconditionTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Precedence _ If None Match Not Present _ If Modified Since After Last Modified")
     public void testPrecedence_IfNoneMatchNotPresent_IfModifiedSinceAfterLastModified() {
-        Response response = precedenceWebTarget.request()
-                .header(HttpHeaderNames.IF_MODIFIED_SINCE, "Tue, 2 Jan 2007 00:00:00 GMT") // true
-                .get();
-        Assert.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
+        Response response = precedenceWebTarget.request().header(HttpHeaderNames.IF_MODIFIED_SINCE, // true
+                "Tue, 2 Jan 2007 00:00:00 GMT").get();
+        Assertions.assertEquals(Status.NOT_MODIFIED.getStatusCode(), response.getStatus());
         response.close();
     }
 }

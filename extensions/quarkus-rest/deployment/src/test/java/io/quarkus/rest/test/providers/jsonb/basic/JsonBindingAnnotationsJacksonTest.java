@@ -19,10 +19,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.jsonb.basic.resource.Cat;
@@ -37,9 +38,11 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration test
  * @tpSince RESTEasy 3.5
  */
+@DisplayName("Json Binding Annotations Jackson Test")
 public class JsonBindingAnnotationsJacksonTest {
 
     private static final String WAR_WITH_JSONB = "war_with_jsonb";
+
     private static final String WAR_WITHOUT_JSONB = "war_without_jsonb";
 
     protected static final Logger logger = Logger.getLogger(JsonBindingAnnotationsJacksonTest.class.getName());
@@ -68,24 +71,23 @@ public class JsonBindingAnnotationsJacksonTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(JsonBindingAnnotationsJacksonTest.class);
-                    return TestUtil.finishContainerPrepare(war, null, JsonBindingResource.class, Cat.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(JsonBindingAnnotationsJacksonTest.class);
+            return TestUtil.finishContainerPrepare(war, null, JsonBindingResource.class, Cat.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
         client = null;
@@ -102,12 +104,13 @@ public class JsonBindingAnnotationsJacksonTest {
      * @tpSince RESTEasy 3.5
      */
     @Test
+    @DisplayName("Jsonb On Server Not On Client Test")
     public void jsonbOnServerNotOnClientTest() throws Exception {
         String charset = "UTF-8";
         WebTarget target = client.target(PortProviderUtil.generateURL("/test/jsonBinding/cat/transient", WAR_WITH_JSONB));
         MediaType mediaType = MediaType.APPLICATION_JSON_TYPE.withCharset(charset);
-        Entity<Cat> entity = Entity.entity(
-                new Cat("Rosa", "semi-british", "tabby", true, JsonBindingResource.CLIENT_TRANSIENT_VALUE), mediaType);
+        Entity<Cat> entity = Entity
+                .entity(new Cat("Rosa", "semi-british", "tabby", true, JsonBindingResource.CLIENT_TRANSIENT_VALUE), mediaType);
         Cat json = target.request().post(entity, Cat.class);
         logger.info("Request entity: " + entity);
         Assert.assertThat("Variable with JsonbTransient annotation should be transient, if JSON-B is used",
@@ -122,13 +125,14 @@ public class JsonBindingAnnotationsJacksonTest {
      * @tpSince RESTEasy 3.5
      */
     @Test
+    @DisplayName("Jsonb Not On Server Not On Client Test")
     public void jsonbNotOnServerNotOnClientTest() throws Exception {
         String charset = "UTF-8";
         WebTarget target = client
                 .target(PortProviderUtil.generateURL("/test/jsonBinding/cat/not/transient", WAR_WITHOUT_JSONB));
         MediaType mediaType = MediaType.APPLICATION_JSON_TYPE.withCharset(charset);
-        Entity<Cat> entity = Entity.entity(
-                new Cat("Rosa", "semi-british", "tabby", true, JsonBindingResource.CLIENT_TRANSIENT_VALUE), mediaType);
+        Entity<Cat> entity = Entity
+                .entity(new Cat("Rosa", "semi-british", "tabby", true, JsonBindingResource.CLIENT_TRANSIENT_VALUE), mediaType);
         Cat json = target.request().post(entity, Cat.class);
         logger.info("Request entity: " + entity);
         Assert.assertThat("Variable with JsonbTransient annotation should not be transient, if JSON-B is not used",
@@ -144,6 +148,7 @@ public class JsonBindingAnnotationsJacksonTest {
      * @tpSince RESTEasy 3.5
      */
     @Test
+    @DisplayName("Negative Scenario On Server")
     public void negativeScenarioOnServer() throws Exception {
         LogCounter errorLogCounter = new LogCounter("ERROR", false, DEFAULT_CONTAINER_QUALIFIER);
         try {
@@ -161,7 +166,7 @@ public class JsonBindingAnnotationsJacksonTest {
             int responseCode = response.getStatus();
             Assert.assertThat("Wrong response code", responseCode, is(400));
             String responseBody = response.readEntity(String.class);
-            Assert.assertTrue("Wrong response error message: " + responseBody,
+            Assertions.assertTrue("Wrong response error message: " + responseBody,
                     responseBody.startsWith("javax.ws.rs.ProcessingException: RESTEASY008200"));
         } finally {
             client.close();

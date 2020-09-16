@@ -10,11 +10,12 @@ import org.jboss.resteasy.api.validation.Validation;
 import org.jboss.resteasy.api.validation.ViolationReport;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.injection.resource.PostConstructInjectionEJBInterceptor;
@@ -30,59 +31,57 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression tests for RESTEASY-2227
  * @tpSince RESTEasy 3.6
  */
+@DisplayName("Post Construct Injection Test")
 public class PostConstructInjectionTest {
 
     static Client client;
 
     // deployment names
     private static final String WAR_CDI_ON = "war_with_cdi_on";
+
     private static final String WAR_CDI_OFF = "war_with_cdi_off";
 
     /**
      * Deployment with CDI activated
      */
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(PostConstructInjectionEJBInterceptor.class);
-                    //                    war.addAsWebInfResource(PostConstructInjectionTest.class.getPackage(),
-                    //                            "PostConstructInjection_beans_cdi_on.xml", "beans.xml");
-
-                    return TestUtil.finishContainerPrepare(war, null, PostConstructInjectionResource.class,
-                            PostConstructInjectionEJBResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(PostConstructInjectionEJBInterceptor.class);
+            // war.addAsWebInfResource(PostConstructInjectionTest.class.getPackage(),
+            // "PostConstructInjection_beans_cdi_on.xml", "beans.xml");
+            return TestUtil.finishContainerPrepare(war, null, PostConstructInjectionResource.class,
+                    PostConstructInjectionEJBResource.class);
+        }
+    });
 
     /**
      * Deployment with CDI not activated
      */
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(PostConstructInjectionEJBInterceptor.class);
-                    //                    war.addAsWebInfResource(PostConstructInjectionTest.class.getPackage(),
-                    //                            "PostConstructInjection_beans_cdi_off.xml", "beans.xml");
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(PostConstructInjectionEJBInterceptor.class);
+            // war.addAsWebInfResource(PostConstructInjectionTest.class.getPackage(),
+            // "PostConstructInjection_beans_cdi_off.xml", "beans.xml");
+            return TestUtil.finishContainerPrepare(war, null, PostConstructInjectionResource.class);
+        }
+    });
 
-                    return TestUtil.finishContainerPrepare(war, null, PostConstructInjectionResource.class);
-                }
-            });
-
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() {
         client.close();
     }
@@ -97,6 +96,7 @@ public class PostConstructInjectionTest {
      * @tpSince RESTEasy 3.7.0
      */
     @Test
+    @DisplayName("Test Post Inject Cdi On")
     public void TestPostInjectCdiOn() throws Exception {
         doTestPostInjectCdiOn("ON", "/normal");
     }
@@ -107,7 +107,8 @@ public class PostConstructInjectionTest {
      * @tpSince RESTEasy 3.7.0
      */
     @Test
-    @Ignore("This test doesn't work yet. See RESTEASY-2264")
+    @Disabled("This test doesn't work yet. See RESTEASY-2264")
+    @DisplayName("Test Post Inject Cdi On EJB")
     public void TestPostInjectCdiOnEJB() throws Exception {
         doTestPostInjectCdiOn("ON", "/ejb");
     }
@@ -117,20 +118,21 @@ public class PostConstructInjectionTest {
      * @tpSince RESTEasy 3.7.0
      */
     @Test
+    @DisplayName("Test Post Inject Cdi Off")
     public void TestPostInjectCdiOff() throws Exception {
         Response response = client.target(generateURL("OFF", "/normal/get")).request().get();
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals("ab", response.readEntity(String.class));
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "ab");
         response.close();
     }
 
     void doTestPostInjectCdiOn(String cdi, String resource) {
         Response response = client.target(generateURL(cdi, resource + "/get")).request().get();
-        Assert.assertEquals(400, response.getStatus());
+        Assertions.assertEquals(400, response.getStatus());
         String header = response.getHeaderString(Validation.VALIDATION_HEADER);
-        Assert.assertNotNull(header);
+        Assertions.assertNotNull(header);
         ViolationReport report = response.readEntity(ViolationReport.class);
-        Assert.assertEquals(1, report.getPropertyViolations().size());
+        Assertions.assertEquals(1, report.getPropertyViolations().size());
         response.close();
     }
 }

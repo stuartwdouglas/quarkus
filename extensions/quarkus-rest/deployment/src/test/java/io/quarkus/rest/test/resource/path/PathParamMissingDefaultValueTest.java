@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.resource.path;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.function.Supplier;
 
@@ -10,7 +10,8 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.path.resource.PathParamMissingDefaultValueBeanParamEntity;
@@ -25,20 +26,20 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 4.0.0
  * @tpTestCaseDetails Check for slash in URL
  */
+@DisplayName("Path Param Missing Default Value Test")
 public class PathParamMissingDefaultValueTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(PathParamMissingDefaultValueBeanParamEntity.class);
-                    return TestUtil.finishContainerPrepare(war, null, PathParamMissingDefaultValueResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(PathParamMissingDefaultValueBeanParamEntity.class);
+            return TestUtil.finishContainerPrepare(war, null, PathParamMissingDefaultValueResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, PathParamMissingDefaultValueTest.class.getSimpleName());
@@ -49,11 +50,12 @@ public class PathParamMissingDefaultValueTest {
      * @tpSince RESTEasy 4.0.0
      */
     @Test
+    @DisplayName("Test Trailing Slash")
     public void testTrailingSlash() throws Exception {
         Client client = ClientBuilder.newClient();
         Response response = client.target(generateURL("/resource/test/")).request().get();
         assertEquals(200, response.getStatus());
-        assertEquals("Wrong response", "nullnullnullnullnullnull", response.readEntity(String.class));
+        assertEquals("nullnullnullnullnullnull", response.readEntity(String.class), "Wrong response");
         client.close();
     }
 }

@@ -8,10 +8,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.path.resource.LocatorWithClassHierarchyLocatorResource;
@@ -29,36 +30,34 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Locator With Class Hierarchy Test")
 public class LocatorWithClassHierarchyTest {
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(LocatorWithClassHierarchyPathSegmentImpl.class,
-                            LocatorWithClassHierarchyMiddleResource.class,
-                            LocatorWithClassHierarchyPathParamResource.class,
-                            LocatorWithClassHierarchyParamEntityWithConstructor.class,
-                            LocatorWithClassHierarchyParamEntityPrototype.class);
-                    return TestUtil.finishContainerPrepare(war, null, LocatorWithClassHierarchyLocatorResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(LocatorWithClassHierarchyPathSegmentImpl.class, LocatorWithClassHierarchyMiddleResource.class,
+                    LocatorWithClassHierarchyPathParamResource.class, LocatorWithClassHierarchyParamEntityWithConstructor.class,
+                    LocatorWithClassHierarchyParamEntityPrototype.class);
+            return TestUtil.finishContainerPrepare(war, null, LocatorWithClassHierarchyLocatorResource.class);
+        }
+    });
 
     /**
      * @tpTestDetails Client sends POST request with null entity for the resource Locator, which creates the targeted
@@ -67,12 +66,13 @@ public class LocatorWithClassHierarchyTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Locator With Sub With Path Annotation")
     public void testLocatorWithSubWithPathAnnotation() {
         Response response = client.target(
                 PortProviderUtil.generateURL("/resource/locator/ParamEntityWithConstructor/ParamEntityWithConstructor=JAXRS",
                         LocatorWithClassHierarchyTest.class.getSimpleName()))
                 .request().post(null);
-        Assert.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(200, response.getStatus());
         response.close();
     }
 }

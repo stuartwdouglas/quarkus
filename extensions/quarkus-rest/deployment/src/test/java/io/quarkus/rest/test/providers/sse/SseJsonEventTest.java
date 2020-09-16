@@ -23,15 +23,18 @@ import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.test.providers.sse.resource.SseSmokeResource;
 import io.quarkus.rest.test.providers.sse.resource.SseSmokeUser;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 
+@DisplayName("Sse Json Event Test")
 public class SseJsonEventTest {
+
     private static final Logger logger = Logger.getLogger(SseJsonEventTest.class);
 
     @Deployment
@@ -47,6 +50,7 @@ public class SseJsonEventTest {
     }
 
     @Test
+    @DisplayName("Test Without Provider")
     public void testWithoutProvider() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final List<InboundSseEvent> results = new ArrayList<InboundSseEvent>();
@@ -66,21 +70,22 @@ public class SseJsonEventTest {
                 });
                 eventSource.open();
                 boolean waitResult = latch.await(30, TimeUnit.SECONDS);
-                Assert.assertTrue("Waiting for event to be delivered has timed out.", waitResult);
+                Assertions.assertTrue(waitResult, "Waiting for event to be delivered has timed out.");
             }
         } finally {
             client.close();
         }
-        Assert.assertEquals("One message was expected.", 1, results.size());
+        Assertions.assertEquals(1, results.size(), "One message was expected.");
         try {
             results.get(0).readData(SseSmokeUser.class, MediaType.APPLICATION_JSON_TYPE);
             fail("Exception is expected");
         } catch (ProcessingException e) {
-            Assert.assertTrue("exception is not expected", e.getMessage().indexOf("Failed to read data") > -1);
+            Assertions.assertTrue(e.getMessage().indexOf("Failed to read data") > -1, "exception is not expected");
         }
     }
 
     @Test
+    @DisplayName("Test Event With Custom Provider")
     public void testEventWithCustomProvider() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
         final List<InboundSseEvent> results = new ArrayList<InboundSseEvent>();
@@ -100,18 +105,15 @@ public class SseJsonEventTest {
                     throw new RuntimeException(ex);
                 });
                 eventSource.open();
-
                 boolean waitResult = latch.await(30, TimeUnit.SECONDS);
-                Assert.assertTrue("Waiting for event to be delivered has timed out.", waitResult);
+                Assertions.assertTrue(waitResult, "Waiting for event to be delivered has timed out.");
             }
-            Assert.assertEquals("One message was expected.", 1, results.size());
-
-            Assert.assertEquals("user name is not expected", "Zeytin",
-                    results.get(0).readData(SseSmokeUser.class, MediaType.APPLICATION_JSON_TYPE).getUsername());
-
+            Assertions.assertEquals(1, results.size(), "One message was expected.");
+            Assertions.assertEquals("Zeytin",
+                    results.get(0).readData(SseSmokeUser.class, MediaType.APPLICATION_JSON_TYPE).getUsername(),
+                    "user name is not expected");
         } finally {
             client.close();
         }
     }
-
 }

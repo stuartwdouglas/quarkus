@@ -12,10 +12,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.map.resource.MapProviderBuiltInResource;
@@ -28,31 +29,31 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Map Provider Built In Test")
 public class MapProviderBuiltInTest {
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, MapProviderBuiltInResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, MapProviderBuiltInResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, MapProviderBuiltInTest.class.getSimpleName());
@@ -67,15 +68,16 @@ public class MapProviderBuiltInTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Map Invoke")
     public void testMapInvoke() {
         // writers sorted by type, mediatype, and then by app over builtin
         MultivaluedMap<String, String> map = new MultivaluedHashMap<String, String>();
         map.add("map", "map");
         Response response = client.target(generateURL("/map")).request(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
                 .build("POST", Entity.entity(map, MediaType.APPLICATION_FORM_URLENCODED)).invoke();
-        Assert.assertEquals(response.getStatus(), 200);
+        Assertions.assertEquals(response.getStatus(), 200);
         String data = response.readEntity(String.class);
-        Assert.assertTrue(data.contains("map"));
+        Assertions.assertTrue(data.contains("map"));
         response.close();
     }
 
@@ -87,16 +89,16 @@ public class MapProviderBuiltInTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Map Post")
     public void testMapPost() {
         // writers sorted by type, mediatype, and then by app over builtin
         MultivaluedMap<String, String> map = new MultivaluedHashMap<String, String>();
         map.add("map", "map");
         Response response = client.target(generateURL("/map")).request(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
                 .post(Entity.entity(map, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
-        Assert.assertEquals(response.getStatus(), 200);
+        Assertions.assertEquals(response.getStatus(), 200);
         String data = response.readEntity(String.class);
-        Assert.assertTrue(data.contains("map"));
+        Assertions.assertTrue(data.contains("map"));
         response.close();
     }
-
 }

@@ -10,8 +10,9 @@ import javax.ws.rs.core.Response;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.jackson2.jsonfilter.resource.Jackson2Person;
@@ -32,26 +33,26 @@ import io.quarkus.test.QuarkusUnitTest;
  *                    Only one is set to for Json2Person pojo.
  * @tpSince RESTEasy 3.1.0
  */
+@DisplayName("Json Filter With Servlet Multiple Filters Test")
 public class JsonFilterWithServletMultipleFiltersTest {
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
 
-                    war.addClasses(Jackson2Person.class, PersonType.class, ObjectFilterModifierMultiple.class,
-                            ObjectWriterModifierMultipleFilter.class);
-                    war.addAsManifestResource(
-                            new StringAsset("Manifest-Version: 1.0\n"
-                                    + "Dependencies: com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider\n"),
-                            "MANIFEST.MF");
-                    //                    war.addAsWebInfResource(JsonFilterWithServletMultipleFiltersTest.class.getPackage(),
-                    //                            "web-filter-multiple.xml", "web.xml");
-                    return TestUtil.finishContainerPrepare(war, null, Jackson2PersonResource.class);
-                }
-            });
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(Jackson2Person.class, PersonType.class, ObjectFilterModifierMultiple.class,
+                    ObjectWriterModifierMultipleFilter.class);
+            war.addAsManifestResource(new StringAsset(
+                    "Manifest-Version: 1.0\n" + "Dependencies: com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider\n"),
+                    "MANIFEST.MF");
+            // war.addAsWebInfResource(JsonFilterWithServletMultipleFiltersTest.class.getPackage(),
+            // "web-filter-multiple.xml", "web.xml");
+            return TestUtil.finishContainerPrepare(war, null, Jackson2PersonResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, JsonFilterWithServletMultipleFiltersTest.class.getSimpleName());
@@ -62,15 +63,15 @@ public class JsonFilterWithServletMultipleFiltersTest {
      * @tpSince RESTEasy 3.1.0
      */
     @Test
+    @DisplayName("Test Jackson String")
     public void testJacksonString() throws Exception {
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(generateURL("/person/333"));
         Response response = target.request().get();
         response.bufferEntity();
-        Assert.assertTrue("Multiple filter doesn't work", !response.readEntity(String.class).contains("id") &&
-                !response.readEntity(String.class).contains("name") &&
-                !response.readEntity(String.class).contains("address") &&
-                response.readEntity(String.class).contains("personType"));
+        Assertions.assertTrue(!response.readEntity(String.class).contains("id")
+                && !response.readEntity(String.class).contains("name") && !response.readEntity(String.class).contains("address")
+                && response.readEntity(String.class).contains("personType"), "Multiple filter doesn't work");
         client.close();
     }
 }

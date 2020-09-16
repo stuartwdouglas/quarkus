@@ -33,15 +33,15 @@ public class MatchedResourceTest {
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(MatchedResource.class, PortProviderUtil.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(MatchedResource.class, PortProviderUtil.class);
+            return war;
+        }
+    });
 
     @BeforeAll
     public static void init() {
@@ -68,13 +68,13 @@ public class MatchedResourceTest {
         Response response = base.request().post(Entity.text(""));
         Assertions.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         String rtn = response.readEntity(String.class);
-        Assertions.assertEquals("started", rtn);
+        Assertions.assertEquals(rtn, "started");
         response.close();
         base = client.target(generateURL("/start"));
         response = base.request().post(Entity.entity("<xml/>", "application/xml"));
         Assertions.assertEquals(response.getStatus(), Status.OK.getStatusCode());
         rtn = response.readEntity(String.class);
-        Assertions.assertEquals("<xml/>", rtn, "Wrong response content");
+        Assertions.assertEquals(rtn, "Wrong response content", "<xml/>");
         response.close();
     }
 
@@ -88,9 +88,9 @@ public class MatchedResourceTest {
         WebTarget base = client.target(generateURL("/match"));
         Response response = base.request().header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
                 .get();
-        Assertions.assertEquals("text/html", response.getHeaders().getFirst("Content-Type"));
+        Assertions.assertEquals(response.getHeaders().getFirst("Content-Type"), "text/html");
         String res = response.readEntity(String.class);
-        Assertions.assertEquals("*/*", res, "Wrong response content");
+        Assertions.assertEquals(res, "Wrong response content", "*/*");
         response.close();
     }
 

@@ -33,15 +33,15 @@ public class MultipleAcceptHeaderTest {
     private QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(TestResourceServer.class, PortProviderUtil.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(TestResourceServer.class, PortProviderUtil.class);
+            return war;
+        }
+    });
 
     private String generateBaseUrl() {
         return PortProviderUtil.generateBaseUrl();

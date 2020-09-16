@@ -19,11 +19,11 @@ import javax.ws.rs.core.Response;
 import org.jboss.resteasy.client.jaxrs.internal.CompletionStageRxInvokerProvider;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -84,12 +84,12 @@ public class RxCompletionStageClientAsyncTest {
     }
 
     //////////////////////////////////////////////////////////////////////////////
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -233,7 +233,7 @@ public class RxCompletionStageClientAsyncTest {
     }
 
     @Test
-    @Ignore // TRACE is disabled by default in Wildfly
+    @Disabled // TRACE is disabled by default in Wildfly
     public void testTrace() throws Exception {
         CompletionStageRxInvoker invoker = client.target(generateURL("/trace/string")).request()
                 .rx(CompletionStageRxInvoker.class);
@@ -242,7 +242,7 @@ public class RxCompletionStageClientAsyncTest {
     }
 
     @Test
-    @Ignore // TRACE is disabled by default in Wildfly
+    @Disabled // TRACE is disabled by default in Wildfly
     public void testTraceThing() throws Exception {
         CompletionStageRxInvoker invoker = client.target(generateURL("/trace/thing")).request()
                 .rx(CompletionStageRxInvoker.class);
@@ -251,7 +251,7 @@ public class RxCompletionStageClientAsyncTest {
     }
 
     @Test
-    @Ignore // TRACE is disabled by default in Wildfly
+    @Disabled // TRACE is disabled by default in Wildfly
     public void testTraceThingList() throws Exception {
         CompletionStageRxInvoker invoker = client.target(generateURL("/trace/thing/list")).request()
                 .rx(CompletionStageRxInvoker.class);

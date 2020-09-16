@@ -19,13 +19,15 @@ import org.jboss.resteasy.plugins.providers.sse.client.SseEventSourceImpl;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
 
+@DisplayName("Sse Event Sink Test")
 public class SseEventSinkTest {
 
     private static final Logger logger = Logger.getLogger(SseEventSinkTest.class);
@@ -34,10 +36,9 @@ public class SseEventSinkTest {
     public static Archive<?> deploy() {
         WebArchive war = TestUtil.prepareArchive(SseTest.class.getSimpleName());
         war.addClass(SseEventSinkTest.class);
-        //        war.addAsWebInfResource("org/jboss/resteasy/test/providers/sse/web.xml", "web.xml");
+        // war.addAsWebInfResource("org/jboss/resteasy/test/providers/sse/web.xml", "web.xml");
         war.addAsWebResource("org/jboss/resteasy/test/providers/sse/index.html", "index.html");
         war.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-
         return TestUtil.finishContainerPrepare(war, null, SseApplication.class, GreenHouse.class, SseResource.class,
                 AnotherSseResource.class, EscapingSseResource.class, ExecutorServletContextListener.class);
     }
@@ -46,16 +47,15 @@ public class SseEventSinkTest {
         return PortProviderUtil.generateURL(path, SseTest.class.getSimpleName());
     }
 
-    @After
+    @AfterEach
     public void stopSendEvent() throws Exception {
         Client isOpenClient = ClientBuilder.newClient();
-        Invocation.Builder isOpenRequest = isOpenClient.target(generateURL("/service/server-sent-events/stopevent"))
-                .request();
+        Invocation.Builder isOpenRequest = isOpenClient.target(generateURL("/service/server-sent-events/stopevent")).request();
         isOpenRequest.get();
-
     }
 
     @Test
+    @DisplayName("Test Close By Evnet Source")
     public void testCloseByEvnetSource() throws Exception {
         final CountDownLatch latch = new CountDownLatch(5);
         final List<String> results = new ArrayList<String>();
@@ -63,8 +63,7 @@ public class SseEventSinkTest {
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(generateURL("/service/server-sent-events/events"));
         SseEventSource eventSource = SseEventSource.target(target).build();
-
-        Assert.assertEquals(SseEventSourceImpl.class, eventSource.getClass());
+        Assertions.assertEquals(SseEventSourceImpl.class, eventSource.getClass());
         eventSource.register(event -> {
             results.add(event.readData(String.class));
             latch.countDown();
@@ -74,29 +73,22 @@ public class SseEventSinkTest {
             throw new RuntimeException(ex);
         });
         eventSource.open();
-
         boolean waitResult = latch.await(30, TimeUnit.SECONDS);
-        Assert.assertEquals(0, errors.get());
-        Assert.assertTrue("Waiting for event to be delivered has timed out.", waitResult);
+        Assertions.assertEquals(0, errors.get());
+        Assertions.assertTrue(waitResult, "Waiting for event to be delivered has timed out.");
         Client isOpenClient = ClientBuilder.newClient();
-        Invocation.Builder isOpenRequest = isOpenClient.target(generateURL("/service/server-sent-events/isopen"))
-                .request();
-
+        Invocation.Builder isOpenRequest = isOpenClient.target(generateURL("/service/server-sent-events/isopen")).request();
         javax.ws.rs.core.Response response = isOpenRequest.get();
-        Assert.assertTrue("EventSink open is expected ", response.readEntity(Boolean.class));
-
+        Assertions.assertTrue(response.readEntity(Boolean.class), "EventSink open is expected ");
         eventSource.close();
-        Assert.assertFalse("Closed eventSource state is expceted", eventSource.isOpen());
-
+        Assertions.assertFalse(eventSource.isOpen(), "Closed eventSource state is expceted");
         WebTarget messageTarget = ClientBuilder.newClient().target(generateURL("/service/server-sent-events"));
         for (int counter = 0; counter < 5; counter++) {
             String msg = "messageAfterClose";
             messageTarget.request().post(Entity.text(msg));
         }
-
-        Assert.assertTrue("EventSource should not receive msg after it is closed",
-                results.indexOf("messageAfterClose") == -1);
-        Assert.assertFalse("EventSink close is expected ", isOpenRequest.get().readEntity(Boolean.class));
-
+        Assertions.assertTrue(results.indexOf("messageAfterClose") == -1,
+                "EventSource should not receive msg after it is closed");
+        Assertions.assertFalse(isOpenRequest.get().readEntity(Boolean.class), "EventSink close is expected ");
     }
 }

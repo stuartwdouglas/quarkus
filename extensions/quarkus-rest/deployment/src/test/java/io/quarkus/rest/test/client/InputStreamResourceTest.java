@@ -13,10 +13,11 @@ import org.jboss.resteasy.util.ReadFromStream;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.client.resource.InputStreamResourceClient;
@@ -31,47 +32,48 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Read and write InputStreams
  * @tpSince RESTEasy 3.0.20
  */
+@DisplayName("Input Stream Resource Test")
 public class InputStreamResourceTest extends ClientTestBase {
 
     static Client QuarkusRestClient;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         QuarkusRestClient = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         QuarkusRestClient.close();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, InputStreamResourceService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InputStreamResourceService.class);
+        }
+    });
 
     /**
      * @tpTestDetails Read Strings as either Strings or InputStreams
      * @tpSince RESTEasy 3.0.20
      */
     @Test
+    @DisplayName("Test Client Response")
     public void testClientResponse() throws Exception {
         InputStreamResourceClient client = ProxyBuilder
                 .builder(InputStreamResourceClient.class, QuarkusRestClient.target(generateURL(""))).build();
-        Assert.assertEquals("hello", client.getAsString());
+        Assertions.assertEquals(client.getAsString(), "hello");
         Response is = client.getAsInputStream();
-        Assert.assertEquals("hello", new String(ReadFromStream.readFromStream(1024, is.readEntity(InputStream.class))));
+        Assertions.assertEquals(new String(ReadFromStream.readFromStream(1024, is.readEntity(InputStream.class))), "hello");
         is.close();
         client.postString("new value");
-        Assert.assertEquals("new value", client.getAsString());
+        Assertions.assertEquals(client.getAsString(), "new value");
         client.postInputStream(new ByteArrayInputStream("new value 2".getBytes()));
-        Assert.assertEquals("new value 2", client.getAsString());
+        Assertions.assertEquals(client.getAsString(), "new value 2");
     }
 }

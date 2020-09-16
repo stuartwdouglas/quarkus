@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 import org.jboss.resteasy.client.jaxrs.internal.QuarkusRestClientBuilderImpl;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;

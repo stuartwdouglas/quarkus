@@ -13,10 +13,10 @@ import javax.ws.rs.client.ClientBuilder;
 import org.jboss.resteasy.client.jaxrs.internal.ClientConfiguration;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -131,7 +131,7 @@ public class MultiValuedParamDefaultParamConverterProxyTest {
         return PortProviderUtil.generateURL(path, MultiValuedParamDefaultParamConverterProxyTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
         client.register(MultiValuedParamDefaultParamConverterParamConverterProvider.class);
@@ -229,7 +229,7 @@ public class MultiValuedParamDefaultParamConverterProxyTest {
         doubleArray[1] = 37.0d;
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         client.close();
     }

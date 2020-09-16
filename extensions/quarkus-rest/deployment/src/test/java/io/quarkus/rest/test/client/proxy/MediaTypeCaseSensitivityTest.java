@@ -11,10 +11,10 @@ import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
 import io.quarkus.rest.test.client.proxy.resource.MediaTypeCaseSensitivityStuff;
@@ -42,7 +42,7 @@ public class MediaTypeCaseSensitivityTest {
 
     private ResteasyProviderFactory factory;
 
-    @Before
+    @BeforeEach
     public void setup() {
         // Create an instance and set it as the singleton to use
         factory = ResteasyProviderFactory.newInstance();
@@ -50,7 +50,7 @@ public class MediaTypeCaseSensitivityTest {
         RegisterBuiltin.register(factory);
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         // Clear the singleton
         ResteasyProviderFactory.clearInstanceIfEqual(factory);

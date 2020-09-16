@@ -8,10 +8,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.custom.resource.ProviderContextInjectionAnyExceptionExceptionMapper;
@@ -29,37 +30,36 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Provider Context Injection Test")
 public class ProviderContextInjectionTest {
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         client = ClientBuilder.newClient();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(ProviderContextInjectionEnumProvider.class);
-                    return TestUtil.finishContainerPrepare(war, null, ProviderContextInjectionResource.class,
-                            ProviderContextInjectionAnyExceptionExceptionMapper.class,
-                            ProviderContextInjectionIOExceptionExceptionMapper.class,
-                            ProviderContextInjectionEnumContextResolver.class,
-                            ProviderContextInjectionTextPlainEnumContextResolver.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(ProviderContextInjectionEnumProvider.class);
+            return TestUtil.finishContainerPrepare(war, null, ProviderContextInjectionResource.class,
+                    ProviderContextInjectionAnyExceptionExceptionMapper.class,
+                    ProviderContextInjectionIOExceptionExceptionMapper.class, ProviderContextInjectionEnumContextResolver.class,
+                    ProviderContextInjectionTextPlainEnumContextResolver.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, ProviderContextInjectionTest.class.getSimpleName());
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -72,9 +72,10 @@ public class ProviderContextInjectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Is Registered Wild Card Context Resolver Test")
     public void isRegisteredWildCardContextResolverTest() {
         Response response = client.target(generateURL("/resource/isRegisteredContextResolver")).request().get();
-        Assert.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(200, response.getStatus());
         response.close();
     }
 
@@ -85,10 +86,10 @@ public class ProviderContextInjectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Exception Mapped")
     public void testExceptionMapped() {
         Response response = client.target(generateURL("/resource/isRegisteredRuntimeExceptionMapper")).request().get();
-        Assert.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(200, response.getStatus());
         response.close();
     }
-
 }

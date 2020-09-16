@@ -9,8 +9,9 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.asynch.resource.AsyncGenericEntityMessageBodyWriter;
@@ -25,21 +26,20 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test getting GenericType from return entity.
  * @tpSince RESTEasy 3.7.0
  */
+@DisplayName("Async Generic Entity Test")
 public class AsyncGenericEntityTest {
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null,
-                            AsyncGenericEntityMessageBodyWriter.class,
-                            AsyncGenericEntityResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, AsyncGenericEntityMessageBodyWriter.class,
+                    AsyncGenericEntityResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, AsyncGenericEntityTest.class.getSimpleName());
@@ -50,14 +50,14 @@ public class AsyncGenericEntityTest {
      * @tpSince RESTEasy 3.7.0
      */
     @Test
+    @DisplayName("Test Calls")
     public void testCalls() {
         Client client = ClientBuilder.newClient();
         Builder request = client.target(generateURL("/test")).request();
         Response response = request.get();
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals("ok", response.readEntity(String.class));
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "ok");
         response.close();
         client.close();
     }
-
 }

@@ -6,9 +6,10 @@ import javax.ws.rs.client.ClientBuilder;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -25,34 +26,34 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test proxy with multipart provider
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Proxy Test")
 public class ProxyTest {
 
     private static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(ProxyApiService.class);
-                    war.addClass(ProxyAttachment.class);
-                    return TestUtil.finishContainerPrepare(war, null, ProxyResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ProxyApiService.class);
+            war.addClass(ProxyAttachment.class);
+            return TestUtil.finishContainerPrepare(war, null, ProxyResource.class);
+        }
+    });
 
     private static String generateBaseUrl() {
         return PortProviderUtil.generateBaseUrl(ProxyTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -62,6 +63,7 @@ public class ProxyTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test New Builder")
     public void testNewBuilder() {
         ProxyApiService apiService = client.target(generateBaseUrl()).proxy(ProxyApiService.class);
         tryCall(apiService);
@@ -70,7 +72,7 @@ public class ProxyTest {
     private void tryCall(ProxyApiService apiService) {
         ProxyAttachment attachment = new ProxyAttachment();
         attachment.setData("foo".getBytes());
-        apiService.postAttachment(attachment, "some-key"); // any exception in ProxyResource would be thrown from proxy too, no assert needed
+        // any exception in ProxyResource would be thrown from proxy too, no assert needed
+        apiService.postAttachment(attachment, "some-key");
     }
-
 }

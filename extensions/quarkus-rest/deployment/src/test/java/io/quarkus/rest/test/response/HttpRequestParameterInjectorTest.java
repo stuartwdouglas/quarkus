@@ -9,8 +9,9 @@ import javax.ws.rs.core.Form;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.response.resource.HttpRequestParameterInjectorClassicParam;
@@ -26,23 +27,23 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for InjectorFactoryImpl. It is used for new type of parameters in resource.
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Http Request Parameter Injector Test")
 public class HttpRequestParameterInjectorTest {
 
     private static final String DEPLOYMENT_NAME = "app";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(HttpRequestParameterInjectorClassicParam.class);
-                    return TestUtil.finishContainerPrepare(war, null, HttpRequestParameterInjectorResource.class,
-                            HttpRequestParameterInjectorParamFactoryImpl.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(HttpRequestParameterInjectorClassicParam.class);
+            return TestUtil.finishContainerPrepare(war, null, HttpRequestParameterInjectorResource.class,
+                    HttpRequestParameterInjectorParamFactoryImpl.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, DEPLOYMENT_NAME);
@@ -53,19 +54,16 @@ public class HttpRequestParameterInjectorTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Custom Injector Factory")
     public void testCustomInjectorFactory() throws Exception {
         Client client = ClientBuilder.newClient();
-
-        String getResult = client.target(generateURL("/foo")).queryParam("param", "getValue").request()
-                .accept("text/plain").get().readEntity(String.class);
-        Assert.assertEquals("getValue, getValue, ", getResult);
-
+        String getResult = client.target(generateURL("/foo")).queryParam("param", "getValue").request().accept("text/plain")
+                .get().readEntity(String.class);
+        Assertions.assertEquals(getResult, "getValue, getValue, ");
         Form form = new Form().param("param", "postValue");
-        String postResult = client.target(generateURL("/foo")).request()
-                .accept("text/plain").post(Entity.form(form)).readEntity(String.class);
-        Assert.assertEquals("postValue, , postValue", postResult);
-
+        String postResult = client.target(generateURL("/foo")).request().accept("text/plain").post(Entity.form(form))
+                .readEntity(String.class);
+        Assertions.assertEquals(postResult, "postValue, , postValue");
         client.close();
     }
-
 }

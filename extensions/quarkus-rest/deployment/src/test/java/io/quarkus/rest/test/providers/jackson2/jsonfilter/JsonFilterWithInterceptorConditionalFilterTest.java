@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -33,38 +34,37 @@ import io.quarkus.test.QuarkusUnitTest;
  *                    out and not returned in the response. See http://www.baeldung.com/jackson-serialize-field-custom-criteria
  * @tpSince RESTEasy 3.1.0
  */
+@DisplayName("Json Filter With Interceptor Conditional Filter Test")
 public class JsonFilterWithInterceptorConditionalFilterTest {
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(Jackson2Product.class, ObjectFilterModifierConditional.class);
-                    war.addAsManifestResource(
-                            new StringAsset("Manifest-Version: 1.0\n"
-                                    + "Dependencies: com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider\n"),
-                            "MANIFEST.MF");
-                    return TestUtil.finishContainerPrepare(war, null, Jackson2Resource.class,
-                            JsonFilterModifierConditionalWriterInterceptor.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(Jackson2Product.class, ObjectFilterModifierConditional.class);
+            war.addAsManifestResource(new StringAsset(
+                    "Manifest-Version: 1.0\n" + "Dependencies: com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider\n"),
+                    "MANIFEST.MF");
+            return TestUtil.finishContainerPrepare(war, null, Jackson2Resource.class,
+                    JsonFilterModifierConditionalWriterInterceptor.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, JsonFilterWithInterceptorConditionalFilterTest.class.getSimpleName());
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
     }
@@ -74,12 +74,14 @@ public class JsonFilterWithInterceptorConditionalFilterTest {
      * @tpSince RESTEasy 3.1.0
      */
     @Test
+    @DisplayName("Test Jackson Conditional String Property Filtered")
     public void testJacksonConditionalStringPropertyFiltered() throws Exception {
         WebTarget target = client.target(generateURL("/products/-1"));
         Response response = target.request().get();
         response.bufferEntity();
-        Assert.assertTrue("Conditional filter doesn't work", !response.readEntity(String.class).contains("id") &&
-                response.readEntity(String.class).contains("name"));
+        Assertions.assertTrue(
+                !response.readEntity(String.class).contains("id") && response.readEntity(String.class).contains("name"),
+                "Conditional filter doesn't work");
     }
 
     /**
@@ -87,11 +89,13 @@ public class JsonFilterWithInterceptorConditionalFilterTest {
      * @tpSince RESTEasy 3.1.0
      */
     @Test
+    @DisplayName("Test Jackson Conditional String Property Not Filtered")
     public void testJacksonConditionalStringPropertyNotFiltered() throws Exception {
         WebTarget target = client.target(generateURL("/products/333"));
         Response response = target.request().get();
         response.bufferEntity();
-        Assert.assertTrue("Conditional filter doesn't work", response.readEntity(String.class).contains("id") &&
-                response.readEntity(String.class).contains("name"));
+        Assertions.assertTrue(
+                response.readEntity(String.class).contains("id") && response.readEntity(String.class).contains("name"),
+                "Conditional filter doesn't work");
     }
 }

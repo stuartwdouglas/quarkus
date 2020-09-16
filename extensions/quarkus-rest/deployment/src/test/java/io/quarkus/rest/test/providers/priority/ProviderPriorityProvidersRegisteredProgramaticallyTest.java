@@ -1,6 +1,6 @@
 package io.quarkus.rest.test.providers.priority;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +14,10 @@ import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -39,47 +40,41 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 4.0.0
  */
+@DisplayName("Provider Priority Providers Registered Programatically Test")
 public class ProviderPriorityProvidersRegisteredProgramaticallyTest {
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(ProviderPriorityFoo.class,
-                            ProviderPriorityFooParamConverter.class,
-                            ProviderPriorityTestException.class,
-                            ProviderPriorityExceptionMapperCCC.class,
-                            ProviderPriorityFooParamConverterProviderCCC.class);
-                    List<Class<?>> singletons = new ArrayList<Class<?>>();
-                    singletons.add(ProviderPriorityExceptionMapperCCC.class);
-                    singletons.add(ProviderPriorityFooParamConverterProviderCCC.class);
-                    return TestUtil.finishContainerPrepare(war, null, singletons,
-                            ProviderPriorityResource.class,
-                            ProviderPriorityExceptionMapperAAA.class,
-                            ProviderPriorityExceptionMapperBBB.class,
-                            ProviderPriorityFooParamConverterProviderAAA.class,
-                            ProviderPriorityFooParamConverterProviderBBB.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(ProviderPriorityFoo.class, ProviderPriorityFooParamConverter.class,
+                    ProviderPriorityTestException.class, ProviderPriorityExceptionMapperCCC.class,
+                    ProviderPriorityFooParamConverterProviderCCC.class);
+            List<Class<?>> singletons = new ArrayList<Class<?>>();
+            singletons.add(ProviderPriorityExceptionMapperCCC.class);
+            singletons.add(ProviderPriorityFooParamConverterProviderCCC.class);
+            return TestUtil.finishContainerPrepare(war, null, singletons, ProviderPriorityResource.class,
+                    ProviderPriorityExceptionMapperAAA.class, ProviderPriorityExceptionMapperBBB.class,
+                    ProviderPriorityFooParamConverterProviderAAA.class, ProviderPriorityFooParamConverterProviderBBB.class);
+        }
+    });
 
     private ResteasyProviderFactory factory;
 
-    @Before
+    @BeforeEach
     public void init() {
         factory = ResteasyProviderFactory.newInstance();
         RegisterBuiltin.register(factory);
         ResteasyProviderFactory.setInstance(factory);
-
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
         // Clear the singleton
@@ -96,19 +91,18 @@ public class ProviderPriorityProvidersRegisteredProgramaticallyTest {
      * @tpSince RESTEasy 4.0.0
      */
     @Test
+    @DisplayName("Test Programatic Registration")
     public void testProgramaticRegistration() throws Exception {
         WebTarget base = client.target(generateURL(""));
         base.path("/register");
         Response response = base.path("/register").request().get();
         assertEquals(200, response.getStatus());
-        assertEquals("ok", response.readEntity(String.class));
-
+        assertEquals(response.readEntity(String.class), "ok");
         response = base.path("/exception").request().get();
         assertEquals(444, response.getStatus());
-        assertEquals("CCC", response.readEntity(String.class));
-
+        assertEquals(response.readEntity(String.class), "CCC");
         response = base.path("/paramconverter/dummy").request().get();
         assertEquals(200, response.getStatus());
-        assertEquals("CCC", response.readEntity(String.class));
+        assertEquals(response.readEntity(String.class), "CCC");
     }
 }

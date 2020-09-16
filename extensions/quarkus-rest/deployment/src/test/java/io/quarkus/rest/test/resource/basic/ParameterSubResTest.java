@@ -46,30 +46,30 @@ public class ParameterSubResTest {
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClass(MultiInterfaceResLocatorResource.class);
-                    war.addClass(MultiInterfaceResLocatorSubresource.class);
-                    war.addClasses(MultiInterfaceResLocatorIntf1.class);
-                    war.addClasses(MultiInterfaceResLocatorIntf2.class);
-                    war.addClass(ParameterSubResConcreteSubImpl.class);
-                    war.addClass(ParameterSubResDoubleInterface.class);
-                    war.addClass(ParameterSubResGenericInterface.class);
-                    war.addClass(ParameterSubResInternalInterface.class);
-                    war.addClasses(PortProviderUtil.class);
-                    war.addClass(ParameterSubResRoot.class);
-                    war.addClass(ParameterSubResClassSub.class);
-                    war.addClass(ApplicationScopeObject.class);
-                    war.addClass(RequestScopedObject.class);
-                    war.addClass(ParameterSubResSub.class);
-                    war.addClass(ParameterSubResSubImpl.class);
-                    war.addClasses(ParameterSubResRootImpl.class, ParameterSubResGenericSub.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClass(MultiInterfaceResLocatorResource.class);
+            war.addClass(MultiInterfaceResLocatorSubresource.class);
+            war.addClasses(MultiInterfaceResLocatorIntf1.class);
+            war.addClasses(MultiInterfaceResLocatorIntf2.class);
+            war.addClass(ParameterSubResConcreteSubImpl.class);
+            war.addClass(ParameterSubResDoubleInterface.class);
+            war.addClass(ParameterSubResGenericInterface.class);
+            war.addClass(ParameterSubResInternalInterface.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ParameterSubResRoot.class);
+            war.addClass(ParameterSubResClassSub.class);
+            war.addClass(ApplicationScopeObject.class);
+            war.addClass(RequestScopedObject.class);
+            war.addClass(ParameterSubResSub.class);
+            war.addClass(ParameterSubResSubImpl.class);
+            war.addClasses(ParameterSubResRootImpl.class, ParameterSubResGenericSub.class);
+            return war;
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, ParameterSubResTest.class.getSimpleName());
@@ -94,7 +94,7 @@ public class ParameterSubResTest {
     public void testSubResource() throws Exception {
         Response response = client.target(generateURL("/path/sub/fred")).request().get();
         Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assertions.assertEquals("Boo! - fred", response.readEntity(String.class), "Wrong content of response");
+        Assertions.assertEquals(response.readEntity(String.class), "Wrong content of response", "Boo! - fred");
     }
 
     @Test
@@ -102,11 +102,11 @@ public class ParameterSubResTest {
     public void testReturnSubResourceAsClass() throws Exception {
         Response response = client.target(generateURL("/path/subclass")).request().get();
         Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assertions.assertEquals("resourceCounter:1,appscope:1,requestScope:1", response.readEntity(String.class),
-                "Wrong response");
+        Assertions.assertEquals(response.readEntity(String.class), "Wrong response",
+                "resourceCounter:1,appscope:1,requestScope:1");
         response = client.target(generateURL("/path/subclass")).request().get();
-        Assertions.assertEquals("resourceCounter:2,appscope:2,requestScope:1", response.readEntity(String.class),
-                "Wrong response");
+        Assertions.assertEquals(response.readEntity(String.class), "Wrong response",
+                "resourceCounter:2,appscope:2,requestScope:1");
     }
 
     /**
@@ -118,6 +118,6 @@ public class ParameterSubResTest {
     public void testRoot() throws Exception {
         Response response = client.target(generateURL("/generic/sub")).queryParam("foo", "42.0").request().get();
         Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assertions.assertEquals("42.0", response.readEntity(String.class), "Wrong content of response");
+        Assertions.assertEquals(response.readEntity(String.class), "Wrong content of response", "42.0");
     }
 }

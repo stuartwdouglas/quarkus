@@ -1,5 +1,7 @@
 package io.quarkus.rest.test.client.exception;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.function.Supplier;
 
 import javax.ws.rs.ProcessingException;
@@ -13,11 +15,12 @@ import javax.ws.rs.core.Response;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.rules.ExpectedException;
 
@@ -46,6 +49,7 @@ import io.quarkus.test.QuarkusUnitTest;
  *                    if thrown while processing a response."
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Client Exceptions Test")
 public class ClientExceptionsTest extends ClientTestBase {
 
     @Rule
@@ -54,24 +58,23 @@ public class ClientExceptionsTest extends ClientTestBase {
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(ClientExceptionsData.class);
-                    return TestUtil.finishContainerPrepare(war, null, ClientExceptionsResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ClientExceptionsData.class);
+            return TestUtil.finishContainerPrepare(war, null, ClientExceptionsResource.class);
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void before() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void close() {
         client.close();
     }
@@ -83,12 +86,11 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("No Message Body Reader Exists Test")
     public void noMessageBodyReaderExistsTest() {
         WebTarget base = client.target(generateURL("/") + "senddata");
-
         thrown.expect(ProcessingException.class);
         base.request().post(Entity.xml(new ClientExceptionsData("test", "test")));
-
     }
 
     /**
@@ -99,9 +101,9 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("No Message Body Reader Exists Read Entity Test")
     public void noMessageBodyReaderExistsReadEntityTest() throws Exception {
         WebTarget base = client.target(generateURL("/") + "data");
-
         Response response = base.request().accept("application/xml").get();
         thrown.expect(ProcessingException.class);
         response.readEntity(ClientExceptionsData.class);
@@ -114,9 +116,9 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Response With Content Length Zero")
     public void responseWithContentLengthZero() {
         WebTarget base = client.target(generateURL("/") + "empty");
-
         Response response = base.request().accept("application/xml").get();
         thrown.expect(ProcessingException.class);
         response.readEntity(ClientExceptionsData.class);
@@ -129,11 +131,11 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Interceptor Throws Exception Test")
     public void interceptorThrowsExceptionTest() {
         WebTarget base = client.target(generateURL("/") + "post");
         Response response = base.register(ClientExceptionsIOExceptionReaderInterceptor.class).request("text/plain")
                 .post(Entity.text("data"));
-
         thrown.expect(ProcessingException.class);
         response.readEntity(ClientExceptionsData.class);
     }
@@ -146,11 +148,13 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpPassCrit ResponseProcessingException is raised
      * @tpSince RESTEasy 3.0.16
      */
-    @Test(expected = ResponseProcessingException.class)
+    @Test
+    @DisplayName("Response Filter Throws IO Exception Test")
     public void responseFilterThrowsIOExceptionTest() {
-        WebTarget base = client.target(generateURL("/") + "get");
-        base.register(ClientExceptionsIOExceptionResponseFilter.class).request("text/plain").get();
-
+        assertThrows(ResponseProcessingException.class, () -> {
+            WebTarget base = client.target(generateURL("/") + "get");
+            base.register(ClientExceptionsIOExceptionResponseFilter.class).request("text/plain").get();
+        });
     }
 
     /**
@@ -159,10 +163,13 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpPassCrit ProcessingException is raised
      * @tpSince RESTEasy 3.0.16
      */
-    @Test(expected = ProcessingException.class)
+    @Test
+    @DisplayName("Request Filter Throws IO Exception Test")
     public void requestFilterThrowsIOExceptionTest() {
-        WebTarget base = client.target(generateURL("/") + "get");
-        base.register(ClientExceptionsIOExceptionRequestFilter.class).request("text/plain").get();
+        assertThrows(ProcessingException.class, () -> {
+            WebTarget base = client.target(generateURL("/") + "get");
+            base.register(ClientExceptionsIOExceptionRequestFilter.class).request("text/plain").get();
+        });
     }
 
     /**
@@ -172,11 +179,13 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpPassCrit ResponseProcessingException is raised
      * @tpSince RESTEasy 3.0.24
      */
-    @Test(expected = ResponseProcessingException.class)
+    @Test
+    @DisplayName("Response Filter Throws Runtime Exception Test")
     public void responseFilterThrowsRuntimeExceptionTest() {
-        WebTarget base = client.target(generateURL("/") + "get");
-        base.register(ClientExceptionsRuntimeExceptionResponseFilter.class).request("text/plain").get();
-
+        assertThrows(ResponseProcessingException.class, () -> {
+            WebTarget base = client.target(generateURL("/") + "get");
+            base.register(ClientExceptionsRuntimeExceptionResponseFilter.class).request("text/plain").get();
+        });
     }
 
     /**
@@ -185,10 +194,13 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpPassCrit ProcessingException is raised
      * @tpSince RESTEasy 3.0.24
      */
-    @Test(expected = ProcessingException.class)
+    @Test
+    @DisplayName("Request Filter Throws Runtime Exception Test")
     public void requestFilterThrowsRuntimeExceptionTest() {
-        WebTarget base = client.target(generateURL("/") + "get");
-        base.register(ClientExceptionsRuntimeExceptionRequestFilter.class).request("text/plain").get();
+        assertThrows(ProcessingException.class, () -> {
+            WebTarget base = client.target(generateURL("/") + "get");
+            base.register(ClientExceptionsRuntimeExceptionRequestFilter.class).request("text/plain").get();
+        });
     }
 
     /**
@@ -200,12 +212,14 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpSince RESTEasy 3.0.24
      */
     @Test
+    @DisplayName("Response Filter Throws Custom Exception Test")
     public void responseFilterThrowsCustomExceptionTest() {
         WebTarget base = client.target(generateURL("/") + "get");
         try {
             base.register(ClientExceptionsCustomExceptionResponseFilter.class).request("text/plain").get();
         } catch (ResponseProcessingException ex) {
-            Assert.assertEquals(ClientExceptionsCustomException.class.getCanonicalName() + ": custom message", ex.getMessage());
+            Assertions.assertEquals(ClientExceptionsCustomException.class.getCanonicalName() + ": custom message",
+                    ex.getMessage());
         } catch (Throwable ex) {
             Assert.fail("The exception thrown by client was not instance of javax.ws.rs.client.ResponseProcessingException");
         }
@@ -220,15 +234,16 @@ public class ClientExceptionsTest extends ClientTestBase {
      * @tpSince RESTEasy 3.0.24
      */
     @Test
+    @DisplayName("Request Filter Throws Custom Exception Test")
     public void requestFilterThrowsCustomExceptionTest() {
         WebTarget base = client.target(generateURL("/") + "get");
         try {
             base.register(ClientExceptionsCustomExceptionRequestFilter.class).request("text/plain").get();
         } catch (ProcessingException ex) {
-            Assert.assertEquals(ClientExceptionsCustomException.class.getCanonicalName() + ": custom message", ex.getMessage());
+            Assertions.assertEquals(ClientExceptionsCustomException.class.getCanonicalName() + ": custom message",
+                    ex.getMessage());
         } catch (Throwable ex) {
             Assert.fail("The exception thrown by client was not instance of javax.ws.rs.ProcessingException");
         }
     }
-
 }

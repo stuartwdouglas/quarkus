@@ -20,11 +20,12 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.rules.ExpectedException;
 
@@ -40,6 +41,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Response Test")
 public class ResponseTest {
 
     protected static final Logger logger = Logger.getLogger(VariantsTest.class.getName());
@@ -49,24 +51,23 @@ public class ResponseTest {
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         client = ClientBuilder.newClient();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, ResponseResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ResponseResource.class);
+        }
+    });
 
-    @AfterClass
+    @AfterAll
     public static void cleanup() throws Exception {
         client.close();
     }
@@ -82,9 +83,10 @@ public class ResponseTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Head")
     public void testHead() {
         Response response = client.target(generateURL("/head")).request().head();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         thrown.expect(ProcessingException.class);
         response.readEntity(String.class);
         response.close();
@@ -96,10 +98,11 @@ public class ResponseTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Empty")
     public void testEmpty() {
         Response response = client.target(generateURL("/empty")).request().head();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertFalse(response.hasEntity());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertFalse(response.hasEntity());
         response.close();
     }
 
@@ -109,10 +112,11 @@ public class ResponseTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test No Status")
     public void testNoStatus() {
         Response response = client.target(generateURL("/entitybodyresponsetest")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("", "hello", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("hello", response.readEntity(String.class), "");
         response.close();
     }
 
@@ -123,9 +127,10 @@ public class ResponseTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Null Entity No Status")
     public void testNullEntityNoStatus() {
         Response response = client.target(generateURL("/nullEntityResponse")).request().get();
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -135,9 +140,10 @@ public class ResponseTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Has Link When Link Test")
     public void hasLinkWhenLinkTest() {
         Response response = client.target(generateURL("/link")).request().post(Entity.text("path"));
-        Assert.assertTrue(response.hasLink("path"));
+        Assertions.assertTrue(response.hasLink("path"));
         response.close();
     }
 
@@ -165,35 +171,27 @@ public class ResponseTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Read Entity Generic Type Annotation Test")
     public void readEntityGenericTypeAnnotationTest() {
         Date date = Calendar.getInstance().getTime();
         String sDate = String.valueOf(date.getTime());
         Annotation[] annotations = ResponseAnnotatedClass.class.getAnnotations();
-        int expected = ResponseDateReaderWriter.ANNOTATION_CONSUMES
-                | ResponseDateReaderWriter.ANNOTATION_PROVIDER;
-
+        int expected = ResponseDateReaderWriter.ANNOTATION_CONSUMES | ResponseDateReaderWriter.ANNOTATION_PROVIDER;
         AtomicInteger ai = new AtomicInteger();
         ResponseDateReaderWriter drw = new ResponseDateReaderWriter(ai);
-
         Response response = client.target(generateURL("/date")).register(drw).queryParam("date", sDate).request().get();
         response.bufferEntity();
-
         Date entity = response.readEntity(generic(Date.class), annotations);
         logger.info(entity.toString());
-        Assert.assertTrue("The original date doesn't match to the returned entity", date.equals(entity));
-
-        Assert.assertTrue("The AtomicInteger in the DateReaderWriter doesn't match with the original value",
-                ai.get() == expected);
-
-        String responseDate = response.readEntity(generic(String.class),
-                annotations);
-        Assert.assertTrue("The original string date doesn't match to generic entity extracted from the response",
-                sDate.equals(responseDate));
-
-        Assert.assertTrue("The AtomicInteger in the DateReaderWriter doesn't match with the original value",
-                ai.get() == expected);
+        Assertions.assertTrue(date.equals(entity), "The original date doesn't match to the returned entity");
+        Assertions.assertTrue(ai.get() == expected,
+                "The AtomicInteger in the DateReaderWriter doesn't match with the original value");
+        String responseDate = response.readEntity(generic(String.class), annotations);
+        Assertions.assertTrue(sDate.equals(responseDate),
+                "The original string date doesn't match to generic entity extracted from the response");
+        Assertions.assertTrue(ai.get() == expected,
+                "The AtomicInteger in the DateReaderWriter doesn't match with the original value");
         response.close();
-
     }
 
     /**
@@ -204,22 +202,22 @@ public class ResponseTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Read Entity Generic Type Test")
     public void readEntityGenericTypeTest() throws Exception {
         Response response = client.target(generateURL("/entity")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.bufferEntity();
         String line;
-
         Reader reader = response.readEntity(new GenericType<Reader>(Reader.class));
         line = readLine(reader);
-        Assert.assertTrue("The entity extracted with genetic Reader doesn't match the original entity",
-                ResponseResource.ENTITY.equals(line));
+        Assertions.assertTrue(ResponseResource.ENTITY.equals(line),
+                "The entity extracted with genetic Reader doesn't match the original entity");
         byte[] buffer = new byte[0];
         buffer = response.readEntity(generic(buffer.getClass()));
-        Assert.assertNotNull(buffer);
+        Assertions.assertNotNull(buffer);
         line = new String(buffer);
-        Assert.assertTrue("The entity extracted with as array of bytes doesn't match the original entity",
-                ResponseResource.ENTITY.equals(line));
+        Assertions.assertTrue(ResponseResource.ENTITY.equals(line),
+                "The entity extracted with as array of bytes doesn't match the original entity");
         response.close();
     }
 }

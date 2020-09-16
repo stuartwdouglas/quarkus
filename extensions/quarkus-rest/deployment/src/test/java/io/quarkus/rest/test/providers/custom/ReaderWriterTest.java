@@ -13,10 +13,11 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.resteasy.client.jaxrs.ProxyBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -40,86 +41,83 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEasy issues
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Reader Writer Test")
 public class ReaderWriterTest {
+
     static QuarkusRestClient client;
+
     static final String PriorityDeploymenetName = "ReaderWriterCustomerWriterWithPriority";
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
-
-                    war.addClass(ReaderWriterCustomer.class);
-                    war.addClass(PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null, ReaderWriterCustomerWriter.class,
-                            ReaderWriterResource.class);
-                }
-            });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null, ReaderWriterResource.class);
-                }
-            });
-
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
-
-                    war.addClass(ReaderWriterSub.class);
-                    war.addClass(PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null, ReaderWriterSpaces.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ReaderWriterCustomer.class);
+            war.addClass(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ReaderWriterCustomerWriter.class, ReaderWriterResource.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null, ReaderWriterCurlyBraces.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ReaderWriterResource.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(ReaderWriterCustomer.class);
-                    war.addClass(PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null, ReaderWriterLowPriorityCustomerWriter.class,
-                            ReaderWriterCustomerWriter.class, ReaderWriterHignPriorityCustomerWriter.class,
-                            ReaderWriterResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ReaderWriterSub.class);
+            war.addClass(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ReaderWriterSpaces.class);
+        }
+    });
 
-    @BeforeClass
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ReaderWriterCurlyBraces.class);
+        }
+    });
+
+    @RegisterExtension
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ReaderWriterCustomer.class);
+            war.addClass(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, ReaderWriterLowPriorityCustomerWriter.class,
+                    ReaderWriterCustomerWriter.class, ReaderWriterHignPriorityCustomerWriter.class, ReaderWriterResource.class);
+        }
+    });
+
+    @BeforeAll
     public static void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -129,28 +127,26 @@ public class ReaderWriterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test 144")
     public void test144() throws Exception {
         WebTarget base = client
                 .target(PortProviderUtil.generateURL("/implicit", ReaderWriterCustomerWriter.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("application/xml;charset=UTF-8", response.getStringHeaders().getFirst("content-type"));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.getStringHeaders().getFirst("content-type"), "application/xml;charset=UTF-8");
         String s = new String(response.readEntity(byte[].class), "US-ASCII");
-        Assert.assertEquals("Response contains wrong content", "<customer><name>bill</name></customer>", s);
+        Assertions.assertEquals("<customer><name>bill</name></customer>", s, "Response contains wrong content");
         response.close();
-
         response = base.request().delete();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
-
         ReaderWriterClient proxy = client
                 .target(PortProviderUtil.generateBaseUrl(ReaderWriterCustomerWriter.class.getSimpleName()))
                 .proxy(ReaderWriterClient.class);
         response = proxy.deleteCustomer();
         response.close();
-
         response = proxy.deleteComplex();
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -159,6 +155,7 @@ public class ReaderWriterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Jdk URL Connection")
     public void testJdkURLConnection() throws Exception {
         URL url = new URL(PortProviderUtil.generateURL("/simple", ReaderWriterResource.class.getSimpleName()));
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -171,15 +168,15 @@ public class ReaderWriterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test 24")
     public void test24() throws Exception {
         WebTarget base = client.target(PortProviderUtil.generateURL("/complex", ReaderWriterResource.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.FOUND.getStatusCode(), response.getStatus());
-        Assert.assertEquals(response.getStringHeaders().getFirst("content-type"), "text/plain;charset=UTF-8");
+        Assertions.assertEquals(Status.FOUND.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.getStringHeaders().getFirst("content-type"), "text/plain;charset=UTF-8");
         byte[] responseBody = response.readEntity(byte[].class);
         String responseString = new String(responseBody, "US-ASCII");
-        Assert.assertEquals("Response contains wrong content", "hello world", responseString);
-
+        Assertions.assertEquals("hello world", responseString, "Response contains wrong content");
     }
 
     /**
@@ -187,13 +184,14 @@ public class ReaderWriterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test 1 and 2")
     public void test1and2() throws Exception {
         WebTarget base = client.target(PortProviderUtil.generateURL("/simple", ReaderWriterResource.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("text/plain;charset=UTF-8", response.getStringHeaders().getFirst("content-type"));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.getStringHeaders().getFirst("content-type"), "text/plain;charset=UTF-8");
         String s = new String(response.readEntity(byte[].class), "US-ASCII");
-        Assert.assertEquals("Response contains wrong content", "hello world", s);
+        Assertions.assertEquals("hello world", s, "Response contains wrong content");
     }
 
     /**
@@ -201,9 +199,10 @@ public class ReaderWriterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test It New Proxy")
     public void testItNewProxy() throws Exception {
-        ReaderWriterNowhereClient proxy = ProxyBuilder.builder(ReaderWriterNowhereClient.class,
-                client.target(PortProviderUtil.generateBaseUrl("app"))).build();
+        ReaderWriterNowhereClient proxy = ProxyBuilder
+                .builder(ReaderWriterNowhereClient.class, client.target(PortProviderUtil.generateBaseUrl("app"))).build();
         Response response = proxy.read();
         response.close();
     }
@@ -213,11 +212,12 @@ public class ReaderWriterTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test 212")
     public void test212() throws Exception {
         WebTarget base = client.target(
                 PortProviderUtil.generateURL("/spaces/with%20spaces/without", ReaderWriterSpaces.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -227,23 +227,25 @@ public class ReaderWriterTest {
      */
     @Test
     @OperateOnDeployment("ReaderWriterCurlyBraces")
+    @DisplayName("Test 227")
     public void test227() throws Exception {
         WebTarget base = client
                 .target(PortProviderUtil.generateURL("/curly/abcd", ReaderWriterCurlyBraces.class.getSimpleName()));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         response.close();
     }
 
     @Test
     @OperateOnDeployment(PriorityDeploymenetName)
+    @DisplayName("Test Provider With Priority")
     public void testProviderWithPriority() throws Exception {
         WebTarget base = client.target(PortProviderUtil.generateURL("/priority", PriorityDeploymenetName));
         Response response = base.request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("application/xml;charset=UTF-8", response.getStringHeaders().getFirst("content-type"));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.getStringHeaders().getFirst("content-type"), "application/xml;charset=UTF-8");
         String s = new String(response.readEntity(byte[].class), "UTF-8");
-        Assert.assertEquals("Response contains wrong content", "<customer><name>high priority</name></customer>", s);
+        Assertions.assertEquals("<customer><name>high priority</name></customer>", s, "Response contains wrong content");
         response.close();
     }
 }

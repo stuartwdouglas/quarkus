@@ -19,10 +19,10 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.utils.TestUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClientBuilder;
@@ -61,14 +61,14 @@ public class AsyncInvokeTest extends ClientTestBase {
                 }
             });
 
-    @Before
+    @BeforeEach
     public void init() {
         client = ClientBuilder.newClient();
 
         nioClient = ((QuarkusRestClientBuilder) ClientBuilder.newBuilder()).useAsyncHttpEngine().build();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         client.close();
         nioClient.close();

@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.client.ClientTestBase;
@@ -28,38 +29,38 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Tests @Provider annotation on ClientRequestFilter (RESTEASY-2084)
  * @tpSince RESTEasy 4.0.0
  */
+@DisplayName("Client Request Filter Registration Test")
 public class ClientRequestFilterRegistrationTest extends ClientTestBase {
 
     static Client client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(CustomTestApp.class, ClientRequestFilterImpl.class, ClientResource.class);
-                    return war;
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(CustomTestApp.class, ClientRequestFilterImpl.class, ClientResource.class);
+            return war;
+        }
+    });
 
-    @Before
+    @BeforeEach
     public void before() {
         client = ClientBuilder.newClient();
     }
 
-    @After
+    @AfterEach
     public void close() {
         client.close();
     }
 
     @Test
+    @DisplayName("Filter Registered Test")
     public void filterRegisteredTest() throws Exception {
         WebTarget base = client.target(generateURL("/") + "testIt");
         Response response = base.request().get();
-        Assert.assertEquals(456, response.getStatus());
+        Assertions.assertEquals(456, response.getStatus());
     }
-
 }

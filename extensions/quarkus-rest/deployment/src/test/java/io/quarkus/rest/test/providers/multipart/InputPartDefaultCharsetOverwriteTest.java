@@ -13,10 +13,11 @@ import javax.ws.rs.core.Response;
 import org.jboss.resteasy.util.Encode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.multipart.resource.InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16;
@@ -36,161 +37,170 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Regression test for RESTEASY-723
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Input Part Default Charset Overwrite Test")
 public class InputPartDefaultCharsetOverwriteTest {
+
     private static final org.jboss.logging.Logger logger = org.jboss.logging.Logger
             .getLogger(InputPartDefaultCharsetOverwriteTest.class);
 
     static Client client;
 
     public static final String UTF_8 = "UTF-8";
+
     public static final String UTF_16 = "UTF-16";
+
     public static final String TEXT_PLAIN = "text/plain";
+
     public static final String TEXT_HTTP = "text/http";
+
     public static final String TEXT_PLAIN_WITH_CHARSET_US_ASCII = normalize("text/plain; charset=US-ASCII");
+
     public static final String TEXT_PLAIN_WITH_CHARSET_UTF_16 = normalize("text/plain; charset=UTF-16");
+
     public static final String TEXT_HTTP_WITH_CHARSET_US_ASCII = normalize("text/http; charset=US-ASCII");
+
     public static final String TEXT_HTTP_WITH_CHARSET_UTF_8 = normalize("text/http; charset=UTF-8");
+
     public static final String TEXT_HTTP_WITH_CHARSET_UTF_16 = normalize("text/http; charset=UTF-16");
+
     public static final String APPLICATION_XML = normalize("application/xml");
+
     public static final String APPLICATION_XML_WITH_CHARSET_US_ASCII = normalize("application/xml; charset=US-ASCII");
+
     public static final String APPLICATION_XML_WITH_CHARSET_UTF_8 = normalize("application/xml; charset=UTF-8");
+
     public static final String APPLICATION_XML_WITH_CHARSET_UTF_16 = normalize("application/xml; charset=UTF-16");
+
     public static final String APPLICATION_OCTET_STREAM = normalize("application/octet-stream");
+
     public static final String abc_us_ascii = "abc";
+
     public static final byte[] abc_us_ascii_bytes = abc_us_ascii.getBytes(Charset.forName("us-ascii"));
+
     public static final String abc_utf8 = new String("abc\u20AC");
+
     public static final byte[] abc_utf8_bytes = abc_utf8.getBytes(StandardCharsets.UTF_8);
+
     public static final String abc_utf16 = new String("abc\u20AC");
+
     public static final byte[] abc_utf16_bytes = abc_utf16.getBytes(Charset.forName("utf-16"));
+
     public static final String TEXT_PLAIN_WITH_CHARSET_UTF_8 = normalize("text/plain; charset=UTF-8");
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
         client = null;
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
-                    war.addClasses(TestUtil.class, PortProviderUtil.class);
-
-                    return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
+            war.addClasses(TestUtil.class, PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteService.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
-                    war.addClasses(TestUtil.class, PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null,
-                            InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class,
-                            InputPartDefaultCharsetOverwriteService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
+            war.addClasses(TestUtil.class, PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class,
+                    InputPartDefaultCharsetOverwriteService.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
-                    war.addClasses(TestUtil.class, PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null,
-                            InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16.class,
-                            InputPartDefaultCharsetOverwriteService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
+            war.addClasses(TestUtil.class, PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16.class,
+                    InputPartDefaultCharsetOverwriteService.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
-                    war.addClasses(TestUtil.class, PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null,
-                            InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class,
-                            InputPartDefaultCharsetOverwriteService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
+            war.addClasses(TestUtil.class, PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class,
+                    InputPartDefaultCharsetOverwriteService.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
-                    war.addClasses(TestUtil.class, PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null,
-                            InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16.class,
-                            InputPartDefaultCharsetOverwriteService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
+            war.addClasses(TestUtil.class, PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16.class,
+                    InputPartDefaultCharsetOverwriteService.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
-                    war.addClasses(TestUtil.class, PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null,
-                            InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class,
-                            InputPartDefaultCharsetOverwriteService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
+            war.addClasses(TestUtil.class, PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class,
+                    InputPartDefaultCharsetOverwriteService.class);
+        }
+    });
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
-                    war.addClasses(TestUtil.class, PortProviderUtil.class);
-                    return TestUtil.finishContainerPrepare(war, null,
-                            InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16.class,
-                            InputPartDefaultCharsetOverwriteService.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(InputPartDefaultCharsetOverwriteTest.class);
+            war.addClasses(TestUtil.class, PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16.class,
+                    InputPartDefaultCharsetOverwriteService.class);
+        }
+    });
 
     /**
      * @tpTestDetails Test UTF8 content-type, no charset, preprocessor with no content-type
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test UTF 8 Content Type No Charset Preprocessor With No Content Type Charset")
     public void testUTF8ContentTypeNoCharsetPreprocessorWithNoContentTypeCharset() throws Exception {
         doTestWithContentTypeInMessage(abc_utf8_bytes, abc_utf8, TEXT_PLAIN, TEXT_PLAIN_WITH_CHARSET_UTF_8,
                 InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class);
@@ -201,19 +211,20 @@ public class InputPartDefaultCharsetOverwriteTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("No Interceptor Test")
     public void noInterceptorTest() throws Exception {
         // testNoContentTypeDefault
         doTestNoContentTypeInMessage(abc_us_ascii_bytes, abc_us_ascii, TEXT_PLAIN_WITH_CHARSET_US_ASCII,
                 InputPartDefaultCharsetOverwriteTest.class);
         // testContentTypeNoCharsetDefault
-        doTestWithContentTypeInMessage(abc_us_ascii_bytes, abc_us_ascii, TEXT_HTTP,
-                TEXT_HTTP_WITH_CHARSET_US_ASCII, InputPartDefaultCharsetOverwriteTest.class);
+        doTestWithContentTypeInMessage(abc_us_ascii_bytes, abc_us_ascii, TEXT_HTTP, TEXT_HTTP_WITH_CHARSET_US_ASCII,
+                InputPartDefaultCharsetOverwriteTest.class);
         // testContentTypeCharsetDefaultUTF8
-        doTestWithContentTypeInMessage(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteTest.class);
+        doTestWithContentTypeInMessage(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_8, TEXT_HTTP_WITH_CHARSET_UTF_8,
+                InputPartDefaultCharsetOverwriteTest.class);
         // testContentTypeCharsetDefaultUTF16
-        doTestWithContentTypeInMessage(abc_utf16_bytes, abc_utf16, TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteTest.class);
+        doTestWithContentTypeInMessage(abc_utf16_bytes, abc_utf16, TEXT_HTTP_WITH_CHARSET_UTF_16, TEXT_HTTP_WITH_CHARSET_UTF_16,
+                InputPartDefaultCharsetOverwriteTest.class);
         // testNoContentTypeInputPartContentTypeUTF8
         doTestNoContentTypeInMessageContentTypeInQuery(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_8,
                 TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteTest.class);
@@ -222,12 +233,10 @@ public class InputPartDefaultCharsetOverwriteTest {
                 TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteTest.class);
         // testContentTypeInputPartContentTypeUTF8
         doTestWithContentTypeInMessageContentTypeInQuery(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteTest.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_8, TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteTest.class);
         // testContentTypeInputPartContentTypeUTF16
         doTestWithContentTypeInMessageContentTypeInQuery(abc_utf16_bytes, abc_utf16, TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteTest.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_16, TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteTest.class);
     }
 
     /**
@@ -235,6 +244,7 @@ public class InputPartDefaultCharsetOverwriteTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Interceptor No Charset Yes Content Type")
     public void interceptorNoCharsetYesContentType() throws Exception {
         // testNoContentTypePreprocessorWithContentTypeNoCharsetUTF8
         doTestNoContentTypeInMessage(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_8,
@@ -253,24 +263,21 @@ public class InputPartDefaultCharsetOverwriteTest {
                 InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16.class);
         // testContentTypeCharsetPreprocessorWithContentTypeNoCharsetUTF16
         doTestWithContentTypeInMessage(abc_utf16_bytes, abc_utf16, TEXT_PLAIN_WITH_CHARSET_UTF_16,
-                TEXT_PLAIN_WITH_CHARSET_UTF_16,
-                InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class);
+                TEXT_PLAIN_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class);
         // testNoContentTypePreprocessorWithContentTypeNoCharsetInputPartContentTypeUTF8
         doTestNoContentTypeInMessageContentTypeInQuery(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_8,
-                InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16.class);
         // testNoContentTypePreprocessorWithContentTypeNoCharsetInputPartContentTypeUTF16
         doTestNoContentTypeInMessageContentTypeInQuery(abc_utf16_bytes, abc_utf16, TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_16,
-                InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class);
         // testContentTypePreprocessorWithContentTypeNoCharsetInputPartContentTypeUTF8
         doTestWithContentTypeInMessageContentTypeInQuery(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_8, TEXT_HTTP_WITH_CHARSET_UTF_8,
+                InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF16.class);
         // testContentTypereprocessorWithContentTypeNoCharsetInputPartContentTypeUTF16
         doTestWithContentTypeInMessageContentTypeInQuery(abc_utf16_bytes, abc_utf16, TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_16, TEXT_HTTP_WITH_CHARSET_UTF_16,
+                InputPartDefaultCharsetOverwriteContentTypeNoCharsetUTF8.class);
     }
 
     /**
@@ -278,6 +285,7 @@ public class InputPartDefaultCharsetOverwriteTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test No Content Type Preprocessor With No Content Type Charset UTF 8")
     public void testNoContentTypePreprocessorWithNoContentTypeCharsetUTF8() throws Exception {
         // testNoContentTypePreprocessorWithNoContentTypeCharsetUTF8
         doTestNoContentTypeInMessage(abc_utf8_bytes, abc_utf8, TEXT_PLAIN_WITH_CHARSET_UTF_8,
@@ -296,23 +304,21 @@ public class InputPartDefaultCharsetOverwriteTest {
                 InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16.class);
         // testContentTypeCharsetPreprocessorWithNoContentTypeCharset16
         doTestWithContentTypeInMessage(abc_utf16_bytes, abc_utf16, TEXT_PLAIN_WITH_CHARSET_UTF_16,
-                TEXT_PLAIN_WITH_CHARSET_UTF_16,
-                InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class);
+                TEXT_PLAIN_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class);
         // testNoContentTypePreprocessorWithNoContentTypeCharsetInputPartContentTypeUTF8
         doTestNoContentTypeInMessageContentTypeInQuery(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_8,
-                InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16.class);
         // testNoContentTypePreprocessorWithNoContentTypeCharsetInputPartContentTypeUTF16
         doTestNoContentTypeInMessageContentTypeInQuery(abc_utf16_bytes, abc_utf16, TEXT_HTTP_WITH_CHARSET_UTF_16,
                 TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class);
         // testContentTypePreprocessorWithNoContentTypeCharsetInputPartContentTypeUTF8
         doTestWithContentTypeInMessageContentTypeInQuery(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_8, TEXT_HTTP_WITH_CHARSET_UTF_8,
+                InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF16.class);
         // testContentTypereprocessorWithNoContentTypeCharsetInputPartContentTypeUTF16
         doTestWithContentTypeInMessageContentTypeInQuery(abc_utf16_bytes, abc_utf16, TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_16, TEXT_HTTP_WITH_CHARSET_UTF_16,
+                InputPartDefaultCharsetOverwriteNoContentTypeCharsetUTF8.class);
     }
 
     /**
@@ -320,6 +326,7 @@ public class InputPartDefaultCharsetOverwriteTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test No Content Type Preprocessor With Content Type Charset 8")
     public void testNoContentTypePreprocessorWithContentTypeCharset8() throws Exception {
         // testNoContentTypePreprocessorWithContentTypeCharset8
         doTestNoContentTypeInMessage(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_8,
@@ -338,34 +345,32 @@ public class InputPartDefaultCharsetOverwriteTest {
                 InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16.class);
         // testContentTypeCharsetPreprocessorWithContentTypeCharset16
         doTestWithContentTypeInMessage(abc_utf16_bytes, abc_utf16, TEXT_PLAIN_WITH_CHARSET_UTF_16,
-                TEXT_PLAIN_WITH_CHARSET_UTF_16,
-                InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class);
+                TEXT_PLAIN_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class);
         // testNoContentTypePreprocessorWithContentTypeCharsetInputPartContentTypeUTF8
         doTestNoContentTypeInMessageContentTypeInQuery(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_8,
-                InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16.class);
         // testNoContentTypePreprocessorWithContentTypeCharsetInputPartContentTypeUTF16
         doTestNoContentTypeInMessageContentTypeInQuery(abc_utf16_bytes, abc_utf16, TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_16,
-                InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class);
         // testContentTypePreprocessorWithContentTypeCharsetInputPartContentTypeUTF8
         doTestWithContentTypeInMessageContentTypeInQuery(abc_utf8_bytes, abc_utf8, TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_8, InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_8, TEXT_HTTP_WITH_CHARSET_UTF_8,
+                InputPartDefaultCharsetOverwriteContentTypeCharsetUTF16.class);
         // testContentTypereprocessorWithContentTypeCharsetInputPartContentTypeUTF16
         doTestWithContentTypeInMessageContentTypeInQuery(abc_utf16_bytes, abc_utf16, TEXT_HTTP_WITH_CHARSET_UTF_8,
-                TEXT_HTTP_WITH_CHARSET_UTF_16,
-                TEXT_HTTP_WITH_CHARSET_UTF_16, InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class);
+                TEXT_HTTP_WITH_CHARSET_UTF_16, TEXT_HTTP_WITH_CHARSET_UTF_16,
+                InputPartDefaultCharsetOverwriteContentTypeCharsetUTF8.class);
     }
 
     /**
      * @tpTestDetails The tests use a non-text media type.
      * @tpSince RESTEasy 3.0.16
      */
-    //////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    // ////////////////////////////////////////////////////////////////////////////////////////
     @Test
+    @DisplayName("Test Application Xml US Ascii")
     public void testApplicationXmlUSAscii() throws Exception {
         // testApplicationXmlUSAscii
         doTestWithContentTypeInMessage(abc_us_ascii_bytes, abc_us_ascii, APPLICATION_XML_WITH_CHARSET_US_ASCII,
@@ -406,13 +411,13 @@ public class InputPartDefaultCharsetOverwriteTest {
         String responseStr = response.readEntity(String.class);
         logger.info("status: " + response.getStatus());
         logger.info("client response: " + responseStr);
-        Assert.assertEquals("Status code is wrong.", 20, response.getStatus() / 10);
+        Assertions.assertEquals(20, response.getStatus() / 10, "Status code is wrong.");
         String[] answer = responseStr.split(":");
-        Assert.assertEquals("Wrong size of response", 3, answer.length);
+        Assertions.assertEquals(3, answer.length, "Wrong size of response");
         logger.info("response charset: " + answer[0]);
-        Assert.assertEquals("Response has wrong encoding", normalize(expectedContentType), normalize(answer[0]));
-        Assert.assertEquals("Wrong content of response", expectedBody, answer[1]);
-        Assert.assertEquals("Wrong content of response", expectedBody, answer[2]);
+        Assertions.assertEquals(normalize(expectedContentType), normalize(answer[0]), "Response has wrong encoding");
+        Assertions.assertEquals(expectedBody, answer[1], "Wrong content of response");
+        Assertions.assertEquals(expectedBody, answer[2], "Wrong content of response");
         response.close();
     }
 
@@ -435,18 +440,17 @@ public class InputPartDefaultCharsetOverwriteTest {
         String responseStr = response.readEntity(String.class);
         logger.info("status: " + response.getStatus());
         logger.info("client response: " + responseStr);
-        Assert.assertEquals("Status code is wrong.", 20, response.getStatus() / 10);
+        Assertions.assertEquals(20, response.getStatus() / 10, "Status code is wrong.");
         String[] answer = responseStr.split(":");
-        Assert.assertEquals("Wrong size of response", 3, answer.length);
+        Assertions.assertEquals(3, answer.length, "Wrong size of response");
         logger.info("response charset: " + answer[0]);
-        Assert.assertEquals("Response has wrong encoding", normalize(expectedContentType), normalize(answer[0]));
-        Assert.assertEquals("Wrong content of response", expectedBody, answer[1]);
-        Assert.assertEquals("Wrong content of response", expectedBody, answer[2]);
+        Assertions.assertEquals(normalize(expectedContentType), normalize(answer[0]), "Response has wrong encoding");
+        Assertions.assertEquals(expectedBody, answer[1], "Wrong content of response");
+        Assertions.assertEquals(expectedBody, answer[2], "Wrong content of response");
     }
 
-    private static void doTestNoContentTypeInMessageContentTypeInQuery(
-            byte[] body, String expectedBody, String queryContentType, String expectedContentType, Class<?> deployment)
-            throws Exception {
+    private static void doTestNoContentTypeInMessageContentTypeInQuery(byte[] body, String expectedBody,
+            String queryContentType, String expectedContentType, Class<?> deployment) throws Exception {
         byte[] start = ("--boo\r\nContent-Disposition: form-data; name=\"foo\"\r\nContent-Transfer-Encoding: 8bit\r\n\r\n")
                 .getBytes();
         byte[] end = "\r\n--boo--\r\n".getBytes();
@@ -457,26 +461,24 @@ public class InputPartDefaultCharsetOverwriteTest {
         System.arraycopy(start, 0, buf, pos0, start.length);
         System.arraycopy(body, 0, buf, pos1, body.length);
         System.arraycopy(end, 0, buf, pos2, end.length);
-        Response response = client
-                .target(PortProviderUtil.generateURL("/query?contentType=" + Encode.encodeQueryParamAsIs(queryContentType),
-                        deployment.getSimpleName()))
-                .request()
-                .post(Entity.entity(buf, "multipart/form-data; boundary=boo"));
+        Response response = client.target(PortProviderUtil
+                .generateURL("/query?contentType=" + Encode.encodeQueryParamAsIs(queryContentType), deployment.getSimpleName()))
+                .request().post(Entity.entity(buf, "multipart/form-data; boundary=boo"));
         String responseStr = response.readEntity(String.class);
         logger.info("status: " + response.getStatus());
         logger.info("client response: " + responseStr);
-        Assert.assertEquals("Status code is wrong.", 20, response.getStatus() / 10);
+        Assertions.assertEquals(20, response.getStatus() / 10, "Status code is wrong.");
         String[] answer = responseStr.split(":");
-        Assert.assertEquals("Wrong size of response", 3, answer.length);
+        Assertions.assertEquals(3, answer.length, "Wrong size of response");
         logger.info("response charset: " + answer[0]);
-        Assert.assertEquals("Response has wrong encoding", normalize(expectedContentType), normalize(answer[0]));
-        Assert.assertEquals("Wrong content of response", expectedBody, answer[1]);
-        Assert.assertEquals("Wrong content of response", expectedBody, answer[2]);
+        Assertions.assertEquals(normalize(expectedContentType), normalize(answer[0]), "Response has wrong encoding");
+        Assertions.assertEquals(expectedBody, answer[1], "Wrong content of response");
+        Assertions.assertEquals(expectedBody, answer[2], "Wrong content of response");
     }
 
-    private static void doTestWithContentTypeInMessageContentTypeInQuery(
-            byte[] body, String expectedBody, String inputContentType, String queryContentType, String expectedContentType,
-            Class<?> deployment) throws Exception {
+    private static void doTestWithContentTypeInMessageContentTypeInQuery(byte[] body, String expectedBody,
+            String inputContentType, String queryContentType, String expectedContentType, Class<?> deployment)
+            throws Exception {
         byte[] start = ("--boo\r\nContent-Disposition: form-data; name=\"foo\"\r\nContent-Type: ").getBytes();
         byte[] middle = (inputContentType + "\r\n\r\n").getBytes();
         byte[] end = "\r\n--boo--\r\n".getBytes();
@@ -489,21 +491,19 @@ public class InputPartDefaultCharsetOverwriteTest {
         System.arraycopy(middle, 0, buf, pos1, middle.length);
         System.arraycopy(body, 0, buf, pos2, body.length);
         System.arraycopy(end, 0, buf, pos3, end.length);
-        Response response = client
-                .target(PortProviderUtil.generateURL("/query?contentType=" + Encode.encodeQueryParamAsIs(queryContentType),
-                        deployment.getSimpleName()))
-                .request()
-                .post(Entity.entity(buf, "multipart/form-data; boundary=boo"));
+        Response response = client.target(PortProviderUtil
+                .generateURL("/query?contentType=" + Encode.encodeQueryParamAsIs(queryContentType), deployment.getSimpleName()))
+                .request().post(Entity.entity(buf, "multipart/form-data; boundary=boo"));
         String responseStr = response.readEntity(String.class);
         logger.info("status: " + response.getStatus());
         logger.info("client response: " + responseStr);
-        Assert.assertEquals("Status code is wrong.", 20, response.getStatus() / 10);
+        Assertions.assertEquals(20, response.getStatus() / 10, "Status code is wrong.");
         String[] answer = responseStr.split(":");
-        Assert.assertEquals("Wrong size of response", 3, answer.length);
+        Assertions.assertEquals(3, answer.length, "Wrong size of response");
         logger.info("response charset: " + answer[0]);
-        Assert.assertEquals("Response has wrong encoding", normalize(expectedContentType), normalize(answer[0]));
-        Assert.assertEquals("Wrong content of response", expectedBody, answer[1]);
-        Assert.assertEquals("Wrong content of response", expectedBody, answer[2]);
+        Assertions.assertEquals(normalize(expectedContentType), normalize(answer[0]), "Response has wrong encoding");
+        Assertions.assertEquals(expectedBody, answer[1], "Wrong content of response");
+        Assertions.assertEquals(expectedBody, answer[2], "Wrong content of response");
     }
 
     private static void doTestByteArray(byte[] body, String contentType, Class<?> deployment) throws Exception {
@@ -520,13 +520,13 @@ public class InputPartDefaultCharsetOverwriteTest {
         Response response = client.target(PortProviderUtil.generateURL("/bytes/", deployment.getSimpleName())).request()
                 .post(Entity.entity(buf, "multipart/form-data; boundary=boo"));
         logger.info("status: " + response.getStatus());
-        Assert.assertEquals("Status code is wrong.", 20, response.getStatus() / 10);
+        Assertions.assertEquals(20, response.getStatus() / 10, "Status code is wrong.");
         byte[] b = response.readEntity(byte[].class);
         for (int i = 0; i < body.length; i++) {
             StringBuilder errorMessage = new StringBuilder();
             errorMessage.append("Wrong content of response: ").append(i).append(": ").append(body[i]).append(" != ")
                     .append(b[i]);
-            Assert.assertEquals(errorMessage.toString(), body[i], b[i]);
+            Assertions.assertEquals(errorMessage.toString(), body[i], b[i]);
         }
     }
 

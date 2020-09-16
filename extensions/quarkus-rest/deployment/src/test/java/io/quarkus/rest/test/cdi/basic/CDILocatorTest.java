@@ -8,10 +8,11 @@ import javax.ws.rs.client.WebTarget;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.cdi.basic.resource.CDILocatorResource;
@@ -25,33 +26,35 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Test for CDI locator
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Cdi Locator Test")
 public class CDILocatorTest {
+
     static Client client;
+
     static WebTarget baseTarget;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, CDILocatorResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, CDILocatorResource.class);
+        }
+    });
 
     private static String generateURL() {
         return PortProviderUtil.generateBaseUrl(CDILocatorTest.class.getSimpleName());
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void initClient() {
         client = ClientBuilder.newClient();
         baseTarget = client.target(generateURL());
     }
 
-    @AfterClass
+    @AfterAll
     public static void closeClient() {
         client.close();
     }
@@ -61,9 +64,10 @@ public class CDILocatorTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Generic Type Test")
     public void genericTypeTest() throws Exception {
         String result = baseTarget.path("test").queryParam("foo", "yo").request().get(String.class);
-        Assert.assertEquals("Wrong response", "OK", result);
+        Assertions.assertEquals("OK", result, "Wrong response");
     }
 
     /**
@@ -71,8 +75,9 @@ public class CDILocatorTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Locator Test")
     public void locatorTest() throws Exception {
         String result = baseTarget.path("test/lookup").queryParam("foo", "yo").request().get(String.class);
-        Assert.assertEquals("Wrong response", "OK", result);
+        Assertions.assertEquals("OK", result, "Wrong response");
     }
 }

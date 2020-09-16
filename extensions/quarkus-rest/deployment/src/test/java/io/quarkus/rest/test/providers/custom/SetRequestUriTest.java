@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.custom.resource.SetRequestUriRequestFilter;
@@ -26,33 +27,32 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Set Request Uri Test")
 public class SetRequestUriTest {
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws Exception {
         client = ClientBuilder.newClient();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, SetRequestUriResource.class,
-                            SetRequestUriRequestFilter.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, SetRequestUriResource.class, SetRequestUriRequestFilter.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, SetRequestUriTest.class.getSimpleName());
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() throws Exception {
         client.close();
     }
@@ -64,13 +64,14 @@ public class SetRequestUriTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Schema Change")
     public void testSchemaChange() {
         String uri = generateURL("/base/resource/change");
         String httpsUri = uri.replace("http://", "https://");
         Response response = client.target(uri).request().header("X-Forwarded-Proto", "https").get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The original https uri doesn't match the entity in the response", httpsUri,
-                response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(httpsUri, response.readEntity(String.class),
+                "The original https uri doesn't match the entity in the response");
     }
 
     /**
@@ -80,10 +81,11 @@ public class SetRequestUriTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Uri Override")
     public void testUriOverride() {
         Response response = client.target(generateURL("/base/resource/setrequesturi1")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("OK", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(response.readEntity(String.class), "OK");
     }
 
     /**
@@ -95,11 +97,11 @@ public class SetRequestUriTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Uri Override 2")
     public void testUriOverride2() {
         Response response = client.target(generateURL("/base/resource/setrequesturi2")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        Assert.assertEquals("The original uri doesn't match the entity changed by RequestFilter",
-                "http://xx.yy:888/base/resource/sub", response.readEntity(String.class));
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals("http://xx.yy:888/base/resource/sub", response.readEntity(String.class),
+                "The original uri doesn't match the entity changed by RequestFilter");
     }
-
 }

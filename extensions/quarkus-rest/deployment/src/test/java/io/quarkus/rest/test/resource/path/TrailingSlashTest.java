@@ -12,8 +12,9 @@ import javax.ws.rs.core.Response;
 import org.jboss.resteasy.specimpl.ResteasyUriInfo;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.resource.path.resource.TrailingSlashResource;
@@ -27,20 +28,21 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.17
  * @tpTestCaseDetails Regression test for JBEAP-4698
  */
+@DisplayName("Trailing Slash Test")
 public class TrailingSlashTest {
+
     private static final String ERROR_MSG = "ResteasyUriInfo parsed slash wrongly";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    return TestUtil.finishContainerPrepare(war, null, TrailingSlashResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            return TestUtil.finishContainerPrepare(war, null, TrailingSlashResource.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, ResteasyTrailingSlashTest.class.getSimpleName());
@@ -51,6 +53,7 @@ public class TrailingSlashTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("One Arg Constructor Test")
     public void oneArgConstructorTest() throws Exception {
         doOneArgConstructorTest(new URI("http://localhost/abc"), "/abc");
         doOneArgConstructorTest(new URI("http://localhost/abc/"), "/abc/");
@@ -58,11 +61,11 @@ public class TrailingSlashTest {
 
     void doOneArgConstructorTest(URI uri, String path) {
         ResteasyUriInfo ruri = new ResteasyUriInfo(uri);
-        Assert.assertEquals(ERROR_MSG, path, ruri.getPath());
-        Assert.assertEquals(ERROR_MSG, path, ruri.getPath(true));
-        Assert.assertEquals(ERROR_MSG, path, ruri.getPath(false));
-        Assert.assertEquals(ERROR_MSG, uri, ruri.getAbsolutePath());
-        Assert.assertEquals(ERROR_MSG, uri, ruri.getBaseUri().resolve(ruri.getPath(false)));
+        Assertions.assertEquals(ERROR_MSG, path, ruri.getPath());
+        Assertions.assertEquals(ERROR_MSG, path, ruri.getPath(true));
+        Assertions.assertEquals(ERROR_MSG, path, ruri.getPath(false));
+        Assertions.assertEquals(ERROR_MSG, uri, ruri.getAbsolutePath());
+        Assertions.assertEquals(ERROR_MSG, uri, ruri.getBaseUri().resolve(ruri.getPath(false)));
     }
 
     /**
@@ -70,6 +73,7 @@ public class TrailingSlashTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Two Arg Constructor Test")
     public void twoArgConstructorTest() throws Exception {
         doTwoArgConstructorTest(new URI("http://localhost/abc"), new URI("xyz"), "/xyz");
         doTwoArgConstructorTest(new URI("http://localhost/abc"), new URI("xyz/"), "/xyz/");
@@ -77,16 +81,16 @@ public class TrailingSlashTest {
 
     void doTwoArgConstructorTest(URI base, URI relative, String path) throws URISyntaxException {
         ResteasyUriInfo ruri = new ResteasyUriInfo(base, relative);
-        Assert.assertEquals(ERROR_MSG, path, ruri.getPath());
-        Assert.assertEquals(ERROR_MSG, path, ruri.getPath(true));
-        Assert.assertEquals(ERROR_MSG, path, ruri.getPath(false));
+        Assertions.assertEquals(ERROR_MSG, path, ruri.getPath());
+        Assertions.assertEquals(ERROR_MSG, path, ruri.getPath(true));
+        Assertions.assertEquals(ERROR_MSG, path, ruri.getPath(false));
         URI newUri;
         if (base.toString().endsWith("/")) {
             newUri = new URI(base.toString().substring(0, base.toString().length() - 1) + path);
         } else {
             newUri = new URI(base.toString() + path);
         }
-        Assert.assertEquals(ERROR_MSG, newUri, ruri.getAbsolutePath());
+        Assertions.assertEquals(ERROR_MSG, newUri, ruri.getAbsolutePath());
     }
 
     /**
@@ -94,6 +98,7 @@ public class TrailingSlashTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Three Arg Constructor Test")
     public void threeArgConstructorTest() throws Exception {
         doTwoArgConstructorTest("http://localhost/abc", "/abc");
         doTwoArgConstructorTest("http://localhost/abc/", "/abc/");
@@ -102,11 +107,11 @@ public class TrailingSlashTest {
     void doTwoArgConstructorTest(String s, String path) throws URISyntaxException {
         ResteasyUriInfo ruri = new ResteasyUriInfo(s, "");
         URI uri = new URI(s);
-        Assert.assertEquals(ERROR_MSG, path, ruri.getPath());
-        Assert.assertEquals(ERROR_MSG, path, ruri.getPath(true));
-        Assert.assertEquals(ERROR_MSG, path, ruri.getPath(false));
-        Assert.assertEquals(ERROR_MSG, uri, ruri.getAbsolutePath());
-        Assert.assertEquals(ERROR_MSG, uri, ruri.getBaseUri().resolve(ruri.getPath(false)));
+        Assertions.assertEquals(ERROR_MSG, path, ruri.getPath());
+        Assertions.assertEquals(ERROR_MSG, path, ruri.getPath(true));
+        Assertions.assertEquals(ERROR_MSG, path, ruri.getPath(false));
+        Assertions.assertEquals(ERROR_MSG, uri, ruri.getAbsolutePath());
+        Assertions.assertEquals(ERROR_MSG, uri, ruri.getBaseUri().resolve(ruri.getPath(false)));
     }
 
     /**
@@ -114,11 +119,12 @@ public class TrailingSlashTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test No Slash")
     public void testNoSlash() {
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(generateURL("/test"));
         Response response = target.request().get();
-        Assert.assertEquals(ERROR_MSG, "/test", response.readEntity(String.class));
+        Assertions.assertEquals(ERROR_MSG, "/test", response.readEntity(String.class));
         client.close();
     }
 
@@ -127,11 +133,12 @@ public class TrailingSlashTest {
      * @tpSince RESTEasy 3.0.17
      */
     @Test
+    @DisplayName("Test Slash")
     public void testSlash() {
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(generateURL("/test/"));
         Response response = target.request().get();
-        Assert.assertEquals(ERROR_MSG, "/test/", response.readEntity(String.class));
+        Assertions.assertEquals(ERROR_MSG, "/test/", response.readEntity(String.class));
         client.close();
     }
 }

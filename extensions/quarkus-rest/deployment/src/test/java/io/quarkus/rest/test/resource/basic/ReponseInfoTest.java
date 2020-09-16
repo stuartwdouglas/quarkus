@@ -41,17 +41,17 @@ public class ReponseInfoTest {
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class, ReponseInfoTest.class);
-                    // Use of PortProviderUtil in the deployment
-                    war.addClasses(ReponseInfoResource.class);
-                    return war;
-                }
-            });
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class, ReponseInfoTest.class);
+            // Use of PortProviderUtil in the deployment
+            war.addClasses(ReponseInfoResource.class);
+            return war;
+        }
+    });
 
     private void basicTest(String path) {
         WebTarget base = client.target(PortProviderUtil.generateURL(path, ReponseInfoTest.class.getSimpleName()));

@@ -9,10 +9,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -32,32 +33,32 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.0.16
  * @tpTestCaseDetails ExceptionMapper testing. Regression test for RESTEASY-300 and RESTEASY-396
  */
+@DisplayName("Exception Mapper Injection Test")
 public class ExceptionMapperInjectionTest {
 
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClass(ExceptionMapperCustomRuntimeException.class);
-                    war.addClass(ExceptionMapperInjectionException.class);
-                    return TestUtil.finishContainerPrepare(war, null, ExceptionMapperInjectionCustomMapper.class,
-                            ExceptionMapperInjectionCustomSimpleMapper.class, ExceptionMapperInjectionNotFoundMapper.class,
-                            ExceptionMapperInjectionResource.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClass(ExceptionMapperCustomRuntimeException.class);
+            war.addClass(ExceptionMapperInjectionException.class);
+            return TestUtil.finishContainerPrepare(war, null, ExceptionMapperInjectionCustomMapper.class,
+                    ExceptionMapperInjectionCustomSimpleMapper.class, ExceptionMapperInjectionNotFoundMapper.class,
+                    ExceptionMapperInjectionResource.class);
+        }
+    });
 
-    @BeforeClass
+    @BeforeAll
     public static void init() {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
@@ -71,12 +72,11 @@ public class ExceptionMapperInjectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Not Found")
     public void testNotFound() throws Exception {
         WebTarget base = client.target(generateUrl("/test/nonexistent"));
         Response response = base.request().get();
-
-        Assert.assertEquals(Status.HTTP_VERSION_NOT_SUPPORTED.getStatusCode(), response.getStatus());
-
+        Assertions.assertEquals(Status.HTTP_VERSION_NOT_SUPPORTED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -85,12 +85,11 @@ public class ExceptionMapperInjectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Mapper")
     public void testMapper() throws Exception {
         WebTarget base = client.target(generateUrl("/test"));
         Response response = base.request().get();
-
-        Assert.assertEquals(Response.Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
-
+        Assertions.assertEquals(Response.Status.PRECONDITION_FAILED.getStatusCode(), response.getStatus());
         response.close();
     }
 
@@ -99,13 +98,11 @@ public class ExceptionMapperInjectionTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Mapper 2")
     public void testMapper2() throws Exception {
         WebTarget base = client.target(generateUrl("/test/null"));
         Response response = base.request().get();
-
-        Assert.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
-
+        Assertions.assertEquals(Status.NO_CONTENT.getStatusCode(), response.getStatus());
         response.close();
     }
-
 }
