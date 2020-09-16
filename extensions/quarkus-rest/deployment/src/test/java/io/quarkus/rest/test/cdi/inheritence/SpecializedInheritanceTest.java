@@ -46,9 +46,9 @@ public class SpecializedInheritanceTest {
                     war.addClasses(UtilityProducer.class)
                             .addClasses(CDIInheritenceSelectBook.class, CDIInheritenceStereotypeAlternative.class)
                             .addClasses(CDIInheritenceBook.class, CDIInheritenceBookSpecialized.class,
-                                    CDIInheritenceInheritanceResource.class)
-//                            .addAsWebInfResource(SpecializedInheritanceTest.class.getPackage(), "specializedBeans.xml",
-//                                    "beans.xml");
+                                    CDIInheritenceInheritanceResource.class);
+                    //                            .addAsWebInfResource(SpecializedInheritanceTest.class.getPackage(), "specializedBeans.xml",
+                    //                                    "beans.xml");
                     return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
                 }
             });
