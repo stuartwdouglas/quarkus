@@ -9,7 +9,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
-import org.jboss.resteasy.annotations.Separator;
+import io.quarkus.rest.Separator;
 
 @Path("path")
 public interface MultiValuedParamDefaultParamConverterPathResourceIntf {

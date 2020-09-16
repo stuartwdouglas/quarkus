@@ -10,7 +10,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 
-import org.jboss.resteasy.annotations.Separator;
+import io.quarkus.rest.Separator;
 
 @Path("header")
 public class MultiValuedParamDefaultParamConverterHeaderResource {

@@ -11,7 +11,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.MatrixParam;
 import javax.ws.rs.Path;
 
-import org.jboss.resteasy.annotations.Separator;
+import io.quarkus.rest.Separator;
 
 @Path("matrix")
 public class MultiValuedParamDefaultParamConverterMatrixResource {

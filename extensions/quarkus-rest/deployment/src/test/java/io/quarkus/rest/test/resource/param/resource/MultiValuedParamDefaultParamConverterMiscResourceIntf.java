@@ -11,7 +11,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
-import org.jboss.resteasy.annotations.Separator;
+import io.quarkus.rest.Separator;
 
 @Path("misc")
 public interface MultiValuedParamDefaultParamConverterMiscResourceIntf {

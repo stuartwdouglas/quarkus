@@ -8,7 +8,7 @@ import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import org.jboss.resteasy.annotations.Separator;
+import io.quarkus.rest.Separator;
 
 @Path("cookie")
 public interface MultiValuedParamDefaultParamConverterCookieResourceIntf {

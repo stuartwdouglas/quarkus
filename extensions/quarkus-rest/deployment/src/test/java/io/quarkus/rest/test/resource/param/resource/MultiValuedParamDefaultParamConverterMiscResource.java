@@ -14,8 +14,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 
-import org.jboss.resteasy.annotations.Separator;
 import org.junit.Assert;
+
+import io.quarkus.rest.Separator;
 
 @Path("misc")
 public class MultiValuedParamDefaultParamConverterMiscResource {
