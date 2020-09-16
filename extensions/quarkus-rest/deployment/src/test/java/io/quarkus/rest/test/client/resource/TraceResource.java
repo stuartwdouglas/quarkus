@@ -1,0 +1,33 @@
+package io.quarkus.rest.test.client.resource;
+
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import org.jboss.logging.Logger;
+
+import io.quarkus.rest.test.client.TraceTest;
+
+@Path("resource")
+public class TraceResource {
+
+    private static Logger logger = Logger.getLogger(TraceResource.class);
+
+    @Context
+    UriInfo uriInfo;
+
+    @TraceTest.TRACE
+    @Path("trace")
+    public String trace() {
+        logger.info("uriInfo.request: " + uriInfo.getRequestUri().toString());
+        return "trace";
+    }
+
+    @TraceTest.TRACE
+    @Path("tracenotok")
+    public Response traceNotOk() {
+        return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+    }
+
+}

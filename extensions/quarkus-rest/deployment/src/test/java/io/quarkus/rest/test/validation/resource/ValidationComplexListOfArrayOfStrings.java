@@ -1,0 +1,16 @@
+package io.quarkus.rest.test.validation.resource;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.validation.Valid;
+
+public class ValidationComplexListOfArrayOfStrings {
+    @Valid
+    List<ValidationComplexArrayOfStrings> list;
+
+    public ValidationComplexListOfArrayOfStrings(final String s) {
+        list = new ArrayList<>();
+        list.add(new ValidationComplexArrayOfStrings(s));
+    }
+}

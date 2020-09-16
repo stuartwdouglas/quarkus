@@ -1,0 +1,16 @@
+package io.quarkus.rest.test.validation.resource;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.validation.Valid;
+
+public class ValidationComplexMapOfListOfArrayOfStrings {
+    @Valid
+    Map<String, ValidationComplexListOfArrayOfStrings> map;
+
+    public ValidationComplexMapOfListOfArrayOfStrings(final String s) {
+        map = new HashMap<String, ValidationComplexListOfArrayOfStrings>();
+        map.put(s, new ValidationComplexListOfArrayOfStrings(s));
+    }
+}

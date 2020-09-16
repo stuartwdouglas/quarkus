@@ -1,0 +1,24 @@
+package io.quarkus.rest.test.cdi.interceptors.resource;
+
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+
+@Interceptor
+@InterceptorResponseFilterInterceptorBinding
+public class InterceptorResponseFilterInterceptor {
+    @Inject
+    private Logger log;
+
+    @AroundInvoke
+    public Object intercept(InvocationContext ctx) throws Exception {
+        log.info("*** Intercepting call in InterceptorResponseFilterInterceptor.intercept()");
+        InterceptorVisitList.add(this);
+        Object result = ctx.proceed();
+        log.info("*** Back from intercepting call in InterceptorResponseFilterInterceptor.intercept()");
+        return result;
+    }
+}
