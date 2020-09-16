@@ -213,7 +213,7 @@ public class SecureProcessingTest {
         war.addClasses(SecureProcessingFavoriteMovieXmlType.class, ObjectFactory.class);
 //        war.addAsWebInfResource(SecureProcessingTest.class.getPackage(), "SecureProcessing_external.dtd", "external.dtd");
 //        war.addAsWebInfResource(SecureProcessingTest.class.getPackage(), "SecureProcessing_web_" + webXmlExt + ".xml",
-                "web.xml");
+ //               "web.xml");
         return TestUtil.finishContainerPrepare(war, null, SecureProcessingResource.class);
     }
 

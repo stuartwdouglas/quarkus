@@ -45,7 +45,7 @@ public class AsyncPostProcessingTest {
 
                     war.addClasses(TestUtil.class, PortProviderUtil.class);
 //                    war.addAsWebInfResource(AsyncPostProcessingTest.class.getPackage(), "AsyncPostProcessingTestWeb.xml",
-                            "web.xml");
+ //                           "web.xml");
                     // Arquillian in the deployment
 
                     return TestUtil.finishContainerPrepare(war, null, AsyncPostProcessingResource.class,

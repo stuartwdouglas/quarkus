@@ -20,7 +20,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.jboss.logging.Logger;
-import io.quarkus.rest.test.util.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -34,6 +33,7 @@ import io.quarkus.rest.test.providers.jaxb.resource.JaxbMarshallingSoakAsyncServ
 import io.quarkus.rest.test.providers.jaxb.resource.JaxbMarshallingSoakItem;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.rest.test.util.TimeoutUtil;
 import io.quarkus.test.QuarkusUnitTest;
 
 /**

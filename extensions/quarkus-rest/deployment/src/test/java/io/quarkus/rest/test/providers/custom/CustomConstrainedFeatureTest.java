@@ -1,8 +1,8 @@
 package io.quarkus.rest.test.providers.custom;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Supplier;
 
@@ -13,7 +13,8 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -30,26 +31,28 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpSince RESTEasy 3.6.1
  * @tpTestCaseDetails Regression test for RESTEASY-1861
  */
+@DisplayName("Custom Constrained Feature Test")
 public class CustomConstrainedFeatureTest {
 
     private static final String TEST_URI = generateURL("/test-custom-feature");
+
     private static final Logger LOGGER = Logger.getLogger(CustomConstrainedFeatureTest.class.getName());
+
     private static final String CUSTOM_PROVIDERS_FILENAME = "CustomConstrainedFeature.Providers";
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addAsResource(CustomConstrainedFeatureTest.class.getPackage(), CUSTOM_PROVIDERS_FILENAME,
-                            "META-INF/services/javax.ws.rs.ext.Providers");
-                    return TestUtil.finishContainerPrepare(war, null, CustomConstrainedFeatureResource.class,
-                            CustomServerConstrainedFeature.class, CustomClientConstrainedFeature.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addAsResource(CustomConstrainedFeatureTest.class.getPackage(), CUSTOM_PROVIDERS_FILENAME,
+                    "META-INF/services/javax.ws.rs.ext.Providers");
+            return TestUtil.finishContainerPrepare(war, null, CustomConstrainedFeatureResource.class,
+                    CustomServerConstrainedFeature.class, CustomClientConstrainedFeature.class);
+        }
+    });
 
     private static String generateURL(String path) {
         return PortProviderUtil.generateURL(path, CustomConstrainedFeatureTest.class.getSimpleName());
@@ -60,6 +63,7 @@ public class CustomConstrainedFeatureTest {
      * @tpSince RESTEasy 3.6.1
      */
     @Test
+    @DisplayName("Test Client Call")
     public void testClientCall() {
         CustomServerConstrainedFeature.reset();
         CustomClientConstrainedFeature.reset();

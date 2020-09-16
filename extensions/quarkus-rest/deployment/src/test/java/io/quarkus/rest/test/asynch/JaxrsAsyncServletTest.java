@@ -9,7 +9,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import io.quarkus.rest.test.util.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
@@ -28,6 +27,7 @@ import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletServiceUnavailableE
 import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletTimeoutHandler;
 import io.quarkus.rest.test.asynch.resource.JaxrsAsyncServletXmlData;
 import io.quarkus.rest.test.simple.PortProviderUtil;
+import io.quarkus.rest.test.util.TimeoutUtil;
 import io.quarkus.test.QuarkusUnitTest;
 
 /**

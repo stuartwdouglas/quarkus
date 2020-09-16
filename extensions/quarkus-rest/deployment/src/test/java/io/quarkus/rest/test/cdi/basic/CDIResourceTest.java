@@ -16,7 +16,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jboss.logging.Logger;
-import io.quarkus.rest.test.util.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -30,6 +29,7 @@ import io.quarkus.rest.test.cdi.basic.resource.resteasy1082.TestApplication;
 import io.quarkus.rest.test.cdi.basic.resource.resteasy1082.TestServlet;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.rest.test.simple.TestUtil;
+import io.quarkus.rest.test.util.TimeoutUtil;
 
 /**
  * @tpSubChapter CDI
@@ -63,8 +63,8 @@ public class CDIResourceTest {
                 TestApplication.class,
                 TestServlet.class);
 
-//        war.addAsWebInfResource(CDIResourceTest.class.getPackage(),
-//                "web-resteasy1082.xml", "web.xml");
+        //        war.addAsWebInfResource(CDIResourceTest.class.getPackage(),
+        //                "web-resteasy1082.xml", "web.xml");
 
         //write file to disk
         war.as(ZipExporter.class).exportTo(exportFile, true);

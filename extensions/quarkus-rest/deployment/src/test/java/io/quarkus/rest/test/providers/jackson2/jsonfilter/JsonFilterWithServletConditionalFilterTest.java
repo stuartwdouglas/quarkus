@@ -52,7 +52,7 @@ public class JsonFilterWithServletConditionalFilterTest {
                                     + "Dependencies: com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider\n"),
                             "MANIFEST.MF");
 //                    war.addAsWebInfResource(JsonFilterWithServletConditionalFilterTest.class.getPackage(),
-                            "web-filter-conditional.xml", "web.xml");
+//                            "web-filter-conditional.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, Jackson2Resource.class);
                 }
             });

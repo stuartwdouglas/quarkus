@@ -48,7 +48,7 @@ public class SpecializedInheritanceTest {
                             .addClasses(CDIInheritenceBook.class, CDIInheritenceBookSpecialized.class,
                                     CDIInheritenceInheritanceResource.class)
 //                            .addAsWebInfResource(SpecializedInheritanceTest.class.getPackage(), "specializedBeans.xml",
-                                    "beans.xml");
+//                                    "beans.xml");
                     return TestUtil.finishContainerPrepare(war, null, (Class<?>[]) null);
                 }
             });

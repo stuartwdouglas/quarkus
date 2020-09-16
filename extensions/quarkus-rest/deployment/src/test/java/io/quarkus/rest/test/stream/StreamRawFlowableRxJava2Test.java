@@ -10,10 +10,11 @@ import javax.ws.rs.core.Response;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -34,46 +35,44 @@ import io.quarkus.test.QuarkusUnitTest;
  *
  *          These tests check raw streaming.
  */
+@DisplayName("Stream Raw Flowable Rx Java 2 Test")
 public class StreamRawFlowableRxJava2Test {
 
     private static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                            + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services"));
-                    return TestUtil.finishContainerPrepare(war, null,
-                            StreamRawFlowableRxJava2Resource.class,
-                            StreamRawByteMessageBodyReaderWriter.class,
-                            StreamRawByteArrayMessageBodyReaderWriter.class,
-                            StreamRawCharMessageBodyReaderWriter.class,
-                            StreamRawCharArrayMessageBodyReaderWriter.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.setManifest(
+                    new StringAsset("Manifest-Version: 1.0\n" + "Dependencies: org.jboss.resteasy.resteasy-rxjava2 services"));
+            return TestUtil.finishContainerPrepare(war, null, StreamRawFlowableRxJava2Resource.class,
+                    StreamRawByteMessageBodyReaderWriter.class, StreamRawByteArrayMessageBodyReaderWriter.class,
+                    StreamRawCharMessageBodyReaderWriter.class, StreamRawCharArrayMessageBodyReaderWriter.class);
+        }
+    });
 
     private static String generateURL(String path) {
         return PortProviderUtil.generateURL(path, StreamRawFlowableRxJava2Test.class.getSimpleName());
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-    @BeforeClass
+    // ////////////////////////////////////////////////////////////////////////////
+    @BeforeAll
     public static void beforeClass() throws Exception {
         client = (QuarkusRestClient) ClientBuilder.newClient();
     }
 
-    @AfterClass
+    @AfterAll
     public static void after() throws Exception {
         client.close();
     }
 
-    //////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////
     @Test
+    @DisplayName("Test Byte")
     public void testByte() throws Exception {
         doByteTest("default");
         doByteTest("false");
@@ -85,14 +84,15 @@ public class StreamRawFlowableRxJava2Test {
         Response response = request.get();
         StreamRawMediaTypes.testMediaType("byte", include, MediaType.valueOf(response.getHeaderString("Content-Type")));
         byte[] entity = response.readEntity(byte[].class);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals(3, entity.length);
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(3, entity.length);
         for (int i = 0; i < 3; i++) {
-            Assert.assertEquals((byte) i, entity[i]);
+            Assertions.assertEquals((byte) i, entity[i]);
         }
     }
 
     @Test
+    @DisplayName("Test Byte Array")
     public void testByteArray() throws Exception {
         doByteArrayTest("default");
         doByteArrayTest("false");
@@ -104,15 +104,16 @@ public class StreamRawFlowableRxJava2Test {
         Response response = request.get();
         StreamRawMediaTypes.testMediaType("byte", include, MediaType.valueOf(response.getHeaderString("Content-Type")));
         byte[] entity = response.readEntity(byte[].class);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals(9, entity.length);
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(9, entity.length);
         byte[] expected = new byte[] { 0, 1, 2, 0, 1, 2, 0, 1, 2 };
         for (int i = 0; i < 9; i++) {
-            Assert.assertEquals(expected[i], entity[i]);
+            Assertions.assertEquals(expected[i], entity[i]);
         }
     }
 
     @Test
+    @DisplayName("Test Char")
     public void testChar() throws Exception {
         doCharTest("default");
         doCharTest("false");
@@ -124,11 +125,12 @@ public class StreamRawFlowableRxJava2Test {
         Response response = request.get();
         StreamRawMediaTypes.testMediaType("char", include, MediaType.valueOf(response.getHeaderString("Content-Type")));
         String entity = response.readEntity(String.class);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals("abc", entity);
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(entity, "abc");
     }
 
     @Test
+    @DisplayName("Test Char Array")
     public void testCharArray() throws Exception {
         doCharArrayTest("default");
         doCharArrayTest("false");
@@ -141,11 +143,11 @@ public class StreamRawFlowableRxJava2Test {
         Response response = request.get();
         StreamRawMediaTypes.testMediaType("char", include, MediaType.valueOf(response.getHeaderString("Content-Type")));
         Character[] entity = response.readEntity(Character[].class);
-        Assert.assertEquals(200, response.getStatus());
-        Assert.assertEquals(9, entity.length);
+        Assertions.assertEquals(200, response.getStatus());
+        Assertions.assertEquals(9, entity.length);
         Character[] chars = new Character[] { 'a', 'b', 'c', 'a', 'b', 'c', 'a', 'b', 'c' };
         for (int i = 0; i < entity.length; i++) {
-            Assert.assertEquals(chars[i], entity[i]);
+            Assertions.assertEquals(chars[i], entity[i]);
         }
     }
 }

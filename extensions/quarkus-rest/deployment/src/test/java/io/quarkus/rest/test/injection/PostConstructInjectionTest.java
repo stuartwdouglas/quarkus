@@ -51,7 +51,7 @@ public class PostConstructInjectionTest {
 
                     war.addClass(PostConstructInjectionEJBInterceptor.class);
 //                    war.addAsWebInfResource(PostConstructInjectionTest.class.getPackage(),
-                            "PostConstructInjection_beans_cdi_on.xml", "beans.xml");
+//                            "PostConstructInjection_beans_cdi_on.xml", "beans.xml");
 
                     return TestUtil.finishContainerPrepare(war, null, PostConstructInjectionResource.class,
                             PostConstructInjectionEJBResource.class);
@@ -71,7 +71,7 @@ public class PostConstructInjectionTest {
 
                     war.addClass(PostConstructInjectionEJBInterceptor.class);
 //                    war.addAsWebInfResource(PostConstructInjectionTest.class.getPackage(),
-                            "PostConstructInjection_beans_cdi_off.xml", "beans.xml");
+//                            "PostConstructInjection_beans_cdi_off.xml", "beans.xml");
 
                     return TestUtil.finishContainerPrepare(war, null, PostConstructInjectionResource.class);
                 }

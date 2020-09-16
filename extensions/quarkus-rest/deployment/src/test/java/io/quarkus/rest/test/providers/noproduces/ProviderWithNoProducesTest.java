@@ -38,7 +38,7 @@ public class ProviderWithNoProducesTest {
 
                     war.addClass(Foo.class);
 //                    war.addAsWebInfResource(ProviderWithNoProducesTest.class.getPackage(), "ProviderWithNoProduces_web.xml",
-                            "web.xml");
+//                            "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, ProviderWithNoProducesResource.class,
                             ProviderWithNoProducesMessageBodyWriter.class);
                 }

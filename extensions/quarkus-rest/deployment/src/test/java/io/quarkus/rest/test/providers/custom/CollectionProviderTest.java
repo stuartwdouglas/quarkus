@@ -16,10 +16,11 @@ import javax.ws.rs.core.Response.Status;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.test.providers.custom.resource.CollectionProviderCollectionWriter;
@@ -34,6 +35,7 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpChapter Integration tests
  * @tpSince RESTEasy 3.0.16
  */
+@DisplayName("Collection Provider Test")
 public class CollectionProviderTest {
 
     public static String getPathValue(Annotation[] annotations) {
@@ -41,8 +43,7 @@ public class CollectionProviderTest {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Annotation> T getSpecifiedAnnotation(
-            Annotation[] annotations, Class<T> clazz) {
+    public static <T extends Annotation> T getSpecifiedAnnotation(Annotation[] annotations, Class<T> clazz) {
         T t = null;
         for (Annotation a : annotations) {
             if (a.annotationType() == clazz) {
@@ -52,8 +53,7 @@ public class CollectionProviderTest {
         return t != null ? t : null;
     }
 
-    public static <T extends Annotation> String getSpecifiedAnnotationValue(
-            Annotation[] annotations, Class<T> clazz) {
+    public static <T extends Annotation> String getSpecifiedAnnotationValue(Annotation[] annotations, Class<T> clazz) {
         T t = getSpecifiedAnnotation(annotations, clazz);
         try {
             Method m = clazz.getMethod("value");
@@ -73,8 +73,7 @@ public class CollectionProviderTest {
         return ok;
     }
 
-    public static boolean checkResponseNongeneric(Class<?> type,
-            Type genericType) {
+    public static boolean checkResponseNongeneric(Class<?> type, Type genericType) {
         boolean ok = genericType.equals(LinkedList.class);
         ok &= type.equals(LinkedList.class);
         return ok;
@@ -84,38 +83,36 @@ public class CollectionProviderTest {
         if (ParameterizedType.class.isInstance(genericType)) {
             genericType = ((ParameterizedType) genericType).getRawType();
         }
-        boolean ok = genericType.getClass().equals(List.class)
-                || genericType.equals(LinkedList.class);
+        boolean ok = genericType.getClass().equals(List.class) || genericType.equals(LinkedList.class);
         ok &= type.equals(LinkedList.class);
         return ok;
     }
 
     static Client client;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() throws Exception {
         client = ClientBuilder.newClient();
     }
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
 
-                    war.addClasses(CollectionProviderTest.class);
-                    return TestUtil.finishContainerPrepare(war, null, CollectionProviderResource.class,
-                            CollectionProviderIncorrectCollectionWriter.class, CollectionProviderCollectionWriter.class);
-                }
-            });
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
+            war.addClasses(CollectionProviderTest.class);
+            return TestUtil.finishContainerPrepare(war, null, CollectionProviderResource.class,
+                    CollectionProviderIncorrectCollectionWriter.class, CollectionProviderCollectionWriter.class);
+        }
+    });
 
     private String generateURL(String path) {
         return PortProviderUtil.generateURL(path, CollectionProviderTest.class.getSimpleName());
     }
 
-    @AfterClass
+    @AfterAll
     public static void close() {
         client.close();
     }
@@ -127,10 +124,11 @@ public class CollectionProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Generic Type Default")
     public void testGenericTypeDefault() {
         Response response = client.target(generateURL("/resource/response/linkedlist")).request().get();
         String val = response.readEntity(String.class);
-        Assert.assertEquals("OK", val);
+        Assertions.assertEquals(val, "OK");
     }
 
     /**
@@ -142,11 +140,11 @@ public class CollectionProviderTest {
      * @tpSince RESTEasy 3.0.16
      */
     @Test
+    @DisplayName("Test Generic Type Response")
     public void testGenericTypeResponse() {
         Response response = client.target(generateURL("/resource/genericentity/linkedlist")).request().get();
-        Assert.assertEquals(Status.OK.getStatusCode(), response.getStatus());
+        Assertions.assertEquals(Status.OK.getStatusCode(), response.getStatus());
         String val = response.readEntity(String.class);
-        Assert.assertEquals("OK", val);
+        Assertions.assertEquals(val, "OK");
     }
-
 }

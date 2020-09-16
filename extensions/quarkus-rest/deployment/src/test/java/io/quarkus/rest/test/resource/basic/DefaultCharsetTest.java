@@ -38,38 +38,16 @@ public class DefaultCharsetTest {
     static QuarkusRestClient client;
 
     @RegisterExtension
-    static QuarkusUnitTest testExtension=new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>(){@Override public JavaArchive get(){JavaArchive war=ShrinkWrap.create(JavaArchive.class);war.addClasses(PortProviderUtil.class);
+    static QuarkusUnitTest testExtension = new QuarkusUnitTest().setArchiveProducer(new Supplier<JavaArchive>() {
+        @Override
+        public JavaArchive get() {
+            JavaArchive war = ShrinkWrap.create(JavaArchive.class);
+            war.addClasses(PortProviderUtil.class);
 
-    //                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_true.xml", "web.xml");
-    return TestUtil.finishContainerPrepare(war,null,DefaultCharsetResource.class);}});
-
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
-
-//                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_false.xml",
-                            "web.xml");
-                    return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
-                }
-            });
-
-    @RegisterExtension
-    static QuarkusUnitTest testExtension = new QuarkusUnitTest()
-            .setArchiveProducer(new Supplier<JavaArchive>() {
-                @Override
-                public JavaArchive get() {
-                    JavaArchive war = ShrinkWrap.create(JavaArchive.class);
-                    war.addClasses(PortProviderUtil.class);
-
-//                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_default.xml",
-                            "web.xml");
-                    return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
-                }
-            });
+            //                    war.addAsWebInfResource(DefaultCharsetTest.class.getPackage(), "DefaultCharsetTestWeb_true.xml", "web.xml");
+            return TestUtil.finishContainerPrepare(war, null, DefaultCharsetResource.class);
+        }
+    });
 
     @Before
     public void init() {

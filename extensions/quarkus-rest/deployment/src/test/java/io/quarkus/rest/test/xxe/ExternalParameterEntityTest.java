@@ -71,7 +71,7 @@ public class ExternalParameterEntityTest {
 
                     war.addClass(ExternalParameterEntityWrapper.class);
 //                    war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
-                            "ExternalParameterEntityExpandWeb.xml", "web.xml");
+//                            "ExternalParameterEntityExpandWeb.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, ExternalParameterEntityResource.class);
                 }
             });
@@ -86,7 +86,7 @@ public class ExternalParameterEntityTest {
 
                     war.addClass(ExternalParameterEntityWrapper.class);
 //                    war.addAsWebInfResource(ExternalParameterEntityTest.class.getPackage(),
-                            "ExternalParameterEntityNoExpandWeb.xml", "web.xml");
+//                            "ExternalParameterEntityNoExpandWeb.xml", "web.xml");
                     return TestUtil.finishContainerPrepare(war, null, ExternalParameterEntityResource.class);
                 }
             });

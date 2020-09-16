@@ -19,8 +19,6 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.resteasy.category.ExpectedFailingOnWildFly18;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClientEngine;
 import org.jboss.resteasy.setup.AbstractUsersRolesSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -29,7 +27,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.rest.runtime.client.QuarkusRestClient;
@@ -49,8 +46,6 @@ import io.quarkus.test.QuarkusUnitTest;
  * @tpTestCaseDetails Basic test for RESTEasy authentication.
  * @tpSince RESTEasy 3.0.16
  */
-@ServerSetup({ BasicAuthTest.SecurityDomainSetup.class })
-@Category({ ExpectedFailingOnWildFly18.class }) //WFLY-12655
 public class BasicAuthTest {
 
     private static final String WRONG_RESPONSE = "Wrong response content.";
@@ -129,7 +124,7 @@ public class BasicAuthTest {
                     Hashtable<String, String> contextParams = new Hashtable<String, String>();
                     contextParams.put("resteasy.role.based.security", "true");
 
-                    war.addClass(BasicAuthBaseProxy.class)
+                    war.addClass(BasicAuthBaseProxy.class);
 //                            .addAsWebInfResource(BasicAuthTest.class.getPackage(), "jboss-web.xml", "/jboss-web.xml")
 //                            .addAsWebInfResource(BasicAuthTest.class.getPackage(), "web.xml", "/web.xml");
 
