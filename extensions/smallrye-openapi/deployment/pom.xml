@@ -23,8 +23,16 @@
       <artifactId>quarkus-vertx-http-deployment</artifactId>
     </dependency>
     <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-smallrye-openapi-spi</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-resteasy-server-common-spi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-resteasy-common-spi</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>

@@ -5,7 +5,9 @@ import static io.quarkus.it.keycloak.KeycloakRealmResourceManager.getRefreshToke
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.Matchers;
@@ -59,6 +61,17 @@ public class BearerTokenAuthorizationTest {
     }
 
     @Test
+    public void testBasicAuth() {
+        byte[] basicAuthBytes = "alice:password".getBytes(StandardCharsets.UTF_8);
+        RestAssured.given()
+                .header("Authorization", "Basic " + Base64.getEncoder().encodeToString(basicAuthBytes))
+                .when().get("/api/users/me")
+                .then()
+                .statusCode(200)
+                .body("userName", equalTo("alice"));
+    }
+
+    @Test
     public void testSecureAccessSuccessPreferredUsername() {
         for (String username : Arrays.asList("alice", "jdoe", "admin")) {
             RestAssured.given().auth().oauth2(getAccessToken(username))
@@ -76,6 +89,22 @@ public class BearerTokenAuthorizationTest {
                 .then()
                 .statusCode(200)
                 .body(Matchers.containsString("granted:admin"));
+    }
+
+    @Test
+    public void testAccessAdminResourceCustomHeaderNoBearerScheme() {
+        RestAssured.given().header("X-Forwarded-Authorization", getAccessToken("admin"))
+                .when().get("/api/admin")
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    public void testAccessAdminResourceCustomHeaderBearerScheme() {
+        RestAssured.given().header("X-Forwarded-Authorization", getAccessToken("admin"))
+                .when().get("/api/admin")
+                .then()
+                .statusCode(401);
     }
 
     @Test

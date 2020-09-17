@@ -1,8 +1,10 @@
 package io.quarkus.vertx.web.deployment;
 
-import org.jboss.jandex.DotName;
+import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
+
+import io.quarkus.hibernate.validator.spi.BeanValidationAnnotationsBuildItem;
 
 /**
  * Describe a request handler.
@@ -10,9 +12,11 @@ import org.jboss.jandex.Type;
 class HandlerDescriptor {
 
     private final MethodInfo method;
+    private final BeanValidationAnnotationsBuildItem validationAnnotations;
 
-    HandlerDescriptor(MethodInfo method) {
+    HandlerDescriptor(MethodInfo method, BeanValidationAnnotationsBuildItem bvAnnotations) {
         this.method = method;
+        this.validationAnnotations = bvAnnotations;
     }
 
     Type getReturnType() {
@@ -29,6 +33,37 @@ class HandlerDescriptor {
 
     boolean isReturningMulti() {
         return method.returnType().name().equals(DotNames.MULTI);
+    }
+
+    /**
+     * @return {@code true} if the method is annotated with a constraint or {@code @Valid} or any parameter has such kind of
+     *         annotation.
+     */
+    boolean requireValidation() {
+        if (validationAnnotations == null) {
+            return false;
+        }
+        for (AnnotationInstance annotation : method.annotations()) {
+            if (validationAnnotations.getAllAnnotations().contains(annotation.name())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return {@code true} if the method is annotated with {@code @Valid}.
+     */
+    boolean isProducedResponseValidated() {
+        if (validationAnnotations == null) {
+            return false;
+        }
+        for (AnnotationInstance annotation : method.annotations()) {
+            if (validationAnnotations.getValidAnnotation().equals(annotation.name())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     Type getContentType() {
@@ -65,8 +100,7 @@ class HandlerDescriptor {
         if (type == null) {
             return false;
         }
-        return type.name()
-                .equals(DotName.createSimple(io.vertx.reactivex.core.buffer.Buffer.class.getName()));
+        return type.name().equals(DotNames.RX_BUFFER);
     }
 
     boolean isContentTypeMutinyBuffer() {
@@ -74,7 +108,7 @@ class HandlerDescriptor {
         if (type == null) {
             return false;
         }
-        return type.name().equals(DotName.createSimple(io.vertx.mutiny.core.buffer.Buffer.class.getName()));
+        return type.name().equals(DotNames.MUTINY_BUFFER);
     }
 
 }

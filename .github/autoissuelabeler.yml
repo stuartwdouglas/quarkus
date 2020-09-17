@@ -20,6 +20,9 @@
 - labels: [area/maven]
   title: "(?i).*maven.*"
   notify: [quarkusio/devtools]
+- labels: [area/jbang]
+  title: "(?i).*jbang.*"
+  notify: [quarkusio/devtools,maxandersen]
 - labels: [area/codestarts]
   title: "(?i).*codestart.*"
   description: "(?i).*codestart.*"
@@ -127,6 +130,10 @@
   title: "(?i).*openshift.*"
   description: "(?i).*openshift.*"
   notify: [geoand]
+- labels: [area/kubernetes]
+  title: "(?i).*knative.*"
+  description: "(?i).*knative.*"
+  notify: [geoand]
 - labels: [area/container-image]
   title: "(?i).*jib.*"
   description: "(?i).*jib.*"
@@ -134,7 +141,7 @@
 - labels: [area/kafka-streams]
   title: "(?i).*k(afka)?(\\s|-)?stream.*"
   description: "(?i).*k(afka)?(\\s|-)?stream.*"
-  notify: [gunnarmorling]
+  notify: [gunnarmorling,rquinio]
 - labels: [area/infinispan]
   title: "(?i).*infinispan.*"
   description: "(?i).*infinispan.*"

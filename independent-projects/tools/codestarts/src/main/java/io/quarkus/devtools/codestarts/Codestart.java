@@ -1,5 +1,7 @@
 package io.quarkus.devtools.codestarts;
 
+import io.quarkus.devtools.codestarts.core.CodestartSpec;
+import io.quarkus.devtools.codestarts.utils.NestedMaps;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -32,11 +34,15 @@ public final class Codestart {
         return spec.getRef();
     }
 
+    public int getTypeOrder() {
+        return spec.getType().getProcessingOrder();
+    }
+
     public boolean isSelected(Set<String> selection) {
         return selection.contains(getName()) || selection.contains(spec.getRef());
     }
 
-    public CodestartSpec.Type getType() {
+    public CodestartType getType() {
         return spec.getType();
     }
 
@@ -46,6 +52,10 @@ public final class Codestart {
 
     public boolean implementsLanguage(String languageName) {
         return implementedLanguages.isEmpty() || implementedLanguages.contains(languageName);
+    }
+
+    public boolean containsTag(String tag) {
+        return getSpec().getTags().contains(tag);
     }
 
     public Map<String, Object> getLocalData(String languageName) {

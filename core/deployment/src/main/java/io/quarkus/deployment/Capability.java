@@ -32,6 +32,7 @@ public enum Capability {
     JWT,
     TIKA,
     MONGODB_PANACHE,
+    MONGODB_PANACHE_KOTLIN,
     FLYWAY,
     LIQUIBASE,
     SECURITY,
@@ -40,12 +41,17 @@ public enum Capability {
     SECURITY_ELYTRON_LDAP,
     SECURITY_JPA,
     QUARTZ,
+    /**
+     * @deprecated
+     * @see io.quarkus.deployment.metrics.MetricsCapabilityBuildItem
+     */
     METRICS,
     CONTAINER_IMAGE_JIB,
     CONTAINER_IMAGE_DOCKER,
     CONTAINER_IMAGE_S2I,
     HIBERNATE_ORM,
     HIBERNATE_REACTIVE,
+    HIBERNATE_VALIDATOR,
     /**
      * Presence of an io.opentracing tracer (for example, Jaeger).
      */
@@ -54,10 +60,11 @@ public enum Capability {
      * Presence of SmallRye OpenTracing.
      */
     SMALLRYE_OPENTRACING,
-    SPRING_WEB;
+    SPRING_WEB,
+    SMALLRYE_OPENAPI;
 
     /**
-     * 
+     *
      * @return the name
      */
     public String getName() {

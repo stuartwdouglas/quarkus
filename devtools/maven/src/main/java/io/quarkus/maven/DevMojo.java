@@ -80,9 +80,9 @@ import io.quarkus.bootstrap.resolver.maven.workspace.LocalProject;
 import io.quarkus.bootstrap.resolver.maven.workspace.LocalWorkspace;
 import io.quarkus.deployment.dev.DevModeContext;
 import io.quarkus.deployment.dev.DevModeMain;
-import io.quarkus.deployment.util.JavaVersionUtil;
 import io.quarkus.maven.components.MavenVersionEnforcer;
 import io.quarkus.maven.utilities.MojoUtils;
+import io.quarkus.runtime.util.JavaVersionUtil;
 import io.quarkus.utilities.JavaBinFinder;
 
 /**
@@ -119,7 +119,7 @@ public class DevMojo extends AbstractMojo {
 
     private static final String QUARKUS_PLUGIN_GROUPID = "io.quarkus";
     private static final String QUARKUS_PLUGIN_ARTIFACTID = "quarkus-maven-plugin";
-    private static final String QUARKUS_PREPARE_GOAL = "prepare";
+    private static final String QUARKUS_GENERATE_CODE_GOAL = "generate-code";
 
     private static final String ORG_APACHE_MAVEN_PLUGINS = "org.apache.maven.plugins";
     private static final String MAVEN_COMPILER_PLUGIN = "maven-compiler-plugin";
@@ -423,7 +423,7 @@ public class DevMojo extends AbstractMojo {
         }
         executeMojo(
                 quarkusPlugin,
-                goal(QUARKUS_PREPARE_GOAL),
+                goal(QUARKUS_GENERATE_CODE_GOAL),
                 configuration(),
                 executionEnvironment(
                         project,
@@ -772,32 +772,21 @@ public class DevMojo extends AbstractMojo {
         }
 
         private void propagateUserProperties() {
-            final String mavenCmdLine = BootstrapMavenOptions.getMavenCmdLine();
-            if (mavenCmdLine == null || mavenCmdLine.isEmpty()) {
-                return;
-            }
-            int i = mavenCmdLine.indexOf("-D");
-            if (i < 0) {
+            Properties userProps = BootstrapMavenOptions.newInstance().getSystemProperties();
+            if (userProps == null) {
                 return;
             }
             final StringBuilder buf = new StringBuilder();
             buf.append("-D");
-            i += 2;
-            while (i < mavenCmdLine.length()) {
-                final char ch = mavenCmdLine.charAt(i++);
-                if (!Character.isWhitespace(ch)) {
-                    buf.append(ch);
-                } else if (buf.length() > 2) {
-                    args.add(buf.toString());
-                    buf.setLength(2);
-                    i = mavenCmdLine.indexOf("-D", i);
-                    if (i < 0) {
-                        break;
-                    }
-                    i += 2;
+            for (Object o : userProps.keySet()) {
+                String name = o.toString();
+                final String value = userProps.getProperty(name);
+                buf.setLength(2);
+                buf.append(name);
+                if (value != null && !value.isEmpty()) {
+                    buf.append('=');
+                    buf.append(value);
                 }
-            }
-            if (buf.length() > 2) {
                 args.add(buf.toString());
             }
         }

@@ -1,13 +1,14 @@
 package io.quarkus.bootstrap.resolver.model;
 
-import java.util.Set;
+import java.util.List;
 
 public interface QuarkusModel {
 
     Workspace getWorkspace();
 
-    Set<Dependency> getAppDependencies();
+    List<Dependency> getAppDependencies();
 
-    Set<Dependency> getExtensionDependencies();
+    List<Dependency> getExtensionDependencies();
 
+    List<Dependency> getEnforcedPlatformDependencies();
 }
