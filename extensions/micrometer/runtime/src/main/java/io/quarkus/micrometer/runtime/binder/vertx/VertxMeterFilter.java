@@ -14,17 +14,10 @@ public class VertxMeterFilter implements Handler<RoutingContext> {
     public void handle(RoutingContext event) {
         final Context context = Vertx.currentContext();
         log.debugf("Handling event %s with context %s", event, context);
-
-        if (context != null) {
-            MetricsContext.addRoutingContext(context, event);
-            event.addBodyEndHandler(new Handler<Void>() {
-                @Override
-                public void handle(Void x) {
-                    MetricsContext.removeRoutingContext(context);
-                }
-            });
+        FakeMetricsCookie cookie = (FakeMetricsCookie) event.request().cookieMap().remove(FakeMetricsCookie.NAME);
+        if (cookie != null) {
+            cookie.metricsContext.routingContext = event;
         }
-
         event.next();
     }
 }

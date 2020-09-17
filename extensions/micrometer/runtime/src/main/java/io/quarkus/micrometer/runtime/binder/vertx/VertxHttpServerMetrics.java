@@ -3,6 +3,7 @@ package io.quarkus.micrometer.runtime.binder.vertx;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jboss.logging.Logger;
@@ -28,7 +29,7 @@ import io.vertx.core.spi.metrics.HttpServerMetrics;
  * </ul>
  */
 public class VertxHttpServerMetrics extends VertxTcpMetrics
-        implements HttpServerMetrics<MetricsContext, LongTaskTimer.Sample, MetricsContext> {
+        implements HttpServerMetrics<MetricsContext, LongTaskTimer.Sample, Map<String, Object>> {
     static final Logger log = Logger.getLogger(VertxHttpServerMetrics.class);
 
     final List<Pattern> ignorePatterns;
@@ -75,8 +76,9 @@ public class VertxHttpServerMetrics extends VertxTcpMetrics
      * @return a MetricsContext object for request metric context or null
      */
     @Override
-    public MetricsContext responsePushed(MetricsContext socketMetric, HttpMethod method, String uri,
+    public MetricsContext responsePushed(Map<String, Object> socketMetric, HttpMethod method, String uri,
             HttpServerResponse response) {
+        MetricsContext metricsContext = new MetricsContext();
         String path = VertxMetricsTags.parseUriPath(matchPatterns, ignorePatterns, uri);
         if (path != null) {
             registry.counter(nameHttpServerPush,
@@ -84,7 +86,7 @@ public class VertxHttpServerMetrics extends VertxTcpMetrics
                             VertxMetricsTags.outcome(response), VertxMetricsTags.status(response.getStatusCode())))
                     .increment();
         }
-        return socketMetric;
+        return metricsContext;
     }
 
     /**
@@ -97,17 +99,21 @@ public class VertxHttpServerMetrics extends VertxTcpMetrics
      * @return a MetricsContext object for request metric context or null
      */
     @Override
-    public MetricsContext requestBegin(MetricsContext socketMetric, HttpServerRequest request) {
+    public MetricsContext requestBegin(Map<String, Object> socketMetric, HttpServerRequest request) {
         String path = VertxMetricsTags.parseUriPath(matchPatterns, ignorePatterns, request.uri());
-        if (path != null && socketMetric != null) {
+        MetricsContext metricsContext = new MetricsContext();
+        if (path != null) {
             // Pre-add the request method tag to the sample
-            socketMetric.put(MetricsContext.HTTP_REQUEST_SAMPLE,
+            metricsContext.put(MetricsContext.HTTP_REQUEST_SAMPLE,
                     Timer.start(registry).tags(Tags.of(VertxMetricsTags.method(request.method()))));
 
             // remember the path to monitor for use later (maybe a 404 or redirect..)
-            socketMetric.put(MetricsContext.HTTP_REQUEST_PATH, path);
+            metricsContext.put(MetricsContext.HTTP_REQUEST_PATH, path);
         }
-        return socketMetric;
+        FakeMetricsCookie fakeMetricsCookie = new FakeMetricsCookie();
+        fakeMetricsCookie.metricsContext = metricsContext;
+        request.cookieMap().put(FakeMetricsCookie.NAME, fakeMetricsCookie);
+        return metricsContext;
     }
 
     /**
@@ -156,9 +162,9 @@ public class VertxHttpServerMetrics extends VertxTcpMetrics
      * @return a LongTaskTimer.Sample containing websocket metric context or null
      */
     @Override
-    public LongTaskTimer.Sample connected(MetricsContext socketMetric, MetricsContext requestMetric,
+    public LongTaskTimer.Sample connected(Map<String, Object> socketMetric, MetricsContext requestMetric,
             ServerWebSocket serverWebSocket) {
-        String path = getServerRequestPath(socketMetric);
+        String path = getServerRequestPath(requestMetric);
         if (path != null) {
             return LongTaskTimer.builder(nameWebsocketConnections)
                     .tags(Tags.of(VertxMetricsTags.uri(path, 0)))
