@@ -5,6 +5,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
+import io.quarkus.rest.runtime.injection.QuarkusRestInjectionContext;
+
 public class OtherBeanParam {
     @QueryParam("query")
     String query;
@@ -14,4 +16,9 @@ public class OtherBeanParam {
 
     @Context
     UriInfo uriInfo;
+
+    public void __quarkus_rest_inject2(QuarkusRestInjectionContext ctx) {
+        query = ctx.getQueryParameter("query");
+        header = ctx.getHeader("header");
+    }
 }
