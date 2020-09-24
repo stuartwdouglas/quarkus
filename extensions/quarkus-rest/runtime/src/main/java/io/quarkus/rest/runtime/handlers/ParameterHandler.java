@@ -42,7 +42,6 @@ public class ParameterHandler implements RestHandler {
                             requestContext.resume(throwable);
                         } else {
                             handleResult(o, requestContext, true);
-                            requestContext.resume();
                         }
                     }
                 });
@@ -103,6 +102,9 @@ public class ParameterHandler implements RestHandler {
                     }
                     break;
             }
+        }
+        if (toThrow == null) {
+            requestContext.getParameters()[index] = result;
         }
         if (needsResume) {
             if (toThrow == null) {
