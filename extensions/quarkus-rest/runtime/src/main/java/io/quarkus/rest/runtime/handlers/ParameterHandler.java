@@ -105,12 +105,12 @@ public class ParameterHandler implements RestHandler {
             }
         }
         if (needsResume) {
-            if(toThrow == null) {
+            if (toThrow == null) {
                 requestContext.resume();
             } else {
                 requestContext.resume(toThrow);
             }
-        } else if(toThrow != null){
+        } else if (toThrow != null) {
             throw QuarkusRestUtil.sneakyThrow(toThrow);
         }
     }

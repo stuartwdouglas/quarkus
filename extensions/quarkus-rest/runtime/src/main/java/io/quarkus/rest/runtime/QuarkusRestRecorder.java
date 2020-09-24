@@ -835,9 +835,6 @@ public class QuarkusRestRecorder {
             case QUERY:
                 extractor = new QueryParamExtractor(name, single);
                 break;
-            case COOKIE:
-                extractor = new CookieParamExtractor(name, single);
-                break;
             case BODY:
                 extractor = new BodyParamExtractor();
                 break;
