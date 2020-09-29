@@ -141,9 +141,9 @@ public class Serialisers {
             new BuiltinWriter(MultivaluedMap.class, FormUrlEncodedProvider.class,
                     MediaType.APPLICATION_FORM_URLENCODED),
             new BuiltinWriter(Reader.class, ReaderBodyHandler.class,
-                           MediaType.TEXT_PLAIN),
+                    MediaType.TEXT_PLAIN),
             new BuiltinWriter(File.class, FileBodyHandler.class,
-                           MediaType.TEXT_PLAIN),
+                    MediaType.TEXT_PLAIN),
     };
 
     // FIXME: spec says we should use generic type, but not sure how to pass that type from Jandex to reflection 
