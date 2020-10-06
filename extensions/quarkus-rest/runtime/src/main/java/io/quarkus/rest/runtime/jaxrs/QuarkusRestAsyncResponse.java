@@ -80,7 +80,9 @@ public class QuarkusRestAsyncResponse implements AsyncResponse, Handler<Long> {
         ResponseBuilder response = Response.status(503);
         if (retryAfter != null)
             response.header(HttpHeaders.RETRY_AFTER, retryAfter);
-        context.setThrowable(new WebApplicationException(response.build()));
+        // It's not clear if we should go via the exception handlers here, but our TCK setup makes us
+        // go through it, while RESTEasy doesn't because it does resume like this, so we do too
+        context.setResult(response.build());
         context.resume();
         return true;
     }
