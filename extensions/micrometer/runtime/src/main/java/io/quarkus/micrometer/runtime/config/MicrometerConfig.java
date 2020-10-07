@@ -93,6 +93,7 @@ public final class MicrometerConfig {
     public static class BinderConfig {
         public VertxConfig vertx;
         public MicroprofileMetricsConfig mpMetrics;
+        public KafkaConfig kafka;
 
         /**
          * Micrometer JVM metrics support.
@@ -118,6 +119,8 @@ public final class MicrometerConfig {
         public JmxConfig jmx;
         public PrometheusConfig prometheus;
         public StackdriverConfig stackdriver;
+        public JsonConfig json;
+        public AzureMonitorConfig azuremonitor;
     }
 
     public static interface CapabilityEnabled {

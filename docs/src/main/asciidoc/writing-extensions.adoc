@@ -91,7 +91,7 @@ An extension can produce an <<cdi-reference.adoc#additional_beans,`AdditionalBea
 .Bean Class Registered by `AdditionalBeanBuildItem`
 [source%nowrap,java]
 ----
-@ApplicationScoped <1>
+@Singleton <1>
 public class Echo {
 
    public String echo(String val) {
@@ -125,7 +125,7 @@ And vice versa - the extension bean can inject application beans and beans provi
 .Extension Bean Injection Example
 [source%nowrap,java]
 ----
-@ApplicationScoped
+@Singleton
 public class Echo {
 
     @Inject
@@ -1495,7 +1495,11 @@ HealthBuildItem addHealthCheck(AgroalBuildTimeConfig agroalBuildTimeConfig) {
 
 === Extension Metrics
 
-The `quarkus-smallrye-metrics` extension and the `quarkus-micrometer` extension provide support for collecting metrics. As a compatibility note, the `quarkus-micrometer` extension adapts the MP Metrics API to Micrometer library primitives, so the `quarkus-micrometer` extension can be enabled without breaking code that relies on the MP Metrics API. Note that the metrics emitted by Micrometer are different, see the `quarkus-micrometer` extension documentation for more information.
+The `quarkus-micrometer` extension and the `quarkus-smallrye-metrics` extension provide support for collecting metrics.
+As a compatibility note, the `quarkus-micrometer` extension adapts the MP Metrics API to Micrometer library primitives, so the `quarkus-micrometer` extension can be enabled without breaking code that relies on the MP Metrics API.
+Note that the metrics emitted by Micrometer are different, see the `quarkus-micrometer` extension documentation for more information.
+
+NOTE: The compatibility layer for MP Metrics APIs will move to a different extension in the future.
 
 There are two broad patterns that extensions can use to interact with an optional metrics extension to add their own metrics:
 
@@ -2178,7 +2182,7 @@ Capabilities provided by core extensions should be listed in the `io.quarkus.dep
 ==== Bean Defining Annotations
 The CDI layer processes CDI beans that are either explicitly registered or that it discovers based on bean defining annotations as defined in http://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#bean_defining_annotations[2.5.1. Bean defining annotations]. You can expand this set of annotations to include annotations your extension processes using a `BeanDefiningAnnotationBuildItem` as shown in this `TestProcessor#registerBeanDefinningAnnotations` example:
 
-.Register a Bean Definining Annotation
+.Register a Bean Defining Annotation
 [source,java]
 ----
 import javax.enterprise.context.ApplicationScoped;
@@ -2430,7 +2434,7 @@ and shutdown. There are CDI events fired that components can observe are illustr
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 
-puclic class SomeBean {
+public class SomeBean {
     /**
      * Called when the runtime has started
      * @param event
@@ -2449,7 +2453,7 @@ puclic class SomeBean {
 }
 ----
 <1> Observe a `StartupEvent` to be notified the runtime has started.
-<2> Observe a 'ShutdownEvent` to be notified when the runtime is going to shutdown.
+<2> Observe a `ShutdownEvent` to be notified when the runtime is going to shutdown.
 
 What is the relevance of startup and shutdown events for extension authors? We have already seen the use of a `ShutdownContext`
 to register a callback to perform shutdown tasks in the <<Starting a Service>> section. These shutdown tasks would be called
@@ -2682,7 +2686,7 @@ public class DSAPublicKeyObjectSubstitution implements ObjectSubstitution<DSAPub
 
 An extension registers this substitution by producing an `ObjectSubstitutionBuildItem` as shown in this `TestProcessor#loadDSAPublicKey` fragment:
 
-.Registering an Object Subtitution
+.Registering an Object Substitution
 [source,java]
 ----
     @BuildStep

@@ -2,13 +2,13 @@ package io.quarkus.qute;
 
 import io.quarkus.qute.Expression.Part;
 import io.quarkus.qute.Results.Result;
-import io.quarkus.qute.SectionHelper.SectionResolutionContext;
 import io.quarkus.qute.SectionHelperFactory.ParametersInfo;
 import io.quarkus.qute.TemplateNode.Origin;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,8 +36,10 @@ class Parser implements Function<String, Expression>, ParserHelper {
     private static final char START_DELIMITER = '{';
     private static final char END_DELIMITER = '}';
     private static final char COMMENT_DELIMITER = '!';
-    private static final char CDATA_START_DELIMITER = '[';
-    private static final char CDATA_END_DELIMITER = ']';
+    private static final char CDATA_START_DELIMITER = '|';
+    private static final char CDATA_START_DELIMITER_OLD = '[';
+    private static final char CDATA_END_DELIMITER = '|';
+    private static final char CDATA_END_DELIMITER_OLD = ']';
     private static final char UNDERSCORE = '_';
     private static final char ESCAPE_CHAR = '\\';
 
@@ -135,8 +137,9 @@ class Parser implements Function<String, Expression>, ParserHelper {
             root.addBlock(part.build());
             TemplateImpl template = new TemplateImpl(engine, root.build(), generatedId, variant);
 
+            Set<TemplateNode> nodesToRemove;
             if (engine.removeStandaloneLines) {
-                Set<TemplateNode> nodesToRemove = new HashSet<>();
+                nodesToRemove = new HashSet<>();
                 List<List<TemplateNode>> lines = readLines(template.root);
                 for (List<TemplateNode> line : lines) {
                     if (isStandalone(line)) {
@@ -148,8 +151,10 @@ class Parser implements Function<String, Expression>, ParserHelper {
                         }
                     }
                 }
-                template.root.removeNodes(nodesToRemove);
+            } else {
+                nodesToRemove = Collections.emptySet();
             }
+            template.root.optimizeNodes(nodesToRemove);
 
             LOGGER.tracef("Parsing finished in %s ms", System.currentTimeMillis() - start);
             return template;
@@ -238,7 +243,8 @@ class Parser implements Function<String, Expression>, ParserHelper {
     }
 
     private void cdata(char character) {
-        if (character == END_DELIMITER && buffer.length() > 0 && buffer.charAt(buffer.length() - 1) == CDATA_END_DELIMITER) {
+        if (character == END_DELIMITER && buffer.length() > 0
+                && isCdataEnd(buffer.charAt(buffer.length() - 1))) {
             // End of cdata
             state = State.TEXT;
             buffer.deleteCharAt(buffer.length() - 1);
@@ -246,6 +252,10 @@ class Parser implements Function<String, Expression>, ParserHelper {
         } else {
             buffer.append(character);
         }
+    }
+
+    private boolean isCdataEnd(char character) {
+        return character == CDATA_END_DELIMITER || character == CDATA_END_DELIMITER_OLD;
     }
 
     private void tag(char character) {
@@ -263,7 +273,7 @@ class Parser implements Function<String, Expression>, ParserHelper {
             if (character == COMMENT_DELIMITER) {
                 buffer.append(character);
                 state = State.COMMENT;
-            } else if (character == CDATA_START_DELIMITER) {
+            } else if (character == CDATA_START_DELIMITER || character == CDATA_START_DELIMITER_OLD) {
                 state = State.CDATA;
             } else {
                 buffer.append(character);
@@ -284,6 +294,7 @@ class Parser implements Function<String, Expression>, ParserHelper {
     private boolean isValidIdentifierStart(char character) {
         // A valid identifier must start with a digit, alphabet, underscore, comment delimiter, cdata start delimiter or a tag command (e.g. # for sections)
         return Tag.isCommand(character) || character == COMMENT_DELIMITER || character == CDATA_START_DELIMITER
+                || character == CDATA_START_DELIMITER_OLD
                 || character == UNDERSCORE
                 || Character.isDigit(character)
                 || Character.isAlphabetic(character);
@@ -908,15 +919,21 @@ class Parser implements Function<String, Expression>, ParserHelper {
         currentScope.put(name, Expressions.TYPE_INFO_SEPARATOR + type + Expressions.TYPE_INFO_SEPARATOR);
     }
 
+    private static final SectionHelper ROOT_SECTION_HELPER = new SectionHelper() {
+        @Override
+        public CompletionStage<ResultNode> resolve(SectionResolutionContext context) {
+            return context.execute();
+        }
+    };
     private static final SectionHelperFactory<SectionHelper> ROOT_SECTION_HELPER_FACTORY = new SectionHelperFactory<SectionHelper>() {
         @Override
         public SectionHelper initialize(SectionInitContext context) {
-            return SectionResolutionContext::execute;
+            return ROOT_SECTION_HELPER;
         }
     };
 
     private static final BlockNode BLOCK_NODE = new BlockNode();
-    private static final CommentNode COMMENT_NODE = new CommentNode();
+    static final CommentNode COMMENT_NODE = new CommentNode();
 
     // A dummy node for section blocks, it's only used when removing standalone lines
     private static class BlockNode implements TemplateNode {
@@ -934,16 +951,16 @@ class Parser implements Function<String, Expression>, ParserHelper {
     }
 
     // A dummy node for comments, it's only used when removing standalone lines
-    private static class CommentNode implements TemplateNode {
+    static class CommentNode implements TemplateNode {
 
         @Override
         public CompletionStage<ResultNode> resolve(ResolutionContext context) {
-            throw new IllegalStateException();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public Origin getOrigin() {
-            throw new IllegalStateException();
+            throw new UnsupportedOperationException();
         }
 
     }

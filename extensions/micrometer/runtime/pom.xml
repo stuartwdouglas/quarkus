@@ -36,6 +36,13 @@
             <artifactId>micrometer-core</artifactId>
         </dependency>
 
+        <!-- Needed for the JSON meter registry -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.json</artifactId>
+        </dependency>
+
+
         <!-- Registry providers (optional) -->
 
         <dependency>
@@ -58,7 +65,11 @@
             <artifactId>micrometer-registry-stackdriver</artifactId>
             <optional>true</optional>
         </dependency>
-
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-azure-monitor</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- Dependencies for Binding (optional) -->
 
         <dependency>
@@ -76,6 +87,12 @@
         <dependency>
             <groupId>org.eclipse.microprofile.metrics</groupId>
             <artifactId>microprofile-metrics-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
             <optional>true</optional>
         </dependency>
 

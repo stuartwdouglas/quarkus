@@ -2,6 +2,7 @@ package io.quarkus.it.kubernetes;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.ServiceAccount;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.quarkus.test.LogFile;
 import io.quarkus.test.ProdBuildResults;
@@ -60,7 +60,7 @@ public class BasicKubernetesTest {
         List<HasMetadata> kubernetesList = DeserializationUtil
                 .deserializeAsList(kubernetesDir.resolve("kubernetes.yml"));
 
-        assertThat(kubernetesList).hasSize(3);
+        assertThat(kubernetesList).hasSize(2);
 
         assertThat(kubernetesList.get(0)).isInstanceOfSatisfying(Deployment.class, d -> {
             assertThat(d.getMetadata()).satisfies(m -> {
@@ -69,6 +69,11 @@ public class BasicKubernetesTest {
             });
 
             assertThat(d.getSpec()).satisfies(deploymentSpec -> {
+                assertThat(deploymentSpec.getSelector()).isNotNull().satisfies(labelSelector -> {
+                    assertThat(labelSelector.getMatchLabels()).containsOnly(entry("app.kubernetes.io/name", "basic"),
+                            entry("app.kubernetes.io/version", "0.1-SNAPSHOT"));
+                });
+
                 assertThat(deploymentSpec.getTemplate()).satisfies(t -> {
                     assertThat(t.getSpec()).satisfies(podSpec -> {
                         assertThat(podSpec.getContainers()).singleElement().satisfies(container -> {
@@ -87,15 +92,12 @@ public class BasicKubernetesTest {
                 assertThat(m.getNamespace()).isNull();
             });
             assertThat(s.getSpec()).satisfies(spec -> {
+                assertThat(spec.getSelector()).containsOnly(entry("app.kubernetes.io/name", "basic"),
+                        entry("app.kubernetes.io/version", "0.1-SNAPSHOT"));
+
                 assertThat(spec.getPorts()).hasSize(1).singleElement().satisfies(p -> {
                     assertThat(p.getPort()).isEqualTo(8080);
                 });
-            });
-        });
-
-        assertThat(kubernetesList.get(2)).isInstanceOfSatisfying(ServiceAccount.class, sa -> {
-            assertThat(sa.getMetadata()).satisfies(m -> {
-                assertThat(m.getNamespace()).isNull();
             });
         });
     }

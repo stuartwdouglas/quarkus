@@ -186,6 +186,11 @@ public class ParserTest {
                 + jsSnippet
                 + "]}").data("name", "world").render());
         assertEquals("Hello world <strong>", engine.parse("Hello {name} {[<strong>]}").data("name", "world").render());
+        assertEquals("Hello world <script>const foo = function(){alert('bar');};</script>", engine.parse("Hello {name} {|"
+                + jsSnippet
+                + "|}").data("name", "world").render());
+        assertEquals("Hello world <strong>", engine.parse("Hello {name} {|<strong>|}").data("name", "world").render());
+        assertEquals("Hello {name} world", engine.parse("Hello{| {name} |}{name}").data("name", "world").render());
     }
 
     @Test
@@ -220,6 +225,16 @@ public class ParserTest {
         } catch (Exception expected) {
             assertTrue(expected.getMessage().contains("Invalid identifier found"), expected.toString());
         }
+    }
+
+    @Test
+    public void testTextNodeCollapse() {
+        TemplateImpl template = (TemplateImpl) Engine.builder().addDefaults().build().parse("Hello\nworld!{foo}next");
+        List<TemplateNode> rootNodes = template.root.blocks.get(0).nodes;
+        assertEquals(3, rootNodes.size());
+        assertEquals("Hello\nworld!", ((TextNode) rootNodes.get(0)).getValue());
+        assertEquals(1, ((ExpressionNode) rootNodes.get(1)).getExpressions().size());
+        assertEquals("next", ((TextNode) rootNodes.get(2)).getValue());
     }
 
     private void assertParserError(String template, String message, int line) {

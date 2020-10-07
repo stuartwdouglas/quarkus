@@ -8,11 +8,10 @@ import io.restassured.RestAssured;
 
 @QuarkusTest
 class QuarkusRedisTest {
-    private static final String SYNC_KEY = "sync-key";
-    private static final String SYNC_VALUE = "sync-value";
-
-    private static final String REACTIVE_KEY = "reactive-key";
-    private static final String REACTIVE_VALUE = "reactive-value";
+    static final String SYNC_KEY = "sync-key";
+    static final String SYNC_VALUE = "sync-value";
+    static final String REACTIVE_KEY = "reactive-key";
+    static final String REACTIVE_VALUE = "reactive-value";
 
     @Test
     public void sync() {

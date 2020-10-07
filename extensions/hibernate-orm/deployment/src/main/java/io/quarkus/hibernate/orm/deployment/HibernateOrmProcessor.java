@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -94,6 +95,7 @@ import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LogCategoryBuildItem;
+import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.SystemPropertyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourceBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
@@ -505,16 +507,17 @@ public final class HibernateOrmProcessor {
 
     @BuildStep
     @Record(RUNTIME_INIT)
-    public void startPersistenceUnits(HibernateOrmRecorder recorder, BeanContainerBuildItem beanContainer,
+    public ServiceStartBuildItem startPersistenceUnits(HibernateOrmRecorder recorder, BeanContainerBuildItem beanContainer,
             List<JdbcDataSourceBuildItem> dataSourcesConfigured,
             JpaEntitiesBuildItem jpaEntities, List<NonJpaModelBuildItem> nonJpaModels,
             List<HibernateOrmIntegrationRuntimeConfiguredBuildItem> integrationsRuntimeConfigured,
             List<JdbcDataSourceSchemaReadyBuildItem> schemaReadyBuildItem) throws Exception {
-        if (!hasEntities(jpaEntities, nonJpaModels)) {
-            return;
+        if (hasEntities(jpaEntities, nonJpaModels)) {
+            recorder.startAllPersistenceUnits(beanContainer.getValue());
         }
 
-        recorder.startAllPersistenceUnits(beanContainer.getValue());
+        return new ServiceStartBuildItem("Hibernate ORM");
+
     }
 
     @BuildStep
@@ -776,14 +779,17 @@ public final class HibernateOrmProcessor {
         }
 
         // Query
-        if (persistenceUnitConfig.batchFetchSize > 0) {
-            descriptor.getProperties().setProperty(AvailableSettings.DEFAULT_BATCH_FETCH_SIZE,
-                    Integer.toString(persistenceUnitConfig.batchFetchSize));
-            descriptor.getProperties().setProperty(AvailableSettings.BATCH_FETCH_STYLE, BatchFetchStyle.PADDED.toString());
+        if (persistenceUnitConfig.fetch.batchSize > 0) {
+            setBatchFetchSize(descriptor, persistenceUnitConfig.fetch.batchSize);
+        } else if (persistenceUnitConfig.batchFetchSize > 0) {
+            setBatchFetchSize(descriptor, persistenceUnitConfig.batchFetchSize);
         }
 
-        persistenceUnitConfig.maxFetchDepth.ifPresent(
-                depth -> descriptor.getProperties().setProperty(AvailableSettings.MAX_FETCH_DEPTH, String.valueOf(depth)));
+        if (persistenceUnitConfig.fetch.maxDepth.isPresent()) {
+            setMaxFetchDepth(descriptor, persistenceUnitConfig.fetch.maxDepth);
+        } else if (persistenceUnitConfig.maxFetchDepth.isPresent()) {
+            setMaxFetchDepth(descriptor, persistenceUnitConfig.maxFetchDepth);
+        }
 
         persistenceUnitConfig.query.queryPlanCacheMaxSize.ifPresent(
                 maxSize -> descriptor.getProperties().setProperty(AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE, maxSize));
@@ -807,7 +813,10 @@ public final class HibernateOrmProcessor {
         // Logging
         if (persistenceUnitConfig.log.sql) {
             descriptor.getProperties().setProperty(AvailableSettings.SHOW_SQL, "true");
-            descriptor.getProperties().setProperty(AvailableSettings.FORMAT_SQL, "true");
+
+            if (persistenceUnitConfig.log.formatSql) {
+                descriptor.getProperties().setProperty(AvailableSettings.FORMAT_SQL, "true");
+            }
         }
 
         if (persistenceUnitConfig.log.jdbcWarnings.isPresent()) {
@@ -911,6 +920,16 @@ public final class HibernateOrmProcessor {
         String error = "Hibernate extension could not guess the dialect from the database kind '" + resolvedDbKind
                 + "'. Add an explicit '" + HIBERNATE_ORM_CONFIG_PREFIX + "dialect' property.";
         throw new ConfigurationError(error);
+    }
+
+    private static void setMaxFetchDepth(ParsedPersistenceXmlDescriptor descriptor, OptionalInt maxFetchDepth) {
+        descriptor.getProperties().setProperty(AvailableSettings.MAX_FETCH_DEPTH, String.valueOf(maxFetchDepth.getAsInt()));
+    }
+
+    private static void setBatchFetchSize(ParsedPersistenceXmlDescriptor descriptor, int batchFetchSize) {
+        descriptor.getProperties().setProperty(AvailableSettings.DEFAULT_BATCH_FETCH_SIZE,
+                Integer.toString(batchFetchSize));
+        descriptor.getProperties().setProperty(AvailableSettings.BATCH_FETCH_STYLE, BatchFetchStyle.PADDED.toString());
     }
 
     private void enhanceEntities(final JpaEntitiesBuildItem domainObjects,

@@ -30,7 +30,7 @@ public class OidcTenantConfig {
      * The application type, which can be one of the following values from enum {@link ApplicationType}.
      */
     @ConfigItem(defaultValue = "service")
-    public ApplicationType applicationType;
+    public ApplicationType applicationType = ApplicationType.SERVICE;
 
     /**
      * The base URL of the OpenID Connect (OIDC) server, for example, 'https://host:port/auth'.
@@ -582,13 +582,13 @@ public class OidcTenantConfig {
             idtoken,
 
             /**
-             * Access Token - the default and only supported value for the 'service' applications;
+             * Access Token - the default value for the 'service' applications;
              * can also be used as the source of roles for the 'web-app' applications.
              */
             accesstoken,
 
             /**
-             * User Info - only supported for the "web-app" applications
+             * User Info
              */
             userinfo
         }
@@ -661,11 +661,17 @@ public class OidcTenantConfig {
         public Map<String, String> extraParams;
 
         /**
-         * Cookie path parameter value which, if set, will be used for the session and state cookies.
+         * Cookie path parameter value which, if set, will be used for the session, state and post logout cookies.
          * It may need to be set when the redirect path has a root different to that of the original request URL.
          */
         @ConfigItem
         public Optional<String> cookiePath = Optional.empty();
+
+        /**
+         * Cookie domain parameter value which, if set, will be used for the session, state and post logout cookies.
+         */
+        @ConfigItem
+        public Optional<String> cookieDomain = Optional.empty();
 
         /**
          * If this property is set to 'true' then an OIDC UserInfo endpoint will be called
@@ -692,7 +698,10 @@ public class OidcTenantConfig {
          * authorization endpoints typically do not support CORS.
          * If this property is set to `false` then a status code of '499' will be returned to allow
          * the client to handle the redirect manually
+         *
+         * This property is deprecated. Please use a 'javaScriptAutoRedirect' property instead.
          */
+        @Deprecated
         @ConfigItem(defaultValue = "true")
         public boolean xhrAutoRedirect = true;
 
@@ -702,6 +711,26 @@ public class OidcTenantConfig {
 
         public void setXhrAutoredirect(boolean autoRedirect) {
             this.xhrAutoRedirect = autoRedirect;
+        }
+
+        /**
+         * If this property is set to 'true' then a normal 302 redirect response will be returned
+         * if the request was initiated via JavaScript API such as XMLHttpRequest or Fetch and the current user needs to be
+         * (re)authenticated which may not be desirable for Single Page Applications since
+         * it automatically following the redirect may not work given that OIDC authorization endpoints typically do not support
+         * CORS.
+         * If this property is set to `false` then a status code of '499' will be returned to allow
+         * the client to handle the redirect manually
+         */
+        @ConfigItem(defaultValue = "true")
+        public boolean javaScriptAutoRedirect = true;
+
+        public boolean isJavaScriptAutoRedirect() {
+            return javaScriptAutoRedirect;
+        }
+
+        public void setJavaScriptAutoredirect(boolean autoRedirect) {
+            this.javaScriptAutoRedirect = autoRedirect;
         }
 
         public Optional<String> getRedirectPath() {
@@ -750,6 +779,14 @@ public class OidcTenantConfig {
 
         public void setCookiePath(String cookiePath) {
             this.cookiePath = Optional.of(cookiePath);
+        }
+
+        public Optional<String> getCookieDomain() {
+            return cookieDomain;
+        }
+
+        public void setCookieDomain(String cookieDomain) {
+            this.cookieDomain = Optional.of(cookieDomain);
         }
 
         public boolean isUserInfoRequired() {
@@ -974,9 +1011,8 @@ public class OidcTenantConfig {
 
     public static enum ApplicationType {
         /**
-         * A {@code WEB_APP} is a client that server pages, usually a frontend application. For this type of client the
-         * Authorization Code Flow is
-         * defined as the preferred method for authenticating users.
+         * A {@code WEB_APP} is a client that serves pages, usually a frontend application. For this type of client the
+         * Authorization Code Flow is defined as the preferred method for authenticating users.
          */
         WEB_APP,
 
@@ -985,6 +1021,13 @@ public class OidcTenantConfig {
          * RESTful Architectural Design. For this type of client, the Bearer Authorization method is defined as the preferred
          * method for authenticating and authorizing users.
          */
-        SERVICE
+        SERVICE,
+
+        /**
+         * A combined {@code SERVICE} and {@code WEB_APP} client.
+         * For this type of client, the Bearer Authorization method will be used if the Authorization header is set
+         * and Authorization Code Flow - if not.
+         */
+        HYBRID
     }
 }

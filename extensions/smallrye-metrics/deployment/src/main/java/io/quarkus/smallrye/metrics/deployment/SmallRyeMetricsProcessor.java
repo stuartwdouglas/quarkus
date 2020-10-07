@@ -97,7 +97,7 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 
 public class SmallRyeMetricsProcessor {
-    private static final Logger LOGGER = Logger.getLogger("io.quarkus.smallrye.metrics.deployment.SmallRyeMetricsProcessor");
+    static final Logger LOGGER = Logger.getLogger("io.quarkus.smallrye.metrics.deployment.SmallRyeMetricsProcessor");
 
     @ConfigRoot(name = "smallrye-metrics")
     static final class SmallRyeMetricsConfig {
@@ -123,6 +123,15 @@ public class SmallRyeMetricsProcessor {
         @ConfigItem(name = "micrometer.compatibility")
         public boolean micrometerCompatibility;
 
+        /**
+         * Whether or not detailed JAX-RS metrics should be enabled.
+         *
+         * See <a href=
+         * "https://github.com/eclipse/microprofile-metrics/blob/2.3.x/spec/src/main/asciidoc/required-metrics.adoc#optional-rest">MicroProfile
+         * Metrics: Optional REST metrics</a>.
+         */
+        @ConfigItem(name = "jaxrs.enabled", defaultValue = "false")
+        public boolean jaxrsEnabled;
     }
 
     SmallRyeMetricsConfig metrics;

@@ -191,6 +191,28 @@ In such cases a `quarkus.oidc.authentication.redirect-path` property has to be s
 
 If `quarkus.oidc.authentication.redirect-path` is set but the original request URL has to be restored after the user has been redirected back to a callback URL such as `http://localhost:8080/service/callback` then a `quarkus.oidc.authentication.restore-path-after-redirect` property has to be set to `true` which will restore the request URL such as `http://localhost:8080/service/1`, etc.
 
+[[oidc-cookies]]
+== Dealing with Cookies
+
+The OIDC adapter uses cookies to keep the session, code flow and post logout state.
+
+If you access the protected resources with overlapping or different roots, for example: 
+
+* `/index.html` and `/web-app/service`
+* `/web-app/service1` and `/web-app/service2`
+* `/web-app1/service` and `/web-app2/service` 
+
+then most likely you also need to set a `quarkus.oidc.authentication.cookie-path` property to a path value that is common to all of them, such as `/` or `/web-app`, etc.
+
+Otherwise the browser cache manager may keep request path specific cookies which in turn may lead to some difficult to diagnoze errors. For example, an authorization code flow may fail due to a missing state cookie if a user has initially accessed `/index.html` but configured a callback URI to `/web-app/callback`.
+
+If your application is deployed across multiple domains, make sure to set a `quarkus.oidc.authentication.cookie-domain` property for the session cookie be visible to all protected Quarkus services, for example, if you have 2 services deployed at:
+
+* https://whatever.wherever.company.net/
+* https://another.address.company.net/
+
+then the `quarkus.oidc.authentication.cookie-domain` property must be set to `company.net`.
+
 == Logout
 
 By default the logout is based on the expiration time of the ID Token issued by the OpenID Connect Provider. When the ID Token expires, the current user session at the Quarkus endpoint is invalidated and the user is redirected to the OpenID Connect Provider again to authenticate. If the session at the OpenID Connect Provider is still active, users are automatically re-authenticated without having to provide their credentials again.
@@ -209,6 +231,29 @@ The user will be returned to the endpoint post logout page once the logout has b
 If the `quarkus.oidc.logout.post-logout-path` is set then a `q_post_logout` cookie will be created and a matching `state` query parameter will be added to the logout redirect URI and the OpenID Connect Provider will return this `state` once the logout has been completed. It is recommended for the Quarkus `web-app` applications to check that a `state` query parameter matches the value of the `q_post_logout` cookie which can be done for example in a JAX-RS filter.
 
 Note that a cookie name will vary when using link:security-openid-connect-multitenancy[OpenID Connect Multi-Tenancy]. For example, it will be named `q_post_logout_tenant_1` for a tenant with a `tenant_1` id, etc.
+
+Here is an example of how to configure an RP initiated logout flow:
+
+[source,properties]
+----
+quarkus.oidc.auth-server-url=http://localhost:8180/auth/realms/quarkus
+quarkus.oidc.client-id=frontend
+quarkus.oidc.application-type=web-app
+
+quarkus.oidc.tenant-logout.logout.path=/logout
+quarkus.oidc.tenant-logout.logout.post-logout-path=/postlogout
+
+# Only the authenticated users can initiate a logout:
+quarkus.http.auth.permission.authenticated.paths=/logout
+quarkus.http.auth.permission.authenticated.policy=authenticated
+
+# Logged out users should be returned to the /welcome.html site which will offer an option to re-login:
+quarkus.http.auth.permission.authenticated.paths=/welcome.html
+quarkus.http.auth.permission.authenticated.policy=permit
+----
+
+You may also need to set `quarkus.oidc.authentication.cookie-path` to a path value common to all of the application resources which is `/` in this example.
+See <<oidc-cookies, Dealing with Cookies>> for more information.
 
 == Accessing ID and Access Tokens
 
@@ -272,10 +317,12 @@ Note that `AccessTokenCredential` will have to be used if the Access Token issue
 
 Injection of the `JsonWebToken` and `AccessTokenCredential` is supported in both `@RequestScoped` and `@ApplicationScoped` contexts.
 
+[[user-info]]
 == User Info
 
 Set `quarkus.oidc.user-info-required=true` if a UserInfo JSON object from the OIDC userinfo endpoint has to be requested.
-This will make an `io.quarkus.oidc.UserInfo` (which is a simple `javax.json.JsonObject` wrapper) object accessible as a SecurityIdentity `userinfo` attribute.
+A request will be sent to the OpenId Provider UserInfo endpont and  an `io.quarkus.oidc.UserInfo` (a simple `javax.json.JsonObject` wrapper) object will be created.
+`io.quarkus.oidc.UserInfo` can be either injected or accessed as a SecurityIdentity `userinfo` attribute.
 
 == Token Claims And SecurityIdentity Roles
 
@@ -285,20 +332,47 @@ Note if you use Keycloak then you should set a Microprofile JWT client scope for
 
 If only the access token contains the roles and this access token is not meant to be propagated to the downstream endpoints then set `quarkus.oidc.roles.source=accesstoken`.
 
-If UserInfo is the source of the roles then set `quarkus.oidc.user-info-required=true` and `quarkus.oidc.roles.source=userinfo`, and if needed, `quarkus.oidc.roles.role-claim-path`.
+If UserInfo is the source of the roles then set `quarkus.oidc.authentication.user-info-required=true` and `quarkus.oidc.roles.source=userinfo`, and if needed, `quarkus.oidc.roles.role-claim-path`.
+
+Additionally a custom `SecurityIdentityAugmentor` can also be used to add the roles as documented link:security#security-identity-customization[here].
+
+== Listening to important authentication events
+
+One can register `@ApplicationScoped` bean which will observe important OIDC authentication events. The listener will be updated when a user has logged in for the first time or re-authenticated, as well as when the session has been refreshed. More events may be reported in the future. For example:
+
+[source, java]
+----
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
+
+import io.quarkus.oidc.IdTokenCredential;
+import io.quarkus.oidc.SecurityEvent;
+import io.quarkus.security.identity.AuthenticationRequestContext;
+import io.vertx.ext.web.RoutingContext;
+
+@ApplicationScoped
+public class SecurityEventListener {
+
+    public void event(@Observes SecurityEvent event) {
+        String tenantId = event.getSecurityIdentity().getAttribute("tenant-id");
+        RoutingContext vertxContext = event.getSecurityIdentity().getCredential(IdTokenCredential.class).getRoutingContext();
+        vertxContext.put("listener-message", String.format("event:%s,tenantId:%s", event.getEventType().name(), tenantId));
+    }
+}
+----
 
 == Single Page Applications
 
 Please check if implementing SPAs the way it is suggested in the link:security-openid-connect#single-page-applications[Single Page Applications for Service Applications] section can meet your requirements.
 
-If you prefer to use SPA and `XMLHttpRequest`(XHR) with Quarkus web applications, please be aware that OpenID Connect Providers may not support CORS for Authorization endpoints where the users are authenticated after a redirect from Quarkus. This will lead to authentication failures if the Quarkus application and the OpenID Connect Provider are hosted on the different HTTP domains/ports.
+If you prefer to use SPA and JavaScript API such as `Fetch` or `XMLHttpRequest`(XHR) with Quarkus web applications, please be aware that OpenID Connect Providers may not support CORS for Authorization endpoints where the users are authenticated after a redirect from Quarkus. This will lead to authentication failures if the Quarkus application and the OpenID Connect Provider are hosted on the different HTTP domains/ports.
 
-In such cases, set the `quarkus.oidc.authentication.xhr-auto-redirect` property to `false` which will instruct Quarkus to return a `499` status code and `WWW-Authenticate` header with the `OIDC` value. The browser script also needs to be updated to set `X-Requested-With` header with the `XMLHttpRequest` value and reload the last requested page in case of `499`, for example:
+In such cases, set the `quarkus.oidc.authentication.java-script-auto-redirect` property to `false` which will instruct Quarkus to return a `499` status code and `WWW-Authenticate` header with the `OIDC` value. The browser script also needs to be updated to set `X-Requested-With` header with the `JavaScript` value and reload the last requested page in case of `499`, for example:
 
 [source,javascript]
 ----
 Future<void> callQuarkusService() async {
-    Map<String, String> headers = Map.fromEntries([MapEntry("X-Requested-With", "XMLHttpRequest")]);
+    Map<String, String> headers = Map.fromEntries([MapEntry("X-Requested-With", "JavaScript")]);
 
     await http
         .get("https://localhost:443/serviceCall")

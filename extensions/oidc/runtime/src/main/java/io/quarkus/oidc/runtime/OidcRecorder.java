@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
 
+import io.quarkus.arc.Arc;
 import io.quarkus.oidc.OIDCException;
 import io.quarkus.oidc.OidcTenantConfig;
 import io.quarkus.oidc.OidcTenantConfig.ApplicationType;
@@ -99,9 +100,15 @@ public class OidcRecorder {
             return createdTenantContextFromPublicKey(options, oidcConfig);
         }
 
-        if (!oidcConfig.getAuthServerUrl().isPresent() || !oidcConfig.getClientId().isPresent()) {
+        if (!oidcConfig.getAuthServerUrl().isPresent()) {
             throw new ConfigurationException(
-                    "Both 'auth-server-url' and 'client-id' or alternatively 'public-key' must be configured"
+                    "'auth-server-url' is not present. Both 'auth-server-url' and 'client-id' or alternatively 'public-key' must be configured"
+                            + " when the quarkus-oidc extension is enabled");
+        }
+
+        if (!oidcConfig.getClientId().isPresent()) {
+            throw new ConfigurationException(
+                    "'client-id' is not present. Both 'auth-server-url' and 'client-id' or alternatively 'public-key' must be configured"
                             + " when the quarkus-oidc extension is enabled");
         }
 
@@ -113,7 +120,7 @@ public class OidcRecorder {
         options.setSite(authServerUrl);
 
         if (!oidcConfig.discoveryEnabled) {
-            if (ApplicationType.WEB_APP.equals(oidcConfig.applicationType)) {
+            if (oidcConfig.applicationType != ApplicationType.SERVICE) {
                 if (!oidcConfig.authorizationPath.isPresent() || !oidcConfig.tokenPath.isPresent()) {
                     throw new OIDCException("'web-app' applications must have 'authorization-path' and 'token-path' properties "
                             + "set when the discovery is disabled.");
@@ -126,10 +133,10 @@ public class OidcRecorder {
                 if (oidcConfig.getTokenPath().isPresent()) {
                     options.setTokenPath(authServerUrl + prependSlash(oidcConfig.getTokenPath().get()));
                 }
+            }
 
-                if (oidcConfig.getUserInfoPath().isPresent()) {
-                    options.setUserInfoPath(authServerUrl + prependSlash(oidcConfig.getUserInfoPath().get()));
-                }
+            if (oidcConfig.getUserInfoPath().isPresent()) {
+                options.setUserInfoPath(authServerUrl + prependSlash(oidcConfig.getUserInfoPath().get()));
             }
 
             // JWK and introspection endpoints have to be set for both 'web-app' and 'service' applications  
@@ -169,9 +176,9 @@ public class OidcRecorder {
                         "The 'logout.path' property can only be enabled for " + ApplicationType.WEB_APP
                                 + " application types");
             }
-            if (oidcConfig.roles.source.isPresent() && oidcConfig.roles.source.get() != Source.accesstoken) {
+            if (oidcConfig.roles.source.isPresent() && oidcConfig.roles.source.get() == Source.idtoken) {
                 throw new RuntimeException(
-                        "The 'roles.source' property can only be set to 'accesstoken' for " + ApplicationType.SERVICE
+                        "The 'roles.source' property can only be set to 'idtoken' for " + ApplicationType.WEB_APP
                                 + " application types");
             }
         }
@@ -292,7 +299,7 @@ public class OidcRecorder {
     @SuppressWarnings("deprecation")
     private static TenantConfigContext createdTenantContextFromPublicKey(OAuth2ClientOptions options,
             OidcTenantConfig oidcConfig) {
-        if (oidcConfig.applicationType == ApplicationType.WEB_APP) {
+        if (oidcConfig.applicationType != ApplicationType.SERVICE) {
             throw new ConfigurationException("'public-key' property can only be used with the 'service' applications");
         }
         LOG.debug("'public-key' property for the local token verification is set,"
@@ -326,5 +333,10 @@ public class OidcRecorder {
             jsonOptions.put("password", proxyConfig.password.get());
         }
         return Optional.of(new ProxyOptions(jsonOptions));
+    }
+
+    public void setSecurityEventObserved(boolean isSecurityEventObserved) {
+        DefaultTenantConfigResolver bean = Arc.container().instance(DefaultTenantConfigResolver.class).get();
+        bean.setSecurityEventObserved(isSecurityEventObserved);
     }
 }

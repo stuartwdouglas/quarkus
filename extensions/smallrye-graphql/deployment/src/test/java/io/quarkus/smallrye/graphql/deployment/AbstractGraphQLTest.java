@@ -2,6 +2,7 @@ package io.quarkus.smallrye.graphql.deployment;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.json.Json;
@@ -61,9 +62,18 @@ public abstract class AbstractGraphQLTest {
     }
 
     protected static String getPropertyAsString() {
+        return getPropertyAsString(null);
+    }
+
+    protected static String getPropertyAsString(Map<String, String> otherProperties) {
         try {
+            Properties p = new Properties();
+            p.putAll(PROPERTIES);
             StringWriter writer = new StringWriter();
-            PROPERTIES.store(writer, "Test Properties");
+            if (otherProperties != null) {
+                p.putAll(otherProperties);
+            }
+            p.store(writer, "Test Properties");
             return writer.toString();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
