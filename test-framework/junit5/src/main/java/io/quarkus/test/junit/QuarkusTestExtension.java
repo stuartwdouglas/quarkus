@@ -3,6 +3,7 @@ package io.quarkus.test.junit;
 import static io.quarkus.test.common.PathTestHelper.getAppClassLocationForTestLocation;
 import static io.quarkus.test.common.PathTestHelper.getTestClassesLocation;
 
+import java.beans.Introspector;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -98,7 +99,6 @@ public class QuarkusTestExtension
 
     private static Class<?> actualTestClass;
     private static Object actualTestInstance;
-    private static ClassLoader originalCl;
     private static RunningQuarkusApplication runningQuarkusApplication;
     private static Path testClassLocation;
     private static Throwable firstException; //if this is set then it will be thrown from the very first test that is run, the rest are aborted
@@ -116,6 +116,7 @@ public class QuarkusTestExtension
     private ExtensionState doJavaStart(ExtensionContext context, Class<? extends QuarkusTestProfile> profile) throws Throwable {
         quarkusTestProfile = profile;
         Closeable testResourceManager = null;
+        ClassLoader originalCl = Thread.currentThread().getContextClassLoader();
         try {
             final LinkedBlockingDeque<Runnable> shutdownTasks = new LinkedBlockingDeque<>();
 
@@ -135,7 +136,6 @@ public class QuarkusTestExtension
                 }
             }
 
-            originalCl = Thread.currentThread().getContextClassLoader();
             Map<String, String> sysPropRestore = new HashMap<>();
             sysPropRestore.put(ProfileManager.QUARKUS_TEST_PROFILE_PROP,
                     System.getProperty(ProfileManager.QUARKUS_TEST_PROFILE_PROP));
@@ -266,12 +266,6 @@ public class QuarkusTestExtension
                 }
             };
             ExtensionState state = new ExtensionState(testResourceManager, shutdownTask);
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    state.close();
-                }
-            }, "Quarkus Test Cleanup Shutdown task"));
             return state;
         } catch (Throwable e) {
 
@@ -838,35 +832,49 @@ public class QuarkusTestExtension
         private final Closeable testResourceManager;
         private final Closeable resource;
         private final AtomicBoolean closed = new AtomicBoolean();
+        private final Thread shutdownHook;
 
         ExtensionState(Closeable testResourceManager, Closeable resource) {
             this.testResourceManager = testResourceManager;
             this.resource = resource;
+            shutdownHook = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    close();
+                }
+            }, "Quarkus Test Cleanup Shutdown task");
+            Runtime.getRuntime().addShutdownHook(shutdownHook);
         }
 
         @Override
         public void close() {
-            if (closed.compareAndSet(false, true)) {
-                ClassLoader old = Thread.currentThread().getContextClassLoader();
-                if (runningQuarkusApplication != null) {
-                    Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
-                }
-                try {
-                    resource.close();
-                } catch (Throwable e) {
-                    log.error("Failed to shutdown Quarkus", e);
-                } finally {
-                    try {
-                        if (QuarkusTestExtension.this.originalCl != null) {
-                            setCCL(QuarkusTestExtension.this.originalCl);
-                        }
-                        testResourceManager.close();
-                    } catch (IOException e) {
-                        log.error("Failed to shutdown Quarkus test resources", e);
-                    } finally {
-                        Thread.currentThread().setContextClassLoader(old);
+            try {
+                if (closed.compareAndSet(false, true)) {
+                    ClassLoader old = Thread.currentThread().getContextClassLoader();
+                    if (runningQuarkusApplication != null) {
+                        Thread.currentThread().setContextClassLoader(runningQuarkusApplication.getClassLoader());
                     }
+                    try {
+                        resource.close();
+                    } catch (Throwable e) {
+                        log.error("Failed to shutdown Quarkus", e);
+                    } finally {
+                        try {
+                            if (QuarkusTestExtension.this.originalCl != null) {
+                                setCCL(QuarkusTestExtension.this.originalCl);
+                            }
+                            testResourceManager.close();
+                        } catch (IOException e) {
+                            log.error("Failed to shutdown Quarkus test resources", e);
+                        } finally {
+                            Thread.currentThread().setContextClassLoader(old);
+                        }
+                    }
+                    //clear all caches
+                    Introspector.flushCaches();
                 }
+            } finally {
+                Runtime.getRuntime().removeShutdownHook(shutdownHook);
             }
         }
     }
