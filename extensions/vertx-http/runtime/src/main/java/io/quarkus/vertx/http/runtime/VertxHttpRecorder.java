@@ -100,6 +100,8 @@ import io.vertx.ext.web.handler.BodyHandler;
 @Recorder
 public class VertxHttpRecorder {
 
+    private static final Logger log = Logger.getLogger(VertxHttpRecorder.class);
+
     /**
      * The key that the request start time is stored under
      */
@@ -405,9 +407,13 @@ public class VertxHttpRecorder {
                 }
             });
         }
-        if (launchMode == LaunchMode.DEVELOPMENT && liveReloadConfig.password.isPresent()
-                && hotReplacementContext.getDevModeType() == DevModeType.REMOTE_SERVER_SIDE) {
-            root = remoteSyncHandler = new RemoteSyncHandler(liveReloadConfig.password.get(), root, hotReplacementContext);
+        if (launchMode == LaunchMode.DEVELOPMENT && hotReplacementContext.getDevModeType() == DevModeType.REMOTE_SERVER_SIDE) {
+            if (liveReloadConfig.password.isPresent()) {
+                root = remoteSyncHandler = new RemoteSyncHandler(liveReloadConfig.password.get(), root, hotReplacementContext);
+            } else {
+                log.warn(
+                        "quarkus.live-reload.password not set, live coding will only work if you use an external tool to sync application changes.");
+            }
         }
         rootHandler = root;
     }
