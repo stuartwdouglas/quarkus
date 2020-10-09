@@ -5,6 +5,7 @@ import static io.quarkus.test.common.PathTestHelper.getTestClassesLocation;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -82,6 +83,7 @@ import io.quarkus.test.junit.callback.QuarkusTestBeforeAllCallback;
 import io.quarkus.test.junit.callback.QuarkusTestBeforeClassCallback;
 import io.quarkus.test.junit.callback.QuarkusTestBeforeEachCallback;
 import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
+import io.quarkus.test.junit.callback.QuarkusTestMethodParametersInterceptor;
 import io.quarkus.test.junit.internal.DeepClone;
 import io.quarkus.test.junit.internal.XStreamDeepClone;
 
@@ -109,6 +111,7 @@ public class QuarkusTestExtension
     private static List<Object> legacyAfterConstructCallbacks;
     private static List<Object> beforeEachCallbacks;
     private static List<Object> afterEachCallbacks;
+    private static List<Object> methodParametersInterceptor;
     private static Class<?> quarkusTestMethodContextClass;
     private static Class<? extends QuarkusTestProfile> quarkusTestProfile;
     private static List<Function<Class<?>, String>> testHttpEndpointProviders;
@@ -337,6 +340,7 @@ public class QuarkusTestExtension
         legacyAfterConstructCallbacks = new ArrayList<>();
         beforeEachCallbacks = new ArrayList<>();
         afterEachCallbacks = new ArrayList<>();
+        methodParametersInterceptor = new ArrayList<>();
 
         ServiceLoader<?> quarkusTestBeforeClassLoader = ServiceLoader
                 .load(Class.forName(QuarkusTestBeforeClassCallback.class.getName(), false, classLoader), classLoader);
@@ -362,6 +366,11 @@ public class QuarkusTestExtension
                 .load(Class.forName(QuarkusTestAfterEachCallback.class.getName(), false, classLoader), classLoader);
         for (Object quarkusTestAfterEach : quarkusTestAfterEachLoader) {
             afterEachCallbacks.add(quarkusTestAfterEach);
+        }
+        ServiceLoader<?> quarkusTestMethodsParametersInterceptors = ServiceLoader
+                .load(Class.forName(QuarkusTestMethodParametersInterceptor.class.getName(), false, classLoader), classLoader);
+        for (Object interceptor : quarkusTestMethodsParametersInterceptors) {
+            methodParametersInterceptor.add(interceptor);
         }
     }
 
@@ -785,8 +794,13 @@ public class QuarkusTestExtension
             for (Object arg : originalArguments) {
                 argumentsFromTccl.add(deepClone.clone(arg));
             }
+            Object[] arguments = argumentsFromTccl.toArray(new Object[0]);
 
-            return newMethod.invoke(actualTestInstance, argumentsFromTccl.toArray(new Object[0]));
+            for (Object afterEachCallback : methodParametersInterceptor) {
+                afterEachCallback.getClass().getMethod("interceptTestMethod", Method.class, Object[].class)
+                        .invoke(afterEachCallback, newMethod, arguments);
+            }
+            return newMethod.invoke(actualTestInstance, arguments);
         } catch (InvocationTargetException e) {
             throw e.getCause();
         } catch (IllegalAccessException | ClassNotFoundException e) {
@@ -812,6 +826,18 @@ public class QuarkusTestExtension
     @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext)
             throws ParameterResolutionException {
+        for (Annotation i : parameterContext.getDeclaringExecutable().getAnnotations()) {
+            if (i.annotationType().isAnnotationPresent(ParameterProvider.class)) {
+                return true;
+            }
+        }
+        for (Annotation[] param : parameterContext.getDeclaringExecutable().getParameterAnnotations()) {
+            for (Annotation i : param) {
+                if (i.annotationType().isAnnotationPresent(ParameterProvider.class)) {
+                    return true;
+                }
+            }
+        }
         return parameterContext.getDeclaringExecutable() instanceof Constructor;
     }
 

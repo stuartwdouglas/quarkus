@@ -1,23 +1,26 @@
 package io.quarkus.it.main;
 
-import static org.hamcrest.Matchers.is;
-
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.it.shared.SharedResource;
+import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
+import io.quarkus.test.web.WebTest;
 
 @QuarkusTest
+@TestHTTPEndpoint(SharedResource.class)
 public class ExternalIndexTestCase {
 
     @Test
-    public void testJAXRSResourceFromExternalLibrary() {
-        RestAssured.when().get("/shared").then()
-                .body(is("Shared Resource"));
+    @WebTest
+    public void testJAXRSResourceFromExternalLibrary(String body) {
+        Assertions.assertEquals("Shared Resource", body);
     }
 
     @Test
-    public void testTransformedExternalResources() {
-        RestAssured.when().get("/shared/transformed").then().body(is("Transformed Endpoint"));
+    @WebTest("/transformed")
+    public void testTransformedExternalResources(String body) {
+        Assertions.assertEquals("Transformed Endpoint", body);
     }
 }

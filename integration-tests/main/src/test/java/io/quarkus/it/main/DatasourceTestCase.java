@@ -1,25 +1,27 @@
 package io.quarkus.it.main;
 
-import static org.hamcrest.Matchers.is;
-
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.it.datasource.DatasourceResource;
+import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
+import io.quarkus.test.web.WebTest;
 
 @QuarkusTest
+@TestHTTPEndpoint(DatasourceResource.class)
 public class DatasourceTestCase {
 
     @Test
-    public void testDataSource() {
-        RestAssured.when().get("/datasource").then()
-                .body(is("10"));
+    @WebTest
+    public void testDataSource(String body) {
+        Assertions.assertEquals("10", body);
     }
 
     @Test
-    public void testDataSourceTransactions() {
-        RestAssured.when().get("/datasource/txn").then()
-                .body(is("PASSED"));
+    @WebTest("/txn")
+    public void testDataSourceTransactions(String body) {
+        Assertions.assertEquals("PASSED", body);
     }
 
 }

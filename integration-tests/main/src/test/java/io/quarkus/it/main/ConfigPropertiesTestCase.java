@@ -1,19 +1,20 @@
 package io.quarkus.it.main;
 
-import static org.hamcrest.Matchers.is;
-
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.it.config.ConfigPropertiesResource;
+import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.restassured.RestAssured;
+import io.quarkus.test.web.WebTest;
 
 @QuarkusTest
+@TestHTTPEndpoint(ConfigPropertiesResource.class)
 public class ConfigPropertiesTestCase {
 
     @Test
-    public void testConfigPropertiesProperlyInjected() {
-        RestAssured
-                .when().get("/configuration-properties")
-                .then().body(is("HelloONE!"));
+    @WebTest
+    public void testConfigPropertiesProperlyInjected(String body) {
+        Assertions.assertEquals("HelloONE!", body);
     }
 }

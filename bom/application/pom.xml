@@ -1992,6 +1992,11 @@
             </dependency>
             <dependency>
                 <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-junit5-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-test-security</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -3308,6 +3313,10 @@
                     <exclusion>
                         <groupId>org.jboss.resteasy</groupId>
                         <artifactId>resteasy-context-propagation</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
