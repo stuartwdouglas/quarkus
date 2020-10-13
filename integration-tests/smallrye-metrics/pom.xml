@@ -27,7 +27,7 @@
         <!-- JAX-RS -->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-jsonb</artifactId>
+            <artifactId>quarkus-rest</artifactId>
         </dependency>
         
         <!-- test dependencies -->
@@ -56,7 +56,7 @@
         <!-- Minimal test dependencies to *-deployment artifacts for consistent build order -->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-jsonb-deployment</artifactId>
+            <artifactId>quarkus-rest-deployment</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
             <scope>test</scope>
