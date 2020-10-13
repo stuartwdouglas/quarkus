@@ -22,7 +22,7 @@ import io.quarkus.rest.runtime.util.MediaTypeHelper;
 import io.quarkus.runtime.LaunchMode;
 import io.vertx.core.http.HttpMethod;
 
-public class ClassRoutingHandler implements RestHandler {
+public class ClassRoutingHandler implements ServerRestHandler {
     private final Map<String, RequestMapper<RuntimeResource>> mappers;
     private final int parameterOffset;
 
