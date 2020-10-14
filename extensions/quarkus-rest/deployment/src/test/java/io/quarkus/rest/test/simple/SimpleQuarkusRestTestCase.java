@@ -47,13 +47,13 @@ public class SimpleQuarkusRestTestCase {
 
     @Test
     public void simpleTest() {
-        //        RestAssured.get("/simple")
-        //                .then().body(Matchers.equalTo("GET"));
-        //        RestAssured.get("/simple/foo")
-        //                .then().body(Matchers.equalTo("GET:foo"));
-        //
-        //        RestAssured.post("/simple")
-        //                .then().body(Matchers.equalTo("POST"));
+        RestAssured.get("/simple")
+                .then().body(Matchers.equalTo("GET"));
+        RestAssured.get("/simple/foo")
+                .then().body(Matchers.equalTo("GET:foo"));
+
+        RestAssured.post("/simple")
+                .then().body(Matchers.equalTo("POST"));
 
         RestAssured.get("/missing")
                 .then().statusCode(404);
