@@ -1,12 +1,10 @@
 package io.quarkus.rest.runtime.handlers;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.NotSupportedException;
@@ -117,10 +115,10 @@ public class ClassRoutingHandler implements RestHandler {
         if (target.value.getProduces() != null) {
             String accepts = requestContext.getContext().request().headers().get(HttpHeaders.ACCEPT);
             if (accepts != null) {
-                if (MediaTypeHelper.getBestMatch(Arrays.asList(target.value.getProduces().getSortedMediaTypes()),
-                        requestContext.getHttpHeaders().getModifiableAcceptableMediaTypes()) == null) {
-                    throw new NotAcceptableException();
-                }
+                //                if (MediaTypeHelper.getBestMatch(Arrays.asList(target.value.getProduces().getSortedMediaTypes()),
+                //                        requestContext.getHttpHeaders().getModifiableAcceptableMediaTypes()) == null) {
+                //                    throw new NotAcceptableException();
+                //                }
             }
         }
 
