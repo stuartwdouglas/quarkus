@@ -82,8 +82,8 @@ public abstract class AbstractQuarkusRestContext<T extends AbstractQuarkusRestCo
 
     public void close() {
         //TODO: do we even have any other resources to close?
-        if (this.currentRequestScope != null) {
-            this.requestContext.destroy();
+        if (currentRequestScope != null) {
+            requestContext.destroy(currentRequestScope);
         }
         onComplete(throwable);
     }
@@ -161,6 +161,7 @@ public abstract class AbstractQuarkusRestContext<T extends AbstractQuarkusRestCo
         requestScopeActivated = true;
         if (currentRequestScope == null) {
             requestContext.activate();
+            currentRequestScope = requestContext.getState();
             handleRequestScopeActivation();
         } else {
             requestContext.activate(currentRequestScope);
