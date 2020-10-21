@@ -436,6 +436,7 @@ transaction, but roll it back once the test method is complete to revert any dat
 
 Alternatively or additionally to an interceptor, you can enrich *all* your `@QuarkusTest` classes by implementing the following callback interfaces:
 
+* `io.quarkus.test.junit.callback.QuarkusTestBeforeClassCallback`
 * `io.quarkus.test.junit.callback.QuarkusTestAfterConstructCallback`
 * `io.quarkus.test.junit.callback.QuarkusTestBeforeEachCallback`
 * `io.quarkus.test.junit.callback.QuarkusTestAfterEachCallback`
@@ -878,7 +879,7 @@ If you are using the `quarkus-hibernate-orm-panache` or `quarkus-mongodb-panache
 
 == Testing Security
 
-If you are using Quarkus Security, check out the link:security.adoc#testing-security[Testing Security] section for information on how to easily test security features of the application.
+If you are using Quarkus Security, check out the link:security-testing[Testing Security] section for information on how to easily test security features of the application.
 
 [#quarkus-test-resource]
 == Starting services before the Quarkus application starts

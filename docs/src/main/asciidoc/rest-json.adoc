@@ -41,7 +41,7 @@ The solution is located in the `rest-json-quickstart` {quickstarts-tree-url}/res
 
 First, we need a new project. Create a new project with the following command:
 
-[source,shell,subs=attributes+]
+[source,bash,subs=attributes+]
 ----
 mvn io.quarkus:quarkus-maven-plugin:{quarkus-version}:create \
     -DprojectGroupId=org.acme \
@@ -65,7 +65,7 @@ and in particular adds the following dependency:
 
 Quarkus also supports https://github.com/FasterXML/jackson[Jackson] so, if you prefer Jackson over JSON-B, you can create a project relying on the RESTEasy Jackson extension instead:
 
-[source,shell,subs=attributes+]
+[source,bash,subs=attributes+]
 ----
 mvn io.quarkus:quarkus-maven-plugin:{quarkus-version}:create \
     -DprojectGroupId=org.acme \
@@ -126,17 +126,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 @Path("/fruits")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 public class FruitResource {
 
     private Set<Fruit> fruits = Collections.newSetFromMap(Collections.synchronizedMap(new LinkedHashMap<>()));
@@ -172,9 +167,16 @@ depending on the extension you chose when initializing the project.
 
 [NOTE]
 ====
-While RESTEasy supports auto-negotiation, when using Quarkus, it is very important to define the `@Produces` and `@Consumes` annotations.
-They are analyzed at build time and Quarkus restricts the number of JAX-RS providers included in the native executable to the minimum required by the application.
-It allows to reduce the size of the native executable.
+When a JSON extension is installed such as `quarkus-resteasy-jsonb` or `quarkus-resteasy-jackson`, Quarkus will use the `application/json` media type
+by default for most return values, unless the media type is explicitly set via
+`@Produces` or `@Consumes` annotations (there are some exceptions for well known types, such as `String` and `File`, which default to `text/plain` and `application/octet-stream`
+respectively).
+
+If you don't want JSON by default you can set `quarkus.resteasy-json.default-json=false` and the default will change back to being auto-negotiated. If you set this
+you will need to add `@Produces(MediaType.APPLICATION_JSON)` and `@Consumes(MediaType.APPLICATION_JSON)` to your endpoints in order to use JSON.
+
+If you don't rely on the JSON default, it is heavily recommended to annotate your endpoints with the `@Produces` and `@Consumes` annotations to define precisely the expected content-types.
+It will allow to narrow down the number of JAX-RS providers (which can be seen as converters) included in the native executable.
 ====
 
 === Configuring JSON support
@@ -266,7 +268,6 @@ When you have the following REST method, Quarkus determines that `Fruit` will be
 [source,JAVA]
 ----
 @GET
-@Produces("application/json")
 public List<Fruit> list() {
     // ...
 }
@@ -286,7 +287,6 @@ Your REST method then looks like this:
 [source,JAVA]
 ----
 @GET
-@Produces("application/json")
 public Response list() {
     // ...
 }
@@ -492,7 +492,7 @@ public class LoggingFilter implements ContainerRequestFilter {
 
 Now, whenever a REST method is invoked, the request will be logged into the console:
 
-[source,shell]
+[source,text]
 ----
 2019-06-05 12:44:26,526 INFO  [org.acm.res.jso.LoggingFilter] (executor-thread-1) Request GET /legumes from IP 127.0.0.1
 2019-06-05 12:49:19,623 INFO  [org.acm.res.jso.LoggingFilter] (executor-thread-1) Request GET /fruits from IP 0:0:0:0:0:0:0:1

@@ -43,7 +43,7 @@ The solution is located in the `micrometer-quickstart` {quickstarts-tree-url}/mi
 
 First, we need a new project. Create a new project with the following command:
 
-[source, subs=attributes+]
+[source,bash,subs=attributes+]
 ----
 mvn io.quarkus:quarkus-maven-plugin:{quarkus-version}:create \
     -DprojectGroupId=org.acme \
@@ -104,6 +104,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.function.Supplier;
 
@@ -124,7 +125,7 @@ public class PrimeNumberResource {
 
     @GET
     @Path("/{number}")
-    @Produces("text/plain")
+    @Produces(MediaType.TEXT_PLAIN)
     public String checkIfPrime(@PathParam("number") int number) {
         if (number < 1) {
             return "Only natural numbers can be prime numbers.";
@@ -170,7 +171,7 @@ To run the microservice in dev mode, use `./mvnw clean compile quarkus:dev`
 
 First, ask the endpoint whether some numbers are prime numbers.
 
-[source,shell]
+[source,bash]
 ----
 curl localhost:8080/350
 ----
@@ -179,7 +180,7 @@ The application will respond that 350 is not a prime number because it can be di
 
 Now for some large prime number so that the test takes a bit more time:
 
-[source,shell]
+[source,bash]
 ----
 curl localhost:8080/629521085409773
 ----
@@ -198,7 +199,7 @@ spent determining whether or not a number is prime. The Micrometer extension
 enables additional system, jvm, and http metrics. A subset of the collected metrics
 are shown below.
 
-[source,shell]
+[source,text]
 ----
 # HELP http_server_requests_seconds
 # TYPE http_server_requests_seconds summary
@@ -279,6 +280,42 @@ jvm_memory_committed_bytes{area="nonheap",id="CodeHeap 'non-profiled nmethods'",
 
 Note that metrics appear lazily, you often won't see any data for your endpoint until
 something tries to access it, etc.
+
+== Adding custom configuration or common tags
+
+Micrometer uses `MeterFilter` instances to customize the metrics emitted by `MeterRegistry` instances.
+The Micrometer extension will detect `MeterFilter` CDI beans and use them when initializing `MeterRegistry` instances.
+
+[source,java]
+----
+@Singleton
+public class CustomConfiguration {
+
+    @ConfigProperty(name = "deployment.env")
+    String deploymentEnv;
+
+    /** Define common tags that apply only to a Prometheus Registry */
+    @Produces
+    @Singleton
+    @MeterFilterConstraint(applyTo = PrometheusMeterRegistry.class)
+    public MeterFilter configurePrometheusRegistries() {
+        return MeterFilter.commonTags(Arrays.asList(
+                Tag.of("registry", "prometheus")));
+    }
+
+    /** Define common tags that apply globally */
+    @Produces
+    @Singleton
+    public MeterFilter configureAllRegistries() {
+        return MeterFilter.commonTags(Arrays.asList(
+                Tag.of("env", deploymentEnv)));
+    }
+}
+----
+
+In this example, a singleton CDI bean will produce two different `MeterFilter` beans. One will be applied only to
+Prometheus `MeterRegistry` instances (using the `@MeterFilterConstraint` qualifier), and another will be applied
+to all `MeterRegistry` instances. An application configuration property is also injected and used as a tag value.
 
 == Support for the MicroProfile Metrics API
 

@@ -1,20 +1,20 @@
 package io.quarkus.devtools.codestarts;
 
+import static io.quarkus.devtools.ProjectTestUtil.checkContains;
 import static io.quarkus.devtools.codestarts.QuarkusCodestartData.DataKey.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
-import org.assertj.core.util.Files;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.bootstrap.model.AppArtifactCoords;
 import io.quarkus.bootstrap.model.AppArtifactKey;
 import io.quarkus.devtools.PlatformAwareTestBase;
 import io.quarkus.devtools.ProjectTestUtil;
@@ -80,8 +80,9 @@ class QuarkusCodestartGenerationTest extends PlatformAwareTestBase {
     }
 
     @Test
-    void generateCodestartProjectDefaultWithExamples() throws IOException {
+    void generateCodestartProjectCommandMode() throws IOException {
         final QuarkusCodestartProjectInput input = QuarkusCodestartProjectInput.builder()
+                .addCodestart("commandmode")
                 .addData(getTestInputData())
                 .build();
 
@@ -99,6 +100,7 @@ class QuarkusCodestartGenerationTest extends PlatformAwareTestBase {
     @Test
     void generateCodestartProjectCommandModeCustom() throws IOException {
         final QuarkusCodestartProjectInput input = QuarkusCodestartProjectInput.builder()
+                .addCodestart("commandmode")
                 .addData(getTestInputData())
                 .putData(COMMANDMODE_EXAMPLE_PACKAGE_NAME.getKey(), "com.test.andy")
                 .putData(COMMANDMODE_EXAMPLE_RESOURCE_CLASS_NAME.getKey(), "AndyCommando")
@@ -146,6 +148,30 @@ class QuarkusCodestartGenerationTest extends PlatformAwareTestBase {
         assertThat(projectDir.resolve("src/test/java/com/andy/NativeBonjourResourceIT.java")).exists()
                 .satisfies(checkContains("package com.andy;"))
                 .satisfies(checkContains("class NativeBonjourResourceIT extends BonjourResourceTest"));
+    }
+
+    @Test
+    void generateMavenProjectWithCustomDep() throws IOException {
+        final QuarkusCodestartProjectInput input = QuarkusCodestartProjectInput.builder()
+                .addData(getTestInputData())
+                .addExtension(AppArtifactKey.fromString("io.quarkus:quarkus-resteasy"))
+                .addExtension(AppArtifactCoords.fromString("commons-io:commons-io:2.5"))
+
+                .build();
+        final Path projectDir = testDirPath.resolve("maven-custom-dep");
+        getCatalog().createProject(input).generate(projectDir);
+
+        checkMaven(projectDir);
+        assertThat(projectDir.resolve("pom.xml")).exists()
+                .satisfies(checkContains("<dependency>\n" +
+                        "      <groupId>commons-io</groupId>\n" +
+                        "      <artifactId>commons-io</artifactId>\n" +
+                        "      <version>2.5</version>\n" +
+                        "    </dependency>\n"))
+                .satisfies(checkContains("<dependency>\n" +
+                        "      <groupId>io.quarkus</groupId>\n" +
+                        "      <artifactId>quarkus-resteasy</artifactId>\n" +
+                        "    </dependency>\n"));
     }
 
     @Test
@@ -212,6 +238,24 @@ class QuarkusCodestartGenerationTest extends PlatformAwareTestBase {
         assertThat(projectDir.resolve("src/test/scala/com/andy/NativeBonjourResourceIT.scala")).exists()
                 .satisfies(checkContains("package com.andy"))
                 .satisfies(checkContains("class NativeBonjourResourceIT extends BonjourResourceTest"));
+    }
+
+    @Test
+    void generateCodestartProjectMavenDefaultJava() throws IOException {
+        final QuarkusCodestartProjectInput input = QuarkusCodestartProjectInput.builder()
+                .addData(getTestInputData())
+                .build();
+        final Path projectDir = testDirPath.resolve("maven-default-java");
+        getCatalog().createProject(input).generate(projectDir);
+
+        checkMaven(projectDir);
+        checkReadme(projectDir);
+        checkDockerfiles(projectDir);
+        checkConfigProperties(projectDir);
+
+        assertThat(projectDir.resolve("src/main/java/org/acme/resteasy/ExampleResource.java")).exists();
+        assertThat(projectDir.resolve("src/test/java/org/acme/resteasy/ExampleResourceTest.java")).exists();
+        assertThat(projectDir.resolve("src/test/java/org/acme/resteasy/NativeExampleResourceIT.java")).exists();
     }
 
     @Test
@@ -428,6 +472,44 @@ class QuarkusCodestartGenerationTest extends PlatformAwareTestBase {
         assertThat(projectDir.resolve("src/main/java/org/acme/qute/Item.java")).exists();
     }
 
+    @Test
+    public void generateGradleWrapperGithubAction() throws Exception {
+        final QuarkusCodestartProjectInput input = QuarkusCodestartProjectInput.builder()
+                .buildTool(BuildTool.GRADLE)
+                .addData(getTestInputData())
+                .addCodestarts(Collections.singletonList("github-action"))
+                .putData(QuarkusCodestartData.DataKey.JAVA_VERSION.getKey(), System.getProperty("java.specification.version"))
+                .build();
+        Path projectDir = testDirPath.resolve("gradle-github");
+        getCatalog().createProject(input).generate(projectDir);
+
+        checkGradle(projectDir);
+
+        assertThat(projectDir.resolve(".github/workflows/ci.yml"))
+                .exists()
+                .satisfies(checkContains("run: ./gradlew build"));
+    }
+
+    @Test
+    public void generateGradleNoWrapperGithubAction() throws Exception {
+        final QuarkusCodestartProjectInput input = QuarkusCodestartProjectInput.builder()
+                .buildTool(BuildTool.GRADLE)
+                .noBuildToolWrapper()
+                .addData(getTestInputData())
+                .addCodestarts(Collections.singletonList("github-action"))
+                .putData(QuarkusCodestartData.DataKey.JAVA_VERSION.getKey(), System.getProperty("java.specification.version"))
+                .build();
+        Path projectDir = testDirPath.resolve("gradle-nowrapper-github");
+        getCatalog().createProject(input).generate(projectDir);
+
+        checkGradle(projectDir);
+
+        assertThat(projectDir.resolve(".github/workflows/ci.yml"))
+                .exists()
+                .satisfies(checkContains("uses: eskatos/gradle-command-action@v1"))
+                .satisfies(checkContains("arguments: build"));
+    }
+
     private void checkNoExample(Path projectDir) {
         assertThat(projectDir.resolve("src/main/java")).doesNotExist();
         assertThat(projectDir.resolve("src/main/kotlin")).doesNotExist();
@@ -436,9 +518,21 @@ class QuarkusCodestartGenerationTest extends PlatformAwareTestBase {
 
     private void checkDockerfiles(Path projectDir) {
         assertThat(projectDir.resolve(".dockerignore")).exists();
-        assertThat(projectDir.resolve("src/main/docker/Dockerfile.jvm")).exists();
-        assertThat(projectDir.resolve("src/main/docker/Dockerfile.native")).exists();
-        assertThat(projectDir.resolve("src/main/docker/Dockerfile.fast-jar")).exists();
+        assertThat(projectDir.resolve("src/main/docker/Dockerfile.jvm")).exists()
+                .satisfies(checkContains("mvn package"))
+                .satisfies(checkContains("docker build -f src/main/docker/Dockerfile.jvm"))
+                .satisfies(checkContains("registry.access.redhat.com/ubi8/ubi-minimal:8.1"))
+                .satisfies(checkContains("ARG JAVA_PACKAGE=java-11-openjdk-headless"))
+                .satisfies(checkContains("ENTRYPOINT [ \"/deployments/run-java.sh\" ]"));
+        assertThat(projectDir.resolve("src/main/docker/Dockerfile.fast-jar")).exists()
+                .satisfies(checkContains("mvn package -Dquarkus.package.type=fast-jar"))
+                .satisfies(checkContains("docker build -f src/main/docker/Dockerfile.fast-jar"))
+                .satisfies(checkContains("registry.access.redhat.com/ubi8/ubi-minimal:8.1"))
+                .satisfies(checkContains("ARG JAVA_PACKAGE=java-11-openjdk-headless"))
+                .satisfies(checkContains("ENTRYPOINT [ \"/deployments/run-java.sh\" ]"));
+        assertThat(projectDir.resolve("src/main/docker/Dockerfile.native")).exists()
+                .satisfies(checkContains("registry.access.redhat.com/ubi8/ubi-minimal:8.1"))
+                .satisfies(checkContains("CMD [\"./application\", \"-Dquarkus.http.host=0.0.0.0\"]"));
     }
 
     private void checkConfigProperties(Path projectDir) {
@@ -493,10 +587,6 @@ class QuarkusCodestartGenerationTest extends PlatformAwareTestBase {
         assertThat(projectDir.resolve("settings.gradle.kts"))
                 .exists()
                 .satisfies(checkContains("rootProject.name=\"test-codestart\""));
-    }
-
-    private Consumer<Path> checkContains(String s) {
-        return (p) -> assertThat(Files.contentOf(p.toFile(), StandardCharsets.UTF_8)).contains(s);
     }
 
     private QuarkusCodestartCatalog getCatalog() throws IOException {

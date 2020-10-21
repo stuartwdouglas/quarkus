@@ -32,14 +32,16 @@ public final class QuarkusCodestartData {
         RESTEASY_EXAMPLE_PACKAGE_NAME("resteasy-example.package-name"),
         RESTEASY_EXAMPLE_RESOURCE_CLASS_NAME("resteasy-example.resource.class-name"),
 
+        SPRING_WEB_EXAMPLE_RESOURCE_PATH("spring-web-example.resource.path"),
+        SPRING_WEB_EXAMPLE_PACKAGE_NAME("spring-web-example.package-name"),
+        SPRING_WEB_EXAMPLE_RESOURCE_CLASS_NAME("spring-web-example.resource.class-name"),
+
         COMMANDMODE_EXAMPLE_PACKAGE_NAME("commandmode-example.package-name"),
         COMMANDMODE_EXAMPLE_RESOURCE_CLASS_NAME("commandmode-example.main.class-name"),
 
         NO_EXAMPLES("quarkus-project.no-examples"),
         NO_BUILD_TOOL_WRAPPER("quarkus-project.no-build-tool-wrapper"),
         NO_DOCKERFILES("quarkus-project.no-dockerfiles");
-
-        ;
 
         private final String key;
 
@@ -69,7 +71,11 @@ public final class QuarkusCodestartData {
 
         RESTEASY_EXAMPLE_RESOURCE_PATH("path"),
         RESTEASY_EXAMPLE_PACKAGE_NAME(QuarkusCodestartData::convertPackageName),
-        RESTEASY_EXAMPLE_RESOURCE_CLASS_NAME(QuarkusCodestartData::convertClassName);
+        RESTEASY_EXAMPLE_RESOURCE_CLASS_NAME(QuarkusCodestartData::convertClassName),
+
+        SPRING_WEB_EXAMPLE_RESOURCE_PATH("path"),
+        SPRING_WEB_EXAMPLE_PACKAGE_NAME(QuarkusCodestartData::convertPackageName),
+        SPRING_WEB_EXAMPLE_RESOURCE_CLASS_NAME(QuarkusCodestartData::convertClassName);
 
         private final String key;
         private final Function<Map<String, Object>, Object> converter;

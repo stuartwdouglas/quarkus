@@ -7,6 +7,7 @@ import io.quarkus.devtools.commands.data.QuarkusCommandException;
 import io.quarkus.devtools.commands.data.QuarkusCommandInvocation;
 import io.quarkus.devtools.commands.data.QuarkusCommandOutcome;
 import io.quarkus.devtools.commands.handlers.CreateProjectCommandHandler;
+import io.quarkus.devtools.commands.handlers.LegacyCreateProjectCommandHandler;
 import io.quarkus.devtools.project.BuildTool;
 import io.quarkus.devtools.project.QuarkusProject;
 import io.quarkus.devtools.project.codegen.SourceType;
@@ -16,6 +17,7 @@ import io.quarkus.platform.tools.ToolsUtils;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -32,7 +34,6 @@ public class CreateProject {
 
     public static final String NAME = "create-project";
 
-    public static final String CODESTARTS_ENABLED = ToolsUtils.dotJoin(ToolsConstants.QUARKUS, NAME, "codestarts-enabled");
     public static final String NO_DOCKERFILES = ToolsUtils.dotJoin(ToolsConstants.QUARKUS, NAME, "no-dockerfiles");
     public static final String NO_BUILDTOOL_WRAPPER = ToolsUtils.dotJoin(ToolsConstants.QUARKUS, NAME, "no-buildtool-wrapper");
     public static final String NO_EXAMPLES = ToolsUtils.dotJoin(ToolsConstants.QUARKUS, NAME, "no-examples");
@@ -40,9 +41,11 @@ public class CreateProject {
 
     private static final Pattern JAVA_VERSION_PATTERN = Pattern.compile("(?:1\\.)?(\\d+)(?:\\..*)?");
 
+    private boolean legacyCodegen = false;
     private final Path projectDirPath;
     private final QuarkusPlatformDescriptor platformDescr;
     private String javaTarget;
+    private Set<String> extensions = new HashSet<>();
     private BuildTool buildTool = BuildTool.MAVEN;
 
     private Map<String, Object> values = new HashMap<>();
@@ -87,6 +90,11 @@ public class CreateProject {
         return this;
     }
 
+    public CreateProject resourcePath(String resourcePath) {
+        setValue(RESOURCE_PATH, resourcePath);
+        return this;
+    }
+
     public CreateProject className(String className) {
         if (className == null) {
             return this;
@@ -99,10 +107,10 @@ public class CreateProject {
     }
 
     public CreateProject extensions(Set<String> extensions) {
-        if (isSpringStyle(extensions)) {
-            setValue(IS_SPRING, true);
+        if (extensions == null) {
+            return this;
         }
-        setValue(EXTENSIONS, extensions);
+        this.extensions.addAll(extensions);
         return this;
     }
 
@@ -111,13 +119,9 @@ public class CreateProject {
         return this;
     }
 
-    public CreateProject codestartsEnabled(boolean value) {
-        setValue(CODESTARTS_ENABLED, value);
+    public CreateProject legacyCodegen(boolean value) {
+        this.legacyCodegen = value;
         return this;
-    }
-
-    public CreateProject codestartsEnabled() {
-        return codestartsEnabled(true);
     }
 
     public CreateProject noExamples(boolean value) {
@@ -179,9 +183,20 @@ public class CreateProject {
         } else {
             setValue(JAVA_TARGET, "11");
         }
-
+        if (containsSpringWeb(extensions)) {
+            setValue(IS_SPRING, true);
+            if (containsRESTEasy(extensions)) {
+                values.remove(CLASS_NAME);
+                values.remove(PACKAGE_NAME);
+                values.remove(RESOURCE_PATH);
+            }
+        }
+        setValue(EXTENSIONS, extensions);
         final QuarkusProject quarkusProject = QuarkusProject.of(projectDirPath, platformDescr, buildTool);
         final QuarkusCommandInvocation invocation = new QuarkusCommandInvocation(quarkusProject, values);
+        if (legacyCodegen) {
+            return new LegacyCreateProjectCommandHandler().execute(invocation);
+        }
         return new CreateProjectCommandHandler().execute(invocation);
     }
 
@@ -194,7 +209,11 @@ public class CreateProject {
         return sourceType.orElse(SourceType.JAVA);
     }
 
-    private static boolean isSpringStyle(Collection<String> extensions) {
-        return extensions != null && extensions.stream().anyMatch(e -> e.toLowerCase().contains("spring-web"));
+    private static boolean containsSpringWeb(Collection<String> extensions) {
+        return extensions.stream().anyMatch(e -> e.toLowerCase().contains("spring-web"));
+    }
+
+    private static boolean containsRESTEasy(Collection<String> extensions) {
+        return extensions.isEmpty() || extensions.stream().anyMatch(e -> e.toLowerCase().contains("resteasy"));
     }
 }

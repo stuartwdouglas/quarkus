@@ -79,6 +79,7 @@ import io.quarkus.test.junit.buildchain.TestBuildChainCustomizerProducer;
 import io.quarkus.test.junit.callback.QuarkusTestAfterConstructCallback;
 import io.quarkus.test.junit.callback.QuarkusTestAfterEachCallback;
 import io.quarkus.test.junit.callback.QuarkusTestBeforeAllCallback;
+import io.quarkus.test.junit.callback.QuarkusTestBeforeClassCallback;
 import io.quarkus.test.junit.callback.QuarkusTestBeforeEachCallback;
 import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
 import io.quarkus.test.junit.internal.DeepClone;
@@ -103,6 +104,7 @@ public class QuarkusTestExtension
     private static Path testClassLocation;
     private static Throwable firstException; //if this is set then it will be thrown from the very first test that is run, the rest are aborted
 
+    private static List<Object> beforeClassCallbacks;
     private static List<Object> afterConstructCallbacks;
     private static List<Object> legacyAfterConstructCallbacks;
     private static List<Object> beforeEachCallbacks;
@@ -330,11 +332,17 @@ public class QuarkusTestExtension
         // make sure that we start over everytime we populate the callbacks
         // otherwise previous runs of QuarkusTest (with different TestProfile values can leak into the new run)
         quarkusTestMethodContextClass = null;
+        beforeClassCallbacks = new ArrayList<>();
         afterConstructCallbacks = new ArrayList<>();
         legacyAfterConstructCallbacks = new ArrayList<>();
         beforeEachCallbacks = new ArrayList<>();
         afterEachCallbacks = new ArrayList<>();
 
+        ServiceLoader<?> quarkusTestBeforeClassLoader = ServiceLoader
+                .load(Class.forName(QuarkusTestBeforeClassCallback.class.getName(), false, classLoader), classLoader);
+        for (Object quarkusTestBeforeClassCallback : quarkusTestBeforeClassLoader) {
+            beforeClassCallbacks.add(quarkusTestBeforeClassCallback);
+        }
         ServiceLoader<?> quarkusTestAfterConstructLoader = ServiceLoader
                 .load(Class.forName(QuarkusTestAfterConstructCallback.class.getName(), false, classLoader), classLoader);
         for (Object quarkusTestAfterConstructCallback : quarkusTestAfterConstructLoader) {
@@ -603,9 +611,18 @@ public class QuarkusTestExtension
         if (isNativeTest(extensionContext)) {
             return invocation.proceed();
         }
+        ExtensionState state = ensureStarted(extensionContext);
+        if (failedBoot) {
+            throwBootFailureException();
+            return null;
+        }
         T result;
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         Class<?> requiredTestClass = extensionContext.getRequiredTestClass();
+        for (Object beforeClassCallback : beforeClassCallbacks) {
+            beforeClassCallback.getClass().getMethod("beforeClass", Class.class).invoke(beforeClassCallback,
+                    requiredTestClass);
+        }
         try {
             Thread.currentThread().setContextClassLoader(requiredTestClass.getClassLoader());
             result = invocation.proceed();
@@ -616,10 +633,6 @@ public class QuarkusTestExtension
                     e);
         } finally {
             Thread.currentThread().setContextClassLoader(old);
-        }
-        ExtensionState state = ensureStarted(extensionContext);
-        if (failedBoot) {
-            return result;
         }
 
         // We do this here as well, because when @TestInstance(Lifecycle.PER_CLASS) is used on a class,

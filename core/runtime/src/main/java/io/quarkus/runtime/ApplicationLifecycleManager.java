@@ -1,10 +1,12 @@
 package io.quarkus.runtime;
 
+import java.net.BindException;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -13,10 +15,12 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.graalvm.nativeimage.ImageInfo;
 import org.jboss.logging.Logger;
 import org.wildfly.common.lock.Locks;
 
+import io.quarkus.runtime.configuration.ProfileManager;
 import io.quarkus.runtime.graal.DiagnosticPrinter;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
@@ -28,7 +32,7 @@ import sun.misc.SignalHandler;
  * but nothing else. This class can be used to run both persistent applications that will run
  * till they receive a signal, and command mode applications that will run until the main method
  * returns. This class registers a shutdown hook to properly shut down the application, and handles
- * exiting with the supplied exit code.
+ * exiting with the supplied exit code as well as any exception thrown when starting the application.
  *
  * This class should be used to run production and dev mode applications, while test use cases will
  * likely want to just use {@link Application} directly.
@@ -38,9 +42,9 @@ import sun.misc.SignalHandler;
  */
 public class ApplicationLifecycleManager {
 
-    private static volatile Consumer<Integer> defaultExitCodeHandler = new Consumer<Integer>() {
+    private static volatile BiConsumer<Integer, Throwable> defaultExitCodeHandler = new BiConsumer<Integer, Throwable>() {
         @Override
-        public void accept(Integer integer) {
+        public void accept(Integer integer, Throwable cause) {
             System.exit(integer);
         }
     };
@@ -67,7 +71,7 @@ public class ApplicationLifecycleManager {
     }
 
     public static void run(Application application, Class<? extends QuarkusApplication> quarkusApplication,
-            Consumer<Integer> exitCodeHandler, String... args) {
+            BiConsumer<Integer, Throwable> exitCodeHandler, String... args) {
         stateLock.lock();
         //in tests we might pass this method an already started application
         //in this case we don't shut it down at the end
@@ -136,10 +140,29 @@ public class ApplicationLifecycleManager {
                 }
             }
         } catch (Exception e) {
-            if (appStarted) {
-                //we only log if the error occurred after the application was started
-                //as the generated application class already has logging
-                Logger.getLogger(Application.class).error("Error running Quarkus application", e);
+            if (exitCodeHandler == null) {
+                Throwable rootCause = e;
+                while (rootCause.getCause() != null) {
+                    rootCause = rootCause.getCause();
+                }
+                Logger applicationLogger = Logger.getLogger(Application.class);
+                if (rootCause instanceof BindException) {
+                    int port = ConfigProviderResolver.instance().getConfig()
+                            .getOptionalValue("quarkus.http.port", Integer.class).orElse(8080);
+                    applicationLogger.error("Port " + port + " seems to be in use by another process. " +
+                            "Quarkus may already be running or the port is used by another application.");
+                    if (System.getProperty("os.name").startsWith("Windows")) {
+                        applicationLogger.info("Use 'netstat -a -b -n -o' to identify the process occupying the port.");
+                        applicationLogger.info("You can try to kill it with 'taskkill /PID <pid>' or via the Task Manager.");
+                    } else {
+                        applicationLogger
+                                .info("Use 'netstat -anop | grep " + port + "' to identify the process occupying the port.");
+                        applicationLogger.info("You can try to kill it with 'kill -9 <pid>'.");
+                    }
+                } else {
+                    applicationLogger.errorv(rootCause, "Failed to start application (with profile {0})",
+                            ProfileManager.getActiveProfile());
+                }
             }
             stateLock.lock();
             try {
@@ -149,16 +172,16 @@ public class ApplicationLifecycleManager {
                 stateLock.unlock();
             }
             application.stop();
-            (exitCodeHandler == null ? defaultExitCodeHandler : exitCodeHandler).accept(1);
+            (exitCodeHandler == null ? defaultExitCodeHandler : exitCodeHandler).accept(1, e);
             return;
         }
         if (!alreadyStarted) {
             application.stop(); //this could have already been called
         }
-        (exitCodeHandler == null ? defaultExitCodeHandler : exitCodeHandler).accept(getExitCode()); //this may not be called if shutdown was initiated by a signal
+        (exitCodeHandler == null ? defaultExitCodeHandler : exitCodeHandler).accept(getExitCode(), null); //this may not be called if shutdown was initiated by a signal
     }
 
-    private static void registerHooks(final Consumer<Integer> exitCodeHandler) {
+    private static void registerHooks(final BiConsumer<Integer, Throwable> exitCodeHandler) {
         if (ImageInfo.inImageRuntimeCode() && System.getenv(DISABLE_SIGNAL_HANDLERS) == null) {
             registerSignalHandlers(exitCodeHandler);
         }
@@ -166,11 +189,11 @@ public class ApplicationLifecycleManager {
         Runtime.getRuntime().addShutdownHook(shutdownHookThread);
     }
 
-    private static void registerSignalHandlers(final Consumer<Integer> exitCodeHandler) {
+    private static void registerSignalHandlers(final BiConsumer<Integer, Throwable> exitCodeHandler) {
         final SignalHandler exitHandler = new SignalHandler() {
             @Override
             public void handle(Signal signal) {
-                exitCodeHandler.accept(signal.getNumber() + 0x80);
+                exitCodeHandler.accept(signal.getNumber() + 0x80, null);
             }
         };
         final SignalHandler diagnosticsHandler = new SignalHandler() {
@@ -209,7 +232,7 @@ public class ApplicationLifecycleManager {
         exit(-1);
     }
 
-    public static Consumer<Integer> getDefaultExitCodeHandler() {
+    public static BiConsumer<Integer, Throwable> getDefaultExitCodeHandler() {
         return defaultExitCodeHandler;
     }
 
@@ -222,6 +245,20 @@ public class ApplicationLifecycleManager {
     }
 
     /**
+     * Sets the default exit code and exception handler for application run through the run method
+     * that does not take an exit handler.
+     *
+     * By default this will just call System.exit, however this is not always
+     * what is wanted.
+     *
+     * @param defaultExitCodeHandler the new default exit handler
+     */
+    public static void setDefaultExitCodeHandler(BiConsumer<Integer, Throwable> defaultExitCodeHandler) {
+        Objects.requireNonNull(defaultExitCodeHandler);
+        ApplicationLifecycleManager.defaultExitCodeHandler = defaultExitCodeHandler;
+    }
+
+    /**
      * Sets the default exit code handler for application run through the run method
      * that does not take an exit handler.
      *
@@ -231,8 +268,7 @@ public class ApplicationLifecycleManager {
      * @param defaultExitCodeHandler the new default exit handler
      */
     public static void setDefaultExitCodeHandler(Consumer<Integer> defaultExitCodeHandler) {
-        Objects.requireNonNull(defaultExitCodeHandler);
-        ApplicationLifecycleManager.defaultExitCodeHandler = defaultExitCodeHandler;
+        setDefaultExitCodeHandler((exitCode, cause) -> defaultExitCodeHandler.accept(exitCode));
     }
 
     /**

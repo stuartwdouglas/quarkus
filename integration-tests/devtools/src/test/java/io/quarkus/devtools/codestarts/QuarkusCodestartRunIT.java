@@ -56,16 +56,16 @@ class QuarkusCodestartRunIT extends PlatformAwareTestBase {
                 .filter(c -> !EXCLUDED.contains(c.getName()))
                 .collect(Collectors.toList());
         final List<List<String>> runAlone = examples.stream()
-                .filter(c -> c.containsTag(Tag.COMPATIBILITY_ISSUES.getKey()))
+                .filter(c -> c.containsTag(Tag.SINGLETON_EXAMPLE.getKey()))
                 .map(Codestart::getName)
                 .map(Collections::singletonList)
                 .collect(Collectors.toList());
         final List<String> runTogether = examples.stream()
-                .filter(c -> !c.containsTag(Tag.COMPATIBILITY_ISSUES.getKey()))
+                .filter(c -> !c.containsTag(Tag.SINGLETON_EXAMPLE.getKey()))
                 .map(Codestart::getName)
                 .collect(Collectors.toList());
         return Stream.of("java", "kotlin", "scala")
-                .flatMap(l -> Stream.concat(Stream.of(runTogether, Collections.emptyList()), Stream.of(runAlone.toArray()))
+                .flatMap(l -> Stream.concat(Stream.of(runTogether), Stream.of(runAlone.toArray()))
                         .map(c -> Arguments.of(l, c)));
     }
 
@@ -107,6 +107,19 @@ class QuarkusCodestartRunIT extends PlatformAwareTestBase {
     }
 
     @Test
+    public void generateCustomizedSpringWebProjectRun() throws Exception {
+        final HashMap<String, Object> data = new HashMap<>();
+        data.put(DataKey.SPRING_WEB_EXAMPLE_PACKAGE_NAME.getKey(), "com.test.spring.web");
+        data.put(DataKey.SPRING_WEB_EXAMPLE_RESOURCE_CLASS_NAME.getKey(), "SpringWebEndpoint");
+        data.put(DataKey.SPRING_WEB_EXAMPLE_RESOURCE_PATH.getKey(), "/springweb");
+        final String buildTool = "maven";
+        final String language = "java";
+        final List<String> codestarts = Collections.singletonList("spring-web-example");
+        generateProjectRunTests(buildTool, language, codestarts, data,
+                genName(buildTool, language, codestarts) + "-customized");
+    }
+
+    @Test
     public void generateCustomizedCommandModeProjectRun() throws Exception {
         final HashMap<String, Object> data = new HashMap<>();
         data.put(DataKey.COMMANDMODE_EXAMPLE_PACKAGE_NAME.getKey(), "com.test.andy");
@@ -141,6 +154,7 @@ class QuarkusCodestartRunIT extends PlatformAwareTestBase {
         final CodestartProjectDefinition projectDefinition = getCatalog().createProject(input);
         Path projectDir = testDirPath.resolve(name);
         projectDefinition.generate(projectDir);
+
         final int result = WrapperRunner.run(projectDir,
                 WrapperRunner.Wrapper.fromBuildtool(buildToolName));
         assertThat(result).isZero();

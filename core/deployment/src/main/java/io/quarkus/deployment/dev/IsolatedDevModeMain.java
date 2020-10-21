@@ -8,6 +8,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.BindException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -102,48 +103,54 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                             }
                         });
 
-                startCodeGenWatcher(deploymentClassLoader, codeGens);
+                startCodeGenWatcher(deploymentClassLoader, codeGens, context.getBuildSystemProperties());
 
                 augmentDone = true;
                 runner = start.runMainClass(context.getArgs());
                 firstStartCompleted = true;
             } catch (Throwable t) {
-                deploymentProblem = t;
-                if (!augmentDone) {
-                    log.error("Failed to start quarkus", t);
+                Throwable rootCause = t;
+                while (rootCause.getCause() != null) {
+                    rootCause = rootCause.getCause();
                 }
-                if (!context.isAbortOnFailedStart()) {
-                    //we need to set this here, while we still have the correct TCCL
-                    //this is so the config is still valid, and we can read HTTP config from application.properties
-                    log.info("Attempting to start hot replacement endpoint to recover from previous Quarkus startup failure");
-                    if (RuntimeUpdatesProcessor.INSTANCE != null) {
-                        Thread.currentThread().setContextClassLoader(curatedApplication.getBaseRuntimeClassLoader());
-
-                        try {
-                            if (!InitialConfigurator.DELAYED_HANDLER.isActivated()) {
-                                Class<?> cl = Thread.currentThread().getContextClassLoader()
-                                        .loadClass(LoggingSetupRecorder.class.getName());
-                                cl.getMethod("handleFailedStart").invoke(null);
+                if (!(rootCause instanceof BindException)) {
+                    deploymentProblem = t;
+                    if (!augmentDone) {
+                        log.error("Failed to start quarkus", t);
+                    }
+                    if (!context.isAbortOnFailedStart()) {
+                        //we need to set this here, while we still have the correct TCCL
+                        //this is so the config is still valid, and we can read HTTP config from application.properties
+                        log.info(
+                                "Attempting to start hot replacement endpoint to recover from previous Quarkus startup failure");
+                        if (RuntimeUpdatesProcessor.INSTANCE != null) {
+                            Thread.currentThread().setContextClassLoader(curatedApplication.getBaseRuntimeClassLoader());
+                            try {
+                                if (!InitialConfigurator.DELAYED_HANDLER.isActivated()) {
+                                    Class<?> cl = Thread.currentThread().getContextClassLoader()
+                                            .loadClass(LoggingSetupRecorder.class.getName());
+                                    cl.getMethod("handleFailedStart").invoke(null);
+                                }
+                                RuntimeUpdatesProcessor.INSTANCE.startupFailed();
+                            } catch (Exception e) {
+                                close();
+                                log.error("Failed to recover after failed start", e);
+                                //this is the end of the road, we just exit
+                                //generally we only hit this if something is already listening on the HTTP port
+                                //or the system config is so broken we can't start HTTP
+                                System.exit(1);
                             }
-                            RuntimeUpdatesProcessor.INSTANCE.startupFailed();
-                        } catch (Exception e) {
-                            close();
-                            log.error("Failed to recover after failed start", e);
-                            //this is the end of the road, we just exit
-                            //generally we only hit this if something is already listening on the HTTP port
-                            //or the system config is so broken we can't start HTTP
-                            System.exit(1);
                         }
                     }
                 }
-
             }
         } finally {
             Thread.currentThread().setContextClassLoader(old);
         }
     }
 
-    private void startCodeGenWatcher(QuarkusClassLoader classLoader, List<CodeGenData> codeGens) {
+    private void startCodeGenWatcher(QuarkusClassLoader classLoader, List<CodeGenData> codeGens,
+            Map<String, String> properties) {
 
         Collection<FSWatchUtil.Watcher> watchers = new ArrayList<>();
         for (CodeGenData codeGen : codeGens) {
@@ -152,7 +159,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                         try {
                             CodeGenerator.trigger(classLoader,
                                     codeGen,
-                                    curatedApplication.getAppModel());
+                                    curatedApplication.getAppModel(), properties);
                         } catch (Exception any) {
                             log.warn("Code generation failed", any);
                         }
@@ -176,9 +183,15 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 firstStartCompleted = true;
             } catch (Throwable t) {
                 deploymentProblem = t;
-                log.error("Failed to start quarkus", t);
-                Thread.currentThread().setContextClassLoader(curatedApplication.getAugmentClassLoader());
-                LoggingSetupRecorder.handleFailedStart();
+                Throwable rootCause = t;
+                while (rootCause.getCause() != null) {
+                    rootCause = rootCause.getCause();
+                }
+                if (!(rootCause instanceof BindException)) {
+                    log.error("Failed to start quarkus", t);
+                    Thread.currentThread().setContextClassLoader(curatedApplication.getAugmentClassLoader());
+                    LoggingSetupRecorder.handleFailedStart();
+                }
             }
         } finally {
             restarting = false;

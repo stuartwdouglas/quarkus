@@ -105,6 +105,9 @@
 
         <boring-ssl.version>2.0.30.Final</boring-ssl.version>
 
+        <!-- Used for integration tests, to make sure webjars work-->
+        <bootstrap.version>3.1.0</bootstrap.version>
+
         <!-- revapi API check -->
         <revapi-maven-plugin.version>0.12.1</revapi-maven-plugin.version>
         <revapi-java-plugin.version>0.22.0</revapi-java-plugin.version>
@@ -236,6 +239,11 @@
                 <scope>test</scope>
                 <version>${boring-ssl.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.webjars</groupId>
+                <artifactId>bootstrap</artifactId>
+                <version>${bootstrap.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>io.quarkus</groupId>
@@ -279,7 +287,7 @@
                             <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                             <maven.home>${maven.home}</maven.home>
                         </systemPropertyVariables>
-                        <argLine>${jacoco.agent.argLine}</argLine>
+                        <argLine>${jacoco.agent.argLine} -Xmx1500m</argLine> <!-- limit the amount of memory surefire can use, 1500m should be plenty-->
                     </configuration>
                 </plugin>
                 <plugin>
