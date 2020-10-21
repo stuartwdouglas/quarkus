@@ -51,15 +51,19 @@ public class VertxBinderProcessor {
             BuildProducer<ContainerRequestFilterBuildItem> containerRequestFilter,
             BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
 
+        if (capabilities.isPresent(Capability.RESTEASY)) {
+            resteasyJaxrsProviders.produce(new ResteasyJaxrsProviderBuildItem(VERTX_CONTAINER_FILTER_CLASS_NAME));
+            turnVertxBinderFilterIntoBean(additionalBeans);
+        } else if (capabilities.isPresent(Capability.QUARKUS_REST)) {
+            containerRequestFilter.produce(new ContainerRequestFilterBuildItem(VERTX_CONTAINER_FILTER_CLASS_NAME));
+            turnVertxBinderFilterIntoBean(additionalBeans);
+        }
+    }
+
+    private void turnVertxBinderFilterIntoBean(BuildProducer<AdditionalBeanBuildItem> additionalBeans) {
         additionalBeans.produce(AdditionalBeanBuildItem.builder()
                 .addBeanClass(VertxMeterBinderContainerFilter.class)
                 .setUnremovable().build());
-        if (capabilities.isPresent(Capability.RESTEASY)) {
-            resteasyJaxrsProviders.produce(new ResteasyJaxrsProviderBuildItem(VERTX_CONTAINER_FILTER_CLASS_NAME));
-        }
-        if (capabilities.isPresent(Capability.QUARKUS_REST)) {
-            containerRequestFilter.produce(new ContainerRequestFilterBuildItem(VERTX_CONTAINER_FILTER_CLASS_NAME));
-        }
     }
 
     @BuildStep(onlyIf = VertxBinderEnabled.class)
