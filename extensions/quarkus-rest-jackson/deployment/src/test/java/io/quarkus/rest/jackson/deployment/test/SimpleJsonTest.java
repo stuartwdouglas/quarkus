@@ -1,4 +1,4 @@
-package io.quarkus.rest.jsonb.deployment.test;
+package io.quarkus.rest.jackson.deployment.test;
 
 import java.util.function.Supplier;
 

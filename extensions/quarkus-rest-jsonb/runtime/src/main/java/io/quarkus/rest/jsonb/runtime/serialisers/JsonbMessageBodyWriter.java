@@ -26,24 +26,32 @@ public class JsonbMessageBodyWriter implements QuarkusRestMessageBodyWriter<Obje
 
     @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return !String.class.equals(type);
+        return true;
     }
 
     @Override
     public void writeTo(Object o, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-        json.toJson(o, type, entityStream);
+        if (o instanceof String) { // YUK: done in order to avoid adding extra quotes...
+            entityStream.write(((String) o).getBytes());
+        } else {
+            json.toJson(o, type, entityStream);
+        }
     }
 
     @Override
     public boolean isWriteable(Class<?> type, LazyMethod target, MediaType mediaType) {
-        return !String.class.equals(type);
+        return true;
     }
 
     @Override
     public void writeResponse(Object o, QuarkusRestRequestContext context) throws WebApplicationException, IOException {
         try (OutputStream stream = context.getOrCreateOutputStream()) {
-            json.toJson(o, stream);
+            if (o instanceof String) { // YUK: done in order to avoid adding extra quotes...
+                stream.write(((String) o).getBytes());
+            } else {
+                json.toJson(o, stream);
+            }
         }
 
     }

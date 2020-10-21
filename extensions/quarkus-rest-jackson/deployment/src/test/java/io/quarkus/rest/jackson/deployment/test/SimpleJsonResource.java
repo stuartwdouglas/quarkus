@@ -1,4 +1,4 @@
-package io.quarkus.rest.jsonb.deployment.test;
+package io.quarkus.rest.jackson.deployment.test;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
