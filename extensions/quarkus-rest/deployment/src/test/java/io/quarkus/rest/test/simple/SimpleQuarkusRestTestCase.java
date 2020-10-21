@@ -114,12 +114,6 @@ public class SimpleQuarkusRestTestCase {
     }
 
     @Test
-    public void testAsyncJson() {
-        RestAssured.get("/simple/async-person")
-                .then().body("first", Matchers.equalTo("Bob")).body("last", Matchers.equalTo("Builder"));
-    }
-
-    @Test
     public void testBlocking() {
         RestAssured.get("/simple/blocking")
                 .then().body(Matchers.equalTo("true"));
