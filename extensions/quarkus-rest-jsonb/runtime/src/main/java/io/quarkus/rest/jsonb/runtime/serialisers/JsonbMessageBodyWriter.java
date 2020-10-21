@@ -1,4 +1,4 @@
-package io.quarkus.rest.runtime.providers.serialisers.jsonb;
+package io.quarkus.rest.jsonb.runtime.serialisers;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -7,31 +7,17 @@ import java.lang.reflect.Type;
 
 import javax.inject.Inject;
 import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import io.quarkus.arc.Arc;
-import io.quarkus.arc.InstanceHandle;
 import io.quarkus.rest.runtime.core.LazyMethod;
 import io.quarkus.rest.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.runtime.spi.QuarkusRestMessageBodyWriter;
-import io.vertx.core.http.HttpServerResponse;
 
-// this gets conditionally registered
 public class JsonbMessageBodyWriter implements QuarkusRestMessageBodyWriter<Object> {
 
     private final Jsonb json;
-
-    public JsonbMessageBodyWriter() {
-        InstanceHandle<Jsonb> jsonbInstanceHandle = Arc.container().instance(Jsonb.class);
-        if (jsonbInstanceHandle.isAvailable()) {
-            this.json = jsonbInstanceHandle.get();
-        } else {
-            this.json = JsonbBuilder.create();
-        }
-    }
 
     @Inject
     public JsonbMessageBodyWriter(Jsonb json) {
@@ -56,7 +42,6 @@ public class JsonbMessageBodyWriter implements QuarkusRestMessageBodyWriter<Obje
 
     @Override
     public void writeResponse(Object o, QuarkusRestRequestContext context) throws WebApplicationException, IOException {
-        HttpServerResponse vertxResponse = context.getHttpServerResponse();
         try (OutputStream stream = context.getOrCreateOutputStream()) {
             json.toJson(o, stream);
         }
