@@ -137,15 +137,70 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <includes>
-                        <include>**/*Client*.java</include>
-                    </includes>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
                     <argLine>${jacoco.agent.argLine} -Xmx5000m</argLine> <!-- done in order to ensure that we don't inherit the memory limit which seems to slow down the test execution a lot -->
                 </configuration>
+                <executions>
+                    <!--  Split the execution of the tests into batches as it seems that CI doesn't have enough resources to run them all -->
+                    <execution>
+                        <id>batch1</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>%regex[.*Client00[0-4]\d.*]</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>batch2</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>%regex[.*Client00[5-9]\d.*]</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>batch3</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>%regex[.*Client01[0-4]\d.*]</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>batch4</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>%regex[.*Client01[5-9]\d.*]</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <!-- Disable the default execution which would execute everything -->
+                    <execution>
+                        <id>default-test</id>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
