@@ -164,6 +164,7 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
+                    <argLine>${jacoco.agent.argLine} -Xmx5000m</argLine> <!-- done in order to ensure that we don't inherit the memory limit which seems to slow down the test execution a lot -->
                 </configuration>
             </plugin>
         </plugins>
