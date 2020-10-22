@@ -93,7 +93,17 @@ public class QuarkusUnitTest
     private InMemoryLogHandler inMemoryLogHandler = new InMemoryLogHandler((r) -> false);
     private Consumer<List<LogRecord>> assertLogRecords;
 
-    private static final Timer timeoutTimer = new Timer("Test thread dump timer");
+    private static final Timer timeoutTimer;
+    static {
+        // make sure it does not have its TCCL set to one of the QCCL
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(null);
+            timeoutTimer = new Timer("Test thread dump timer");
+        } finally {
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
+        }
+    }
     private volatile TimerTask timeoutTask;
     private Properties customApplicationProperties;
     private Runnable beforeAllCustomizer;
@@ -514,16 +524,19 @@ public class QuarkusUnitTest
         try {
             if (runningQuarkusApplication != null) {
                 runningQuarkusApplication.close();
+                runningQuarkusApplication = null;
             }
             if (afterUndeployListener != null) {
                 afterUndeployListener.run();
             }
             if (curatedApplication != null) {
                 curatedApplication.close();
+                curatedApplication = null;
             }
         } finally {
             System.clearProperty("test.url");
             Thread.currentThread().setContextClassLoader(originalClassLoader);
+            originalClassLoader = null;
             timeoutTask.cancel();
             timeoutTask = null;
             if (deploymentDir != null) {
