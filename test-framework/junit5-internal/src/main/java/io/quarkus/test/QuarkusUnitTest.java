@@ -93,17 +93,7 @@ public class QuarkusUnitTest
     private InMemoryLogHandler inMemoryLogHandler = new InMemoryLogHandler((r) -> false);
     private Consumer<List<LogRecord>> assertLogRecords;
 
-    private static final Timer timeoutTimer;
-    static {
-        // make sure it does not have its TCCL set to one of the QCCL
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(null);
-            timeoutTimer = new Timer("Test thread dump timer");
-        } finally {
-            Thread.currentThread().setContextClassLoader(contextClassLoader);
-        }
-    }
+    private Timer timeoutTimer;
     private volatile TimerTask timeoutTask;
     private Properties customApplicationProperties;
     private Runnable beforeAllCustomizer;
@@ -370,6 +360,7 @@ public class QuarkusUnitTest
                 }
             }
         };
+        timeoutTimer = new Timer("Test thread dump timer");
         timeoutTimer.schedule(timeoutTask, 1000 * 60 * 5);
         if (logFileName != null) {
             PropertyTestUtil.setLogFileProperty(logFileName);
@@ -541,6 +532,7 @@ public class QuarkusUnitTest
             originalClassLoader = null;
             timeoutTask.cancel();
             timeoutTask = null;
+            timeoutTimer = null;
             if (deploymentDir != null) {
                 FileUtil.deleteDirectory(deploymentDir);
             }
