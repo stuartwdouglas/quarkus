@@ -516,6 +516,7 @@ public class QuarkusUnitTest
     @Override
     public void afterAll(ExtensionContext extensionContext) throws Exception {
         actualTestClass = null;
+        actualTestInstance = null;
         if (assertLogRecords != null) {
             assertLogRecords.accept(inMemoryLogHandler.records);
         }
