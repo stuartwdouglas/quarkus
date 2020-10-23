@@ -127,70 +127,21 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <includes>
+                        <include>**/*Client*.java</include>
+                    </includes>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
-                    <argLine>${jacoco.agent.argLine} -Xmx5000m</argLine> <!-- done in order to ensure that we don't inherit the memory limit which seems to slow down the test execution a lot -->
+                    <!--
+                        We set MaxMetaspaceSize to a size large enough to allow for all tests to run but that also doesn't take up too much memory
+                        quarkus.vertx.classpath-resolving=false is done in order to prevent a ClassLoader leak that occurs with io.vertx.core.file.impl#shutdownHook
+                        (the leak occurs because the Thread uses the QCL as the TCCL - the use of the property ensures that the shutdown hook is never created)
+                        Configuration of the vertx threads is done in order to limit the thread use to only what is necessary for these tests
+                    -->
+                    <argLine>${jacoco.agent.argLine} -Xmx3000m -XX:MaxMetaspaceSize=1024m -Dquarkus.vertx.event-loops-pool-size=2 -Dquarkus.vertx.worker-pool-size=2 -Dquarkus.vertx.classpath-resolving=false</argLine>
                 </configuration>
-                <executions>
-                    <!--  Split the execution of the tests into batches as it seems that CI doesn't have enough resources to run them all -->
-                    <execution>
-                        <id>batch1</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>%regex[.*Client00[0-4]\d.*]</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>batch2</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>%regex[.*Client00[5-9]\d.*]</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>batch3</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>%regex[.*Client01[0-4]\d.*]</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>batch4</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>%regex[.*Client01[5-9]\d.*]</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                    <!-- Disable the default execution which would execute everything -->
-                    <execution>
-                        <id>default-test</id>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
