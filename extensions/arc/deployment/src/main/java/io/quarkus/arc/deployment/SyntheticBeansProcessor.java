@@ -1,6 +1,5 @@
 package io.quarkus.arc.deployment;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,16 +25,6 @@ import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.runtime.util.HashUtil;
 
 public class SyntheticBeansProcessor {
-
-    @BuildStep
-    SyntheticBeanNamesBuildItem syntheticBeanNamesBuildItem(List<SyntheticBeanBuildItem> syntheticBeans) {
-        List<SyntheticBeanNamesBuildItem.Entry> entries = new ArrayList<>(syntheticBeans.size());
-        for (SyntheticBeanBuildItem syntheticBean : syntheticBeans) {
-            entries.add(new SyntheticBeanNamesBuildItem.Entry(syntheticBean.configurator().getImplClazz(),
-                    !syntheticBean.isStaticInit()));
-        }
-        return new SyntheticBeanNamesBuildItem(entries);
-    }
 
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep

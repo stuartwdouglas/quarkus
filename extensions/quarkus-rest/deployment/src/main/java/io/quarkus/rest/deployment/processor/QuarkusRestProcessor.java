@@ -58,11 +58,9 @@ import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
-import io.quarkus.arc.deployment.SyntheticBeanNamesBuildItem;
 import io.quarkus.arc.processor.AnnotationsTransformer;
 import io.quarkus.arc.processor.BuiltinScope;
 import io.quarkus.arc.processor.DotNames;
-import io.quarkus.arc.processor.InjectionPointInfo;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
@@ -199,24 +197,31 @@ public class QuarkusRestProcessor {
      * at static-init.
      * To get over this, we make Resources that have such synthetic beans as dependencies, @ApplicationScoped
      *
-     * TODO: The implementation misses a couple subtleties and ideally would use InjectionPointInfo, but should be more than
-     * enough as a starting point
+     * TODO: This is absolutely terrible. The reason we added it is because we can't really use
+     * SyntheticBeanBuildItem here because it causes a bunch of build cycles (especially with qute).
+     * So for now we only check for types we know are synthetic beans and expect that users might inject
+     * into the Resources.
+     * This definitely needs to be looked at in more detail and made dynamic.
+     * The only reason we are going with this for now is because Synthetic Beans are a rather niche concept
+     * and we don't want users to have to either specify @ApplicationScoped when injecting one of these types, because
+     * for them the concept of a Synthetic bean is of zero interest. Furthermore we don't want to impose the penalty
+     * of @ApplicationScoped unless it is absolutely necessary
+     *
      */
+
+    private static final Set<DotName> KNOWN_RUNTIME_INIT_SYNTHETIC_BEANS = Collections
+            .unmodifiableSet(new HashSet<>(Arrays.asList(
+                    DotName.createSimple("com.mongodb.client.MongoClient"),
+                    DotName.createSimple("io.quarkus.mongodb.reactive.ReactiveMongoClient"),
+                    DotName.createSimple("javax.persistence.EntityManager"),
+                    DotName.createSimple("javax.persistence.EntityManagerFactory"),
+                    DotName.createSimple("io.quarkus.redis.client.RedisClient"),
+                    DotName.createSimple("io.quarkus.redis.client.reactive.ReactiveRedisClient"))));
+
     @BuildStep
-    void handleSyntheticBeanDependencies(SyntheticBeanNamesBuildItem syntheticBeans,
-            Optional<ResourceScanningResultBuildItem> resourceScanningResult,
+    void handleSyntheticBeanDependencies(Optional<ResourceScanningResultBuildItem> resourceScanningResult,
             BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformer) {
         if (!resourceScanningResult.isPresent() || resourceScanningResult.get().getScannedResources().keySet().isEmpty()) {
-            return;
-        }
-        Set<DotName> runtimeInitSyntheticBeans = new HashSet<>();
-        for (SyntheticBeanNamesBuildItem.Entry syntheticBean : syntheticBeans.getEntries()) {
-            if (!syntheticBean.isRuntimeInit()) {
-                continue;
-            }
-            runtimeInitSyntheticBeans.add(syntheticBean.getClassDotName());
-        }
-        if (runtimeInitSyntheticBeans.isEmpty()) {
             return;
         }
         Set<DotName> resourcesNeedingApplicationScope = new HashSet<>();
@@ -242,7 +247,7 @@ public class QuarkusRestProcessor {
                     } else {
                         continue;
                     }
-                    if (runtimeInitSyntheticBeans.contains(injectTargetDotName)) {
+                    if (KNOWN_RUNTIME_INIT_SYNTHETIC_BEANS.contains(injectTargetDotName)) {
                         resourcesNeedingApplicationScope.add(resourceClass.name());
                         continue RESOURCE;
                     }
@@ -254,7 +259,7 @@ public class QuarkusRestProcessor {
                     continue;
                 }
                 for (Type parameter : constructor.parameters()) {
-                    if (runtimeInitSyntheticBeans.contains(parameter.name())) {
+                    if (KNOWN_RUNTIME_INIT_SYNTHETIC_BEANS.contains(parameter.name())) {
                         resourcesNeedingApplicationScope.add(resourceClass.name());
                         continue RESOURCE;
                     }
