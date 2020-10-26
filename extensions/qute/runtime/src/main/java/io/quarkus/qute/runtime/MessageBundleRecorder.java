@@ -30,6 +30,19 @@ public class MessageBundleRecorder {
         };
     }
 
+    public Supplier<Object> defaultConstructorInvokerSupplier(String className) {
+        return new Supplier<Object>() {
+            @Override
+            public Object get() {
+                try {
+                    return Thread.currentThread().getContextClassLoader().loadClass(className).getConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+    }
+
     public interface BundleContext {
 
         // message id -> message template
