@@ -42,6 +42,7 @@ import org.jboss.logging.Logger;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
+import io.quarkus.arc.deployment.BeanRegistrationPhaseBuildItem;
 import io.quarkus.arc.deployment.BeanRegistrationPhaseBuildItem.BeanConfiguratorBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.processor.Annotations;
@@ -54,7 +55,6 @@ import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationArchivesBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
-import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.gizmo.AssignableResultHandle;
 import io.quarkus.gizmo.BranchResult;
 import io.quarkus.gizmo.BytecodeCreator;
@@ -99,16 +99,13 @@ public class MessageBundleProcessor {
         return new AdditionalBeanBuildItem(MessageBundles.class, MessageBundle.class, Message.class, Localized.class);
     }
 
-    @Record(STATIC_INIT)
     @BuildStep
-    List<MessageBundleBuildItem> processBundles(MessageBundleRecorder recorder, BeanArchiveIndexBuildItem beanArchiveIndex,
+    List<MessageBundleBuildItem> processBundles(BeanArchiveIndexBuildItem beanArchiveIndex,
             ApplicationArchivesBuildItem applicationArchivesBuildItem,
-            BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
-            BuildProducer<GeneratedClassBuildItem> generatedClasses,
+            BuildProducer<GeneratedClassBuildItem> generatedClasses, BeanRegistrationPhaseBuildItem beanRegistration,
             BuildProducer<BeanConfiguratorBuildItem> configurators,
             BuildProducer<MessageBundleMethodBuildItem> messageTemplateMethods,
-            BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles,
-            BuildProducer<ReflectiveClassBuildItem> reflectiveClass) throws IOException {
+            BuildProducer<HotDeploymentWatchedFileBuildItem> watchedFiles) throws IOException {
 
         IndexView index = beanArchiveIndex.getIndex();
         Map<String, ClassInfo> found = new HashMap<>();
@@ -191,41 +188,43 @@ public class MessageBundleProcessor {
         // Register synthetic beans
         for (MessageBundleBuildItem bundle : bundles) {
             ClassInfo bundleInterface = bundle.getDefaultBundleInterface();
-            String bundleInterfaceImplClassName = generatedImplementations.get(bundleInterface.name().toString());
-            syntheticBeans.produce(
-                    SyntheticBeanBuildItem.configure(bundleInterface.name())
-                            .addType(bundle.getDefaultBundleInterface().name())
-                            // The default message bundle - add both @Default and @Localized
-                            .addQualifier(DotNames.DEFAULT).addQualifier().annotation(Names.LOCALIZED)
-                            .addValue("value", getDefaultLocale(bundleInterface.classAnnotation(Names.BUNDLE))).done()
-                            .unremovable()
-                            .scope(Singleton.class)
-                            .supplier(recorder.defaultConstructorInvokerSupplier(bundleInterfaceImplClassName)).done());
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, bundleInterfaceImplClassName));
+            beanRegistration.getContext().configure(bundleInterface.name()).addType(bundle.getDefaultBundleInterface().name())
+                    // The default message bundle - add both @Default and @Localized
+                    .addQualifier(DotNames.DEFAULT).addQualifier().annotation(Names.LOCALIZED)
+                    .addValue("value", getDefaultLocale(bundleInterface.classAnnotation(Names.BUNDLE))).done().unremovable()
+                    .scope(Singleton.class).creator(mc -> {
+                        // Just create a new instance of the generated class
+                        mc.returnValue(
+                                mc.newInstance(MethodDescriptor
+                                        .ofConstructor(generatedImplementations.get(bundleInterface.name().toString()))));
+                    }).done();
 
             // Localized interfaces
             for (ClassInfo localizedInterface : bundle.getLocalizedInterfaces().values()) {
-                String localizedBundleImplClassName = generatedImplementations.get(localizedInterface.name().toString());
-                syntheticBeans.produce(SyntheticBeanBuildItem.configure(localizedInterface.name())
+                beanRegistration.getContext().configure(localizedInterface.name())
                         .addType(bundle.getDefaultBundleInterface().name())
                         .addQualifier(localizedInterface.classAnnotation(Names.LOCALIZED))
                         .unremovable()
-                        .scope(Singleton.class)
-                        .supplier(recorder.defaultConstructorInvokerSupplier(localizedBundleImplClassName)).done());
-                reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, localizedBundleImplClassName));
-
+                        .scope(Singleton.class).creator(mc -> {
+                            // Just create a new instance of the generated class
+                            mc.returnValue(
+                                    mc.newInstance(MethodDescriptor.ofConstructor(
+                                            generatedImplementations.get(localizedInterface.name().toString()))));
+                        }).done();
             }
             // Localized files
             for (Entry<String, Path> entry : bundle.getLocalizedFiles().entrySet()) {
-                String localizedFileClassName = generatedImplementations.get(entry.getValue().toString());
-                syntheticBeans.produce(SyntheticBeanBuildItem.configure(bundle.getDefaultBundleInterface().name())
+                beanRegistration.getContext().configure(bundle.getDefaultBundleInterface().name())
                         .addType(bundle.getDefaultBundleInterface().name())
                         .addQualifier().annotation(Names.LOCALIZED)
                         .addValue("value", entry.getKey()).done()
                         .unremovable()
-                        .scope(Singleton.class).supplier(recorder.defaultConstructorInvokerSupplier(localizedFileClassName))
-                        .done());
-                reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, localizedFileClassName));
+                        .scope(Singleton.class).creator(mc -> {
+                            // Just create a new instance of the generated class
+                            mc.returnValue(
+                                    mc.newInstance(MethodDescriptor
+                                            .ofConstructor(generatedImplementations.get(entry.getValue().toString()))));
+                        }).done();
             }
         }
 
