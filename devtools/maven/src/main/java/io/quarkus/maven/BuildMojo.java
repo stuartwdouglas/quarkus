@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -23,11 +24,7 @@ import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.util.IoUtils;
 
 /**
- * Build the application.
- * <p>
- * You can build a native application runner with {@code native-image}
- *
- * @author Alexey Loubyansky
+ * Builds the Quarkus application.
  */
 @Mojo(name = "build", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
 public class BuildMojo extends QuarkusBootstrapMojo {
@@ -39,19 +36,9 @@ public class BuildMojo extends QuarkusBootstrapMojo {
 
     /**
      * The project's remote repositories to use for the resolution of plugins and their dependencies.
-     *
-     * @parameter default-value="${project.remotePluginRepositories}"
-     * @readonly
      */
     @Parameter(defaultValue = "${project.remotePluginRepositories}", readonly = true, required = true)
     private List<RemoteRepository> pluginRepos;
-
-    /**
-     * The directory for compiled classes.
-     */
-    @Parameter(readonly = true, required = true, defaultValue = "${project.build.outputDirectory}")
-    @Deprecated
-    private File outputDirectory;
 
     /**
      * The directory for generated source files.
@@ -59,7 +46,9 @@ public class BuildMojo extends QuarkusBootstrapMojo {
     @Parameter(defaultValue = "${project.build.directory}/generated-sources")
     private File generatedSourcesDirectory;
 
-    /** Skip the execution of this mojo */
+    /**
+     * Skips the execution of this mojo
+     */
     @Parameter(defaultValue = "false", property = "quarkus.build.skip")
     private boolean skip = false;
 
@@ -120,4 +109,11 @@ public class BuildMojo extends QuarkusBootstrapMojo {
             }
         }
     }
+
+    @Override
+    public void setLog(Log log) {
+        super.setLog(log);
+        MojoLogger.delegate = log;
+    }
+
 }

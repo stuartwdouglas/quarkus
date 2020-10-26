@@ -13,7 +13,8 @@ import io.restassured.RestAssured;
 
 public class RootPathTest {
     private static final String APP_PROPS = "" +
-            "quarkus.http.root-path=/api\n";
+            "quarkus.http.root-path=/api\n" +
+            "quarkus.funqy.export=get\n";
 
     @RegisterExtension
     static QuarkusUnitTest test = new QuarkusUnitTest()
@@ -28,6 +29,10 @@ public class RootPathTest {
         RestAssured.given().get("/get")
                 .then().statusCode(200).body(equalTo("\"get\""));
         RestAssured.given().post("/get")
+                .then().statusCode(200).body(equalTo("\"get\""));
+        RestAssured.given().get("/")
+                .then().statusCode(200).body(equalTo("\"get\""));
+        RestAssured.given().post("/")
                 .then().statusCode(200).body(equalTo("\"get\""));
     }
 
