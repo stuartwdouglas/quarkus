@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -15,7 +14,6 @@ import io.quarkus.mongodb.reactive.ReactiveMongoClient;
 import io.quarkus.mongodb.reactive.ReactiveMongoCollection;
 
 @Path("/reactive-books")
-@ApplicationScoped
 public class ReactiveBookResource {
 
     @Inject

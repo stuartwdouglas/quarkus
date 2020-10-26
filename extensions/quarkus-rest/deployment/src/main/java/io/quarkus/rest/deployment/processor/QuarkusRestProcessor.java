@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,8 +58,11 @@ import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.BeanDefiningAnnotationBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
+import io.quarkus.arc.deployment.SyntheticBeanNamesBuildItem;
+import io.quarkus.arc.processor.AnnotationsTransformer;
 import io.quarkus.arc.processor.BuiltinScope;
 import io.quarkus.arc.processor.DotNames;
+import io.quarkus.arc.processor.InjectionPointInfo;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
@@ -188,6 +192,96 @@ public class QuarkusRestProcessor {
         beanDefiningAnnotations
                 .produce(new BeanDefiningAnnotationBuildItem(QuarkusRestDotNames.PROVIDER,
                         BuiltinScope.SINGLETON.getName()));
+    }
+
+    /**
+     * Runtime-init Synthetic beans as dependencies of Resources prevent quarkus from building as the bean isn't available
+     * at static-init.
+     * To get over this, we make Resources that have such synthetic beans as dependencies, @ApplicationScoped
+     *
+     * TODO: The implementation misses a couple subtleties and ideally would use InjectionPointInfo, but should be more than
+     * enough as a starting point
+     */
+    @BuildStep
+    void handleSyntheticBeanDependencies(SyntheticBeanNamesBuildItem syntheticBeans,
+            Optional<ResourceScanningResultBuildItem> resourceScanningResult,
+            BuildProducer<AnnotationsTransformerBuildItem> annotationsTransformer) {
+        if (!resourceScanningResult.isPresent() || resourceScanningResult.get().getScannedResources().keySet().isEmpty()) {
+            return;
+        }
+        Set<DotName> runtimeInitSyntheticBeans = new HashSet<>();
+        for (SyntheticBeanNamesBuildItem.Entry syntheticBean : syntheticBeans.getEntries()) {
+            if (!syntheticBean.isRuntimeInit()) {
+                continue;
+            }
+            runtimeInitSyntheticBeans.add(syntheticBean.getClassDotName());
+        }
+        if (runtimeInitSyntheticBeans.isEmpty()) {
+            return;
+        }
+        Set<DotName> resourcesNeedingApplicationScope = new HashSet<>();
+        Collection<ClassInfo> resourceClasses = resourceScanningResult.get().getScannedResources().values();
+        RESOURCE: for (ClassInfo resourceClass : resourceClasses) {
+            if (resourceScanningResult.get().getResourcesThatNeedCustomProducer().containsKey(resourceClass)) {
+                // these already have a RequestScope, so need to make them ApplicationScoped
+                continue;
+            }
+            if ((resourceClass.classAnnotation(QuarkusRestDotNames.REQUEST_SCOPED) != null)
+                    || (resourceClass.classAnnotation(QuarkusRestDotNames.APPLICATION_SCOPED) != null)) {
+                // no need to change the scope for @RequestScoped or @ApplicationScoped resources as they already work
+                continue;
+            }
+
+            // check for the use of @Inject on fields
+            List<AnnotationInstance> injectInstances = resourceClass.annotations().get(QuarkusRestDotNames.CDI_INJECT);
+            if (injectInstances != null) {
+                for (AnnotationInstance injectInstance : injectInstances) {
+                    DotName injectTargetDotName;
+                    if (injectInstance.target().kind() == AnnotationTarget.Kind.FIELD) {
+                        injectTargetDotName = injectInstance.target().asField().type().name();
+                    } else {
+                        continue;
+                    }
+                    if (runtimeInitSyntheticBeans.contains(injectTargetDotName)) {
+                        resourcesNeedingApplicationScope.add(resourceClass.name());
+                        continue RESOURCE;
+                    }
+                }
+            }
+            // check constructors without @Inject that have parameters
+            for (MethodInfo constructor : resourceClass.constructors()) {
+                if (constructor.parameters().isEmpty()) {
+                    continue;
+                }
+                for (Type parameter : constructor.parameters()) {
+                    if (runtimeInitSyntheticBeans.contains(parameter.name())) {
+                        resourcesNeedingApplicationScope.add(resourceClass.name());
+                        continue RESOURCE;
+                    }
+                }
+            }
+        }
+        if (!resourcesNeedingApplicationScope.isEmpty()) {
+            annotationsTransformer
+                    .produce(new AnnotationsTransformerBuildItem(new AnnotationsTransformer() {
+                        @Override
+                        public boolean appliesTo(AnnotationTarget.Kind kind) {
+                            return AnnotationTarget.Kind.CLASS == kind;
+                        }
+
+                        @Override
+                        public void transform(TransformationContext context) {
+                            if (resourcesNeedingApplicationScope.contains(context.getTarget().asClass().name())) {
+                                context.transform().remove(new Predicate<AnnotationInstance>() {
+                                    @Override
+                                    public boolean test(AnnotationInstance annotationInstance) {
+                                        return annotationInstance.name().equals(QuarkusRestDotNames.SINGLETON);
+                                    }
+                                }).add(QuarkusRestDotNames.APPLICATION_SCOPED).done();
+                            }
+                        }
+                    }));
+        }
     }
 
     @BuildStep

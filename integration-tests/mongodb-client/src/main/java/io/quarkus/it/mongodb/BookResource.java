@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
@@ -19,7 +19,7 @@ import com.mongodb.client.MongoDatabase;
 import io.quarkus.rest.Blocking;
 
 @Path("/books")
-@ApplicationScoped
+@Singleton // added just to make sure that it doesn't mess with the annotation transformation
 @Blocking
 public class BookResource {
 
