@@ -23,7 +23,7 @@ import io.quarkus.mongodb.MongoClientName;
 import io.quarkus.rest.Blocking;
 
 @Path("/books-with-parameter-injection")
-@ApplicationScoped
+@ApplicationScoped // added just to make sure that it doesn't mess with the annotation transformation
 @Blocking
 public class BookResourceWithParameterInjection {
     private MongoClient client;
