@@ -3,7 +3,7 @@ package io.quarkus.oidc.deployment;
 import java.util.Collection;
 import java.util.function.BooleanSupplier;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
 
 import org.eclipse.microprofile.jwt.Claim;
 import org.jboss.jandex.DotName;
@@ -95,7 +95,7 @@ public class OidcBuildStep {
             CoreVertxBuildItem vertxBuildItem) {
         return SyntheticBeanBuildItem.configure(TenantConfigBean.class).unremovable().types(TenantConfigBean.class)
                 .supplier(recorder.setup(config, vertxBuildItem.getVertx()))
-                .scope(ApplicationScoped.class)
+                .scope(Singleton.class) // this should have been @ApplicationScoped but fails for some reason
                 .setRuntimeInit()
                 .done();
     }
