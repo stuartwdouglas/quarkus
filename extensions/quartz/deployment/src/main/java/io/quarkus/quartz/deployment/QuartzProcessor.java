@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
 
 import org.jboss.jandex.DotName;
 import org.quartz.Job;
@@ -240,7 +240,7 @@ public class QuartzProcessor {
             QuartzJDBCDriverDialectBuildItem driverDialect) {
 
         syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(QuartzSupport.class)
-                .scope(ApplicationScoped.class)
+                .scope(Singleton.class) // this should be @ApplicationScoped but it fails for some reason
                 .setRuntimeInit()
                 .supplier(recorder.quartzSupportSupplier(runtimeConfig, buildTimeConfig, driverDialect.getDriver())).done());
     }
