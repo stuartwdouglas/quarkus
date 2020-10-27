@@ -1,6 +1,6 @@
 package io.quarkus.reactive.mysql.client.deployment;
 
-import javax.inject.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
@@ -79,9 +79,10 @@ class ReactiveMySQLClientProcessor {
         mysqlPool.produce(new MySQLPoolBuildItem(mySqlPool));
 
         // Synthetic bean for MySQLPool
-        syntheticBeans.produce(SyntheticBeanBuildItem.configure(MySQLPool.class).addType(Pool.class).scope(Singleton.class)
-                .runtimeValue(mySqlPool)
-                .setRuntimeInit().done());
+        syntheticBeans
+                .produce(SyntheticBeanBuildItem.configure(MySQLPool.class).addType(Pool.class).scope(ApplicationScoped.class)
+                        .runtimeValue(mySqlPool)
+                        .setRuntimeInit().done());
 
         boolean isDefault = true; // assume always the default pool for now
         vertxPool.produce(new VertxPoolBuildItem(mySqlPool, DatabaseKind.MYSQL, isDefault));

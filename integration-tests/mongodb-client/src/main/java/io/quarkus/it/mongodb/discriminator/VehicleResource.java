@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -17,7 +16,6 @@ import javax.ws.rs.core.Response;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 
 import io.quarkus.rest.Blocking;
 
@@ -27,18 +25,14 @@ public class VehicleResource {
     @Inject
     MongoClient client;
 
-    private MongoCollection<Vehicle> collection;
-
-    @PostConstruct
-    public void init() {
-        MongoDatabase database = client.getDatabase("books");
-        collection = database.getCollection("vehicle", Vehicle.class);
+    private MongoCollection<Vehicle> getCollection() {
+        return client.getDatabase("books").getCollection("vehicle", Vehicle.class);
 
     }
 
     @GET
     public List<Vehicle> getVehicles() {
-        FindIterable<Vehicle> iterable = collection.find();
+        FindIterable<Vehicle> iterable = getCollection().find();
         List<Vehicle> vehicles = new ArrayList<>();
         for (Vehicle doc : iterable) {
             vehicles.add(doc);
@@ -48,7 +42,7 @@ public class VehicleResource {
 
     @POST
     public Response addVehicle(Vehicle vehicle) throws UnsupportedEncodingException {
-        collection.insertOne(vehicle);
+        getCollection().insertOne(vehicle);
         return Response.created(URI.create("/vehicle/" + URLEncoder.encode(vehicle.name, StandardCharsets.UTF_8.toString())))
                 .build();
     }

@@ -1,6 +1,6 @@
 package io.quarkus.reactive.db2.client.deployment;
 
-import javax.inject.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
@@ -79,9 +79,10 @@ class ReactiveDB2ClientProcessor {
         db2Pool.produce(new DB2PoolBuildItem(db2PoolValue));
 
         // Synthetic bean for DB2Pool
-        syntheticBeans.produce(SyntheticBeanBuildItem.configure(DB2Pool.class).addType(Pool.class).scope(Singleton.class)
-                .runtimeValue(db2PoolValue)
-                .setRuntimeInit().done());
+        syntheticBeans
+                .produce(SyntheticBeanBuildItem.configure(DB2Pool.class).addType(Pool.class).scope(ApplicationScoped.class)
+                        .runtimeValue(db2PoolValue)
+                        .setRuntimeInit().done());
 
         boolean isDefault = true; // assume always the default pool for now
         vertxPool.produce(new VertxPoolBuildItem(db2PoolValue, DatabaseKind.DB2, isDefault));
