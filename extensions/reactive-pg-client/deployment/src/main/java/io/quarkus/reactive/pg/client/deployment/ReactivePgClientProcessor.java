@@ -1,6 +1,6 @@
 package io.quarkus.reactive.pg.client.deployment;
 
-import javax.inject.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
@@ -88,7 +88,8 @@ class ReactivePgClientProcessor {
 
         // Synthetic bean for PgPool
         syntheticBeans.produce(
-                SyntheticBeanBuildItem.configure(PgPool.class).addType(Pool.class).scope(Singleton.class).runtimeValue(pool)
+                SyntheticBeanBuildItem.configure(PgPool.class).addType(Pool.class).scope(ApplicationScoped.class)
+                        .runtimeValue(pool)
                         .setRuntimeInit().done());
 
         boolean isDefault = true; // assume always the default pool for now
