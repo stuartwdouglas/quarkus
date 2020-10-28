@@ -36,7 +36,7 @@ import javax.ws.rs.ext.WriterInterceptor;
 import org.jboss.logging.Logger;
 
 import io.quarkus.arc.runtime.BeanContainer;
-import io.quarkus.rest.common.runtime.core.ArcBeanFactory;
+import io.quarkus.rest.common.runtime.QuarkusRestCommonRecorder;
 import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.common.runtime.model.HasPriority;
@@ -132,11 +132,10 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
 @Recorder
-public class QuarkusRestRecorder {
+public class QuarkusRestRecorder extends QuarkusRestCommonRecorder {
 
     private static final Logger log = Logger.getLogger(QuarkusRestRecorder.class);
 
-    private static final Map<String, Class<?>> primitiveTypes;
     public static final Supplier<Executor> EXECUTOR_SUPPLIER = new Supplier<Executor>() {
         @Override
         public Executor get() {
@@ -152,26 +151,8 @@ public class QuarkusRestRecorder {
 
     private static volatile QuarkusRestDeployment currentDeployment;
 
-    static {
-        Map<String, Class<?>> prims = new HashMap<>();
-        prims.put(byte.class.getName(), byte.class);
-        prims.put(boolean.class.getName(), boolean.class);
-        prims.put(char.class.getName(), char.class);
-        prims.put(short.class.getName(), short.class);
-        prims.put(int.class.getName(), int.class);
-        prims.put(float.class.getName(), float.class);
-        prims.put(double.class.getName(), double.class);
-        prims.put(long.class.getName(), long.class);
-        primitiveTypes = Collections.unmodifiableMap(prims);
-    }
-
     public static QuarkusRestDeployment getCurrentDeployment() {
         return currentDeployment;
-    }
-
-    public <T> BeanFactory<T> factory(String targetClass, BeanContainer beanContainer) {
-        return new ArcBeanFactory<>(loadClass(targetClass),
-                beanContainer);
     }
 
     public Supplier<EndpointInvoker> invoker(String baseName) {
@@ -649,10 +630,6 @@ public class QuarkusRestRecorder {
             mappersByMethod.put(i.getKey(), new RequestMapper<>(result));
         }
         return mappersByMethod;
-    }
-
-    public QuarkusRestRecorder() {
-        super();
     }
 
     public RuntimeResource buildResourceMethod(ServerSerialisers serialisers,
@@ -1151,17 +1128,6 @@ public class QuarkusRestRecorder {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Class<T> loadClass(String name) {
-        if (primitiveTypes.containsKey(name)) {
-            return (Class<T>) primitiveTypes.get(name);
-        }
-        try {
-            return (Class<T>) Class.forName(name, false, Thread.currentThread().getContextClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void registerExceptionMapper(ExceptionMapping exceptionMapping, String string,
             ResourceExceptionMapper<Throwable> mapper) {
         exceptionMapping.addExceptionMapper(loadClass(string), mapper);
@@ -1190,8 +1156,4 @@ public class QuarkusRestRecorder {
         serialisers.addReader(loadClass(entityClassName), reader);
     }
 
-    public void registerInvocationHandlerGenericType(GenericTypeMapping genericTypeMapping, String invocationHandlerClass,
-            String resolvedType) {
-        genericTypeMapping.addInvocationCallback(loadClass(invocationHandlerClass), loadClass(resolvedType));
-    }
 }
