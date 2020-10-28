@@ -16,9 +16,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
+import io.quarkus.rest.common.runtime.core.QuarkusRestContext;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerRequestContext;
-import io.quarkus.rest.server.runtime.spi.QuarkusRestContext;
 
 public class QuarkusRestContainerRequestContextImpl implements QuarkusRestContainerRequestContext {
 

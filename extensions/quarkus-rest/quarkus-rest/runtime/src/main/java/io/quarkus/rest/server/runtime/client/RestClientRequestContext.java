@@ -23,7 +23,7 @@ import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
 import io.quarkus.arc.ManagedContext;
-import io.quarkus.rest.server.runtime.core.AbstractQuarkusRestContext;
+import io.quarkus.rest.common.runtime.core.AbstractQuarkusRestContext;
 import io.quarkus.rest.server.runtime.core.Serialisers;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResponse;

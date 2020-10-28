@@ -14,12 +14,12 @@ import javax.ws.rs.ext.Providers;
 import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
 
+import io.quarkus.rest.common.runtime.core.QuarkusRestContext;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestAsyncResponse;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResourceContext;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestSse;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestSseEventSink;
-import io.quarkus.rest.server.runtime.spi.QuarkusRestContext;
 import io.quarkus.rest.server.runtime.spi.SimplifiedResourceInfo;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;

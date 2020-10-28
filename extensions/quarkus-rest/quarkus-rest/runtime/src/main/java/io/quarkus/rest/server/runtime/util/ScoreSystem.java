@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyWriter;
 
-import io.quarkus.rest.server.runtime.handlers.RestHandler;
+import io.quarkus.rest.common.runtime.core.RestHandler;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
 
 public class ScoreSystem {

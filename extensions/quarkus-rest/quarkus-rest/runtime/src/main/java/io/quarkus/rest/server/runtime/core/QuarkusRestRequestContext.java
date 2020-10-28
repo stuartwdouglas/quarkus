@@ -30,6 +30,7 @@ import io.netty.channel.EventLoop;
 import io.quarkus.arc.Arc;
 import io.quarkus.arc.ManagedContext;
 import io.quarkus.arc.impl.LazyValue;
+import io.quarkus.rest.common.runtime.core.AbstractQuarkusRestContext;
 import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
 import io.quarkus.rest.server.runtime.handlers.ServerRestHandler;
 import io.quarkus.rest.server.runtime.injection.QuarkusRestInjectionContext;

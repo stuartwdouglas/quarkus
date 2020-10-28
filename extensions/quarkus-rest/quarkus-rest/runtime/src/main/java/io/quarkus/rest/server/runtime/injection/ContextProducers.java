@@ -16,10 +16,10 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import javax.ws.rs.sse.Sse;
 
+import io.quarkus.rest.common.runtime.core.QuarkusRestContext;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResourceContext;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestSse;
-import io.quarkus.rest.server.runtime.spi.QuarkusRestContext;
 import io.quarkus.rest.server.runtime.spi.SimplifiedResourceInfo;
 import io.quarkus.vertx.http.runtime.CurrentVertxRequest;
 import io.vertx.core.http.HttpServerRequest;
