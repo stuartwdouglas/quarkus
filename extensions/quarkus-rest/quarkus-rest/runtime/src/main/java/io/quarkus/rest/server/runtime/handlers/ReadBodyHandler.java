@@ -2,8 +2,8 @@ package io.quarkus.rest.server.runtime.handlers;
 
 import java.io.ByteArrayInputStream;
 
+import io.quarkus.rest.common.runtime.util.EmptyInputStream;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.util.EmptyInputStream;
 import io.vertx.core.http.HttpServerRequest;
 
 public class ReadBodyHandler implements ServerRestHandler {

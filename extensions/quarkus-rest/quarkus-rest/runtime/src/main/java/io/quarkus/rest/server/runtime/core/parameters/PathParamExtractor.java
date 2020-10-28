@@ -1,7 +1,7 @@
 package io.quarkus.rest.server.runtime.core.parameters;
 
+import io.quarkus.rest.common.runtime.util.Encode;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.util.Encode;
 
 public class PathParamExtractor implements ParameterExtractor {
 

@@ -3,11 +3,11 @@ package io.quarkus.rest.server.runtime.handlers;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
+import io.quarkus.rest.common.runtime.util.ServerMediaType;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.core.Serialisers;
 import io.quarkus.rest.server.runtime.core.serialization.DynamicEntityWriter;
 import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
-import io.quarkus.rest.server.runtime.util.ServerMediaType;
 
 /**
  * Our job is to write a Response

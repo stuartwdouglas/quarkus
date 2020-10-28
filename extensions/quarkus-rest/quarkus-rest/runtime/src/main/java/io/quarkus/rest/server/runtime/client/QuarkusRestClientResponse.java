@@ -8,8 +8,8 @@ import java.lang.reflect.Type;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.MediaType;
 
+import io.quarkus.rest.common.runtime.util.EmptyInputStream;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResponse;
-import io.quarkus.rest.server.runtime.util.EmptyInputStream;
 
 /**
  * This is the Response class client response

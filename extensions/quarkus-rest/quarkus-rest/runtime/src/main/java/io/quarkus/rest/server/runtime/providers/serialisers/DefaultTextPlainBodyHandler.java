@@ -11,7 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 
-import io.quarkus.rest.server.runtime.util.TypeConverter;
+import io.quarkus.rest.common.runtime.util.TypeConverter;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

@@ -16,9 +16,9 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 
+import io.quarkus.rest.common.runtime.util.CaseInsensitiveMap;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.core.Serialisers;
-import io.quarkus.rest.server.runtime.util.CaseInsensitiveMap;
 
 public class QuarkusRestWriterInterceptorContext extends QuarkusRestAbstractInterceptorContext
         implements WriterInterceptorContext {

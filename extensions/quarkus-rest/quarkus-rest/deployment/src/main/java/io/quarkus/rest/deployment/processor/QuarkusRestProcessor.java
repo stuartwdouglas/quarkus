@@ -83,6 +83,7 @@ import io.quarkus.gizmo.FieldDescriptor;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.rest.common.runtime.util.Encode;
 import io.quarkus.rest.deployment.framework.AdditionalReaders;
 import io.quarkus.rest.deployment.framework.AdditionalWriters;
 import io.quarkus.rest.deployment.framework.EndpointIndexer;
@@ -125,7 +126,6 @@ import io.quarkus.rest.server.runtime.providers.exceptionmappers.AuthenticationF
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.AuthenticationRedirectExceptionMapper;
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.ForbiddenExceptionMapper;
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.UnauthorizedExceptionMapper;
-import io.quarkus.rest.server.runtime.util.Encode;
 import io.quarkus.rest.spi.BeanFactory;
 import io.quarkus.rest.spi.ContainerRequestFilterBuildItem;
 import io.quarkus.rest.spi.ContainerResponseFilterBuildItem;

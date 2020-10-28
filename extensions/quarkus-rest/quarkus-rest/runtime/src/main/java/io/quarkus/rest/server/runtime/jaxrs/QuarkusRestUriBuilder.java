@@ -16,9 +16,9 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.ext.RuntimeDelegate;
 
-import io.quarkus.rest.server.runtime.util.Encode;
-import io.quarkus.rest.server.runtime.util.PathHelper;
-import io.quarkus.rest.server.runtime.util.QuarkusMultivaluedHashMap;
+import io.quarkus.rest.common.runtime.util.Encode;
+import io.quarkus.rest.common.runtime.util.PathHelper;
+import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

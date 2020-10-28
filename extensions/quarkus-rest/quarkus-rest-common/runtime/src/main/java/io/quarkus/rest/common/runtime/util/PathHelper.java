@@ -1,7 +1,7 @@
 /**
  *
  */
-package io.quarkus.rest.server.runtime.util;
+package io.quarkus.rest.common.runtime.util;
 
 import java.util.regex.Pattern;
 

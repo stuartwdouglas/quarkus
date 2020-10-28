@@ -34,12 +34,12 @@ import javax.ws.rs.ext.ExceptionMapper;
 
 import org.jboss.logging.Logger;
 
+import io.quarkus.rest.common.runtime.util.ServerMediaType;
 import io.quarkus.rest.server.runtime.core.request.ServerDrivenNegotiation;
 import io.quarkus.rest.server.runtime.handlers.QuarkusRestInitialHandler;
 import io.quarkus.rest.server.runtime.mapping.RequestMapper;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
 import io.quarkus.rest.server.runtime.util.RuntimeResourceVisitor;
-import io.quarkus.rest.server.runtime.util.ServerMediaType;
 import io.quarkus.runtime.TemplateHtmlBuilder;
 import io.quarkus.runtime.util.ClassPathUtils;
 import io.quarkus.vertx.http.runtime.devmode.RouteDescription;

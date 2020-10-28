@@ -20,10 +20,10 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.ext.RuntimeDelegate;
 
-import io.quarkus.rest.server.runtime.util.CookieParser;
-import io.quarkus.rest.server.runtime.util.DateUtil;
-import io.quarkus.rest.server.runtime.util.MediaTypeHelper;
-import io.quarkus.rest.server.runtime.util.WeightedLanguage;
+import io.quarkus.rest.common.runtime.util.CookieParser;
+import io.quarkus.rest.common.runtime.util.DateUtil;
+import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
+import io.quarkus.rest.common.runtime.util.WeightedLanguage;
 
 /**
  * These work for MultivaluedMap with String and Object

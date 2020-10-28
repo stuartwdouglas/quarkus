@@ -12,12 +12,12 @@ import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import io.quarkus.rest.common.runtime.util.PathSegmentImpl;
+import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
+import io.quarkus.rest.common.runtime.util.UnmodifiableMultivaluedMap;
 import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.core.UriMatch;
-import io.quarkus.rest.server.runtime.util.PathSegmentImpl;
-import io.quarkus.rest.server.runtime.util.QuarkusMultivaluedHashMap;
-import io.quarkus.rest.server.runtime.util.UnmodifiableMultivaluedMap;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.net.impl.URIDecoder;

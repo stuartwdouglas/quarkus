@@ -9,7 +9,7 @@ import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyReader;
 
-import io.quarkus.rest.server.runtime.util.MediaTypeHelper;
+import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.spi.BeanFactory;
 import io.quarkus.runtime.annotations.IgnoreProperty;
 

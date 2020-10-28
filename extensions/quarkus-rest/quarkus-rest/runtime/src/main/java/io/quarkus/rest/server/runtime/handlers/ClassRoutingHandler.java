@@ -16,12 +16,12 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.headers.MediaTypeHeaderDelegate;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResponseBuilder;
 import io.quarkus.rest.server.runtime.mapping.RequestMapper;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
-import io.quarkus.rest.server.runtime.util.MediaTypeHelper;
 import io.quarkus.runtime.LaunchMode;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;

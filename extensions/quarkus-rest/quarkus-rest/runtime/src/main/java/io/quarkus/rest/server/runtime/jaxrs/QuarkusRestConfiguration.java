@@ -29,13 +29,13 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
+import io.quarkus.rest.common.runtime.util.MultivaluedTreeMap;
+import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
+import io.quarkus.rest.common.runtime.util.Types;
 import io.quarkus.rest.server.runtime.core.Serialisers;
 import io.quarkus.rest.server.runtime.core.UnmanagedBeanFactory;
 import io.quarkus.rest.server.runtime.model.ResourceReader;
 import io.quarkus.rest.server.runtime.model.ResourceWriter;
-import io.quarkus.rest.server.runtime.util.MultivaluedTreeMap;
-import io.quarkus.rest.server.runtime.util.QuarkusMultivaluedHashMap;
-import io.quarkus.rest.server.runtime.util.Types;
 
 public class QuarkusRestConfiguration implements Configuration {
 

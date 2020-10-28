@@ -7,6 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.RuntimeDelegate;
 
+import io.quarkus.rest.common.runtime.util.HeaderParameterParser;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  */

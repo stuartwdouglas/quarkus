@@ -13,10 +13,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
+import io.quarkus.rest.common.runtime.util.ServerMediaType;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
-import io.quarkus.rest.server.runtime.util.MediaTypeHelper;
-import io.quarkus.rest.server.runtime.util.ServerMediaType;
 import io.vertx.core.http.HttpServerRequest;
 
 /**

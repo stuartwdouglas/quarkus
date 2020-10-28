@@ -9,8 +9,8 @@ import java.util.Map;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.ext.RuntimeDelegate;
 
-import io.quarkus.rest.server.runtime.util.DateUtil;
-import io.quarkus.rest.server.runtime.util.ParameterParser;
+import io.quarkus.rest.common.runtime.util.DateUtil;
+import io.quarkus.rest.common.runtime.util.ParameterParser;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

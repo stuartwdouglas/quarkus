@@ -10,10 +10,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyWriter;
 
+import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.server.runtime.core.EncodedMediaType;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.core.Serialisers;
-import io.quarkus.rest.server.runtime.util.MediaTypeHelper;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 

@@ -26,11 +26,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Variant;
 
+import io.quarkus.rest.common.runtime.util.CaseInsensitiveMap;
+import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.server.runtime.QuarkusRestRecorder;
 import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
 import io.quarkus.rest.server.runtime.headers.HeaderUtil;
-import io.quarkus.rest.server.runtime.util.CaseInsensitiveMap;
-import io.quarkus.rest.server.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.vertx.http.runtime.CurrentVertxRequest;
 import io.vertx.core.http.HttpServerRequest;
 

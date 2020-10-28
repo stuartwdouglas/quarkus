@@ -5,7 +5,7 @@ import java.util.List;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.ext.RuntimeDelegate;
 
-import io.quarkus.rest.server.runtime.util.ExtendedCacheControl;
+import io.quarkus.rest.common.runtime.util.ExtendedCacheControl;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

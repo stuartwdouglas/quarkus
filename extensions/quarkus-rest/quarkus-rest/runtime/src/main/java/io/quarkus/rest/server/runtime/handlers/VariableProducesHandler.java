@@ -10,11 +10,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.MessageBodyWriter;
 
+import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
+import io.quarkus.rest.common.runtime.util.ServerMediaType;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.core.Serialisers;
 import io.quarkus.rest.server.runtime.core.serialization.FixedEntityWriterArray;
-import io.quarkus.rest.server.runtime.util.MediaTypeHelper;
-import io.quarkus.rest.server.runtime.util.ServerMediaType;
 
 /**
  * Handler that negotiates the content type for endpoints that

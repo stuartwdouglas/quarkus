@@ -19,12 +19,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 
+import io.quarkus.rest.common.runtime.util.Encode;
+import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.server.runtime.core.LazyMethod;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyReader;
 import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyWriter;
-import io.quarkus.rest.server.runtime.util.Encode;
-import io.quarkus.rest.server.runtime.util.QuarkusMultivaluedHashMap;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

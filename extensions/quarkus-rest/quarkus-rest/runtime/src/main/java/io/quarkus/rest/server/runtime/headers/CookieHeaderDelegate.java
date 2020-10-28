@@ -3,7 +3,7 @@ package io.quarkus.rest.server.runtime.headers;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.ext.RuntimeDelegate;
 
-import io.quarkus.rest.server.runtime.util.CookieParser;
+import io.quarkus.rest.common.runtime.util.CookieParser;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

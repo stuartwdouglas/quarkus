@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.util;
+package io.quarkus.rest.common.runtime.util;
 
 /**
  * A CharSequence backed by a char[] (no copy on creation)

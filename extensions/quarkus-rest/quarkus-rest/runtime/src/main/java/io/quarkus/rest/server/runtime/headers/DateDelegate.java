@@ -4,7 +4,7 @@ import java.util.Date;
 
 import javax.ws.rs.ext.RuntimeDelegate;
 
-import io.quarkus.rest.server.runtime.util.DateUtil;
+import io.quarkus.rest.common.runtime.util.DateUtil;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

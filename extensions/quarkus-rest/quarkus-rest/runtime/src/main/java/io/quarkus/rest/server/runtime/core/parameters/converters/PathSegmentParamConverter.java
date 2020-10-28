@@ -3,8 +3,8 @@ package io.quarkus.rest.server.runtime.core.parameters.converters;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
+import io.quarkus.rest.common.runtime.util.PathSegmentImpl;
 import io.quarkus.rest.server.runtime.core.ParamConverterProviders;
-import io.quarkus.rest.server.runtime.util.PathSegmentImpl;
 
 public class PathSegmentParamConverter implements ParameterConverter {
     @Override

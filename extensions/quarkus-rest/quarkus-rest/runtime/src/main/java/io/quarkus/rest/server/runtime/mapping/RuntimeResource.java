@@ -6,12 +6,12 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import io.quarkus.rest.common.runtime.util.ServerMediaType;
 import io.quarkus.rest.server.runtime.core.LazyMethod;
 import io.quarkus.rest.server.runtime.core.QuarkusRestSimplifiedResourceInfo;
 import io.quarkus.rest.server.runtime.handlers.ServerRestHandler;
 import io.quarkus.rest.server.runtime.spi.SimplifiedResourceInfo;
 import io.quarkus.rest.server.runtime.util.ScoreSystem;
-import io.quarkus.rest.server.runtime.util.ServerMediaType;
 import io.quarkus.rest.spi.BeanFactory;
 import io.quarkus.rest.spi.EndpointInvoker;
 

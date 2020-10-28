@@ -7,11 +7,11 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 
+import io.quarkus.rest.common.runtime.util.QuarkusRestUtil;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.core.parameters.ParameterExtractor;
 import io.quarkus.rest.server.runtime.core.parameters.converters.ParameterConverter;
 import io.quarkus.rest.server.runtime.model.ParameterType;
-import io.quarkus.rest.server.runtime.util.QuarkusRestUtil;
 
 public class ParameterHandler implements ServerRestHandler {
 

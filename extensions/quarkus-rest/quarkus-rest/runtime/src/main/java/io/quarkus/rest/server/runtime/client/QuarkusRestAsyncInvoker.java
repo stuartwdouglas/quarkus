@@ -17,9 +17,9 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
 import io.quarkus.arc.ManagedContext;
+import io.quarkus.rest.common.runtime.util.Types;
 import io.quarkus.rest.server.runtime.core.GenericTypeMapping;
 import io.quarkus.rest.server.runtime.core.Serialisers;
-import io.quarkus.rest.server.runtime.util.Types;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 

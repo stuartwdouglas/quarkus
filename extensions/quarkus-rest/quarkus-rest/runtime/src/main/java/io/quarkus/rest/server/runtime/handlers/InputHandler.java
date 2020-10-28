@@ -8,8 +8,8 @@ import java.util.function.Supplier;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.quarkus.rest.common.runtime.util.EmptyInputStream;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.util.EmptyInputStream;
 import io.quarkus.vertx.http.runtime.VertxInputStream;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;

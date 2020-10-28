@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.util;
+package io.quarkus.rest.common.runtime.util;
 
 import java.io.IOException;
 import java.io.InputStream;

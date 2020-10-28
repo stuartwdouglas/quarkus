@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import javax.ws.rs.ext.RuntimeDelegate;
 
-import io.quarkus.rest.server.runtime.util.LocaleHelper;
+import io.quarkus.rest.common.runtime.util.LocaleHelper;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.util;
+package io.quarkus.rest.common.runtime.util;
 
 public class QuarkusRestUtil {
     public static <E extends Throwable> RuntimeException sneakyThrow(Throwable e) throws E {

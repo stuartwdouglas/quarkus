@@ -32,6 +32,9 @@ import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
 import io.netty.util.AsciiString;
+import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
+import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
+import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedMap;
 import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
 import io.quarkus.rest.server.runtime.core.serialization.FixedEntityWriterArray;
 import io.quarkus.rest.server.runtime.headers.HeaderUtil;
@@ -54,9 +57,6 @@ import io.quarkus.rest.server.runtime.providers.serialisers.ServerDefaultTextPla
 import io.quarkus.rest.server.runtime.providers.serialisers.StringMessageBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.VertxBufferMessageBodyWriter;
 import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyWriter;
-import io.quarkus.rest.server.runtime.util.MediaTypeHelper;
-import io.quarkus.rest.server.runtime.util.QuarkusMultivaluedHashMap;
-import io.quarkus.rest.server.runtime.util.QuarkusMultivaluedMap;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;

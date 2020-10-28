@@ -7,8 +7,8 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.RuntimeDelegate;
 
+import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestLinkBuilder;
-import io.quarkus.rest.server.runtime.util.QuarkusMultivaluedHashMap;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
