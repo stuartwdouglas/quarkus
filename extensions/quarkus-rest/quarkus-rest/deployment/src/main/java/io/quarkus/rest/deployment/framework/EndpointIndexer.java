@@ -123,11 +123,11 @@ import io.quarkus.rest.server.runtime.model.MethodParameter;
 import io.quarkus.rest.server.runtime.model.ResourceClass;
 import io.quarkus.rest.server.runtime.model.ResourceMethod;
 import io.quarkus.rest.server.runtime.model.RestClientInterface;
-import io.quarkus.rest.server.runtime.providers.serialisers.FormUrlEncodedProvider;
-import io.quarkus.rest.server.runtime.providers.serialisers.jsonp.JsonArrayHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.jsonp.JsonObjectHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.jsonp.JsonStructureHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.jsonp.JsonValueHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.ServerFormUrlEncodedProvider;
+import io.quarkus.rest.server.runtime.providers.serialisers.jsonp.ServerJsonArrayHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.jsonp.ServerJsonObjectHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.jsonp.ServerJsonStructureHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.jsonp.ServerJsonValueHandler;
 import io.quarkus.rest.spi.EndpointInvoker;
 import io.quarkus.runtime.util.HashUtil;
 
@@ -745,13 +745,13 @@ public class EndpointIndexer {
         if (dotName.equals(JSONP_JSON_VALUE)
                 || dotName.equals(JSONP_JSON_NUMBER)
                 || dotName.equals(JSONP_JSON_STRING)) {
-            additionalWriters.add(JsonValueHandler.class, APPLICATION_JSON, javax.json.JsonValue.class);
+            additionalWriters.add(ServerJsonValueHandler.class, APPLICATION_JSON, javax.json.JsonValue.class);
         } else if (dotName.equals(JSONP_JSON_ARRAY)) {
-            additionalWriters.add(JsonArrayHandler.class, APPLICATION_JSON, javax.json.JsonArray.class);
+            additionalWriters.add(ServerJsonArrayHandler.class, APPLICATION_JSON, javax.json.JsonArray.class);
         } else if (dotName.equals(JSONP_JSON_OBJECT)) {
-            additionalWriters.add(JsonObjectHandler.class, APPLICATION_JSON, javax.json.JsonObject.class);
+            additionalWriters.add(ServerJsonObjectHandler.class, APPLICATION_JSON, javax.json.JsonObject.class);
         } else if (dotName.equals(JSONP_JSON_STRUCTURE)) {
-            additionalWriters.add(JsonStructureHandler.class, APPLICATION_JSON, javax.json.JsonStructure.class);
+            additionalWriters.add(ServerJsonStructureHandler.class, APPLICATION_JSON, javax.json.JsonStructure.class);
         }
     }
 
@@ -760,13 +760,13 @@ public class EndpointIndexer {
         if (dotName.equals(JSONP_JSON_NUMBER)
                 || dotName.equals(JSONP_JSON_VALUE)
                 || dotName.equals(JSONP_JSON_STRING)) {
-            additionalReaders.add(JsonValueHandler.class, APPLICATION_JSON, javax.json.JsonValue.class);
+            additionalReaders.add(ServerJsonValueHandler.class, APPLICATION_JSON, javax.json.JsonValue.class);
         } else if (dotName.equals(JSONP_JSON_ARRAY)) {
-            additionalReaders.add(JsonArrayHandler.class, APPLICATION_JSON, javax.json.JsonArray.class);
+            additionalReaders.add(ServerJsonArrayHandler.class, APPLICATION_JSON, javax.json.JsonArray.class);
         } else if (dotName.equals(JSONP_JSON_OBJECT)) {
-            additionalReaders.add(JsonObjectHandler.class, APPLICATION_JSON, javax.json.JsonObject.class);
+            additionalReaders.add(ServerJsonObjectHandler.class, APPLICATION_JSON, javax.json.JsonObject.class);
         } else if (dotName.equals(JSONP_JSON_STRUCTURE)) {
-            additionalReaders.add(JsonStructureHandler.class, APPLICATION_JSON, javax.json.JsonStructure.class);
+            additionalReaders.add(ServerJsonStructureHandler.class, APPLICATION_JSON, javax.json.JsonStructure.class);
         }
     }
 
@@ -1157,7 +1157,8 @@ public class EndpointIndexer {
                     elementType = pt.name().toString();
                     single = true;
                     converter = null;
-                    additionalReaders.add(FormUrlEncodedProvider.class, APPLICATION_FORM_URLENCODED, MultivaluedMap.class);
+                    additionalReaders.add(ServerFormUrlEncodedProvider.class, APPLICATION_FORM_URLENCODED,
+                            MultivaluedMap.class);
                 } else if (convertable) {
                     throw new RuntimeException("Invalid parameter type '" + pt + "' used on method " + errorLocation);
                 } else {

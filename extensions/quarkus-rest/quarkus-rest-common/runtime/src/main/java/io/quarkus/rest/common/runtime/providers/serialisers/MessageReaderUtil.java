@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.providers.serialisers;
+package io.quarkus.rest.common.runtime.providers.serialisers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

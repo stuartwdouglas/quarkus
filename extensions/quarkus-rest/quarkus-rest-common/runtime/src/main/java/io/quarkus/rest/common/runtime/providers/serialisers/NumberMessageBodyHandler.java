@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.providers.serialisers;
+package io.quarkus.rest.common.runtime.providers.serialisers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,40 +10,21 @@ import java.math.BigInteger;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.Provider;
+import javax.ws.rs.ext.MessageBodyReader;
 
-import io.quarkus.rest.server.runtime.core.LazyMethod;
-import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyReader;
-
-@Provider
-public class NumberMessageBodyHandler extends PrimitiveBodyHandler implements QuarkusRestMessageBodyReader<Number> {
-
-    @Override
+public class NumberMessageBodyHandler extends PrimitiveBodyHandler implements MessageBodyReader<Number> {
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return Number.class.isAssignableFrom(type);
     }
 
-    @Override
     public Number readFrom(Class<Number> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, String> httpHeaders, InputStream entityStream)
             throws IOException, WebApplicationException {
         return doReadFrom(type, entityStream);
     }
 
-    @Override
-    public boolean isReadable(Class<?> type, Type genericType, LazyMethod lazyMethod, MediaType mediaType) {
-        return Number.class.isAssignableFrom(type);
-    }
-
-    @Override
-    public Number readFrom(Class<Number> type, Type genericType, MediaType mediaType, QuarkusRestRequestContext context)
-            throws WebApplicationException, IOException {
-        return doReadFrom(type, context.getInputStream());
-    }
-
-    private Number doReadFrom(Class<Number> type, InputStream entityStream) throws IOException {
-        String text = super.readFrom(entityStream, false);
+    protected Number doReadFrom(Class<Number> type, InputStream entityStream) throws IOException {
+        String text = readFrom(entityStream, false);
         // we initially had one provider per number type, but the TCK wants this Number provider to be overridable
         if ((Class<? extends Number>) type == Byte.class || (Class<? extends Number>) type == byte.class)
             return Byte.valueOf(text);

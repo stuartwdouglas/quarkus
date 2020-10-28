@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.providers.serialisers;
+package io.quarkus.rest.common.runtime.providers.serialisers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +20,7 @@ import io.quarkus.rest.common.runtime.util.TypeConverter;
  *          TODO: Reevaluate this as it depends on a lot of reflection for reading Java types.
  *          It should not be difficult to write handlers for these cases...
  */
-abstract class DefaultTextPlainBodyHandler implements MessageBodyReader<Object> {
+public abstract class DefaultTextPlainBodyHandler implements MessageBodyReader<Object> {
 
     public boolean isReadable(Class type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         // StringTextStar should pick up strings

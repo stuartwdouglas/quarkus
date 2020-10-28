@@ -1,8 +1,7 @@
-package io.quarkus.rest.server.runtime.providers.serialisers;
+package io.quarkus.rest.common.runtime.providers.serialisers;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,29 +11,16 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.Provider;
+import javax.ws.rs.ext.MessageBodyWriter;
 
 import io.quarkus.rest.common.runtime.headers.HeaderUtil;
-import io.quarkus.rest.server.runtime.core.LazyMethod;
-import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyWriter;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerResponse;
 
-// TODO: this is very simplistic at the moment
-
-@Provider
-@Produces("*/*")
-@Consumes("*/*")
-public class FileBodyHandler implements MessageBodyReader<File>, QuarkusRestMessageBodyWriter<File> {
-    private static final String PREFIX = "pfx";
-    private static final String SUFFIX = "sfx";
+public class FileBodyHandler implements MessageBodyReader<File>, MessageBodyWriter<File> {
+    protected static final String PREFIX = "pfx";
+    protected static final String SUFFIX = "sfx";
 
     @Override
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -61,17 +47,10 @@ public class FileBodyHandler implements MessageBodyReader<File>, QuarkusRestMess
         return downloadedFile;
     }
 
-    @Override
     public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return File.class.isAssignableFrom(type);
     }
 
-    @Override
-    public long getSize(File o, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-        return o.length();
-    }
-
-    @Override
     public void writeTo(File uploadFile, Class<?> type, Type genericType,
             Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders,
@@ -87,22 +66,5 @@ public class FileBodyHandler implements MessageBodyReader<File>, QuarkusRestMess
                 out.write(buf, 0, read);
             }
         }
-    }
-
-    @Override
-    public boolean isWriteable(Class<?> type, LazyMethod target, MediaType mediaType) {
-        return File.class.isAssignableFrom(type);
-    }
-
-    @Override
-    public void writeResponse(File o, QuarkusRestRequestContext context) throws WebApplicationException {
-        HttpServerResponse vertxResponse = context.getHttpServerResponse();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            doWrite(o, baos);
-        } catch (IOException e) {
-            throw new WebApplicationException(e);
-        }
-        vertxResponse.end(Buffer.buffer(baos.toByteArray()));
     }
 }

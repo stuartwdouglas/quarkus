@@ -6,6 +6,8 @@ import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
+import io.quarkus.rest.common.runtime.providers.serialisers.DefaultTextPlainBodyHandler;
+
 @Provider
 @Consumes("text/plain")
 public class ServerDefaultTextPlainBodyHandler extends DefaultTextPlainBodyHandler {
