@@ -16,7 +16,7 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.ReaderInterceptor;
 
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestReaderInterceptorContext;
 import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyReader;
 
@@ -24,10 +24,10 @@ public class RequestDeserializeHandler implements ServerRestHandler {
 
     private final Class<?> type;
     private final MediaType mediaType;
-    private final Serialisers serialisers;
+    private final ServerSerialisers serialisers;
     private final int parameterIndex;
 
-    public RequestDeserializeHandler(Class<?> type, MediaType mediaType, Serialisers serialisers, int parameterIndex) {
+    public RequestDeserializeHandler(Class<?> type, MediaType mediaType, ServerSerialisers serialisers, int parameterIndex) {
         this.type = type;
         this.mediaType = mediaType;
         this.serialisers = serialisers;

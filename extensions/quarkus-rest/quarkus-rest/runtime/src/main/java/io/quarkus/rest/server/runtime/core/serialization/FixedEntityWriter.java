@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyWriter;
 
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 
 /**
  * A fixed entity writer that can be used when we know the result will always be written
@@ -16,16 +16,16 @@ import io.quarkus.rest.server.runtime.core.Serialisers;
 public class FixedEntityWriter implements EntityWriter {
 
     private final MessageBodyWriter writer;
-    private final Serialisers serialisers;
+    private final ServerSerialisers serialisers;
 
-    public FixedEntityWriter(MessageBodyWriter writer, Serialisers serialisers) {
+    public FixedEntityWriter(MessageBodyWriter writer, ServerSerialisers serialisers) {
         this.writer = writer;
         this.serialisers = serialisers;
     }
 
     @Override
     public void write(QuarkusRestRequestContext context, Object entity) throws IOException {
-        if (!Serialisers.invokeWriter(context, entity, writer, serialisers)) {
+        if (!ServerSerialisers.invokeWriter(context, entity, writer, serialisers)) {
             throw new InternalServerErrorException("Could not find MessageBodyWriter for " + entity.getClass(),
                     Response.serverError().build());
         }

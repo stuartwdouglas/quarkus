@@ -17,7 +17,7 @@ import javax.ws.rs.ext.ReaderInterceptorContext;
 
 import io.quarkus.rest.common.runtime.util.CaseInsensitiveMap;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 
 public class QuarkusRestReaderInterceptorContext extends QuarkusRestAbstractInterceptorContext
         implements ReaderInterceptorContext {
@@ -30,7 +30,7 @@ public class QuarkusRestReaderInterceptorContext extends QuarkusRestAbstractInte
 
     public QuarkusRestReaderInterceptorContext(QuarkusRestRequestContext context, Annotation[] annotations, Class<?> type,
             Type genericType, MediaType mediaType, MessageBodyReader reader, InputStream inputStream,
-            ReaderInterceptor[] interceptors, Serialisers serialisers) {
+            ReaderInterceptor[] interceptors, ServerSerialisers serialisers) {
         super(context, annotations, type, genericType, mediaType, serialisers);
         this.reader = reader;
         this.inputStream = inputStream;

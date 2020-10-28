@@ -50,7 +50,7 @@ public class StreamingUtil {
     }
 
     private static Buffer serialiseEntity(QuarkusRestRequestContext context, Object entity) throws IOException {
-        Serialisers serialisers = context.getDeployment().getSerialisers();
+        ServerSerialisers serialisers = context.getDeployment().getSerialisers();
         Class<?> entityClass = entity.getClass();
         Type entityType = context.getGenericReturnType();
         MediaType mediaType = context.getResponseContentMediaType();
@@ -58,15 +58,15 @@ public class StreamingUtil {
         @SuppressWarnings("unchecked")
         MessageBodyWriter<Object>[] writers = (MessageBodyWriter<Object>[]) serialisers
                 .findWriters(null, entityClass, mediaType, RuntimeType.SERVER)
-                .toArray(Serialisers.NO_WRITER);
+                .toArray(ServerSerialisers.NO_WRITER);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         boolean wrote = false;
         for (MessageBodyWriter<Object> writer : writers) {
             // Spec(API) says we should use class/type/mediaType but doesn't talk about annotations 
-            if (writer.isWriteable(entityClass, entityType, Serialisers.NO_ANNOTATION, mediaType)) {
+            if (writer.isWriteable(entityClass, entityType, ServerSerialisers.NO_ANNOTATION, mediaType)) {
                 // FIXME: spec doesn't really say what headers we should use here
-                writer.writeTo(entity, entityClass, entityType, Serialisers.NO_ANNOTATION, mediaType,
-                        Serialisers.EMPTY_MULTI_MAP, baos);
+                writer.writeTo(entity, entityClass, entityType, ServerSerialisers.NO_ANNOTATION, mediaType,
+                        ServerSerialisers.EMPTY_MULTI_MAP, baos);
                 wrote = true;
                 break;
             }

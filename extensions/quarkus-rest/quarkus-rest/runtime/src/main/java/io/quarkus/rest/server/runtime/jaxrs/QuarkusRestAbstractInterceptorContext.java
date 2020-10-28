@@ -9,7 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.InterceptorContext;
 
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 
 public abstract class QuarkusRestAbstractInterceptorContext implements InterceptorContext {
     protected final QuarkusRestRequestContext context;
@@ -17,12 +17,12 @@ public abstract class QuarkusRestAbstractInterceptorContext implements Intercept
     protected Class<?> type;
     protected Type genericType;
     protected MediaType mediaType;
-    protected final Serialisers serialisers;
+    protected final ServerSerialisers serialisers;
     // as the interceptors can change the type or mediaType, when that happens we need to find a new reader/writer
     protected boolean rediscoveryNeeded = false;
 
     public QuarkusRestAbstractInterceptorContext(QuarkusRestRequestContext context, Annotation[] annotations, Class<?> type,
-            Type genericType, MediaType mediaType, Serialisers serialisers) {
+            Type genericType, MediaType mediaType, ServerSerialisers serialisers) {
         this.context = context;
         this.annotations = annotations;
         this.type = type;

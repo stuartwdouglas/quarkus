@@ -1,11 +1,8 @@
 package io.quarkus.rest.server.runtime.core;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.annotation.Annotation;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,34 +13,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
 
 import javax.ws.rs.RuntimeType;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.ReaderInterceptor;
-import javax.ws.rs.ext.WriterInterceptor;
 
-import io.netty.util.AsciiString;
 import io.quarkus.rest.common.runtime.core.UnmanagedBeanFactory;
-import io.quarkus.rest.common.runtime.headers.HeaderUtil;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.common.runtime.model.ResourceReader;
 import io.quarkus.rest.common.runtime.model.ResourceWriter;
 import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedMap;
-import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
-import io.quarkus.rest.server.runtime.core.serialization.FixedEntityWriterArray;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestWriterInterceptorContext;
-import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
 import io.quarkus.rest.server.runtime.providers.serialisers.BooleanMessageBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.ByteArrayMessageBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.CharArrayMessageBodyHandler;
@@ -57,68 +41,10 @@ import io.quarkus.rest.server.runtime.providers.serialisers.ReaderBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.ServerDefaultTextPlainBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.StringMessageBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.VertxBufferMessageBodyWriter;
-import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyWriter;
-import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 
 public class Serialisers {
-
-    private static final Map<Class<?>, Class<?>> primitivesToWrappers = new HashMap<>();
-    private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type"); // use this instead of the Vert.x constant because the TCK expects upper case
-
-    static {
-        primitivesToWrappers.put(boolean.class, Boolean.class);
-        primitivesToWrappers.put(char.class, Character.class);
-        primitivesToWrappers.put(byte.class, Byte.class);
-        primitivesToWrappers.put(short.class, Short.class);
-        primitivesToWrappers.put(int.class, Integer.class);
-        primitivesToWrappers.put(long.class, Long.class);
-        primitivesToWrappers.put(float.class, Float.class);
-        primitivesToWrappers.put(double.class, Double.class);
-    }
-
-    public static class Builtin {
-        public final Class<?> entityClass;
-        public final String mediaType;
-        public final RuntimeType constraint;
-
-        public Builtin(Class<?> entityClass, String mediaType, RuntimeType constraint) {
-            this.entityClass = entityClass;
-            this.mediaType = mediaType;
-            this.constraint = constraint;
-        }
-    }
-
-    public static class BuiltinWriter extends Builtin {
-        public final Class<? extends MessageBodyWriter<?>> writerClass;
-
-        public BuiltinWriter(Class<?> entityClass, Class<? extends MessageBodyWriter<?>> writerClass, String mediaType) {
-            this(entityClass, writerClass, mediaType, null);
-        }
-
-        public BuiltinWriter(Class<?> entityClass, Class<? extends MessageBodyWriter<?>> writerClass, String mediaType,
-                RuntimeType constraint) {
-            super(entityClass, mediaType, constraint);
-            this.writerClass = writerClass;
-        }
-    }
-
-    public static class BuiltinReader extends Builtin {
-        public final Class<? extends MessageBodyReader<?>> readerClass;
-
-        public BuiltinReader(Class<?> entityClass, Class<? extends MessageBodyReader<?>> readerClass, String mediaType) {
-            this(entityClass, readerClass, mediaType, null);
-        }
-
-        public BuiltinReader(Class<?> entityClass, Class<? extends MessageBodyReader<?>> readerClass, String mediaType,
-                RuntimeType constraint) {
-            super(entityClass, mediaType, constraint);
-            this.readerClass = readerClass;
-        }
-    }
-
+    protected static final Map<Class<?>, Class<?>> primitivesToWrappers = new HashMap<>();
     public static BuiltinReader[] BUILTIN_READERS = new BuiltinReader[] {
             new BuiltinReader(String.class, StringMessageBodyHandler.class,
                     MediaType.WILDCARD),
@@ -138,7 +64,6 @@ public class Serialisers {
             new BuiltinReader(Object.class, ServerDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.SERVER),
             new BuiltinReader(Object.class, ClientDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.CLIENT),
     };
-
     public static BuiltinWriter[] BUILTIN_WRITERS = new BuiltinWriter[] {
             new BuiltinWriter(String.class, StringMessageBodyHandler.class,
                     MediaType.TEXT_PLAIN),
@@ -165,150 +90,9 @@ public class Serialisers {
             new BuiltinWriter(File.class, FileBodyHandler.class,
                     MediaType.WILDCARD),
     };
-
-    // FIXME: spec says we should use generic type, but not sure how to pass that type from Jandex to reflection 
-    private final QuarkusMultivaluedMap<Class<?>, ResourceWriter> writers = new QuarkusMultivaluedHashMap<>();
-    private final QuarkusMultivaluedMap<Class<?>, ResourceReader> readers = new QuarkusMultivaluedHashMap<>();
-
-    public static final MessageBodyWriter<?>[] NO_WRITER = new MessageBodyWriter[0];
-    public static final MessageBodyReader<?>[] NO_READER = new MessageBodyReader[0];
-    public static final WriterInterceptor[] NO_WRITER_INTERCEPTOR = new WriterInterceptor[0];
-    public static final ReaderInterceptor[] NO_READER_INTERCEPTOR = new ReaderInterceptor[0];
-    public static final Annotation[] NO_ANNOTATION = new Annotation[0];
-    public static final MultivaluedMap<String, Object> EMPTY_MULTI_MAP = new QuarkusMultivaluedHashMap<>();
-
-    private final ConcurrentMap<Class<?>, List<ResourceWriter>> noMediaTypeClassCache = new ConcurrentHashMap<>();
-    private final Function<Class<?>, List<ResourceWriter>> mappingFunction = new Function<Class<?>, List<ResourceWriter>>() {
-        @Override
-        public List<ResourceWriter> apply(Class<?> aClass) {
-            Class<?> c = aClass;
-            List<ResourceWriter> writers = new ArrayList<>();
-            Set<Class<?>> seenInterfaces = new HashSet<>();
-            while (c != null) {
-                //TODO: the spec doesn't seem to be totally clear about the sorting here
-                // the way the writers are sorted here takes the distance from the requested type
-                // first and foremost and then uses the rest of the criteria
-
-                List<ResourceWriter> forClass = getWriters().get(c);
-                if (forClass != null) {
-                    forClass = new ArrayList<>(forClass);
-                    forClass.sort(new ResourceWriter.ResourceWriterComparator());
-                    writers.addAll(forClass);
-                }
-                Deque<Class<?>> interfaces = new ArrayDeque<>(Arrays.asList(c.getInterfaces()));
-                while (!interfaces.isEmpty()) {
-                    Class<?> iface = interfaces.poll();
-                    if (seenInterfaces.contains(iface)) {
-                        continue;
-                    }
-                    seenInterfaces.add(iface);
-                    forClass = getWriters().get(iface);
-                    if (forClass != null) {
-                        forClass = new ArrayList<>(forClass);
-                        forClass.sort(new ResourceWriter.ResourceWriterComparator());
-                        writers.addAll(forClass);
-                    }
-                    interfaces.addAll(Arrays.asList(iface.getInterfaces()));
-                }
-                c = c.getSuperclass();
-            }
-            return writers;
-        }
-    };
-
-    public static boolean invokeWriter(QuarkusRestRequestContext context, Object entity, MessageBodyWriter writer,
-            Serialisers serialisers)
-            throws IOException {
-        return invokeWriter(context, entity, writer, serialisers, null);
-    }
-
-    public static boolean invokeWriter(QuarkusRestRequestContext context, Object entity, MessageBodyWriter writer,
-            Serialisers serialisers, MediaType mediaType) throws IOException {
-        //note that GenericEntity is not a factor here. It should have already been unwrapped
-
-        WriterInterceptor[] writerInterceptors = context.getWriterInterceptors();
-        boolean outputStreamSet = context.getOutputStream() != null;
-        if (writer instanceof QuarkusRestMessageBodyWriter && writerInterceptors == null && !outputStreamSet) {
-            QuarkusRestMessageBodyWriter<Object> quarkusRestWriter = (QuarkusRestMessageBodyWriter<Object>) writer;
-            RuntimeResource target = context.getTarget();
-            Serialisers.encodeResponseHeaders(context);
-            if (quarkusRestWriter.isWriteable(entity.getClass(), target == null ? null : target.getLazyMethod(),
-                    context.getResponseContentMediaType())) {
-                if (mediaType != null) {
-                    context.setResponseContentType(mediaType);
-                }
-                quarkusRestWriter.writeResponse(entity, context);
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            if (writer.isWriteable(entity.getClass(), context.getGenericReturnType(), context.getAllAnnotations(),
-                    context.getResponseContentMediaType())) {
-                Response response = context.getResponse().get();
-                if (mediaType != null) {
-                    context.setResponseContentType(mediaType);
-                }
-                if (writerInterceptors == null) {
-                    writer.writeTo(entity, entity.getClass(), context.getGenericReturnType(),
-                            context.getAllAnnotations(), response.getMediaType(), response.getHeaders(),
-                            context.getOrCreateOutputStream());
-                    Serialisers.encodeResponseHeaders(context);
-                    context.getOrCreateOutputStream().close();
-                } else {
-                    runWriterInterceptors(context, entity, writer, response, writerInterceptors, serialisers);
-                }
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    public static void runWriterInterceptors(QuarkusRestRequestContext context, Object entity, MessageBodyWriter writer,
-            Response response, WriterInterceptor[] writerInterceptor, Serialisers serialisers) throws IOException {
-        QuarkusRestWriterInterceptorContext wc = new QuarkusRestWriterInterceptorContext(context, writerInterceptor, writer,
-                context.getAllAnnotations(), entity.getClass(), context.getGenericReturnType(), entity, response.getMediaType(),
-                response.getHeaders(), serialisers);
-        wc.proceed();
-    }
-
-    public void registerBuiltins(RuntimeType constraint) {
-        for (BuiltinWriter builtinWriter : BUILTIN_WRITERS) {
-            if (builtinWriter.constraint == null || builtinWriter.constraint == constraint) {
-                MessageBodyWriter<?> writer;
-                try {
-                    writer = builtinWriter.writerClass.newInstance();
-                } catch (InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
-                    continue;
-                }
-                ResourceWriter resourceWriter = new ResourceWriter();
-                resourceWriter.setConstraint(builtinWriter.constraint);
-                resourceWriter.setMediaTypeStrings(Collections.singletonList(builtinWriter.mediaType));
-                // FIXME: we could still support beans
-                resourceWriter.setFactory(new UnmanagedBeanFactory<MessageBodyWriter<?>>(writer));
-                addWriter(builtinWriter.entityClass, resourceWriter);
-            }
-        }
-        for (BuiltinReader builtinReader : BUILTIN_READERS) {
-            if (builtinReader.constraint == null || builtinReader.constraint == constraint) {
-                MessageBodyReader<?> reader;
-                try {
-                    reader = builtinReader.readerClass.newInstance();
-                } catch (InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
-                    continue;
-                }
-                ResourceReader resourceWriter = new ResourceReader();
-                resourceWriter.setConstraint(builtinReader.constraint);
-                resourceWriter.setMediaTypeStrings(Collections.singletonList(builtinReader.mediaType));
-                // FIXME: we could still support beans
-                resourceWriter.setFactory(new UnmanagedBeanFactory<MessageBodyReader<?>>(reader));
-                addReader(builtinReader.entityClass, resourceWriter);
-            }
-        }
-    }
+    // FIXME: spec says we should use generic type, but not sure how to pass that type from Jandex to reflection
+    protected final QuarkusMultivaluedMap<Class<?>, ResourceWriter> writers = new QuarkusMultivaluedHashMap<>();
+    protected final QuarkusMultivaluedMap<Class<?>, ResourceReader> readers = new QuarkusMultivaluedHashMap<>();
 
     public List<MessageBodyReader<?>> findReaders(QuarkusRestConfiguration configuration, Class<?> entityType,
             MediaType mediaType) {
@@ -425,40 +209,7 @@ public class Serialisers {
         return toMessageBodyWriters(findResourceWriters(writers, klass, produces, runtimeType));
     }
 
-    public MultivaluedMap<Class<?>, ResourceWriter> getWriters() {
-        return writers;
-    }
-
-    public MultivaluedMap<Class<?>, ResourceReader> getReaders() {
-        return readers;
-    }
-
-    public List<MessageBodyWriter<?>> findWriters(QuarkusRestConfiguration configuration, Class<?> entityType,
-            MediaType resolvedMediaType) {
-        return findWriters(configuration, entityType, resolvedMediaType, null);
-    }
-
-    public List<MessageBodyWriter<?>> findWriters(QuarkusRestConfiguration configuration, Class<?> entityType,
-            MediaType resolvedMediaType, RuntimeType runtimeType) {
-        // FIXME: invocation is very different between client and server, where the server doesn't treat GenericEntity specially
-        // it's probably missing from there, while the client handles it upstack
-        List<MediaType> mt = Collections.singletonList(resolvedMediaType);
-        Class<?> klass = entityType;
-        if (primitivesToWrappers.containsKey(klass))
-            klass = primitivesToWrappers.get(klass);
-        QuarkusMultivaluedMap<Class<?>, ResourceWriter> writers;
-        if (configuration != null && !configuration.getResourceWriters().isEmpty()) {
-            writers = new QuarkusMultivaluedHashMap<>();
-            writers.putAll(this.writers);
-            writers.addAll(configuration.getResourceWriters());
-        } else {
-            writers = this.writers;
-        }
-
-        return toMessageBodyWriters(findResourceWriters(writers, klass, mt, runtimeType));
-    }
-
-    private List<ResourceWriter> findResourceWriters(QuarkusMultivaluedMap<Class<?>, ResourceWriter> writers, Class<?> klass,
+    protected List<ResourceWriter> findResourceWriters(QuarkusMultivaluedMap<Class<?>, ResourceWriter> writers, Class<?> klass,
             List<MediaType> produces, RuntimeType runtimeType) {
         List<ResourceWriter> ret = new ArrayList<>();
         Deque<Class<?>> toProcess = new LinkedList<>();
@@ -493,7 +244,7 @@ public class Serialisers {
     }
 
     @SuppressWarnings("rawtypes")
-    private List<MessageBodyWriter<?>> toMessageBodyWriters(List<ResourceWriter> resourceWriters) {
+    protected List<MessageBodyWriter<?>> toMessageBodyWriters(List<ResourceWriter> resourceWriters) {
         List<MessageBodyWriter<?>> ret = new ArrayList<>(resourceWriters.size());
         Set<Class<? extends MessageBodyWriter>> alreadySeenClasses = new HashSet<>(resourceWriters.size());
         for (ResourceWriter resourceWriter : resourceWriters) {
@@ -506,90 +257,6 @@ public class Serialisers {
             alreadySeenClasses.add(instanceClass);
         }
         return ret;
-    }
-
-    /**
-     * Find the best matching writer based on the 'Accept' HTTP header
-     * This is probably more complex than it needs to be, but some RESTEasy tests show that the response type
-     * is influenced by the provider's weight of the media types
-     */
-    public BestMatchingServerWriterResult findBestMatchingServerWriter(QuarkusRestConfiguration configuration,
-            Class<?> entityType, HttpServerRequest request) {
-        // TODO: refactor to have use common code from findWriters
-        Class<?> klass = entityType;
-        Deque<Class<?>> toProcess = new LinkedList<>();
-        QuarkusMultivaluedMap<Class<?>, ResourceWriter> writers;
-        if (configuration != null && !configuration.getResourceWriters().isEmpty()) {
-            writers = new QuarkusMultivaluedHashMap<>();
-            writers.putAll(this.writers);
-            writers.addAll(configuration.getResourceWriters());
-        } else {
-            writers = this.writers;
-        }
-
-        BestMatchingServerWriterResult result = new BestMatchingServerWriterResult();
-        do {
-            if (klass == Object.class) {
-                //spec extension, look for interfaces as well
-                //we match interfaces before Object
-                Set<Class<?>> seen = new HashSet<>(toProcess);
-                while (!toProcess.isEmpty()) {
-                    Class<?> iface = toProcess.poll();
-                    List<ResourceWriter> matchingWritersByType = writers.get(iface);
-                    serverResourceWriterLookup(request, matchingWritersByType, result);
-                    for (Class<?> i : iface.getInterfaces()) {
-                        if (!seen.contains(i)) {
-                            seen.add(i);
-                            toProcess.add(i);
-                        }
-                    }
-                }
-            }
-            List<ResourceWriter> matchingWritersByType = writers.get(klass);
-            serverResourceWriterLookup(request, matchingWritersByType, result);
-            toProcess.addAll(Arrays.asList(klass.getInterfaces()));
-            klass = klass.getSuperclass();
-        } while (klass != null);
-
-        return result;
-    }
-
-    private void serverResourceWriterLookup(HttpServerRequest request,
-            List<ResourceWriter> candidates, BestMatchingServerWriterResult result) {
-        if (candidates == null) {
-            return;
-        }
-
-        Map.Entry<MediaType, MediaType> selectedMediaTypes = null;
-        List<ResourceWriter> selectedResourceWriters = null;
-        for (ResourceWriter resourceWriter : candidates) {
-            if (!resourceWriter.matchesRuntimeType(RuntimeType.SERVER)) {
-                continue;
-            }
-            Map.Entry<MediaType, MediaType> current = resourceWriter.serverMediaType().negotiateProduces(request, null);
-            if (current.getValue() == null) {
-                continue;
-            }
-            if (selectedMediaTypes == null) {
-                selectedMediaTypes = current;
-                selectedResourceWriters = new ArrayList<>(1);
-                selectedResourceWriters.add(resourceWriter);
-            } else {
-                int compare = MediaTypeHelper.COMPARATOR.compare(current.getValue(), selectedMediaTypes.getValue());
-                if (compare == 0) {
-                    selectedResourceWriters.add(resourceWriter);
-                } else if (compare < 0) {
-                    selectedMediaTypes = current;
-                    selectedResourceWriters = new ArrayList<>(1);
-                    selectedResourceWriters.add(resourceWriter);
-                }
-            }
-        }
-        if (selectedMediaTypes != null) {
-            for (ResourceWriter selectedResourceWriter : selectedResourceWriters) {
-                result.add(selectedResourceWriter.getInstance(), selectedMediaTypes.getKey());
-            }
-        }
     }
 
     private void writerLookup(RuntimeType runtimeType, List<MediaType> mt, List<ResourceWriter> ret,
@@ -611,157 +278,105 @@ public class Serialisers {
         }
     }
 
-    public NoMediaTypeResult findWriterNoMediaType(QuarkusRestRequestContext requestContext, Object entity,
-            Serialisers serialisers, RuntimeType runtimeType) {
-        List<ResourceWriter> resultForClass = noMediaTypeClassCache.computeIfAbsent(entity.getClass(), mappingFunction);
-        List<ResourceWriter> constrainedResultsForClass = new ArrayList<>(resultForClass.size());
-        for (ResourceWriter writer : resultForClass) {
-            if (!writer.matchesRuntimeType(runtimeType)) {
-                continue;
-            }
-            constrainedResultsForClass.add(writer);
-        }
-        MediaType selected = null;
-        for (ResourceWriter writer : constrainedResultsForClass) {
-            selected = writer.serverMediaType().negotiateProduces(requestContext.getContext().request()).getKey();
-            if (selected != null) {
-                break;
-            }
-        }
-        if (selected == null) {
-            Set<MediaType> acceptable = new HashSet<>();
-            for (ResourceWriter i : constrainedResultsForClass) {
-                acceptable.addAll(i.mediaTypes());
-            }
-
-            throw new WebApplicationException(Response
-                    .notAcceptable(Variant
-                            .mediaTypes(
-                                    acceptable.toArray(new MediaType[0]))
-                            .build())
-                    .build());
-        }
-        if (selected.isWildcardType() || (selected.getType().equals("application") && selected.isWildcardSubtype())) {
-            selected = MediaType.APPLICATION_OCTET_STREAM_TYPE;
-        }
-        List<MessageBodyWriter<?>> finalResult = new ArrayList<>(constrainedResultsForClass.size());
-        for (ResourceWriter i : constrainedResultsForClass) {
-            // this part seems to be needed in order to pass com.sun.ts.tests.jaxrs.ee.resource.java2entity.JAXRSClient
-            if (i.mediaTypes().isEmpty()) {
-                finalResult.add(i.getInstance());
-            } else {
-                for (MediaType mt : i.mediaTypes()) {
-                    if (mt.isCompatible(selected)) {
-                        finalResult.add(i.getInstance());
-                        break;
-                    }
+    public void registerBuiltins(RuntimeType constraint) {
+        for (BuiltinWriter builtinWriter : BUILTIN_WRITERS) {
+            if (builtinWriter.constraint == null || builtinWriter.constraint == constraint) {
+                MessageBodyWriter<?> writer;
+                try {
+                    writer = builtinWriter.writerClass.newInstance();
+                } catch (InstantiationException | IllegalAccessException e) {
+                    e.printStackTrace();
+                    continue;
                 }
+                ResourceWriter resourceWriter = new ResourceWriter();
+                resourceWriter.setConstraint(builtinWriter.constraint);
+                resourceWriter.setMediaTypeStrings(Collections.singletonList(builtinWriter.mediaType));
+                // FIXME: we could still support beans
+                resourceWriter.setFactory(new UnmanagedBeanFactory<MessageBodyWriter<?>>(writer));
+                addWriter(builtinWriter.entityClass, resourceWriter);
             }
         }
-        return new NoMediaTypeResult(finalResult.toArray(NO_WRITER), selected, serialisers);
+        for (BuiltinReader builtinReader : BUILTIN_READERS) {
+            if (builtinReader.constraint == null || builtinReader.constraint == constraint) {
+                MessageBodyReader<?> reader;
+                try {
+                    reader = builtinReader.readerClass.newInstance();
+                } catch (InstantiationException | IllegalAccessException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+                ResourceReader resourceWriter = new ResourceReader();
+                resourceWriter.setConstraint(builtinReader.constraint);
+                resourceWriter.setMediaTypeStrings(Collections.singletonList(builtinReader.mediaType));
+                // FIXME: we could still support beans
+                resourceWriter.setFactory(new UnmanagedBeanFactory<MessageBodyReader<?>>(reader));
+                addReader(builtinReader.entityClass, resourceWriter);
+            }
+        }
     }
 
-    public static class NoMediaTypeResult {
-        final MessageBodyWriter<?>[] writers;
-        final MediaType mediaType;
-        final EntityWriter entityWriter;
+    public List<MessageBodyWriter<?>> findWriters(QuarkusRestConfiguration configuration, Class<?> entityType,
+            MediaType resolvedMediaType) {
+        return findWriters(configuration, entityType, resolvedMediaType, null);
+    }
 
-        public NoMediaTypeResult(MessageBodyWriter<?>[] writers, MediaType mediaType, Serialisers serialisers) {
-            this.writers = writers;
+    public List<MessageBodyWriter<?>> findWriters(QuarkusRestConfiguration configuration, Class<?> entityType,
+            MediaType resolvedMediaType, RuntimeType runtimeType) {
+        // FIXME: invocation is very different between client and server, where the server doesn't treat GenericEntity specially
+        // it's probably missing from there, while the client handles it upstack
+        List<MediaType> mt = Collections.singletonList(resolvedMediaType);
+        Class<?> klass = entityType;
+        if (primitivesToWrappers.containsKey(klass))
+            klass = primitivesToWrappers.get(klass);
+        QuarkusMultivaluedMap<Class<?>, ResourceWriter> writers;
+        if (configuration != null && !configuration.getResourceWriters().isEmpty()) {
+            writers = new QuarkusMultivaluedHashMap<>();
+            writers.putAll(this.writers);
+            writers.addAll(configuration.getResourceWriters());
+        } else {
+            writers = this.writers;
+        }
+
+        return toMessageBodyWriters(findResourceWriters(writers, klass, mt, runtimeType));
+    }
+
+    public static class Builtin {
+        public final Class<?> entityClass;
+        public final String mediaType;
+        public final RuntimeType constraint;
+
+        public Builtin(Class<?> entityClass, String mediaType, RuntimeType constraint) {
+            this.entityClass = entityClass;
             this.mediaType = mediaType;
-            this.entityWriter = new FixedEntityWriterArray(writers, serialisers);
-        }
-
-        public MessageBodyWriter<?>[] getWriters() {
-            return writers;
-        }
-
-        public MediaType getMediaType() {
-            return mediaType;
-        }
-
-        public EntityWriter getEntityWriter() {
-            return entityWriter;
+            this.constraint = constraint;
         }
     }
 
-    public static class BestMatchingServerWriterResult {
-        final List<Entry> entries = new ArrayList<>();
+    public static class BuiltinWriter extends Builtin {
+        public final Class<? extends MessageBodyWriter<?>> writerClass;
 
-        void add(MessageBodyWriter<?> writer, MediaType mediaType) {
-            entries.add(new Entry(writer, mediaType));
+        public BuiltinWriter(Class<?> entityClass, Class<? extends MessageBodyWriter<?>> writerClass, String mediaType) {
+            this(entityClass, writerClass, mediaType, null);
         }
 
-        public boolean isEmpty() {
-            return entries.isEmpty();
-        }
-
-        public List<MessageBodyWriter<?>> getMessageBodyWriters() {
-            if (isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            List<MessageBodyWriter<?>> result = new ArrayList<>(entries.size());
-            for (Entry entry : entries) {
-                result.add(entry.writer);
-            }
-            return result;
-        }
-
-        public MediaType getSelectedMediaType() {
-            if (isEmpty()) {
-                return null;
-            }
-            return entries.get(0).mediaType;
-        }
-
-        private static class Entry {
-            final MessageBodyWriter<?> writer;
-            final MediaType mediaType;
-
-            public Entry(MessageBodyWriter<?> writer, MediaType mediaType) {
-                this.writer = writer;
-                this.mediaType = mediaType;
-            }
+        public BuiltinWriter(Class<?> entityClass, Class<? extends MessageBodyWriter<?>> writerClass, String mediaType,
+                RuntimeType constraint) {
+            super(entityClass, mediaType, constraint);
+            this.writerClass = writerClass;
         }
     }
 
-    public static void encodeResponseHeaders(QuarkusRestRequestContext requestContext) {
-        HttpServerResponse vertxResponse = requestContext.getHttpServerResponse();
-        if (!requestContext.getResponse().isCreated()) {
-            //fast path
-            //there is no response, so we just set the content type
-            if (requestContext.getResponseEntity() == null) {
-                vertxResponse.setStatusCode(Response.Status.NO_CONTENT.getStatusCode());
-            }
-            EncodedMediaType contentType = requestContext.getResponseContentType();
-            if (contentType != null) {
-                vertxResponse.headers().set(CONTENT_TYPE, contentType.toString());
-            }
-            return;
-        }
-        Response response = requestContext.getResponse().get();
-        vertxResponse.setStatusCode(response.getStatus());
-        MultiMap vertxHeaders = vertxResponse.headers();
+    public static class BuiltinReader extends Builtin {
+        public final Class<? extends MessageBodyReader<?>> readerClass;
 
-        // avoid using getStringHeaders() which does similar things but copies into yet another map
-        MultivaluedMap<String, Object> headers = response.getHeaders();
-        for (Map.Entry<String, List<Object>> entry : headers.entrySet()) {
-            if (entry.getValue().size() == 1) {
-                Object o = entry.getValue().get(0);
-                if (o instanceof CharSequence) {
-                    vertxHeaders.set(entry.getKey(), (CharSequence) o);
-                } else {
-                    vertxHeaders.set(entry.getKey(), (CharSequence) HeaderUtil.headerToString(o));
-                }
-            } else {
-                List<CharSequence> strValues = new ArrayList<>(entry.getValue().size());
-                for (Object o : entry.getValue()) {
-                    strValues.add(HeaderUtil.headerToString(o));
-                }
-                vertxHeaders.set(entry.getKey(), strValues);
-            }
+        public BuiltinReader(Class<?> entityClass, Class<? extends MessageBodyReader<?>> readerClass, String mediaType) {
+            this(entityClass, readerClass, mediaType, null);
+        }
+
+        public BuiltinReader(Class<?> entityClass, Class<? extends MessageBodyReader<?>> readerClass, String mediaType,
+                RuntimeType constraint) {
+            super(entityClass, mediaType, constraint);
+            this.readerClass = readerClass;
         }
     }
-
 }

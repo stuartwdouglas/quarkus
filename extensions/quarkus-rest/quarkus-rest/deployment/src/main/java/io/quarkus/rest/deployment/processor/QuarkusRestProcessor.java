@@ -83,6 +83,21 @@ import io.quarkus.gizmo.FieldDescriptor;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
+import io.quarkus.rest.common.runtime.model.InjectableBean;
+import io.quarkus.rest.common.runtime.model.ParameterType;
+import io.quarkus.rest.common.runtime.model.ResourceContextResolver;
+import io.quarkus.rest.common.runtime.model.ResourceDynamicFeature;
+import io.quarkus.rest.common.runtime.model.ResourceExceptionMapper;
+import io.quarkus.rest.common.runtime.model.ResourceFeature;
+import io.quarkus.rest.common.runtime.model.ResourceInterceptors;
+import io.quarkus.rest.common.runtime.model.ResourceParamConverterProvider;
+import io.quarkus.rest.common.runtime.model.ResourceReader;
+import io.quarkus.rest.common.runtime.model.ResourceReaderInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceRequestInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceResponseInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceWriter;
+import io.quarkus.rest.common.runtime.model.ResourceWriterInterceptor;
 import io.quarkus.rest.common.runtime.util.Encode;
 import io.quarkus.rest.deployment.framework.AdditionalReaders;
 import io.quarkus.rest.deployment.framework.AdditionalWriters;
@@ -95,31 +110,15 @@ import io.quarkus.rest.server.runtime.core.ContextResolvers;
 import io.quarkus.rest.server.runtime.core.DynamicFeatures;
 import io.quarkus.rest.server.runtime.core.ExceptionMapping;
 import io.quarkus.rest.server.runtime.core.Features;
-import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
 import io.quarkus.rest.server.runtime.core.ParamConverterProviders;
 import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
 import io.quarkus.rest.server.runtime.core.Serialisers;
-import io.quarkus.rest.server.runtime.core.Serialisers.BuiltinReader;
-import io.quarkus.rest.server.runtime.core.Serialisers.BuiltinWriter;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.quarkus.rest.server.runtime.core.SingletonBeanFactory;
 import io.quarkus.rest.server.runtime.injection.ContextProducers;
-import io.quarkus.rest.common.runtime.model.InjectableBean;
 import io.quarkus.rest.server.runtime.model.MethodParameter;
-import io.quarkus.rest.common.runtime.model.ParameterType;
 import io.quarkus.rest.server.runtime.model.ResourceClass;
-import io.quarkus.rest.common.runtime.model.ResourceContextResolver;
-import io.quarkus.rest.common.runtime.model.ResourceDynamicFeature;
-import io.quarkus.rest.common.runtime.model.ResourceExceptionMapper;
-import io.quarkus.rest.common.runtime.model.ResourceFeature;
-import io.quarkus.rest.common.runtime.model.ResourceInterceptors;
 import io.quarkus.rest.server.runtime.model.ResourceMethod;
-import io.quarkus.rest.common.runtime.model.ResourceParamConverterProvider;
-import io.quarkus.rest.common.runtime.model.ResourceReader;
-import io.quarkus.rest.common.runtime.model.ResourceReaderInterceptor;
-import io.quarkus.rest.common.runtime.model.ResourceRequestInterceptor;
-import io.quarkus.rest.common.runtime.model.ResourceResponseInterceptor;
-import io.quarkus.rest.common.runtime.model.ResourceWriter;
-import io.quarkus.rest.common.runtime.model.ResourceWriterInterceptor;
 import io.quarkus.rest.server.runtime.model.RestClientInterface;
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.AuthenticationCompletionExceptionMapper;
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.AuthenticationFailedExceptionMapper;
@@ -838,7 +837,7 @@ public class QuarkusRestProcessor {
                 }
             }
 
-            Serialisers serialisers = new Serialisers();
+            ServerSerialisers serialisers = new ServerSerialisers();
             for (ClassInfo writerClass : writers) {
                 KeepProviderResult keepProviderResult = keepProvider(writerClass, filterClasses, allowedClasses);
                 if (keepProviderResult != KeepProviderResult.DISCARD) {
@@ -913,13 +912,13 @@ public class QuarkusRestProcessor {
 
             // built-ins
 
-            for (BuiltinWriter builtinWriter : Serialisers.BUILTIN_WRITERS) {
+            for (Serialisers.BuiltinWriter builtinWriter : Serialisers.BUILTIN_WRITERS) {
                 registerWriter(recorder, serialisers, builtinWriter.entityClass, builtinWriter.writerClass,
                         beanContainerBuildItem.getValue(),
                         builtinWriter.mediaType);
                 reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, builtinWriter.writerClass.getName()));
             }
-            for (BuiltinReader builtinReader : Serialisers.BUILTIN_READERS) {
+            for (Serialisers.BuiltinReader builtinReader : Serialisers.BUILTIN_READERS) {
                 registerReader(recorder, serialisers, builtinReader.entityClass, builtinReader.readerClass,
                         beanContainerBuildItem.getValue(),
                         builtinReader.mediaType, builtinReader.constraint);
@@ -1073,7 +1072,7 @@ public class QuarkusRestProcessor {
         return applicationPath;
     }
 
-    private void registerWriter(QuarkusRestRecorder recorder, Serialisers serialisers, Class<?> entityClass,
+    private void registerWriter(QuarkusRestRecorder recorder, ServerSerialisers serialisers, Class<?> entityClass,
             Class<? extends MessageBodyWriter<?>> writerClass, BeanContainer beanContainer,
             String mediaType) {
         ResourceWriter writer = new ResourceWriter();
@@ -1082,7 +1081,7 @@ public class QuarkusRestProcessor {
         recorder.registerWriter(serialisers, entityClass.getName(), writer);
     }
 
-    private void registerReader(QuarkusRestRecorder recorder, Serialisers serialisers, Class<?> entityClass,
+    private void registerReader(QuarkusRestRecorder recorder, ServerSerialisers serialisers, Class<?> entityClass,
             Class<? extends MessageBodyReader<?>> readerClass, BeanContainer beanContainer, String mediaType,
             RuntimeType constraint) {
         ResourceReader reader = new ResourceReader();

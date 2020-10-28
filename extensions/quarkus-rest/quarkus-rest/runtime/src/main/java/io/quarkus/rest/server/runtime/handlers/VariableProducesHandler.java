@@ -13,7 +13,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.common.runtime.util.ServerMediaType;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.quarkus.rest.server.runtime.core.serialization.FixedEntityWriterArray;
 
 /**
@@ -25,9 +25,9 @@ public class VariableProducesHandler implements ServerRestHandler {
 
     public static final MessageBodyWriter[] EMPTY = new MessageBodyWriter[0];
     final ServerMediaType mediaTypeList;
-    final Serialisers serialisers;
+    final ServerSerialisers serialisers;
 
-    public VariableProducesHandler(ServerMediaType mediaTypeList, Serialisers serialisers) {
+    public VariableProducesHandler(ServerMediaType mediaTypeList, ServerSerialisers serialisers) {
         this.mediaTypeList = mediaTypeList;
         this.serialisers = serialisers;
     }

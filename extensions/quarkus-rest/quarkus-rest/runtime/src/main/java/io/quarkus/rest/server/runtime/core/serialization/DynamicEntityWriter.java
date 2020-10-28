@@ -13,7 +13,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.server.runtime.core.EncodedMediaType;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 
@@ -22,9 +22,9 @@ import io.vertx.core.http.HttpServerResponse;
  */
 public class DynamicEntityWriter implements EntityWriter {
 
-    private final Serialisers serialisers;
+    private final ServerSerialisers serialisers;
 
-    public DynamicEntityWriter(Serialisers serialisers) {
+    public DynamicEntityWriter(ServerSerialisers serialisers) {
         this.serialisers = serialisers;
     }
 
@@ -49,24 +49,24 @@ public class DynamicEntityWriter implements EntityWriter {
                     && !MediaType.WILDCARD.equals(vertxRequest.getHeader(HttpHeaders.ACCEPT))) {
                 // try and find a writer based on the 'Accept' header match
 
-                Serialisers.BestMatchingServerWriterResult bestMatchingServerWriterResult = serialisers
+                ServerSerialisers.BestMatchingServerWriterResult bestMatchingServerWriterResult = serialisers
                         .findBestMatchingServerWriter(null, entity.getClass(), vertxRequest);
                 if (!bestMatchingServerWriterResult.isEmpty()) {
                     selectedMediaType = bestMatchingServerWriterResult.getSelectedMediaType();
                     mediaTypeComesFromClient = true;
-                    writers = bestMatchingServerWriterResult.getMessageBodyWriters().toArray(Serialisers.NO_WRITER);
+                    writers = bestMatchingServerWriterResult.getMessageBodyWriters().toArray(ServerSerialisers.NO_WRITER);
                 }
             }
             // try to find a Writer based on the entity type
             if (writers == null) {
-                Serialisers.NoMediaTypeResult writerNoMediaType = serialisers.findWriterNoMediaType(context, entity,
+                ServerSerialisers.NoMediaTypeResult writerNoMediaType = serialisers.findWriterNoMediaType(context, entity,
                         serialisers, RuntimeType.SERVER);
                 writers = writerNoMediaType.getWriters();
                 selectedMediaType = writerNoMediaType.getMediaType();
             }
             if (selectedMediaType != null) {
                 if (MediaTypeHelper.isUnsupportedWildcardSubtype(selectedMediaType) && !mediaTypeComesFromClient) { // spec says the acceptable wildcard subtypes are */* or application/*
-                    Serialisers.encodeResponseHeaders(context);
+                    ServerSerialisers.encodeResponseHeaders(context);
                     // set the response header AFTER encodeResponseHeaders in order to override what Response has as we want this to be the final result
                     HttpServerResponse httpServerResponse = context.getHttpServerResponse();
                     httpServerResponse.setStatusCode(Response.Status.NOT_ACCEPTABLE.getStatusCode());
@@ -81,10 +81,10 @@ public class DynamicEntityWriter implements EntityWriter {
             }
         } else {
             writers = serialisers.findWriters(null, entity.getClass(), producesMediaType.getMediaType(), RuntimeType.SERVER)
-                    .toArray(Serialisers.NO_WRITER);
+                    .toArray(ServerSerialisers.NO_WRITER);
         }
         for (MessageBodyWriter<?> w : writers) {
-            if (Serialisers.invokeWriter(context, entity, w, serialisers)) {
+            if (ServerSerialisers.invokeWriter(context, entity, w, serialisers)) {
                 return;
             }
         }

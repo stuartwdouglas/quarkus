@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyWriter;
 
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 
 /**
  * A fixed entity writer that iterates an array of providers until it finds one that can handle
@@ -16,9 +16,9 @@ import io.quarkus.rest.server.runtime.core.Serialisers;
 public class FixedEntityWriterArray implements EntityWriter {
 
     private final MessageBodyWriter[] writers;
-    private final Serialisers serialisers;
+    private final ServerSerialisers serialisers;
 
-    public FixedEntityWriterArray(MessageBodyWriter[] writers, Serialisers serialisers) {
+    public FixedEntityWriterArray(MessageBodyWriter[] writers, ServerSerialisers serialisers) {
         this.writers = writers;
         this.serialisers = serialisers;
     }
@@ -27,7 +27,7 @@ public class FixedEntityWriterArray implements EntityWriter {
     public void write(QuarkusRestRequestContext context, Object entity) throws IOException {
         for (int i = 0; i < writers.length; ++i) {
             MessageBodyWriter writer = writers[i];
-            if (Serialisers.invokeWriter(context, entity, writer, serialisers)) {
+            if (ServerSerialisers.invokeWriter(context, entity, writer, serialisers)) {
                 return;
             }
         }

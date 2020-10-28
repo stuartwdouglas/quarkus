@@ -15,7 +15,7 @@ import javax.ws.rs.core.Variant;
 import io.quarkus.jaxrs.client.runtime.ClientRestHandler;
 import io.quarkus.jaxrs.client.runtime.QuarkusRestAsyncInvoker;
 import io.quarkus.jaxrs.client.runtime.RestClientRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
@@ -108,7 +108,7 @@ public class ClientSendRequestHandler implements ClientRestHandler {
             }
 
             actualEntity = state.writeEntity(entity, headerMap,
-                    state.getConfiguration().getWriterInterceptors().toArray(Serialisers.NO_WRITER_INTERCEPTOR));
+                    state.getConfiguration().getWriterInterceptors().toArray(ServerSerialisers.NO_WRITER_INTERCEPTOR));
         }
         // set the Vertx headers after we've run the interceptors because they can modify them
         MultiMap vertxHttpHeaders = httpClientRequest.headers();

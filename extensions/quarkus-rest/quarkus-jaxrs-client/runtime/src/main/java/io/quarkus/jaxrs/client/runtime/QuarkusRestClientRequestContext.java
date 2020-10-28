@@ -23,7 +23,7 @@ import javax.ws.rs.core.Response;
 
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.NotImplementedYet;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 
 public class QuarkusRestClientRequestContext implements ClientRequestContext {
 
@@ -178,7 +178,7 @@ public class QuarkusRestClientRequestContext implements ClientRequestContext {
 
     @Override
     public void setEntity(Object entity) {
-        setEntity(entity, Serialisers.NO_ANNOTATION, null);
+        setEntity(entity, ServerSerialisers.NO_ANNOTATION, null);
     }
 
     @Override
@@ -189,7 +189,7 @@ public class QuarkusRestClientRequestContext implements ClientRequestContext {
     @Override
     public Annotation[] getEntityAnnotations() {
         return restClientRequestContext.entity != null ? restClientRequestContext.entity.getAnnotations()
-                : Serialisers.NO_ANNOTATION;
+                : ServerSerialisers.NO_ANNOTATION;
     }
 
     @Override

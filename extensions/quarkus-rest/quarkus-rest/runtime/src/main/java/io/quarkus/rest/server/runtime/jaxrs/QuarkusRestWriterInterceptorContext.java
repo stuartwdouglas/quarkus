@@ -18,7 +18,7 @@ import javax.ws.rs.ext.WriterInterceptorContext;
 
 import io.quarkus.rest.common.runtime.util.CaseInsensitiveMap;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 
 public class QuarkusRestWriterInterceptorContext extends QuarkusRestAbstractInterceptorContext
         implements WriterInterceptorContext {
@@ -33,7 +33,7 @@ public class QuarkusRestWriterInterceptorContext extends QuarkusRestAbstractInte
 
     public QuarkusRestWriterInterceptorContext(QuarkusRestRequestContext context, WriterInterceptor[] interceptors,
             MessageBodyWriter<?> writer, Annotation[] annotations, Class<?> type, Type genericType, Object entity,
-            MediaType mediaType, MultivaluedMap<String, Object> headers, Serialisers serialisers) {
+            MediaType mediaType, MultivaluedMap<String, Object> headers, ServerSerialisers serialisers) {
         super(context, annotations, type, genericType, mediaType, serialisers);
         this.interceptors = interceptors;
         this.writer = writer;
@@ -58,7 +58,7 @@ public class QuarkusRestWriterInterceptorContext extends QuarkusRestAbstractInte
             effectiveWriter.writeTo(entity, type, genericType,
                     annotations, mediaType, response.getHeaders(), context.getOrCreateOutputStream());
             context.setResult(Response.fromResponse(response).replaceAll(headers).build());
-            Serialisers.encodeResponseHeaders(context);
+            ServerSerialisers.encodeResponseHeaders(context);
             context.getOutputStream().close();
             done = true;
         } else {
@@ -66,7 +66,7 @@ public class QuarkusRestWriterInterceptorContext extends QuarkusRestAbstractInte
             if (!done) {
                 //TODO: how to handle
                 context.setResult(Response.fromResponse(response).replaceAll(headers).build());
-                Serialisers.encodeResponseHeaders(context);
+                ServerSerialisers.encodeResponseHeaders(context);
                 context.getHttpServerResponse().end();
             }
         }

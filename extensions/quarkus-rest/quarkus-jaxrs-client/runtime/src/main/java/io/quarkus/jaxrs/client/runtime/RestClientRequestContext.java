@@ -28,6 +28,7 @@ import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestResponse;
 import io.quarkus.rest.common.runtime.util.CaseInsensitiveMap;
 import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -122,7 +123,7 @@ public class RestClientRequestContext extends AbstractQuarkusRestContext<RestCli
     }
 
     ReaderInterceptor[] getReaderInterceptors() {
-        return configuration.getReaderInterceptors().toArray(Serialisers.NO_READER_INTERCEPTOR);
+        return configuration.getReaderInterceptors().toArray(ServerSerialisers.NO_READER_INTERCEPTOR);
     }
 
     public void initialiseResponse(HttpClientResponse vertxResponse) {

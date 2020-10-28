@@ -19,6 +19,7 @@ import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.QuarkusRestRecorder;
 import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
 import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.quarkus.vertx.core.runtime.VertxCoreRecorder;
 
 public class QuarkusRestClientBuilder extends ClientBuilder {
@@ -85,7 +86,7 @@ public class QuarkusRestClientBuilder extends ClientBuilder {
     public Client build() {
         QuarkusRestDeployment currentDeployment = QuarkusRestRecorder.getCurrentDeployment();
         if (currentDeployment == null) {
-            Serialisers serialisers = new Serialisers();
+            Serialisers serialisers = new ServerSerialisers();
             serialisers.registerBuiltins(RuntimeType.CLIENT);
             return new QuarkusRestClient(configuration, serialisers,
                     new ClientProxies(Collections.emptyMap()), new GenericTypeMapping(), hostnameVerifier, sslContext,

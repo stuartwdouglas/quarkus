@@ -36,18 +36,32 @@ import javax.ws.rs.ext.WriterInterceptor;
 import org.jboss.logging.Logger;
 
 import io.quarkus.arc.runtime.BeanContainer;
+import io.quarkus.rest.common.runtime.core.ArcBeanFactory;
+import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
+import io.quarkus.rest.common.runtime.model.HasPriority;
+import io.quarkus.rest.common.runtime.model.ParameterType;
+import io.quarkus.rest.common.runtime.model.ResourceContextResolver;
+import io.quarkus.rest.common.runtime.model.ResourceDynamicFeature;
+import io.quarkus.rest.common.runtime.model.ResourceExceptionMapper;
+import io.quarkus.rest.common.runtime.model.ResourceFeature;
+import io.quarkus.rest.common.runtime.model.ResourceInterceptors;
+import io.quarkus.rest.common.runtime.model.ResourceReader;
+import io.quarkus.rest.common.runtime.model.ResourceReaderInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceRequestInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceResponseInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceWriter;
+import io.quarkus.rest.common.runtime.model.ResourceWriterInterceptor;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.common.runtime.util.ServerMediaType;
-import io.quarkus.rest.common.runtime.core.ArcBeanFactory;
 import io.quarkus.rest.server.runtime.core.ContextResolvers;
 import io.quarkus.rest.server.runtime.core.DynamicFeatures;
 import io.quarkus.rest.server.runtime.core.ExceptionMapping;
 import io.quarkus.rest.server.runtime.core.Features;
-import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
 import io.quarkus.rest.server.runtime.core.LazyMethod;
 import io.quarkus.rest.server.runtime.core.ParamConverterProviders;
 import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.quarkus.rest.server.runtime.core.SingletonBeanFactory;
 import io.quarkus.rest.server.runtime.core.parameters.AsyncResponseExtractor;
 import io.quarkus.rest.server.runtime.core.parameters.BeanParamExtractor;
@@ -92,29 +106,15 @@ import io.quarkus.rest.server.runtime.handlers.ServerRestHandler;
 import io.quarkus.rest.server.runtime.handlers.SseResponseWriterHandler;
 import io.quarkus.rest.server.runtime.handlers.UniResponseHandler;
 import io.quarkus.rest.server.runtime.handlers.VariableProducesHandler;
-import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestDynamicFeatureContext;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestFeatureContext;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResourceMethod;
 import io.quarkus.rest.server.runtime.mapping.RequestMapper;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
 import io.quarkus.rest.server.runtime.mapping.URITemplate;
-import io.quarkus.rest.common.runtime.model.HasPriority;
 import io.quarkus.rest.server.runtime.model.MethodParameter;
-import io.quarkus.rest.common.runtime.model.ParameterType;
 import io.quarkus.rest.server.runtime.model.ResourceClass;
-import io.quarkus.rest.common.runtime.model.ResourceContextResolver;
-import io.quarkus.rest.common.runtime.model.ResourceDynamicFeature;
-import io.quarkus.rest.common.runtime.model.ResourceExceptionMapper;
-import io.quarkus.rest.common.runtime.model.ResourceFeature;
-import io.quarkus.rest.common.runtime.model.ResourceInterceptors;
 import io.quarkus.rest.server.runtime.model.ResourceMethod;
-import io.quarkus.rest.common.runtime.model.ResourceReader;
-import io.quarkus.rest.common.runtime.model.ResourceReaderInterceptor;
-import io.quarkus.rest.common.runtime.model.ResourceRequestInterceptor;
-import io.quarkus.rest.common.runtime.model.ResourceResponseInterceptor;
-import io.quarkus.rest.common.runtime.model.ResourceWriter;
-import io.quarkus.rest.common.runtime.model.ResourceWriterInterceptor;
 import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyWriter;
 import io.quarkus.rest.server.runtime.util.RuntimeResourceVisitor;
 import io.quarkus.rest.server.runtime.util.ScoreSystem;
@@ -190,7 +190,7 @@ public class QuarkusRestRecorder {
 
     public Handler<RoutingContext> handler(ResourceInterceptors interceptors,
             ExceptionMapping exceptionMapping,
-            ContextResolvers ctxResolvers, Features features, DynamicFeatures dynamicFeatures, Serialisers serialisers,
+            ContextResolvers ctxResolvers, Features features, DynamicFeatures dynamicFeatures, ServerSerialisers serialisers,
             List<ResourceClass> resourceClasses, List<ResourceClass> locatableResourceClasses, BeanContainer beanContainer,
             ShutdownContext shutdownContext, QuarkusRestConfig quarkusRestConfig, HttpBuildTimeConfig vertxConfig,
             String applicationPath, Map<String, RuntimeValue<Function<WebTarget, ?>>> clientImplementations,
@@ -655,7 +655,7 @@ public class QuarkusRestRecorder {
         super();
     }
 
-    public RuntimeResource buildResourceMethod(Serialisers serialisers,
+    public RuntimeResource buildResourceMethod(ServerSerialisers serialisers,
             QuarkusRestConfig quarkusRestConfig,
             Map<ResourceRequestInterceptor, ContainerRequestFilter> globalRequestInterceptorsMap,
             Map<ResourceResponseInterceptor, ContainerResponseFilter> globalResponseInterceptorsMap,
@@ -1180,12 +1180,12 @@ public class QuarkusRestRecorder {
         dynamicFeatures.addFeature(dynamicFeature);
     }
 
-    public void registerWriter(Serialisers serialisers, String entityClassName,
+    public void registerWriter(ServerSerialisers serialisers, String entityClassName,
             ResourceWriter writer) {
         serialisers.addWriter(loadClass(entityClassName), writer);
     }
 
-    public void registerReader(Serialisers serialisers, String entityClassName,
+    public void registerReader(ServerSerialisers serialisers, String entityClassName,
             ResourceReader reader) {
         serialisers.addReader(loadClass(entityClassName), reader);
     }

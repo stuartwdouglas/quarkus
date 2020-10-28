@@ -5,7 +5,7 @@ import javax.ws.rs.core.Response;
 
 import io.quarkus.rest.common.runtime.util.ServerMediaType;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.quarkus.rest.server.runtime.core.serialization.DynamicEntityWriter;
 import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
 
@@ -33,7 +33,7 @@ public class ResponseWriterHandler implements ServerRestHandler {
             }
         } else {
             setContentTypeIfNecessary(requestContext);
-            Serialisers.encodeResponseHeaders(requestContext);
+            ServerSerialisers.encodeResponseHeaders(requestContext);
             requestContext.getHttpServerResponse().end();
         }
     }

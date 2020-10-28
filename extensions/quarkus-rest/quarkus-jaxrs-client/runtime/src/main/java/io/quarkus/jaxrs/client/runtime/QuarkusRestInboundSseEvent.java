@@ -14,6 +14,7 @@ import javax.ws.rs.sse.SseEvent;
 
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 
 public class QuarkusRestInboundSseEvent implements InboundSseEvent {
 
@@ -110,8 +111,8 @@ public class QuarkusRestInboundSseEvent implements InboundSseEvent {
         InputStream in = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
         try {
             return (T) ClientSerialisers.invokeClientReader(null, type.getRawType(), type.getType(),
-                    mediaType, null, Serialisers.EMPTY_MULTI_MAP,
-                    serialisers, in, Serialisers.NO_READER_INTERCEPTOR, configuration);
+                    mediaType, null, ServerSerialisers.EMPTY_MULTI_MAP,
+                    serialisers, in, ServerSerialisers.NO_READER_INTERCEPTOR, configuration);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
