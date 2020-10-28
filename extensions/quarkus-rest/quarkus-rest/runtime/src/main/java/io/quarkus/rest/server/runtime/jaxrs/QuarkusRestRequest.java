@@ -11,6 +11,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestResponseBuilder;
 import io.quarkus.rest.common.runtime.util.DateUtil;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.core.request.ServerDrivenNegotiation;

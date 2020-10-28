@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.jaxrs;
+package io.quarkus.rest.common.runtime.jaxrs;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -69,11 +69,11 @@ public abstract class QuarkusRestResponseBuilder extends Response.ResponseBuilde
         defaultReasonPhrases.put(505, "HTTP Version Not Supported");
     }
 
-    int status = -1;
-    String reasonPhrase;
-    Object entity;
-    MultivaluedMap<String, Object> metadata = new CaseInsensitiveMap<>();
-    Annotation[] entityAnnotations;
+    protected int status = -1;
+    protected String reasonPhrase;
+    protected Object entity;
+    protected MultivaluedMap<String, Object> metadata = new CaseInsensitiveMap<>();
+    protected Annotation[] entityAnnotations;
 
     public static SimpleDateFormat getDateFormatRFC822() {
         SimpleDateFormat dateFormatRFC822 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
@@ -179,9 +179,11 @@ public abstract class QuarkusRestResponseBuilder extends Response.ResponseBuilde
         }
     }
 
+    protected abstract QuarkusRestResponseBuilder doClone();
+
     @Override
-    public QuarkusRestServerResponseBuilder clone() {
-        QuarkusRestServerResponseBuilder responseBuilder = new QuarkusRestServerResponseBuilder();
+    public QuarkusRestResponseBuilder clone() {
+        QuarkusRestResponseBuilder responseBuilder = doClone();
         responseBuilder.status = status;
         responseBuilder.reasonPhrase = reasonPhrase;
         responseBuilder.entity = entity;

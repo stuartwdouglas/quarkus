@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.jaxrs;
+package io.quarkus.rest.common.runtime.jaxrs;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;

@@ -2,7 +2,8 @@ package io.quarkus.rest.server.runtime.client;
 
 import java.io.InputStream;
 
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResponse;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestResponse;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestResponseBuilder;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestServerResponseBuilder;
 
 public class QuarkusRestClientResponseBuilder extends QuarkusRestServerResponseBuilder { //TODO: should not extend the server version
@@ -18,6 +19,11 @@ public class QuarkusRestClientResponseBuilder extends QuarkusRestServerResponseB
     public QuarkusRestClientResponseBuilder entityStream(InputStream entityStream) {
         this.entityStream = entityStream;
         return this;
+    }
+
+    @Override
+    protected QuarkusRestResponseBuilder doClone() {
+        return new QuarkusRestClientResponseBuilder();
     }
 
     @Override

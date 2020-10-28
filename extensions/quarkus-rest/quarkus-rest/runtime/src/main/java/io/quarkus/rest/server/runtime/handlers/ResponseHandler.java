@@ -4,11 +4,11 @@ import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestResponse;
 import io.quarkus.rest.server.runtime.core.EncodedMediaType;
 import io.quarkus.rest.server.runtime.core.LazyResponse;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResponse;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResponseBuilder;
+import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestServerResponseBuilder;
 
 /**
  * Our job is to turn endpoint return types into Response instances
@@ -50,10 +50,11 @@ public class ResponseHandler implements ServerRestHandler {
             if (!mediaTypeAlreadyExists && produces != null) {
                 responseBuilder.header(HttpHeaders.CONTENT_TYPE, produces.toString());
             }
-            if ((responseBuilder instanceof QuarkusRestResponseBuilder)) {
+            if ((responseBuilder instanceof QuarkusRestServerResponseBuilder)) {
                 // avoid unnecessary copying of HTTP headers from the Builder to the Response
                 requestContext
-                        .setResponse(new LazyResponse.Existing(((QuarkusRestResponseBuilder) responseBuilder).build(false)));
+                        .setResponse(
+                                new LazyResponse.Existing(((QuarkusRestServerResponseBuilder) responseBuilder).build(false)));
             } else {
                 requestContext.setResponse(new LazyResponse.Existing(responseBuilder.build()));
             }
@@ -81,9 +82,9 @@ public class ResponseHandler implements ServerRestHandler {
                         if (produces != null) {
                             responseBuilder.header(HttpHeaders.CONTENT_TYPE, produces.toString());
                         }
-                        if ((responseBuilder instanceof QuarkusRestResponseBuilder)) {
+                        if ((responseBuilder instanceof QuarkusRestServerResponseBuilder)) {
                             // avoid unnecessary copying of HTTP headers from the Builder to the Response
-                            response = ((QuarkusRestResponseBuilder) responseBuilder).build(false);
+                            response = ((QuarkusRestServerResponseBuilder) responseBuilder).build(false);
                         } else {
                             response = responseBuilder.build();
                         }

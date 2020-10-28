@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.jaxrs;
+package io.quarkus.rest.common.runtime.jaxrs;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,12 +31,12 @@ import javax.ws.rs.core.Response;
 import io.quarkus.rest.common.runtime.headers.HeaderUtil;
 import io.quarkus.rest.common.runtime.headers.LinkHeaders;
 import io.quarkus.rest.common.runtime.util.CaseInsensitiveMap;
-import io.quarkus.rest.server.runtime.client.QuarkusRestClientResponse;
 
 /**
  * This is the Response class for user-created responses. The client response
- * object has more deserialising powers in @{link {@link QuarkusRestClientResponse}.
+ * object has more deserialising powers in @{link {@link io.quarkus.rest.server.runtime.client.QuarkusRestClientResponse}.
  */
+@SuppressWarnings("JavadocReference")
 public class QuarkusRestResponse extends Response {
 
     int status;
@@ -310,21 +310,4 @@ public class QuarkusRestResponse extends Response {
         return entityAnnotations;
     }
 
-    //TODO: add the rest of static methods of Response if we need them
-
-    public static ResponseBuilder status(Status status) {
-        return new QuarkusRestServerResponseBuilder().status(status);
-    }
-
-    public static ResponseBuilder ok() {
-        return status(Status.OK);
-    }
-
-    public static ResponseBuilder ok(Object entity) {
-        return ok().entity(entity);
-    }
-
-    public static ResponseBuilder noContent() {
-        return status(Status.NO_CONTENT);
-    }
 }
