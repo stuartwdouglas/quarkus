@@ -11,10 +11,10 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import io.quarkus.rest.runtime.core.LazyMethod;
-import io.quarkus.rest.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.runtime.spi.QuarkusRestMessageBodyReader;
-import io.quarkus.rest.runtime.util.EmptyInputStream;
+import io.quarkus.rest.server.runtime.core.LazyMethod;
+import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyReader;
+import io.quarkus.rest.server.runtime.util.EmptyInputStream;
 
 public class JsonbMessageBodyReader implements QuarkusRestMessageBodyReader<Object> {
 

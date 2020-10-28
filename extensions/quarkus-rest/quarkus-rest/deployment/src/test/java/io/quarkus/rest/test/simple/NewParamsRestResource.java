@@ -24,8 +24,8 @@ import io.quarkus.rest.RestHeader;
 import io.quarkus.rest.RestMatrix;
 import io.quarkus.rest.RestPath;
 import io.quarkus.rest.RestQuery;
-import io.quarkus.rest.runtime.spi.QuarkusRestContext;
-import io.quarkus.rest.runtime.spi.SimplifiedResourceInfo;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContext;
+import io.quarkus.rest.server.runtime.spi.SimplifiedResourceInfo;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 

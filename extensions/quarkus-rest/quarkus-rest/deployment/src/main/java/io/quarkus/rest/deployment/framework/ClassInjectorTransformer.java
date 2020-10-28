@@ -19,13 +19,13 @@ import org.objectweb.asm.Type;
 
 import io.quarkus.deployment.util.AsmUtil;
 import io.quarkus.rest.deployment.framework.EndpointIndexer.ParameterExtractor;
-import io.quarkus.rest.runtime.core.QuarkusRestDeployment;
-import io.quarkus.rest.runtime.core.parameters.converters.DelegatingParameterConverterSupplier;
-import io.quarkus.rest.runtime.core.parameters.converters.ParameterConverter;
-import io.quarkus.rest.runtime.core.parameters.converters.ParameterConverterSupplier;
-import io.quarkus.rest.runtime.core.parameters.converters.RuntimeResolvedConverter;
-import io.quarkus.rest.runtime.injection.QuarkusRestInjectionContext;
-import io.quarkus.rest.runtime.injection.QuarkusRestInjectionTarget;
+import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
+import io.quarkus.rest.server.runtime.core.parameters.converters.DelegatingParameterConverterSupplier;
+import io.quarkus.rest.server.runtime.core.parameters.converters.ParameterConverter;
+import io.quarkus.rest.server.runtime.core.parameters.converters.ParameterConverterSupplier;
+import io.quarkus.rest.server.runtime.core.parameters.converters.RuntimeResolvedConverter;
+import io.quarkus.rest.server.runtime.injection.QuarkusRestInjectionContext;
+import io.quarkus.rest.server.runtime.injection.QuarkusRestInjectionTarget;
 
 public class ClassInjectorTransformer implements BiFunction<String, ClassVisitor, ClassVisitor> {
 

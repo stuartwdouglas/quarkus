@@ -4,8 +4,8 @@ import io.quarkus.arc.Arc;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
-import io.quarkus.rest.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.runtime.spi.SimplifiedResourceInfo;
+import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
+import io.quarkus.rest.server.runtime.spi.SimplifiedResourceInfo;
 import io.quarkus.vertx.http.runtime.CurrentVertxRequest;
 
 // TODO: We probably want to share this with quarkus-resteasy-qute somehow...

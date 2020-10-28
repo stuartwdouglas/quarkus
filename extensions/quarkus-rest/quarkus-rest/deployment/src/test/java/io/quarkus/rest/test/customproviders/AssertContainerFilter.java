@@ -10,12 +10,12 @@ import javax.ws.rs.core.Request;
 
 import io.quarkus.rest.ContainerRequestFilter;
 import io.quarkus.rest.ContainerResponseFilter;
-import io.quarkus.rest.runtime.core.LazyMethod;
-import io.quarkus.rest.runtime.core.QuarkusRestSimplifiedResourceInfo;
-import io.quarkus.rest.runtime.jaxrs.QuarkusRestRequest;
-import io.quarkus.rest.runtime.spi.QuarkusRestContainerRequestContext;
-import io.quarkus.rest.runtime.spi.QuarkusRestContainerResponseContext;
-import io.quarkus.rest.runtime.spi.SimplifiedResourceInfo;
+import io.quarkus.rest.server.runtime.core.LazyMethod;
+import io.quarkus.rest.server.runtime.core.QuarkusRestSimplifiedResourceInfo;
+import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestRequest;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerRequestContext;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerResponseContext;
+import io.quarkus.rest.server.runtime.spi.SimplifiedResourceInfo;
 import io.vertx.core.http.HttpServerRequest;
 
 /**

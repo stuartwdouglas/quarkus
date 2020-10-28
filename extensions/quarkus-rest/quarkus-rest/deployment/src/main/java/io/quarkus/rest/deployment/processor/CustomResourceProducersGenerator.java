@@ -31,12 +31,12 @@ import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.rest.deployment.framework.QuarkusRestDotNames;
-import io.quarkus.rest.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.runtime.core.parameters.CookieParamExtractor;
-import io.quarkus.rest.runtime.core.parameters.HeaderParamExtractor;
-import io.quarkus.rest.runtime.core.parameters.MatrixParamExtractor;
-import io.quarkus.rest.runtime.core.parameters.PathParamExtractor;
-import io.quarkus.rest.runtime.core.parameters.QueryParamExtractor;
+import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
+import io.quarkus.rest.server.runtime.core.parameters.CookieParamExtractor;
+import io.quarkus.rest.server.runtime.core.parameters.HeaderParamExtractor;
+import io.quarkus.rest.server.runtime.core.parameters.MatrixParamExtractor;
+import io.quarkus.rest.server.runtime.core.parameters.PathParamExtractor;
+import io.quarkus.rest.server.runtime.core.parameters.QueryParamExtractor;
 import io.quarkus.runtime.util.HashUtil;
 import io.quarkus.vertx.http.runtime.CurrentVertxRequest;
 

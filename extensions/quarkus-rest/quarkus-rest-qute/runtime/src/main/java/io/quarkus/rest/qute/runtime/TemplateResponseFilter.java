@@ -8,8 +8,8 @@ import javax.ws.rs.core.MediaType;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.Variant;
 import io.quarkus.rest.ContainerResponseFilter;
-import io.quarkus.rest.runtime.spi.QuarkusRestContainerRequestContext;
-import io.quarkus.rest.runtime.spi.QuarkusRestContainerResponseContext;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerRequestContext;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerResponseContext;
 
 public class TemplateResponseFilter {
 

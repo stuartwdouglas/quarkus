@@ -1,1 +1,1 @@
-io.quarkus.rest.runtime.jaxrs.QuarkusRestRuntimeDelegate
+io.quarkus.rest.server.runtime.jaxrs.QuarkusRestRuntimeDelegate

@@ -12,9 +12,9 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.quarkus.rest.runtime.core.LazyMethod;
-import io.quarkus.rest.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.runtime.spi.QuarkusRestMessageBodyWriter;
+import io.quarkus.rest.server.runtime.core.LazyMethod;
+import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyWriter;
 
 public class JacksonMessageBodyWriter implements QuarkusRestMessageBodyWriter<Object> {
 

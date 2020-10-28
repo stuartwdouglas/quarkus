@@ -16,8 +16,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.rest.runtime.client.QuarkusRestClient;
-import io.quarkus.rest.runtime.client.QuarkusRestWebTarget;
+import io.quarkus.rest.server.runtime.client.QuarkusRestClient;
+import io.quarkus.rest.server.runtime.client.QuarkusRestWebTarget;
 import io.quarkus.rest.test.simple.PortProviderUtil;
 import io.quarkus.test.QuarkusUnitTest;
 

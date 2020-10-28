@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response;
 
 import org.jboss.logging.Logger;
 
-import io.quarkus.rest.runtime.spi.QuarkusRestContext;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContext;
 
 @Path("/")
 public class AsyncRequestFilterResource {

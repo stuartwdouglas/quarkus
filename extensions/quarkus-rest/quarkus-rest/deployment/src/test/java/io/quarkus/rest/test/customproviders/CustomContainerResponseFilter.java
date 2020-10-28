@@ -7,7 +7,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 
 import io.quarkus.rest.ContainerResponseFilter;
-import io.quarkus.rest.runtime.spi.SimplifiedResourceInfo;
+import io.quarkus.rest.server.runtime.spi.SimplifiedResourceInfo;
 
 public class CustomContainerResponseFilter {
 

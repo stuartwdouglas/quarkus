@@ -10,10 +10,10 @@ import javax.ws.rs.container.ContainerResponseContext;
 
 import org.jboss.logging.Logger;
 
-import io.quarkus.rest.runtime.spi.QuarkusRestContainerRequestContext;
-import io.quarkus.rest.runtime.spi.QuarkusRestContainerResponseContext;
-import io.quarkus.rest.runtime.spi.QuarkusRestContainerResponseFilter;
-import io.quarkus.rest.runtime.spi.QuarkusRestContext;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerRequestContext;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerResponseContext;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerResponseFilter;
+import io.quarkus.rest.server.runtime.spi.QuarkusRestContext;
 
 public abstract class AsyncResponseFilter implements QuarkusRestContainerResponseFilter {
 

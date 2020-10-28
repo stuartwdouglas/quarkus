@@ -10,7 +10,7 @@ import javax.enterprise.util.TypeLiteral;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.rest.runtime.TypeSignatureParser;
+import io.quarkus.rest.server.runtime.TypeSignatureParser;
 
 public class TypeSignatureParserTest {
 

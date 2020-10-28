@@ -6,6 +6,9 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.rest.server.runtime.mapping.RequestMapper;
+import io.quarkus.rest.server.runtime.mapping.URITemplate;
+
 public class RequestMapperTestCase {
 
     @Test
