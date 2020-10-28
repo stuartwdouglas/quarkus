@@ -13,8 +13,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import io.quarkus.arc.ManagedContext;
 import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
-import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.common.runtime.core.Serialisers;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestUriBuilder;
 import io.vertx.core.http.HttpClient;
 

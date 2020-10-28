@@ -17,7 +17,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 
-import io.quarkus.rest.common.runtime.core.UnmanagedBeanFactory;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.common.runtime.model.ResourceReader;
 import io.quarkus.rest.common.runtime.model.ResourceWriter;

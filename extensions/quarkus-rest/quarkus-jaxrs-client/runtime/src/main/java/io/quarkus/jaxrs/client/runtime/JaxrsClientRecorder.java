@@ -9,6 +9,8 @@ import java.util.function.Supplier;
 
 import javax.ws.rs.client.WebTarget;
 
+import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
+import io.quarkus.rest.common.runtime.core.Serialisers;
 import io.quarkus.runtime.ExecutorRecorder;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
@@ -23,6 +25,8 @@ public class JaxrsClientRecorder {
             return ExecutorRecorder.getCurrent();
         }
     };
+    private static volatile Serialisers serialisers;
+    private static volatile GenericTypeMapping genericTypeMapping;
 
     static {
         Map<String, Class<?>> prims = new HashMap<>();
@@ -41,6 +45,14 @@ public class JaxrsClientRecorder {
 
     public static ClientProxies getClientProxies() {
         return clientProxies;
+    }
+
+    public static Serialisers getSerialisers() {
+        return serialisers;
+    }
+
+    public static GenericTypeMapping getGenericTypeMapping() {
+        return genericTypeMapping;
     }
 
     public ClientProxies createClientImpls(Map<String, RuntimeValue<Function<WebTarget, ?>>> clientImplementations) {

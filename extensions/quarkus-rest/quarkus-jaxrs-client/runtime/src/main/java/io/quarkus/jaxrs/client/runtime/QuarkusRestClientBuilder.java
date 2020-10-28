@@ -1,7 +1,6 @@
 package io.quarkus.jaxrs.client.runtime;
 
 import java.security.KeyStore;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,11 +14,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Configuration;
 
 import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
-import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
-import io.quarkus.rest.server.runtime.QuarkusRestRecorder;
-import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
 import io.quarkus.rest.common.runtime.core.Serialisers;
-import io.quarkus.rest.server.runtime.core.ServerSerialisers;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.vertx.core.runtime.VertxCoreRecorder;
 
 public class QuarkusRestClientBuilder extends ClientBuilder {
@@ -84,18 +80,19 @@ public class QuarkusRestClientBuilder extends ClientBuilder {
 
     @Override
     public Client build() {
-        QuarkusRestDeployment currentDeployment = QuarkusRestRecorder.getCurrentDeployment();
-        if (currentDeployment == null) {
-            Serialisers serialisers = new ServerSerialisers();
+        Serialisers serialisers = JaxrsClientRecorder.getSerialisers();
+        GenericTypeMapping genericTypeMapping = JaxrsClientRecorder.getGenericTypeMapping();
+        if (serialisers == null) {
+            serialisers = new ClientSerialisers();
             serialisers.registerBuiltins(RuntimeType.CLIENT);
-            return new QuarkusRestClient(configuration, serialisers,
-                    new ClientProxies(Collections.emptyMap()), new GenericTypeMapping(), hostnameVerifier, sslContext,
-                    VertxCoreRecorder.getVertx());
-        } else {
-            return new QuarkusRestClient(configuration, currentDeployment.getSerialisers(),
-                    JaxrsClientRecorder.getClientProxies(), currentDeployment.getGenericTypeMapping(), hostnameVerifier,
-                    sslContext, VertxCoreRecorder.getVertx());
         }
+        if (genericTypeMapping == null) {
+            genericTypeMapping = new GenericTypeMapping();
+        }
+        return new QuarkusRestClient(configuration, serialisers,
+                JaxrsClientRecorder.getClientProxies(), genericTypeMapping, hostnameVerifier,
+                sslContext, VertxCoreRecorder.getVertx());
+
     }
 
     @Override
