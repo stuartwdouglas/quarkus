@@ -41,7 +41,7 @@ public class JaxrsClientRecorder {
         primitiveTypes = Collections.unmodifiableMap(prims);
     }
 
-    private static volatile ClientProxies clientProxies;
+    private static volatile ClientProxies clientProxies = new ClientProxies(Collections.emptyMap());
 
     public static ClientProxies getClientProxies() {
         return clientProxies;
@@ -55,7 +55,11 @@ public class JaxrsClientRecorder {
         return genericTypeMapping;
     }
 
-    public ClientProxies createClientImpls(Map<String, RuntimeValue<Function<WebTarget, ?>>> clientImplementations) {
+    public void setupClientProxies(Map<String, RuntimeValue<Function<WebTarget, ?>>> clientImplementations) {
+        clientProxies = createClientImpls(clientImplementations);
+    }
+
+    private ClientProxies createClientImpls(Map<String, RuntimeValue<Function<WebTarget, ?>>> clientImplementations) {
         Map<Class<?>, Function<WebTarget, ?>> map = new HashMap<>();
         for (Map.Entry<String, RuntimeValue<Function<WebTarget, ?>>> entry : clientImplementations.entrySet()) {
             map.put(loadClass(entry.getKey()), entry.getValue().getValue());

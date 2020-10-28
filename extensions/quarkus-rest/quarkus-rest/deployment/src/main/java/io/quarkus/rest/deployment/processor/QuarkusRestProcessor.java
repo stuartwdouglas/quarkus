@@ -126,6 +126,7 @@ import io.quarkus.rest.server.runtime.providers.exceptionmappers.AuthenticationR
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.ForbiddenExceptionMapper;
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.UnauthorizedExceptionMapper;
 import io.quarkus.rest.spi.BeanFactory;
+import io.quarkus.rest.spi.ClientProxiesBuildItem;
 import io.quarkus.rest.spi.ContainerRequestFilterBuildItem;
 import io.quarkus.rest.spi.ContainerResponseFilterBuildItem;
 import io.quarkus.rest.spi.CustomContainerRequestFilterBuildItem;
@@ -423,7 +424,8 @@ public class QuarkusRestProcessor {
             List<MessageBodyReaderBuildItem> additionalMessageBodyReaders,
             List<MessageBodyWriterBuildItem> additionalMessageBodyWriters,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
-            BuildProducer<RouteBuildItem> routes) throws NoSuchMethodException {
+            BuildProducer<RouteBuildItem> routes,
+            BuildProducer<ClientProxiesBuildItem> clientProxiesBuildItemBuildProducer) throws NoSuchMethodException {
 
         if (!resourceScanningResultBuildItem.isPresent()) {
             // no detected @Path, bail out
@@ -585,6 +587,7 @@ public class QuarkusRestProcessor {
             Map<String, RuntimeValue<Function<WebTarget, ?>>> clientImplementations = generateClientInvokers(recorderContext,
                     clientDefinitions, generatedClassBuildItemBuildProducer);
 
+            clientProxiesBuildItemBuildProducer.produce(new ClientProxiesBuildItem(clientImplementations));
             //now index possible sub resources. These are all classes that have method annotations
             //that are not annotated @Path
             Deque<ClassInfo> toScan = new ArrayDeque<>();
