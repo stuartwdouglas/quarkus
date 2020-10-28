@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.spi;
+package io.quarkus.jaxrs.client.spi;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.ext.MessageBodyWriter;

@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.providers.serialisers;
+package io.quarkus.jaxrs.client.runtime.providers.serialisers;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.ProcessingException;

@@ -41,7 +41,6 @@ import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
 import io.quarkus.rest.server.runtime.core.serialization.FixedEntityWriterArray;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestWriterInterceptorContext;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
-import io.quarkus.rest.server.runtime.providers.serialisers.ClientDefaultTextPlainBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.ServerBooleanMessageBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.ServerByteArrayMessageBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.ServerCharArrayMessageBodyHandler;
@@ -76,10 +75,7 @@ public class ServerSerialisers extends Serialisers {
             new BuiltinReader(File.class, ServerFileBodyHandler.class, MediaType.WILDCARD),
 
             new BuiltinReader(byte[].class, ServerByteArrayMessageBodyHandler.class, MediaType.WILDCARD),
-            new BuiltinReader(MultivaluedMap.class, ServerFormUrlEncodedProvider.class, MediaType.APPLICATION_FORM_URLENCODED,
-                    RuntimeType.CLIENT),
             new BuiltinReader(Object.class, ServerDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.SERVER),
-            new BuiltinReader(Object.class, ClientDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.CLIENT),
     };
     public static BuiltinWriter[] BUILTIN_WRITERS = new BuiltinWriter[] {
             new BuiltinWriter(String.class, ServerStringMessageBodyHandler.class,
