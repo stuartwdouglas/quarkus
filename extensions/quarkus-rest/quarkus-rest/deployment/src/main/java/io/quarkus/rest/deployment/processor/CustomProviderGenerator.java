@@ -1,7 +1,7 @@
 package io.quarkus.rest.deployment.processor;
 
 import static io.quarkus.gizmo.MethodDescriptor.*;
-import static io.quarkus.rest.deployment.framework.QuarkusRestDotNames.*;
+import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.*;
 
 import java.lang.reflect.Modifier;
 
@@ -22,6 +22,7 @@ import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.rest.common.runtime.core.QuarkusRestContext;
+import io.quarkus.rest.deployment.framework.QuarkusRestServerDotNames;
 import io.quarkus.rest.server.runtime.core.LazyMethod;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestHttpHeaders;
@@ -108,7 +109,7 @@ final class CustomProviderGenerator {
                 DotName paramDotName = param.name();
                 if (CONTAINER_REQUEST_CONTEXT.equals(paramDotName)) {
                     targetMethodParamHandles[i] = filterMethod.getMethodParam(0);
-                } else if (QUARKUS_REST_CONTAINER_REQUEST_CONTEXT.equals(paramDotName)) {
+                } else if (QuarkusRestServerDotNames.QUARKUS_REST_CONTAINER_REQUEST_CONTEXT.equals(paramDotName)) {
                     targetMethodParamHandles[i] = filterMethod.checkCast(filterMethod.getMethodParam(0),
                             QuarkusRestContainerRequestContext.class);
                 } else if (URI_INFO.equals(paramDotName)) {
@@ -128,7 +129,7 @@ final class CustomProviderGenerator {
                     ResultHandle runtimeResourceHandle = runtimeResourceHandle(filterMethod, qrReqCtxHandle);
                     targetMethodParamHandles[i] = filterMethod.invokeVirtualMethod(
                             ofMethod(RuntimeResource.class, "getLazyMethod", LazyMethod.class), runtimeResourceHandle);
-                } else if (SIMPLIFIED_RESOURCE_INFO.equals(paramDotName)) {
+                } else if (QuarkusRestServerDotNames.SIMPLIFIED_RESOURCE_INFO.equals(paramDotName)) {
                     ResultHandle runtimeResourceHandle = runtimeResourceHandle(filterMethod, qrReqCtxHandle);
                     targetMethodParamHandles[i] = filterMethod.invokeVirtualMethod(
                             ofMethod(RuntimeResource.class, "getSimplifiedResourceInfo", SimplifiedResourceInfo.class),
@@ -217,12 +218,12 @@ final class CustomProviderGenerator {
                 DotName paramDotName = param.name();
                 if (CONTAINER_REQUEST_CONTEXT.equals(paramDotName)) {
                     targetMethodParamHandles[i] = filterMethod.getMethodParam(0);
-                } else if (QUARKUS_REST_CONTAINER_REQUEST_CONTEXT.equals(paramDotName)) {
+                } else if (QuarkusRestServerDotNames.QUARKUS_REST_CONTAINER_REQUEST_CONTEXT.equals(paramDotName)) {
                     targetMethodParamHandles[i] = filterMethod.checkCast(filterMethod.getMethodParam(0),
                             QuarkusRestContainerRequestContext.class);
                 } else if (CONTAINER_RESPONSE_CONTEXT.equals(paramDotName)) {
                     targetMethodParamHandles[i] = filterMethod.getMethodParam(1);
-                } else if (QUARKUS_REST_CONTAINER_RESPONSE_CONTEXT.equals(paramDotName)) {
+                } else if (QuarkusRestServerDotNames.QUARKUS_REST_CONTAINER_RESPONSE_CONTEXT.equals(paramDotName)) {
                     targetMethodParamHandles[i] = filterMethod.checkCast(filterMethod.getMethodParam(1),
                             QuarkusRestContainerResponseContext.class);
                 } else if (HTTP_SERVER_REQUEST.equals(paramDotName)) {
@@ -237,7 +238,7 @@ final class CustomProviderGenerator {
                     ResultHandle runtimeResourceHandle = runtimeResourceHandle(filterMethod, qrReqCtxHandle);
                     targetMethodParamHandles[i] = filterMethod.invokeVirtualMethod(
                             ofMethod(RuntimeResource.class, "getLazyMethod", LazyMethod.class), runtimeResourceHandle);
-                } else if (SIMPLIFIED_RESOURCE_INFO.equals(paramDotName)) {
+                } else if (QuarkusRestServerDotNames.SIMPLIFIED_RESOURCE_INFO.equals(paramDotName)) {
                     ResultHandle runtimeResourceHandle = runtimeResourceHandle(filterMethod, qrReqCtxHandle);
                     targetMethodParamHandles[i] = filterMethod.invokeVirtualMethod(
                             ofMethod(RuntimeResource.class, "getSimplifiedResourceInfo", SimplifiedResourceInfo.class),

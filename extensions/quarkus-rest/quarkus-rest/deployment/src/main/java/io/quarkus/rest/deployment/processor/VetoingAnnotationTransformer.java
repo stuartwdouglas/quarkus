@@ -6,7 +6,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 
 import io.quarkus.arc.processor.AnnotationsTransformer;
-import io.quarkus.rest.deployment.framework.QuarkusRestDotNames;
+import io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames;
 
 /**
  * If a JAX-RS resource uses something like @QueryParam, @HeaderParam or the like in a constructor parameter,

@@ -1,4 +1,4 @@
-package io.quarkus.rest.deployment.framework;
+package io.quarkus.rest.common.deployment.framework;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -77,9 +77,6 @@ import io.quarkus.rest.RestMatrix;
 import io.quarkus.rest.RestPath;
 import io.quarkus.rest.RestQuery;
 import io.quarkus.rest.common.runtime.core.QuarkusRestContext;
-import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerRequestContext;
-import io.quarkus.rest.server.runtime.spi.QuarkusRestContainerResponseContext;
-import io.quarkus.rest.server.runtime.spi.SimplifiedResourceInfo;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.http.HttpServerRequest;
@@ -204,11 +201,6 @@ public final class QuarkusRestDotNames {
 
     public static final DotName CONTAINER_REQUEST_CONTEXT = DotName.createSimple(ContainerRequestContext.class.getName());
     public static final DotName CONTAINER_RESPONSE_CONTEXT = DotName.createSimple(ContainerResponseContext.class.getName());
-    public static final DotName QUARKUS_REST_CONTAINER_REQUEST_CONTEXT = DotName
-            .createSimple(QuarkusRestContainerRequestContext.class.getName());
-    public static final DotName QUARKUS_REST_CONTAINER_RESPONSE_CONTEXT = DotName
-            .createSimple(QuarkusRestContainerResponseContext.class.getName());
-    public static final DotName SIMPLIFIED_RESOURCE_INFO = DotName.createSimple(SimplifiedResourceInfo.class.getName());
 
     public static final Set<DotName> RESOURCE_CTOR_PARAMS_THAT_NEED_HANDLING = new HashSet<>(
             Arrays.asList(QUERY_PARAM, HEADER_PARAM, PATH_PARAM, MATRIX_PARAM, COOKIE_PARAM));

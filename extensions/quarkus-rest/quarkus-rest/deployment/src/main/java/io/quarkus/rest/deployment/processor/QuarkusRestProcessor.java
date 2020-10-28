@@ -1,12 +1,12 @@
 package io.quarkus.rest.deployment.processor;
 
-import static io.quarkus.rest.deployment.framework.QuarkusRestDotNames.DELETE;
-import static io.quarkus.rest.deployment.framework.QuarkusRestDotNames.GET;
-import static io.quarkus.rest.deployment.framework.QuarkusRestDotNames.HEAD;
-import static io.quarkus.rest.deployment.framework.QuarkusRestDotNames.OPTIONS;
-import static io.quarkus.rest.deployment.framework.QuarkusRestDotNames.PATCH;
-import static io.quarkus.rest.deployment.framework.QuarkusRestDotNames.POST;
-import static io.quarkus.rest.deployment.framework.QuarkusRestDotNames.PUT;
+import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.DELETE;
+import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.GET;
+import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.HEAD;
+import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.OPTIONS;
+import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.PATCH;
+import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.POST;
+import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.PUT;
 import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.InvocationTargetException;
@@ -83,6 +83,7 @@ import io.quarkus.gizmo.FieldDescriptor;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames;
 import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
 import io.quarkus.rest.common.runtime.core.Serialisers;
 import io.quarkus.rest.common.runtime.model.InjectableBean;
@@ -103,7 +104,6 @@ import io.quarkus.rest.common.runtime.util.Encode;
 import io.quarkus.rest.deployment.framework.AdditionalReaders;
 import io.quarkus.rest.deployment.framework.AdditionalWriters;
 import io.quarkus.rest.deployment.framework.EndpointIndexer;
-import io.quarkus.rest.deployment.framework.QuarkusRestDotNames;
 import io.quarkus.rest.server.runtime.QuarkusRestConfig;
 import io.quarkus.rest.server.runtime.QuarkusRestInitialiser;
 import io.quarkus.rest.server.runtime.QuarkusRestRecorder;
