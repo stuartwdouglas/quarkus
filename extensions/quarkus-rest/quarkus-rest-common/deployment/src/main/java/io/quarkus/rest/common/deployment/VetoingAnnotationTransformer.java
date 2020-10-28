@@ -1,4 +1,4 @@
-package io.quarkus.rest.deployment.processor;
+package io.quarkus.rest.common.deployment;
 
 import java.util.Set;
 

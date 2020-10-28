@@ -1,4 +1,4 @@
-package io.quarkus.rest.deployment.processor;
+package io.quarkus.rest.common.deployment;
 
 import java.util.Map;
 import java.util.Set;
@@ -9,7 +9,7 @@ import org.jboss.jandex.MethodInfo;
 
 import io.quarkus.builder.item.SimpleBuildItem;
 
-final class ResourceScanningResultBuildItem extends SimpleBuildItem {
+public final class ResourceScanningResultBuildItem extends SimpleBuildItem {
 
     final Map<DotName, ClassInfo> scannedResources;
     final Map<DotName, String> scannedResourcePaths;
