@@ -19,16 +19,17 @@ import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
 import io.quarkus.arc.runtime.BeanContainer;
-import io.quarkus.rest.server.runtime.core.ArcBeanFactory;
+import io.quarkus.rest.common.runtime.core.ArcBeanFactory;
+import io.quarkus.rest.common.runtime.core.UnmanagedBeanFactory;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
+import io.quarkus.rest.common.runtime.model.ResourceExceptionMapper;
+import io.quarkus.rest.common.runtime.model.ResourceInterceptors;
+import io.quarkus.rest.common.runtime.model.ResourceReaderInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceRequestInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceResponseInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceWriterInterceptor;
+import io.quarkus.rest.common.runtime.model.SettableResourceInterceptor;
 import io.quarkus.rest.server.runtime.core.ExceptionMapping;
-import io.quarkus.rest.server.runtime.core.UnmanagedBeanFactory;
-import io.quarkus.rest.server.runtime.model.ResourceExceptionMapper;
-import io.quarkus.rest.server.runtime.model.ResourceInterceptors;
-import io.quarkus.rest.server.runtime.model.ResourceReaderInterceptor;
-import io.quarkus.rest.server.runtime.model.ResourceRequestInterceptor;
-import io.quarkus.rest.server.runtime.model.ResourceResponseInterceptor;
-import io.quarkus.rest.server.runtime.model.ResourceWriterInterceptor;
-import io.quarkus.rest.server.runtime.model.SettableResourceInterceptor;
 import io.quarkus.rest.spi.BeanFactory;
 
 public class QuarkusRestFeatureContext implements FeatureContext {

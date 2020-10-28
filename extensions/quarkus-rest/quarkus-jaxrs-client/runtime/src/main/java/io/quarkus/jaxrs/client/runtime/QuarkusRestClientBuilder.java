@@ -14,11 +14,11 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Configuration;
 
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.QuarkusRestRecorder;
 import io.quarkus.rest.server.runtime.core.GenericTypeMapping;
 import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
 import io.quarkus.rest.server.runtime.core.Serialisers;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.vertx.core.runtime.VertxCoreRecorder;
 
 public class QuarkusRestClientBuilder extends ClientBuilder {

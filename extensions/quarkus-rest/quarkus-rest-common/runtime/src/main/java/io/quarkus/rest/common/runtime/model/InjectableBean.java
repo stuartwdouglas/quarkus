@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.model;
+package io.quarkus.rest.common.runtime.model;
 
 /**
  * Class that represents information about injectable beans as we scan them, such as

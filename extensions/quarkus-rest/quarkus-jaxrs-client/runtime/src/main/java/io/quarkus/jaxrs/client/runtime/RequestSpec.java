@@ -1,6 +1,6 @@
 package io.quarkus.jaxrs.client.runtime;
 
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestConfiguration;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 
 public class RequestSpec {
     final QuarkusRestConfiguration configuration;

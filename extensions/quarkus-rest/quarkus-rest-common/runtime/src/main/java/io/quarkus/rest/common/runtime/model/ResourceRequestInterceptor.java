@@ -1,17 +1,17 @@
-package io.quarkus.rest.server.runtime.model;
+package io.quarkus.rest.common.runtime.model;
 
 import java.util.Collections;
 import java.util.Set;
 
 import javax.ws.rs.Priorities;
-import javax.ws.rs.ext.ReaderInterceptor;
+import javax.ws.rs.container.ContainerRequestFilter;
 
 import io.quarkus.rest.spi.BeanFactory;
 
-public class ResourceReaderInterceptor
-        implements Comparable<ResourceReaderInterceptor>, SettableResourceInterceptor<ReaderInterceptor>, HasPriority {
+public class ResourceRequestInterceptor
+        implements Comparable<ResourceRequestInterceptor>, SettableResourceInterceptor<ContainerRequestFilter>, HasPriority {
 
-    private BeanFactory<ReaderInterceptor> factory;
+    private BeanFactory<ContainerRequestFilter> factory;
     private boolean preMatching;
     private Integer priority = Priorities.USER; // default priority as defined by spec
 
@@ -20,11 +20,11 @@ public class ResourceReaderInterceptor
      */
     private Set<String> nameBindingNames = Collections.emptySet();
 
-    public void setFactory(BeanFactory<ReaderInterceptor> factory) {
+    public void setFactory(BeanFactory<ContainerRequestFilter> factory) {
         this.factory = factory;
     }
 
-    public BeanFactory<ReaderInterceptor> getFactory() {
+    public BeanFactory<ContainerRequestFilter> getFactory() {
         return factory;
     }
 
@@ -52,9 +52,9 @@ public class ResourceReaderInterceptor
         this.nameBindingNames = nameBindingNames;
     }
 
-    // spec says that reader interceptors are sorted in ascending order
+    // spec says that request interceptors are sorted in ascending order
     @Override
-    public int compareTo(ResourceReaderInterceptor o) {
+    public int compareTo(ResourceRequestInterceptor o) {
         return this.priority.compareTo(o.priority);
     }
 }

@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.model;
+package io.quarkus.rest.common.runtime.model;
 
 public class BeanParamInfo implements InjectableBean {
     private boolean isFormParamRequired;

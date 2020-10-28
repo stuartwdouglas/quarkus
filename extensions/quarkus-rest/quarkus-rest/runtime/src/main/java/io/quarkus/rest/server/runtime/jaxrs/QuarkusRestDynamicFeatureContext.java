@@ -4,9 +4,10 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseFilter;
 
 import io.quarkus.arc.runtime.BeanContainer;
-import io.quarkus.rest.server.runtime.model.ResourceInterceptors;
-import io.quarkus.rest.server.runtime.model.ResourceRequestInterceptor;
-import io.quarkus.rest.server.runtime.model.ResourceResponseInterceptor;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
+import io.quarkus.rest.common.runtime.model.ResourceInterceptors;
+import io.quarkus.rest.common.runtime.model.ResourceRequestInterceptor;
+import io.quarkus.rest.common.runtime.model.ResourceResponseInterceptor;
 import io.quarkus.rest.spi.BeanFactory;
 
 // TODO: It might not make sense to have this extend from QuarkusRestFeatureContext

@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.jaxrs;
+package io.quarkus.rest.common.runtime.jaxrs;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -23,22 +23,24 @@ import javax.ws.rs.client.RxInvokerProvider;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
+import io.quarkus.rest.common.runtime.core.UnmanagedBeanFactory;
+import io.quarkus.rest.common.runtime.model.ResourceReader;
+import io.quarkus.rest.common.runtime.model.ResourceWriter;
 import io.quarkus.rest.common.runtime.util.MultivaluedTreeMap;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.common.runtime.util.Types;
-import io.quarkus.rest.server.runtime.core.Serialisers;
-import io.quarkus.rest.server.runtime.core.UnmanagedBeanFactory;
-import io.quarkus.rest.server.runtime.model.ResourceReader;
-import io.quarkus.rest.server.runtime.model.ResourceWriter;
 
 public class QuarkusRestConfiguration implements Configuration {
 
+    public static final List<MediaType> WILDCARD_LIST = Collections.singletonList(MediaType.WILDCARD_TYPE);
+    public static final List<String> WILDCARD_STRING_LIST = Collections.singletonList(MediaType.WILDCARD);
     private final RuntimeType runtimeType;
     private final Map<String, Object> properties;
     private final Map<Class<?>, Object> allInstances;
@@ -258,7 +260,7 @@ public class QuarkusRestConfiguration implements Configuration {
                 Consumes consumes = componentClass.getAnnotation(Consumes.class);
                 resourceReader
                         .setMediaTypeStrings(
-                                consumes != null ? Arrays.asList(consumes.value()) : Serialisers.WILDCARD_STRING_LIST);
+                                consumes != null ? Arrays.asList(consumes.value()) : WILDCARD_STRING_LIST);
                 Type[] args = Types.findParameterizedTypes(componentClass, MessageBodyReader.class);
                 resourceReaders.add(args != null && args.length == 1 ? Types.getRawType(args[0]) : Object.class,
                         resourceReader);
@@ -274,7 +276,7 @@ public class QuarkusRestConfiguration implements Configuration {
                 Produces produces = componentClass.getAnnotation(Produces.class);
                 resourceWriter
                         .setMediaTypeStrings(
-                                produces != null ? Arrays.asList(produces.value()) : Serialisers.WILDCARD_STRING_LIST);
+                                produces != null ? Arrays.asList(produces.value()) : WILDCARD_STRING_LIST);
                 Type[] args = Types.findParameterizedTypes(componentClass, MessageBodyWriter.class);
                 resourceWriters.add(args != null && args.length == 1 ? Types.getRawType(args[0]) : Object.class,
                         resourceWriter);
@@ -358,7 +360,7 @@ public class QuarkusRestConfiguration implements Configuration {
                 Consumes consumes = componentClass.getAnnotation(Consumes.class);
                 resourceReader
                         .setMediaTypeStrings(
-                                consumes != null ? Arrays.asList(consumes.value()) : Serialisers.WILDCARD_STRING_LIST);
+                                consumes != null ? Arrays.asList(consumes.value()) : WILDCARD_STRING_LIST);
                 Type[] args = Types.findParameterizedTypes(componentClass, MessageBodyReader.class);
                 resourceReaders.add(args != null && args.length == 1 ? Types.getRawType(args[0]) : Object.class,
                         resourceReader);
@@ -374,7 +376,7 @@ public class QuarkusRestConfiguration implements Configuration {
                 Produces produces = componentClass.getAnnotation(Produces.class);
                 resourceWriter
                         .setMediaTypeStrings(
-                                produces != null ? Arrays.asList(produces.value()) : Serialisers.WILDCARD_STRING_LIST);
+                                produces != null ? Arrays.asList(produces.value()) : WILDCARD_STRING_LIST);
                 Type[] args = Types.findParameterizedTypes(componentClass, MessageBodyWriter.class);
                 resourceWriters.add(args != null && args.length == 1 ? Types.getRawType(args[0]) : Object.class,
                         resourceWriter);

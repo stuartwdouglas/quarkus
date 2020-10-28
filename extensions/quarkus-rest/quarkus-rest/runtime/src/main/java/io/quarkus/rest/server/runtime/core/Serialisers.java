@@ -32,17 +32,18 @@ import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
 import io.netty.util.AsciiString;
+import io.quarkus.rest.common.runtime.core.UnmanagedBeanFactory;
 import io.quarkus.rest.common.runtime.headers.HeaderUtil;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
+import io.quarkus.rest.common.runtime.model.ResourceReader;
+import io.quarkus.rest.common.runtime.model.ResourceWriter;
 import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedMap;
 import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
 import io.quarkus.rest.server.runtime.core.serialization.FixedEntityWriterArray;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestWriterInterceptorContext;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
-import io.quarkus.rest.server.runtime.model.ResourceReader;
-import io.quarkus.rest.server.runtime.model.ResourceWriter;
 import io.quarkus.rest.server.runtime.providers.serialisers.BooleanMessageBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.ByteArrayMessageBodyHandler;
 import io.quarkus.rest.server.runtime.providers.serialisers.CharArrayMessageBodyHandler;
@@ -168,9 +169,6 @@ public class Serialisers {
     // FIXME: spec says we should use generic type, but not sure how to pass that type from Jandex to reflection 
     private final QuarkusMultivaluedMap<Class<?>, ResourceWriter> writers = new QuarkusMultivaluedHashMap<>();
     private final QuarkusMultivaluedMap<Class<?>, ResourceReader> readers = new QuarkusMultivaluedHashMap<>();
-
-    public static final List<MediaType> WILDCARD_LIST = Collections.singletonList(MediaType.WILDCARD_TYPE);
-    public static final List<String> WILDCARD_STRING_LIST = Collections.singletonList(MediaType.WILDCARD);
 
     public static final MessageBodyWriter<?>[] NO_WRITER = new MessageBodyWriter[0];
     public static final MessageBodyReader<?>[] NO_READER = new MessageBodyReader[0];

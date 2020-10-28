@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.model;
+package io.quarkus.rest.common.runtime.model;
 
 import javax.ws.rs.Priorities;
 import javax.ws.rs.ext.ParamConverterProvider;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import io.quarkus.rest.server.runtime.model.ResourceParamConverterProvider;
+import io.quarkus.rest.common.runtime.model.ResourceParamConverterProvider;
 
 public class ParamConverterProviders {
 

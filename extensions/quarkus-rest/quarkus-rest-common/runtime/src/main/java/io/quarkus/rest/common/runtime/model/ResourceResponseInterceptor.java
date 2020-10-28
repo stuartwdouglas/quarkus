@@ -1,18 +1,17 @@
-package io.quarkus.rest.server.runtime.model;
+package io.quarkus.rest.common.runtime.model;
 
 import java.util.Collections;
 import java.util.Set;
 
 import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseFilter;
 
 import io.quarkus.rest.spi.BeanFactory;
 
-public class ResourceRequestInterceptor
-        implements Comparable<ResourceRequestInterceptor>, SettableResourceInterceptor<ContainerRequestFilter>, HasPriority {
+public class ResourceResponseInterceptor
+        implements Comparable<ResourceResponseInterceptor>, SettableResourceInterceptor<ContainerResponseFilter>, HasPriority {
 
-    private BeanFactory<ContainerRequestFilter> factory;
-    private boolean preMatching;
+    private BeanFactory<ContainerResponseFilter> factory;
     private Integer priority = Priorities.USER; // default priority as defined by spec
 
     /**
@@ -20,20 +19,12 @@ public class ResourceRequestInterceptor
      */
     private Set<String> nameBindingNames = Collections.emptySet();
 
-    public void setFactory(BeanFactory<ContainerRequestFilter> factory) {
+    public void setFactory(BeanFactory<ContainerResponseFilter> factory) {
         this.factory = factory;
     }
 
-    public BeanFactory<ContainerRequestFilter> getFactory() {
+    public BeanFactory<ContainerResponseFilter> getFactory() {
         return factory;
-    }
-
-    public void setPreMatching(boolean preMatching) {
-        this.preMatching = preMatching;
-    }
-
-    public boolean isPreMatching() {
-        return preMatching;
     }
 
     public Integer getPriority() {
@@ -52,9 +43,9 @@ public class ResourceRequestInterceptor
         this.nameBindingNames = nameBindingNames;
     }
 
-    // spec says that request interceptors are sorted in ascending order
+    // spec says that response interceptors are sorted in descending order
     @Override
-    public int compareTo(ResourceRequestInterceptor o) {
-        return this.priority.compareTo(o.priority);
+    public int compareTo(ResourceResponseInterceptor o) {
+        return o.priority.compareTo(this.priority);
     }
 }

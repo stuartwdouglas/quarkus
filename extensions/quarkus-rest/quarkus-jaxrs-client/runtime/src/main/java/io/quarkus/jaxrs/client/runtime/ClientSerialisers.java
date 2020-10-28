@@ -15,8 +15,8 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.core.Serialisers;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.spi.QuarkusRestClientMessageBodyWriter;
 import io.vertx.core.buffer.Buffer;
 

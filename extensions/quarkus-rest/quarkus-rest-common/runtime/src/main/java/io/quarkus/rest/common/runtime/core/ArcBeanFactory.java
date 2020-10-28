@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.core;
+package io.quarkus.rest.common.runtime.core;
 
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.rest.spi.BeanFactory;

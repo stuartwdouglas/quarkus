@@ -1,6 +1,5 @@
-package io.quarkus.rest.server.runtime.model;
+package io.quarkus.rest.common.runtime.model;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -8,28 +7,26 @@ import java.util.List;
 
 import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.MessageBodyReader;
 
 import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
-import io.quarkus.rest.common.runtime.util.ServerMediaType;
 import io.quarkus.rest.spi.BeanFactory;
 import io.quarkus.runtime.annotations.IgnoreProperty;
 
-public class ResourceWriter {
+public class ResourceReader {
 
-    private BeanFactory<MessageBodyWriter<?>> factory;
+    private BeanFactory<MessageBodyReader<?>> factory;
     private List<String> mediaTypeStrings = new ArrayList<>();
     private RuntimeType constraint;
     private boolean builtin = true;
     private volatile List<MediaType> mediaTypes;
-    private volatile ServerMediaType serverMediaType;
-    private volatile MessageBodyWriter<?> instance;
+    private volatile MessageBodyReader<?> instance;
 
-    public void setFactory(BeanFactory<MessageBodyWriter<?>> factory) {
+    public void setFactory(BeanFactory<MessageBodyReader<?>> factory) {
         this.factory = factory;
     }
 
-    public BeanFactory<MessageBodyWriter<?>> getFactory() {
+    public BeanFactory<MessageBodyReader<?>> getFactory() {
         return factory;
     }
 
@@ -37,7 +34,7 @@ public class ResourceWriter {
         return mediaTypeStrings;
     }
 
-    public ResourceWriter setMediaTypeStrings(List<String> mediaTypeStrings) {
+    public ResourceReader setMediaTypeStrings(List<String> mediaTypeStrings) {
         this.mediaTypeStrings = mediaTypeStrings;
         return this;
     }
@@ -46,7 +43,7 @@ public class ResourceWriter {
         return constraint;
     }
 
-    public ResourceWriter setConstraint(RuntimeType constraint) {
+    public ResourceReader setConstraint(RuntimeType constraint) {
         this.constraint = constraint;
         return this;
     }
@@ -60,7 +57,7 @@ public class ResourceWriter {
     }
 
     @IgnoreProperty
-    public MessageBodyWriter<?> getInstance() {
+    public MessageBodyReader<?> getInstance() {
         if (instance == null) {
             synchronized (this) {
                 if (instance == null) {
@@ -86,19 +83,6 @@ public class ResourceWriter {
         return mediaTypes;
     }
 
-    public List<MediaType> modifiableMediaTypes() {
-        return new ArrayList<>(mediaTypes());
-    }
-
-    public ServerMediaType serverMediaType() {
-        if (serverMediaType == null) {
-            synchronized (this) {
-                serverMediaType = new ServerMediaType(mediaTypes(), StandardCharsets.UTF_8.name());
-            }
-        }
-        return serverMediaType;
-    }
-
     public boolean matchesRuntimeType(RuntimeType runtimeType) {
         if (runtimeType == null) {
             return true;
@@ -109,23 +93,23 @@ public class ResourceWriter {
         return runtimeType == constraint;
     }
 
-    @Override
-    public String toString() {
-        return "ResourceWriter[constraint: " + constraint + ", mediaTypes: " + mediaTypes + ", factory: " + factory + "]";
-    }
-
     /**
      * The comparison for now is simple:
      * 1) Application provided writers come first
      * 2) Then the more specific the media type, the higher the priority
      * 3) Finally we compare the number of media types
+     *
+     * The spec doesn't seem to mention this sorting being explicitly needed, but there are tests
+     * in the TCK that only pass reliably if the Readers are sorted like this
+     *
+     * TODO: if this actually follows the exact same rules as ResourceWriter, we need to refactor
      */
-    public static class ResourceWriterComparator implements Comparator<ResourceWriter> {
+    public static class ResourceReaderComparator implements Comparator<ResourceReader> {
 
-        public static final ResourceWriterComparator INSTANCE = new ResourceWriterComparator();
+        public static final ResourceReaderComparator INSTANCE = new ResourceReaderComparator();
 
         @Override
-        public int compare(ResourceWriter o1, ResourceWriter o2) {
+        public int compare(ResourceReader o1, ResourceReader o2) {
             int builtInCompare = Boolean.compare(o1.isBuiltin(), o2.isBuiltin());
             if (builtInCompare != 0) {
                 return builtInCompare;
@@ -151,4 +135,5 @@ public class ResourceWriter {
             return Integer.compare(mediaTypes1.size(), mediaTypes2.size());
         }
     }
+
 }

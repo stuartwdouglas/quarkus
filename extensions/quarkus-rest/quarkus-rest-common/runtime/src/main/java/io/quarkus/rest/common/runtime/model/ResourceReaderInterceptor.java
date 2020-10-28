@@ -1,17 +1,18 @@
-package io.quarkus.rest.server.runtime.model;
+package io.quarkus.rest.common.runtime.model;
 
 import java.util.Collections;
 import java.util.Set;
 
 import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.ext.ReaderInterceptor;
 
 import io.quarkus.rest.spi.BeanFactory;
 
-public class ResourceResponseInterceptor
-        implements Comparable<ResourceResponseInterceptor>, SettableResourceInterceptor<ContainerResponseFilter>, HasPriority {
+public class ResourceReaderInterceptor
+        implements Comparable<ResourceReaderInterceptor>, SettableResourceInterceptor<ReaderInterceptor>, HasPriority {
 
-    private BeanFactory<ContainerResponseFilter> factory;
+    private BeanFactory<ReaderInterceptor> factory;
+    private boolean preMatching;
     private Integer priority = Priorities.USER; // default priority as defined by spec
 
     /**
@@ -19,12 +20,20 @@ public class ResourceResponseInterceptor
      */
     private Set<String> nameBindingNames = Collections.emptySet();
 
-    public void setFactory(BeanFactory<ContainerResponseFilter> factory) {
+    public void setFactory(BeanFactory<ReaderInterceptor> factory) {
         this.factory = factory;
     }
 
-    public BeanFactory<ContainerResponseFilter> getFactory() {
+    public BeanFactory<ReaderInterceptor> getFactory() {
         return factory;
+    }
+
+    public void setPreMatching(boolean preMatching) {
+        this.preMatching = preMatching;
+    }
+
+    public boolean isPreMatching() {
+        return preMatching;
     }
 
     public Integer getPriority() {
@@ -43,9 +52,9 @@ public class ResourceResponseInterceptor
         this.nameBindingNames = nameBindingNames;
     }
 
-    // spec says that response interceptors are sorted in descending order
+    // spec says that reader interceptors are sorted in ascending order
     @Override
-    public int compareTo(ResourceResponseInterceptor o) {
-        return o.priority.compareTo(this.priority);
+    public int compareTo(ResourceReaderInterceptor o) {
+        return this.priority.compareTo(o.priority);
     }
 }
