@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.headers;
+package io.quarkus.rest.server.runtime.handlers;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -9,7 +9,6 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.quarkus.rest.server.runtime.core.EncodedMediaType;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
 import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
-import io.quarkus.rest.server.runtime.handlers.ServerRestHandler;
 
 /**
  * Handler that negotiates the content type for endpoints that

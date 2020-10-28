@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.headers;
+package io.quarkus.rest.common.runtime.headers;
 
 import java.net.URI;
 import java.util.ArrayList;

@@ -32,12 +32,12 @@ import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
 import io.netty.util.AsciiString;
+import io.quarkus.rest.common.runtime.headers.HeaderUtil;
 import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedMap;
 import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
 import io.quarkus.rest.server.runtime.core.serialization.FixedEntityWriterArray;
-import io.quarkus.rest.server.runtime.headers.HeaderUtil;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestWriterInterceptorContext;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;

@@ -15,15 +15,16 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.RuntimeDelegate;
 
-import io.quarkus.rest.server.runtime.headers.CacheControlDelegate;
-import io.quarkus.rest.server.runtime.headers.CookieHeaderDelegate;
-import io.quarkus.rest.server.runtime.headers.DateDelegate;
-import io.quarkus.rest.server.runtime.headers.EntityTagDelegate;
-import io.quarkus.rest.server.runtime.headers.LinkDelegate;
-import io.quarkus.rest.server.runtime.headers.LocaleDelegate;
-import io.quarkus.rest.server.runtime.headers.MediaTypeHeaderDelegate;
-import io.quarkus.rest.server.runtime.headers.NewCookieHeaderDelegate;
-import io.quarkus.rest.server.runtime.headers.ObjectToStringDelegate;
+import io.quarkus.rest.common.runtime.headers.CacheControlDelegate;
+import io.quarkus.rest.common.runtime.headers.CookieHeaderDelegate;
+import io.quarkus.rest.common.runtime.headers.DateDelegate;
+import io.quarkus.rest.common.runtime.headers.EntityTagDelegate;
+import io.quarkus.rest.common.runtime.headers.LinkDelegate;
+import io.quarkus.rest.common.runtime.headers.LocaleDelegate;
+import io.quarkus.rest.common.runtime.headers.MediaTypeHeaderDelegate;
+import io.quarkus.rest.common.runtime.headers.NewCookieHeaderDelegate;
+import io.quarkus.rest.common.runtime.headers.ObjectToStringDelegate;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestLinkBuilder;
 
 public class QuarkusRestRuntimeDelegate extends RuntimeDelegate {
 

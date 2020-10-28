@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.headers;
+package io.quarkus.rest.common.runtime.headers;
 
 import java.util.HashMap;
 import java.util.Map;

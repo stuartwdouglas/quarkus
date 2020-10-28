@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.headers;
+package io.quarkus.rest.common.runtime.headers;
 
 import java.util.List;
 import java.util.Map;
@@ -7,8 +7,8 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.RuntimeDelegate;
 
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestLinkBuilder;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestLinkBuilder;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

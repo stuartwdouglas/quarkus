@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.jaxrs;
+package io.quarkus.rest.common.runtime.jaxrs;
 
 import java.net.URI;
 import java.util.Arrays;

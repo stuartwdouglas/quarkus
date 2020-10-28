@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.headers;
+package io.quarkus.rest.common.runtime.headers;
 
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.ext.RuntimeDelegate;
