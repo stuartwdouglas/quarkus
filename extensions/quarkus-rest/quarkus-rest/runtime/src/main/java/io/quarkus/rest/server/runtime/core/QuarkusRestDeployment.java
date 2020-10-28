@@ -13,7 +13,6 @@ import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 
 import io.quarkus.rest.common.runtime.util.Types;
-import io.quarkus.rest.server.runtime.client.ClientProxies;
 import io.quarkus.rest.server.runtime.core.parameters.converters.ParameterConverter;
 import io.quarkus.rest.server.runtime.core.parameters.converters.RuntimeParameterConverter;
 import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
@@ -28,7 +27,6 @@ public class QuarkusRestDeployment {
     private final Serialisers serialisers;
     private final ServerRestHandler[] abortHandlerChain;
     private final EntityWriter dynamicEntityWriter;
-    private final ClientProxies clientProxies;
     private final String prefix;
     private final GenericTypeMapping genericTypeMapping;
     private final ParamConverterProviders paramConverterProviders;
@@ -37,7 +35,7 @@ public class QuarkusRestDeployment {
 
     public QuarkusRestDeployment(ExceptionMapping exceptionMapping, ContextResolvers contextResolvers, Serialisers serialisers,
             ServerRestHandler[] abortHandlerChain,
-            EntityWriter dynamicEntityWriter, ClientProxies clientProxies, String prefix,
+            EntityWriter dynamicEntityWriter, String prefix,
             GenericTypeMapping genericTypeMapping, ParamConverterProviders paramConverterProviders,
             QuarkusRestConfiguration configuration, Supplier<Application> applicationSupplier) {
         this.exceptionMapping = exceptionMapping;
@@ -45,7 +43,6 @@ public class QuarkusRestDeployment {
         this.serialisers = serialisers;
         this.abortHandlerChain = abortHandlerChain;
         this.dynamicEntityWriter = dynamicEntityWriter;
-        this.clientProxies = clientProxies;
         this.prefix = prefix;
         this.genericTypeMapping = genericTypeMapping;
         this.paramConverterProviders = paramConverterProviders;
@@ -79,10 +76,6 @@ public class QuarkusRestDeployment {
 
     public EntityWriter getDynamicEntityWriter() {
         return dynamicEntityWriter;
-    }
-
-    public ClientProxies getClientProxies() {
-        return clientProxies;
     }
 
     /**

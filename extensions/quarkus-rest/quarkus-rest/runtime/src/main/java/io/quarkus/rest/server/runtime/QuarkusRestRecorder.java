@@ -38,7 +38,6 @@ import org.jboss.logging.Logger;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.common.runtime.util.ServerMediaType;
-import io.quarkus.rest.server.runtime.client.ClientProxies;
 import io.quarkus.rest.server.runtime.core.ArcBeanFactory;
 import io.quarkus.rest.server.runtime.core.ContextResolvers;
 import io.quarkus.rest.server.runtime.core.DynamicFeatures;
@@ -408,7 +407,6 @@ public class QuarkusRestRecorder {
         }
         QuarkusRestDeployment deployment = new QuarkusRestDeployment(exceptionMapping, ctxResolvers, serialisers,
                 abortHandlingChain.toArray(EMPTY_REST_HANDLER_ARRAY), dynamicEntityWriter,
-                createClientImpls(clientImplementations),
                 prefix, genericTypeMapping, paramConverterProviders, quarkusRestConfiguration, applicationSupplier);
 
         initClassFactory.createInstance().getInstance().init(deployment);
@@ -479,14 +477,6 @@ public class QuarkusRestRecorder {
         if (prefix.endsWith("/"))
             prefix = prefix.substring(0, prefix.length() - 1);
         return prefix;
-    }
-
-    private ClientProxies createClientImpls(Map<String, RuntimeValue<Function<WebTarget, ?>>> clientImplementations) {
-        Map<Class<?>, Function<WebTarget, ?>> map = new HashMap<>();
-        for (Map.Entry<String, RuntimeValue<Function<WebTarget, ?>>> entry : clientImplementations.entrySet()) {
-            map.put(loadClass(entry.getKey()), entry.getValue().getValue());
-        }
-        return new ClientProxies(map);
     }
 
     //TODO: this needs plenty more work to support all possible types and provide all information the FeatureContext allows

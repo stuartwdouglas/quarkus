@@ -1,1 +1,1 @@
-io.quarkus.rest.server.runtime.client.QuarkusRestClientBuilder
+io.quarkus.jaxrs.client.runtime.QuarkusRestClientBuilder
