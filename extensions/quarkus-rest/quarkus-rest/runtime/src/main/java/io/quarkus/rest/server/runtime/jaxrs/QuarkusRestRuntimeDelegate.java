@@ -25,6 +25,7 @@ import io.quarkus.rest.common.runtime.headers.MediaTypeHeaderDelegate;
 import io.quarkus.rest.common.runtime.headers.NewCookieHeaderDelegate;
 import io.quarkus.rest.common.runtime.headers.ObjectToStringDelegate;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestLinkBuilder;
+import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestUriBuilder;
 
 public class QuarkusRestRuntimeDelegate extends RuntimeDelegate {
 

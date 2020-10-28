@@ -1,12 +1,15 @@
 package io.quarkus.jaxrs.client.runtime;
 
 import java.io.InputStream;
+import java.net.URI;
 
+import javax.ws.rs.core.Response;
+
+import io.quarkus.rest.common.runtime.NotImplementedYet;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestResponse;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestResponseBuilder;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestServerResponseBuilder;
 
-public class QuarkusRestClientResponseBuilder extends QuarkusRestServerResponseBuilder { //TODO: should not extend the server version
+public class QuarkusRestClientResponseBuilder extends QuarkusRestResponseBuilder { //TODO: should not extend the server version
 
     InputStream entityStream;
     RestClientRequestContext restClientRequestContext;
@@ -33,5 +36,16 @@ public class QuarkusRestClientResponseBuilder extends QuarkusRestServerResponseB
         response.restClientRequestContext = restClientRequestContext;
         response.setEntityStream(entityStream);
         return response;
+    }
+
+    @Override
+    public Response.ResponseBuilder contentLocation(URI location) {
+        //TODO: needs some thinking
+        throw new NotImplementedYet();
+    }
+
+    @Override
+    public Response.ResponseBuilder location(URI location) {
+        throw new NotImplementedYet();
     }
 }

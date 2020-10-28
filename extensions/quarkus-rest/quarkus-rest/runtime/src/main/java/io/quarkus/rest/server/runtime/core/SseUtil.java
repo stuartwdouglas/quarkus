@@ -14,6 +14,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.sse.OutboundSseEvent;
 import javax.ws.rs.sse.SseEvent;
 
+import io.quarkus.rest.common.runtime.core.Serialisers;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -126,10 +127,10 @@ public class SseUtil {
         boolean wrote = false;
         for (MessageBodyWriter<Object> writer : writers) {
             // Spec(API) says we should use class/type/mediaType but doesn't talk about annotations 
-            if (writer.isWriteable(entityClass, entityType, ServerSerialisers.NO_ANNOTATION, mediaType)) {
+            if (writer.isWriteable(entityClass, entityType, Serialisers.NO_ANNOTATION, mediaType)) {
                 // FIXME: spec doesn't really say what headers we should use here
-                writer.writeTo(entity, entityClass, entityType, ServerSerialisers.NO_ANNOTATION, mediaType,
-                        ServerSerialisers.EMPTY_MULTI_MAP, baos);
+                writer.writeTo(entity, entityClass, entityType, Serialisers.NO_ANNOTATION, mediaType,
+                        Serialisers.EMPTY_MULTI_MAP, baos);
                 wrote = true;
                 break;
             }

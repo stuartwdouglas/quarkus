@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime;
+package io.quarkus.rest.common.runtime;
 
 public class NotImplementedYet extends RuntimeException {
 

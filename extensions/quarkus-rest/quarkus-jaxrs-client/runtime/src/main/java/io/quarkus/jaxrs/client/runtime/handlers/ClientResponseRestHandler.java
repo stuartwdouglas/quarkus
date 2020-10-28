@@ -17,7 +17,7 @@ import io.quarkus.jaxrs.client.runtime.QuarkusRestClientResponseBuilder;
 import io.quarkus.jaxrs.client.runtime.QuarkusRestClientResponseContext;
 import io.quarkus.jaxrs.client.runtime.RestClientRequestContext;
 import io.quarkus.rest.api.WebClientApplicationException;
-import io.quarkus.rest.server.runtime.core.ServerSerialisers;
+import io.quarkus.rest.common.runtime.core.Serialisers;
 import io.vertx.core.buffer.Buffer;
 
 public class ClientResponseRestHandler implements ClientRestHandler {
@@ -88,8 +88,8 @@ public class ClientResponseRestHandler implements ClientRestHandler {
             entity = Entity.entity(value, mediaType);
         }
         // FIXME: pass headers?
-        Buffer buffer = restClientRequestContext.writeEntity(entity, (MultivaluedMap) ServerSerialisers.EMPTY_MULTI_MAP,
-                ServerSerialisers.NO_WRITER_INTERCEPTOR);
+        Buffer buffer = restClientRequestContext.writeEntity(entity, (MultivaluedMap) Serialisers.EMPTY_MULTI_MAP,
+                Serialisers.NO_WRITER_INTERCEPTOR);
         responseContext.setEntityStream(new ByteArrayInputStream(buffer.getBytes()));
     }
 }
