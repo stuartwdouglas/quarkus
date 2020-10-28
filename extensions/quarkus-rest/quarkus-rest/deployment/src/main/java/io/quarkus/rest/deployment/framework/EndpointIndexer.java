@@ -215,6 +215,7 @@ public class EndpointIndexer {
     private final AdditionalWriters additionalWriters;
     private final MethodCreator initConverters;
     private final boolean hasRuntimeConverters;
+    private final boolean defaultBlocking;
 
     EndpointIndexer(Builder builder) {
         this.index = builder.index;
@@ -231,6 +232,7 @@ public class EndpointIndexer {
         this.additionalWriters = builder.additionalWriters;
         this.initConverters = builder.initConverters;
         this.hasRuntimeConverters = builder.hasRuntimeConverters;
+        this.defaultBlocking = builder.defaultBlocking;
     }
 
     public ResourceClass createEndpoints(ClassInfo classInfo) {
@@ -442,7 +444,7 @@ public class EndpointIndexer {
                             generatedClassBuildItemBuildProducer, bytecodeTransformerBuildProducer,
                             recorder, classProduces, classConsumes, classNameBindings, httpMethod, info, methodPath,
                             existingConverters,
-                            config, additionalReaders, additionalWriters, httpAnnotationToMethod, injectableBeans,
+                            additionalReaders, additionalWriters, httpAnnotationToMethod, injectableBeans,
                             initConverters, hasRuntimeConverters, pathParameters);
 
                     ret.add(method);
@@ -472,7 +474,7 @@ public class EndpointIndexer {
                     ResourceMethod method = createResourceMethod(currentClassInfo, actualEndpointInfo,
                             generatedClassBuildItemBuildProducer, bytecodeTransformerBuildProducer,
                             recorder, classProduces, classConsumes, classNameBindings, null, info, methodPath,
-                            existingConverters, config, additionalReaders, additionalWriters, httpAnnotationToMethod,
+                            existingConverters, additionalReaders, additionalWriters, httpAnnotationToMethod,
                             injectableBeans, initConverters, hasRuntimeConverters, pathParameters);
                     ret.add(method);
                 }
@@ -523,7 +525,7 @@ public class EndpointIndexer {
             BuildProducer<BytecodeTransformerBuildItem> bytecodeTransformerBuildProducer,
             QuarkusRestRecorder recorder,
             String[] classProduces, String[] classConsumes, Set<String> classNameBindings, DotName httpMethod, MethodInfo info,
-            String methodPath, Map<String, String> existingConverters, QuarkusRestConfig config,
+            String methodPath, Map<String, String> existingConverters,
             AdditionalReaders additionalReaders, AdditionalWriters additionalWriters,
             Map<DotName, String> httpAnnotationToMethod,
             Map<String, InjectableBean> injectableBeans, MethodCreator initConverters, boolean hasRuntimeConverters,
@@ -598,7 +600,7 @@ public class EndpointIndexer {
             String[] produces = extractProducesConsumesValues(info.annotation(PRODUCES), classProduces);
             produces = applyDefaultProduces(produces, nonAsyncReturnType);
             Set<String> nameBindingNames = nameBindingNames(info, classNameBindings);
-            boolean blocking = config.blocking;
+            boolean blocking = defaultBlocking;
             AnnotationInstance blockingAnnotation = getInheritableAnnotation(info, BLOCKING);
             if (blockingAnnotation != null) {
                 AnnotationValue value = blockingAnnotation.value();
@@ -1292,6 +1294,7 @@ public class EndpointIndexer {
     }
 
     public static class Builder {
+        private boolean defaultBlocking;
         private IndexView index;
         private BeanContainer beanContainer;
         private BuildProducer<GeneratedClassBuildItem> generatedClassBuildItemBuildProducer;
@@ -1306,6 +1309,11 @@ public class EndpointIndexer {
         private AdditionalWriters additionalWriters;
         private MethodCreator initConverters;
         private boolean hasRuntimeConverters;
+
+        public Builder setDefaultBlocking(boolean defaultBlocking) {
+            this.defaultBlocking = defaultBlocking;
+            return this;
+        }
 
         public Builder setHasRuntimeConverters(boolean hasRuntimeConverters) {
             this.hasRuntimeConverters = hasRuntimeConverters;

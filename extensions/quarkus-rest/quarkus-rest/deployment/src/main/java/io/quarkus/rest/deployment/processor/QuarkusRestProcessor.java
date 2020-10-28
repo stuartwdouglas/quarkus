@@ -9,7 +9,6 @@ import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.PO
 import static io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames.PUT;
 import static java.util.stream.Collectors.toList;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BeanParam;
@@ -82,6 +80,7 @@ import io.quarkus.gizmo.FieldDescriptor;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.rest.common.deployment.ApplicationResultBuildItem;
 import io.quarkus.rest.common.deployment.ResourceScanningResultBuildItem;
 import io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames;
 import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
@@ -340,7 +339,8 @@ public class QuarkusRestProcessor {
             List<MessageBodyWriterBuildItem> additionalMessageBodyWriters,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
             BuildProducer<RouteBuildItem> routes,
-            BuildProducer<ClientProxiesBuildItem> clientProxiesBuildItemBuildProducer) throws NoSuchMethodException {
+            BuildProducer<ClientProxiesBuildItem> clientProxiesBuildItemBuildProducer,
+            ApplicationResultBuildItem applicationResultBuildItem) throws NoSuchMethodException {
 
         if (!resourceScanningResultBuildItem.isPresent()) {
             // no detected @Path, bail out
@@ -353,8 +353,6 @@ public class QuarkusRestProcessor {
                         .collect(toList()));
 
         IndexView index = beanArchiveIndexBuildItem.getIndex();
-        Collection<ClassInfo> applications = index
-                .getAllKnownSubclasses(QuarkusRestDotNames.APPLICATION);
         Collection<ClassInfo> containerRequestFilters = index
                 .getAllKnownImplementors(QuarkusRestDotNames.CONTAINER_REQUEST_FILTER);
         Collection<ClassInfo> containerResponseFilters = index
@@ -394,43 +392,12 @@ public class QuarkusRestProcessor {
             httpAnnotationToMethod.put(httpMethodInstance.target().asClass().name(), httpMethodInstance.value().asString());
         }
 
-        Set<String> allowedClasses = new HashSet<>();
-        Set<String> singletonClasses = new HashSet<>();
-        Set<String> globalNameBindings = new HashSet<>();
-        boolean filterClasses = false;
-        Application application = null;
-        ClassInfo selectedAppClass = null;
-        for (ClassInfo applicationClassInfo : applications) {
-            if (selectedAppClass != null) {
-                throw new RuntimeException("More than one Application class: " + applications);
-            }
-            selectedAppClass = applicationClassInfo;
-            // FIXME: yell if there's more than one
-            String applicationClass = applicationClassInfo.name().toString();
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, applicationClass));
-            try {
-                Class<?> appClass = Thread.currentThread().getContextClassLoader().loadClass(applicationClass);
-                application = (Application) appClass.getConstructor().newInstance();
-                Set<Class<?>> classes = application.getClasses();
-                if (!classes.isEmpty()) {
-                    for (Class<?> klass : classes) {
-                        allowedClasses.add(klass.getName());
-                    }
-                    filterClasses = true;
-                }
-                classes = application.getSingletons().stream().map(Object::getClass).collect(Collectors.toSet());
-                if (!classes.isEmpty()) {
-                    for (Class<?> klass : classes) {
-                        allowedClasses.add(klass.getName());
-                        singletonClasses.add(klass.getName());
-                    }
-                    filterClasses = true;
-                }
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException
-                    | InvocationTargetException e) {
-                throw new RuntimeException("Unable to handle class: " + applicationClass, e);
-            }
-        }
+        Set<String> allowedClasses = applicationResultBuildItem.getAllowedClasses();
+        Set<String> singletonClasses = applicationResultBuildItem.getSingletonClasses();
+        Set<String> globalNameBindings = applicationResultBuildItem.getGlobalNameBindings();
+        boolean filterClasses = applicationResultBuildItem.isFilterClasses();
+        Application application = applicationResultBuildItem.getApplication();
+        ClassInfo selectedAppClass = applicationResultBuildItem.getSelectedAppClass();
 
         ParamConverterProviders converterProviders = new ParamConverterProviders();
         for (ClassInfo converterClass : paramConverterProviders) {
@@ -468,6 +435,7 @@ public class QuarkusRestProcessor {
                     .setExistingConverters(existingConverters).setScannedResourcePaths(scannedResourcePaths).setConfig(config)
                     .setAdditionalReaders(additionalReaders).setHttpAnnotationToMethod(httpAnnotationToMethod)
                     .setInjectableBeans(injectableBeans).setAdditionalWriters(additionalWriters)
+                    .setDefaultBlocking(applicationResultBuildItem.isBlocking())
                     .setHasRuntimeConverters(!converterProviders.getParamConverterProviders().isEmpty())
                     .setInitConverters(initConverters).build();
             if (selectedAppClass != null) {

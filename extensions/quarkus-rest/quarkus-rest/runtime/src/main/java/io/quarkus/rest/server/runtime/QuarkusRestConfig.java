@@ -9,13 +9,6 @@ import io.quarkus.runtime.configuration.MemorySize;
 public class QuarkusRestConfig {
 
     /**
-     * If this is set to true then requests are executed
-     * on a worker thread by default.
-     */
-    @ConfigItem(defaultValue = "false")
-    public boolean blocking = false;
-
-    /**
      * The amount of memory that can be used to buffer input before switching to
      * blocking IO.
      */

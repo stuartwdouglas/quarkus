@@ -1,5 +1,6 @@
 package io.quarkus.rest.common.deployment;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,6 +9,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.core.Application;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -18,12 +22,69 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
+import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames;
 
 public class QuarkusRestCommonProcessor {
+
+    @BuildStep
+    ApplicationResultBuildItem handleApplication(BeanArchiveIndexBuildItem beanArchiveIndexBuildItem,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass) {
+
+        IndexView index = beanArchiveIndexBuildItem.getIndex();
+        Collection<ClassInfo> applications = index
+                .getAllKnownSubclasses(QuarkusRestDotNames.APPLICATION);
+
+        Set<String> allowedClasses = new HashSet<>();
+        Set<String> singletonClasses = new HashSet<>();
+        Set<String> globalNameBindings = new HashSet<>();
+        boolean filterClasses = false;
+        Application application = null;
+        ClassInfo selectedAppClass = null;
+        boolean blocking = false;
+        for (ClassInfo applicationClassInfo : applications) {
+            if (selectedAppClass != null) {
+                throw new RuntimeException("More than one Application class: " + applications);
+            }
+            selectedAppClass = applicationClassInfo;
+            // FIXME: yell if there's more than one
+            String applicationClass = applicationClassInfo.name().toString();
+            reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, applicationClass));
+            try {
+                Class<?> appClass = Thread.currentThread().getContextClassLoader().loadClass(applicationClass);
+                application = (Application) appClass.getConstructor().newInstance();
+                Set<Class<?>> classes = application.getClasses();
+                if (!classes.isEmpty()) {
+                    for (Class<?> klass : classes) {
+                        allowedClasses.add(klass.getName());
+                    }
+                    filterClasses = true;
+                }
+                classes = application.getSingletons().stream().map(Object::getClass).collect(Collectors.toSet());
+                if (!classes.isEmpty()) {
+                    for (Class<?> klass : classes) {
+                        allowedClasses.add(klass.getName());
+                        singletonClasses.add(klass.getName());
+                    }
+                    filterClasses = true;
+                }
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException
+                    | InvocationTargetException e) {
+                throw new RuntimeException("Unable to handle class: " + applicationClass, e);
+            }
+            if (applicationClassInfo.classAnnotation(QuarkusRestDotNames.NON_BLOCKING) != null) {
+                blocking = false;
+            } else if (applicationClassInfo.classAnnotation(QuarkusRestDotNames.NON_BLOCKING) != null) {
+                blocking = true;
+            }
+        }
+        return new ApplicationResultBuildItem(allowedClasses, singletonClasses, globalNameBindings, filterClasses, application,
+                selectedAppClass, blocking);
+    }
 
     @BuildStep
     void scanResources(
