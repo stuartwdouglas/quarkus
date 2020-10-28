@@ -112,7 +112,7 @@ import io.quarkus.rest.server.runtime.core.ExceptionMapping;
 import io.quarkus.rest.server.runtime.core.Features;
 import io.quarkus.rest.server.runtime.core.ParamConverterProviders;
 import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.common.runtime.core.Serialisers;
 import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.quarkus.rest.server.runtime.core.SingletonBeanFactory;
 import io.quarkus.rest.server.runtime.injection.ContextProducers;
@@ -912,13 +912,13 @@ public class QuarkusRestProcessor {
 
             // built-ins
 
-            for (Serialisers.BuiltinWriter builtinWriter : Serialisers.BUILTIN_WRITERS) {
+            for (Serialisers.BuiltinWriter builtinWriter : ServerSerialisers.BUILTIN_WRITERS) {
                 registerWriter(recorder, serialisers, builtinWriter.entityClass, builtinWriter.writerClass,
                         beanContainerBuildItem.getValue(),
                         builtinWriter.mediaType);
                 reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, builtinWriter.writerClass.getName()));
             }
-            for (Serialisers.BuiltinReader builtinReader : Serialisers.BUILTIN_READERS) {
+            for (Serialisers.BuiltinReader builtinReader : ServerSerialisers.BUILTIN_READERS) {
                 registerReader(recorder, serialisers, builtinReader.entityClass, builtinReader.readerClass,
                         beanContainerBuildItem.getValue(),
                         builtinReader.mediaType, builtinReader.constraint);

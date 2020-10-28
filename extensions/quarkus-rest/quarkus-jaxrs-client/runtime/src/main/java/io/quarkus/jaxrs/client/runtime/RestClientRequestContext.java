@@ -27,7 +27,7 @@ import io.quarkus.rest.common.runtime.core.AbstractQuarkusRestContext;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestResponse;
 import io.quarkus.rest.common.runtime.util.CaseInsensitiveMap;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.common.runtime.core.Serialisers;
 import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;

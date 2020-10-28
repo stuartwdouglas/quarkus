@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response;
 import io.quarkus.arc.ManagedContext;
 import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.common.runtime.core.Serialisers;
 import io.vertx.core.http.HttpClient;
 
 public class QuarkusRestInvocationBuilder implements Invocation.Builder {

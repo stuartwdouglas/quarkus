@@ -1,12 +1,15 @@
 package io.quarkus.jaxrs.client.runtime;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import javax.ws.rs.RuntimeType;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -16,11 +19,71 @@ import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.common.runtime.core.Serialisers;
+import io.quarkus.rest.server.runtime.providers.serialisers.BooleanMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.ByteArrayMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.CharArrayMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.CharacterMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.ClientDefaultTextPlainBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.FileBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.FormUrlEncodedProvider;
+import io.quarkus.rest.server.runtime.providers.serialisers.InputStreamMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.NumberMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.ReaderBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.ServerDefaultTextPlainBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.StringMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.VertxBufferMessageBodyWriter;
 import io.quarkus.rest.server.runtime.spi.QuarkusRestClientMessageBodyWriter;
 import io.vertx.core.buffer.Buffer;
 
-public class ClientSerialisers {
+public class ClientSerialisers extends Serialisers {
+
+    public static BuiltinReader[] BUILTIN_READERS = new BuiltinReader[] {
+            new BuiltinReader(String.class, StringMessageBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinReader(Boolean.class, BooleanMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinReader(Character.class, CharacterMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinReader(Number.class, NumberMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinReader(InputStream.class, InputStreamMessageBodyHandler.class, MediaType.WILDCARD),
+            new BuiltinReader(Reader.class, ReaderBodyHandler.class, MediaType.WILDCARD),
+            new BuiltinReader(File.class, FileBodyHandler.class, MediaType.WILDCARD),
+
+            new BuiltinReader(byte[].class, ByteArrayMessageBodyHandler.class, MediaType.WILDCARD),
+            new BuiltinReader(MultivaluedMap.class, FormUrlEncodedProvider.class, MediaType.APPLICATION_FORM_URLENCODED,
+                    RuntimeType.CLIENT),
+            new BuiltinReader(Object.class, ServerDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.SERVER),
+            new BuiltinReader(Object.class, ClientDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.CLIENT),
+    };
+    public static BuiltinWriter[] BUILTIN_WRITERS = new BuiltinWriter[] {
+            new BuiltinWriter(String.class, StringMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(Number.class, StringMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(Boolean.class, StringMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(Character.class, StringMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(Object.class, StringMessageBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(char[].class, CharArrayMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(byte[].class, ByteArrayMessageBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(Buffer.class, VertxBufferMessageBodyWriter.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(MultivaluedMap.class, FormUrlEncodedProvider.class,
+                    MediaType.APPLICATION_FORM_URLENCODED),
+            new BuiltinWriter(InputStream.class, InputStreamMessageBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(Reader.class, ReaderBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(File.class, FileBodyHandler.class,
+                    MediaType.WILDCARD),
+    };
+
     // FIXME: pass InvocationState to wrap args?
     public static Buffer invokeClientWriter(Entity<?> entity, Object entityObject, Class<?> entityClass, Type entityType,
             MultivaluedMap<String, String> headerMap, MessageBodyWriter writer, WriterInterceptor[] writerInterceptors,
@@ -70,5 +133,15 @@ public class ClientSerialisers {
                 entityClass, entityType, mediaType,
                 properties, metadata, configuration, serialisers, in, interceptors);
         return context.proceed();
+    }
+
+    @Override
+    public BuiltinWriter[] getBultinWriters() {
+        return BUILTIN_WRITERS;
+    }
+
+    @Override
+    public BuiltinReader[] getBultinReaders() {
+        return BUILTIN_READERS;
     }
 }

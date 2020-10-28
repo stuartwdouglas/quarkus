@@ -1,6 +1,9 @@
 package io.quarkus.rest.server.runtime.core;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.lang.annotation.Annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -28,6 +31,7 @@ import javax.ws.rs.ext.ReaderInterceptor;
 import javax.ws.rs.ext.WriterInterceptor;
 
 import io.netty.util.AsciiString;
+import io.quarkus.rest.common.runtime.core.Serialisers;
 import io.quarkus.rest.common.runtime.headers.HeaderUtil;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.common.runtime.model.ResourceReader;
@@ -39,13 +43,72 @@ import io.quarkus.rest.server.runtime.core.serialization.EntityWriter;
 import io.quarkus.rest.server.runtime.core.serialization.FixedEntityWriterArray;
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestWriterInterceptorContext;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
+import io.quarkus.rest.server.runtime.providers.serialisers.BooleanMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.ByteArrayMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.CharArrayMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.CharacterMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.ClientDefaultTextPlainBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.FileBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.FormUrlEncodedProvider;
+import io.quarkus.rest.server.runtime.providers.serialisers.InputStreamMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.NumberMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.ReaderBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.ServerDefaultTextPlainBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.StringMessageBodyHandler;
+import io.quarkus.rest.server.runtime.providers.serialisers.VertxBufferMessageBodyWriter;
 import io.quarkus.rest.server.runtime.spi.QuarkusRestMessageBodyWriter;
 import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 
 public class ServerSerialisers extends Serialisers {
 
+    public static BuiltinReader[] BUILTIN_READERS = new BuiltinReader[] {
+            new BuiltinReader(String.class, StringMessageBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinReader(Boolean.class, BooleanMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinReader(Character.class, CharacterMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinReader(Number.class, NumberMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinReader(InputStream.class, InputStreamMessageBodyHandler.class, MediaType.WILDCARD),
+            new BuiltinReader(Reader.class, ReaderBodyHandler.class, MediaType.WILDCARD),
+            new BuiltinReader(File.class, FileBodyHandler.class, MediaType.WILDCARD),
+
+            new BuiltinReader(byte[].class, ByteArrayMessageBodyHandler.class, MediaType.WILDCARD),
+            new BuiltinReader(MultivaluedMap.class, FormUrlEncodedProvider.class, MediaType.APPLICATION_FORM_URLENCODED,
+                    RuntimeType.CLIENT),
+            new BuiltinReader(Object.class, ServerDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.SERVER),
+            new BuiltinReader(Object.class, ClientDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.CLIENT),
+    };
+    public static BuiltinWriter[] BUILTIN_WRITERS = new BuiltinWriter[] {
+            new BuiltinWriter(String.class, StringMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(Number.class, StringMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(Boolean.class, StringMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(Character.class, StringMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(Object.class, StringMessageBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(char[].class, CharArrayMessageBodyHandler.class,
+                    MediaType.TEXT_PLAIN),
+            new BuiltinWriter(byte[].class, ByteArrayMessageBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(Buffer.class, VertxBufferMessageBodyWriter.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(MultivaluedMap.class, FormUrlEncodedProvider.class,
+                    MediaType.APPLICATION_FORM_URLENCODED),
+            new BuiltinWriter(InputStream.class, InputStreamMessageBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(Reader.class, ReaderBodyHandler.class,
+                    MediaType.WILDCARD),
+            new BuiltinWriter(File.class, FileBodyHandler.class,
+                    MediaType.WILDCARD),
+    };
     private static final AsciiString CONTENT_TYPE = AsciiString.cached("Content-Type"); // use this instead of the Vert.x constant because the TCK expects upper case
 
     static {
@@ -302,6 +365,16 @@ public class ServerSerialisers extends Serialisers {
             }
         }
         return new NoMediaTypeResult(finalResult.toArray(NO_WRITER), selected, serialisers);
+    }
+
+    @Override
+    public BuiltinWriter[] getBultinWriters() {
+        return BUILTIN_WRITERS;
+    }
+
+    @Override
+    public BuiltinReader[] getBultinReaders() {
+        return BUILTIN_READERS;
     }
 
     public static class NoMediaTypeResult {

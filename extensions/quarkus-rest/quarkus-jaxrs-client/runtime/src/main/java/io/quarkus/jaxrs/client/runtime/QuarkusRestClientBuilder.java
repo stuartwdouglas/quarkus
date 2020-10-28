@@ -18,7 +18,7 @@ import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.server.runtime.QuarkusRestRecorder;
 import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
-import io.quarkus.rest.server.runtime.core.Serialisers;
+import io.quarkus.rest.common.runtime.core.Serialisers;
 import io.quarkus.rest.server.runtime.core.ServerSerialisers;
 import io.quarkus.vertx.core.runtime.VertxCoreRecorder;
 

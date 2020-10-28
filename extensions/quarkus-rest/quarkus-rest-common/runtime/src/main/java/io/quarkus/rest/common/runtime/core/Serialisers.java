@@ -1,8 +1,5 @@
-package io.quarkus.rest.server.runtime.core;
+package io.quarkus.rest.common.runtime.core;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,7 +13,6 @@ import java.util.Set;
 
 import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -28,68 +24,9 @@ import io.quarkus.rest.common.runtime.model.ResourceWriter;
 import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedMap;
-import io.quarkus.rest.server.runtime.providers.serialisers.BooleanMessageBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.ByteArrayMessageBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.CharArrayMessageBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.CharacterMessageBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.ClientDefaultTextPlainBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.FileBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.FormUrlEncodedProvider;
-import io.quarkus.rest.server.runtime.providers.serialisers.InputStreamMessageBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.NumberMessageBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.ReaderBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.ServerDefaultTextPlainBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.StringMessageBodyHandler;
-import io.quarkus.rest.server.runtime.providers.serialisers.VertxBufferMessageBodyWriter;
-import io.vertx.core.buffer.Buffer;
 
-public class Serialisers {
+public abstract class Serialisers {
     protected static final Map<Class<?>, Class<?>> primitivesToWrappers = new HashMap<>();
-    public static BuiltinReader[] BUILTIN_READERS = new BuiltinReader[] {
-            new BuiltinReader(String.class, StringMessageBodyHandler.class,
-                    MediaType.WILDCARD),
-            new BuiltinReader(Boolean.class, BooleanMessageBodyHandler.class,
-                    MediaType.TEXT_PLAIN),
-            new BuiltinReader(Character.class, CharacterMessageBodyHandler.class,
-                    MediaType.TEXT_PLAIN),
-            new BuiltinReader(Number.class, NumberMessageBodyHandler.class,
-                    MediaType.TEXT_PLAIN),
-            new BuiltinReader(InputStream.class, InputStreamMessageBodyHandler.class, MediaType.WILDCARD),
-            new BuiltinReader(Reader.class, ReaderBodyHandler.class, MediaType.WILDCARD),
-            new BuiltinReader(File.class, FileBodyHandler.class, MediaType.WILDCARD),
-
-            new BuiltinReader(byte[].class, ByteArrayMessageBodyHandler.class, MediaType.WILDCARD),
-            new BuiltinReader(MultivaluedMap.class, FormUrlEncodedProvider.class, MediaType.APPLICATION_FORM_URLENCODED,
-                    RuntimeType.CLIENT),
-            new BuiltinReader(Object.class, ServerDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.SERVER),
-            new BuiltinReader(Object.class, ClientDefaultTextPlainBodyHandler.class, MediaType.TEXT_PLAIN, RuntimeType.CLIENT),
-    };
-    public static BuiltinWriter[] BUILTIN_WRITERS = new BuiltinWriter[] {
-            new BuiltinWriter(String.class, StringMessageBodyHandler.class,
-                    MediaType.TEXT_PLAIN),
-            new BuiltinWriter(Number.class, StringMessageBodyHandler.class,
-                    MediaType.TEXT_PLAIN),
-            new BuiltinWriter(Boolean.class, StringMessageBodyHandler.class,
-                    MediaType.TEXT_PLAIN),
-            new BuiltinWriter(Character.class, StringMessageBodyHandler.class,
-                    MediaType.TEXT_PLAIN),
-            new BuiltinWriter(Object.class, StringMessageBodyHandler.class,
-                    MediaType.WILDCARD),
-            new BuiltinWriter(char[].class, CharArrayMessageBodyHandler.class,
-                    MediaType.TEXT_PLAIN),
-            new BuiltinWriter(byte[].class, ByteArrayMessageBodyHandler.class,
-                    MediaType.WILDCARD),
-            new BuiltinWriter(Buffer.class, VertxBufferMessageBodyWriter.class,
-                    MediaType.WILDCARD),
-            new BuiltinWriter(MultivaluedMap.class, FormUrlEncodedProvider.class,
-                    MediaType.APPLICATION_FORM_URLENCODED),
-            new BuiltinWriter(InputStream.class, InputStreamMessageBodyHandler.class,
-                    MediaType.WILDCARD),
-            new BuiltinWriter(Reader.class, ReaderBodyHandler.class,
-                    MediaType.WILDCARD),
-            new BuiltinWriter(File.class, FileBodyHandler.class,
-                    MediaType.WILDCARD),
-    };
     // FIXME: spec says we should use generic type, but not sure how to pass that type from Jandex to reflection
     protected final QuarkusMultivaluedMap<Class<?>, ResourceWriter> writers = new QuarkusMultivaluedHashMap<>();
     protected final QuarkusMultivaluedMap<Class<?>, ResourceReader> readers = new QuarkusMultivaluedHashMap<>();
@@ -278,8 +215,12 @@ public class Serialisers {
         }
     }
 
+    public abstract BuiltinWriter[] getBultinWriters();
+
+    public abstract BuiltinReader[] getBultinReaders();
+
     public void registerBuiltins(RuntimeType constraint) {
-        for (BuiltinWriter builtinWriter : BUILTIN_WRITERS) {
+        for (BuiltinWriter builtinWriter : getBultinWriters()) {
             if (builtinWriter.constraint == null || builtinWriter.constraint == constraint) {
                 MessageBodyWriter<?> writer;
                 try {
@@ -296,7 +237,7 @@ public class Serialisers {
                 addWriter(builtinWriter.entityClass, resourceWriter);
             }
         }
-        for (BuiltinReader builtinReader : BUILTIN_READERS) {
+        for (BuiltinReader builtinReader : getBultinReaders()) {
             if (builtinReader.constraint == null || builtinReader.constraint == constraint) {
                 MessageBodyReader<?> reader;
                 try {
