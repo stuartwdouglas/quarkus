@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response;
 import io.quarkus.rest.common.runtime.headers.MediaTypeHeaderDelegate;
 import io.quarkus.rest.common.runtime.util.MediaTypeHelper;
 import io.quarkus.rest.server.runtime.core.QuarkusRestRequestContext;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResponseBuilder;
+import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestServerResponseBuilder;
 import io.quarkus.rest.server.runtime.mapping.RequestMapper;
 import io.quarkus.rest.server.runtime.mapping.RuntimeResource;
 import io.quarkus.runtime.LaunchMode;
@@ -64,7 +64,7 @@ public class ClassRoutingHandler implements ServerRestHandler {
                 for (RequestMapper<RuntimeResource> existingMapper : mappers.values()) {
                     if (existingMapper.map(remaining) != null) {
                         throw new NotAllowedException(
-                                new QuarkusRestResponseBuilder().status(Response.Status.METHOD_NOT_ALLOWED).build());
+                                new QuarkusRestServerResponseBuilder().status(Response.Status.METHOD_NOT_ALLOWED).build());
                     }
                 }
                 throwNotFound(requestContext);
@@ -92,7 +92,7 @@ public class ClassRoutingHandler implements ServerRestHandler {
                     }
                     if (entry.getValue().map(remaining) != null) {
                         throw new NotAllowedException(
-                                new QuarkusRestResponseBuilder().status(Response.Status.METHOD_NOT_ALLOWED).build());
+                                new QuarkusRestServerResponseBuilder().status(Response.Status.METHOD_NOT_ALLOWED).build());
                     }
                 }
                 throwNotFound(requestContext);

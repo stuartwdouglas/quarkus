@@ -313,7 +313,7 @@ public class QuarkusRestResponse extends Response {
     //TODO: add the rest of static methods of Response if we need them
 
     public static ResponseBuilder status(Status status) {
-        return new QuarkusRestResponseBuilder().status(status);
+        return new QuarkusRestServerResponseBuilder().status(status);
     }
 
     public static ResponseBuilder ok() {

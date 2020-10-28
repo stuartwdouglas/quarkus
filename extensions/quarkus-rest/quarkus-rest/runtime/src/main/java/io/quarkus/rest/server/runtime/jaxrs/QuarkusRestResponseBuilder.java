@@ -2,7 +2,6 @@ package io.quarkus.rest.server.runtime.jaxrs;
 
 import java.lang.annotation.Annotation;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -14,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import javax.enterprise.inject.spi.CDI;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
@@ -23,18 +21,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Variant;
 
 import io.quarkus.rest.common.runtime.headers.HeaderUtil;
 import io.quarkus.rest.common.runtime.util.CaseInsensitiveMap;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
-import io.quarkus.rest.server.runtime.QuarkusRestRecorder;
-import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
-import io.quarkus.vertx.http.runtime.CurrentVertxRequest;
-import io.vertx.core.http.HttpServerRequest;
 
-public class QuarkusRestResponseBuilder extends ResponseBuilder {
+public abstract class QuarkusRestResponseBuilder extends Response.ResponseBuilder {
 
     private static final Map<Integer, String> defaultReasonPhrases = new HashMap<>();
     static {
@@ -82,6 +75,44 @@ public class QuarkusRestResponseBuilder extends ResponseBuilder {
     MultivaluedMap<String, Object> metadata = new CaseInsensitiveMap<>();
     Annotation[] entityAnnotations;
 
+    public static SimpleDateFormat getDateFormatRFC822() {
+        SimpleDateFormat dateFormatRFC822 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+        dateFormatRFC822.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return dateFormatRFC822;
+    }
+
+    public static String createVaryHeader(List<Variant> variants) {
+        boolean accept = false;
+        boolean acceptLanguage = false;
+        boolean acceptEncoding = false;
+
+        for (Variant variant : variants) {
+            if (variant.getMediaType() != null)
+                accept = true;
+            if (variant.getLanguage() != null)
+                acceptLanguage = true;
+            if (variant.getEncoding() != null)
+                acceptEncoding = true;
+        }
+
+        String vary = null;
+        if (accept)
+            vary = HttpHeaders.ACCEPT;
+        if (acceptLanguage) {
+            if (vary == null)
+                vary = HttpHeaders.ACCEPT_LANGUAGE;
+            else
+                vary += ", " + HttpHeaders.ACCEPT_LANGUAGE;
+        }
+        if (acceptEncoding) {
+            if (vary == null)
+                vary = HttpHeaders.ACCEPT_ENCODING;
+            else
+                vary += ", " + HttpHeaders.ACCEPT_ENCODING;
+        }
+        return vary;
+    }
+
     public int getStatus() {
         return status;
     }
@@ -113,7 +144,7 @@ public class QuarkusRestResponseBuilder extends ResponseBuilder {
 
     /**
      * Populates a response with the standard data
-     * 
+     *
      * @return The given response
      */
     public <T extends QuarkusRestResponse> T populateResponse(T response) {
@@ -149,8 +180,8 @@ public class QuarkusRestResponseBuilder extends ResponseBuilder {
     }
 
     @Override
-    public QuarkusRestResponseBuilder clone() {
-        QuarkusRestResponseBuilder responseBuilder = new QuarkusRestResponseBuilder();
+    public QuarkusRestServerResponseBuilder clone() {
+        QuarkusRestServerResponseBuilder responseBuilder = new QuarkusRestServerResponseBuilder();
         responseBuilder.status = status;
         responseBuilder.reasonPhrase = reasonPhrase;
         responseBuilder.entity = entity;
@@ -227,7 +258,7 @@ public class QuarkusRestResponseBuilder extends ResponseBuilder {
             metadata.remove(HttpHeaders.VARY);
             return this;
         }
-        String vary = createVaryHeader(variants);
+        String vary = QuarkusRestResponseBuilder.createVaryHeader(variants);
         metadata.putSingle(HttpHeaders.VARY, vary);
 
         return this;
@@ -240,88 +271,6 @@ public class QuarkusRestResponseBuilder extends ResponseBuilder {
             return this;
         }
         metadata.putSingle(HttpHeaders.CONTENT_LANGUAGE, language);
-        return this;
-    }
-
-    @Override
-    public Response.ResponseBuilder location(URI location) {
-        if (location == null) {
-            metadata.remove(HttpHeaders.LOCATION);
-            return this;
-        }
-        if (!location.isAbsolute()) {
-            CDI<Object> cdi = null;
-            try {
-                cdi = CDI.current();
-            } catch (IllegalStateException ignored) {
-
-            }
-            if (cdi != null) {
-                // FIXME: this leaks server stuff onto the client
-                CurrentVertxRequest cur = cdi.select(CurrentVertxRequest.class).get();
-                HttpServerRequest req = cur.getCurrent().request();
-                try {
-                    String host = req.host();
-                    int port = -1;
-                    int index = host.indexOf(":");
-                    if (index > -1) {
-                        port = Integer.parseInt(host.substring(index + 1));
-                        host = host.substring(0, index);
-                    }
-                    String prefix = "";
-                    QuarkusRestDeployment deployment = QuarkusRestRecorder.getCurrentDeployment();
-                    if (deployment != null) {
-                        // prefix is already sanitised
-                        prefix = deployment.getPrefix();
-                    }
-                    // Spec says relative to request, but TCK tests relative to Base URI, so we do that
-                    location = new URI(req.scheme(), null, host, port,
-                            prefix +
-                                    (location.getPath().startsWith("/") ? location.getPath() : "/" + location.getPath()),
-                            location.getQuery(), null);
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        metadata.putSingle(HttpHeaders.LOCATION, location);
-        return this;
-    }
-
-    @Override
-    public Response.ResponseBuilder contentLocation(URI location) {
-        if (location == null) {
-            metadata.remove(HttpHeaders.CONTENT_LOCATION);
-            return this;
-        }
-        if (!location.isAbsolute()) {
-            CDI<Object> cdi = null;
-            try {
-                cdi = CDI.current();
-            } catch (IllegalStateException ignored) {
-
-            }
-            if (cdi != null) {
-                // FIXME: this leaks server stuff onto the client
-                CurrentVertxRequest cur = CDI.current().select(CurrentVertxRequest.class).get();
-                HttpServerRequest req = cur.getCurrent().request();
-                try {
-                    String host = req.host();
-                    int port = -1;
-                    int index = host.indexOf(":");
-                    if (index > -1) {
-                        port = Integer.parseInt(host.substring(index + 1));
-                        host = host.substring(0, index);
-                    }
-                    location = new URI(req.scheme(), null, host, port,
-                            location.getPath().startsWith("/") ? location.getPath() : "/" + location.getPath(),
-                            location.getQuery(), null);
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        metadata.putSingle(HttpHeaders.CONTENT_LOCATION, location);
         return this;
     }
 
@@ -395,21 +344,14 @@ public class QuarkusRestResponseBuilder extends ResponseBuilder {
         return this;
     }
 
-    public static SimpleDateFormat getDateFormatRFC822() {
-        SimpleDateFormat dateFormatRFC822 = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-        dateFormatRFC822.setTimeZone(TimeZone.getTimeZone("GMT"));
-        return dateFormatRFC822;
-    }
-
     public Response.ResponseBuilder expires(Date expires) {
         if (expires == null) {
             metadata.remove(HttpHeaders.EXPIRES);
             return this;
         }
-        metadata.putSingle(HttpHeaders.EXPIRES, getDateFormatRFC822().format(expires));
+        metadata.putSingle(HttpHeaders.EXPIRES, QuarkusRestResponseBuilder.getDateFormatRFC822().format(expires));
         return this;
     }
-    // spec
 
     public Response.ResponseBuilder allow(String... methods) {
         if (methods == null) {
@@ -476,37 +418,5 @@ public class QuarkusRestResponseBuilder extends ResponseBuilder {
 
     public MultivaluedMap<String, Object> getMetadata() {
         return metadata;
-    }
-
-    public static String createVaryHeader(List<Variant> variants) {
-        boolean accept = false;
-        boolean acceptLanguage = false;
-        boolean acceptEncoding = false;
-
-        for (Variant variant : variants) {
-            if (variant.getMediaType() != null)
-                accept = true;
-            if (variant.getLanguage() != null)
-                acceptLanguage = true;
-            if (variant.getEncoding() != null)
-                acceptEncoding = true;
-        }
-
-        String vary = null;
-        if (accept)
-            vary = HttpHeaders.ACCEPT;
-        if (acceptLanguage) {
-            if (vary == null)
-                vary = HttpHeaders.ACCEPT_LANGUAGE;
-            else
-                vary += ", " + HttpHeaders.ACCEPT_LANGUAGE;
-        }
-        if (acceptEncoding) {
-            if (vary == null)
-                vary = HttpHeaders.ACCEPT_ENCODING;
-            else
-                vary += ", " + HttpHeaders.ACCEPT_ENCODING;
-        }
-        return vary;
     }
 }

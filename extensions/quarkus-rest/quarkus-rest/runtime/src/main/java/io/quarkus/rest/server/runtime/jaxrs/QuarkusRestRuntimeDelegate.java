@@ -35,7 +35,7 @@ public class QuarkusRestRuntimeDelegate extends RuntimeDelegate {
 
     @Override
     public Response.ResponseBuilder createResponseBuilder() {
-        return new QuarkusRestResponseBuilder();
+        return new QuarkusRestServerResponseBuilder();
     }
 
     @Override

@@ -3,9 +3,9 @@ package io.quarkus.rest.server.runtime.client;
 import java.io.InputStream;
 
 import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResponse;
-import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestResponseBuilder;
+import io.quarkus.rest.server.runtime.jaxrs.QuarkusRestServerResponseBuilder;
 
-public class QuarkusRestClientResponseBuilder extends QuarkusRestResponseBuilder {
+public class QuarkusRestClientResponseBuilder extends QuarkusRestServerResponseBuilder { //TODO: should not extend the server version
 
     InputStream entityStream;
     RestClientRequestContext restClientRequestContext;
