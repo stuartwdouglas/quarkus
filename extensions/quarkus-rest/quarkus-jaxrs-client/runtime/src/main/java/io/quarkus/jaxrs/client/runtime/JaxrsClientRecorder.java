@@ -7,6 +7,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javax.ws.rs.RuntimeType;
 import javax.ws.rs.client.WebTarget;
 
 import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
@@ -57,6 +58,12 @@ public class JaxrsClientRecorder {
 
     public void setupClientProxies(Map<String, RuntimeValue<Function<WebTarget, ?>>> clientImplementations) {
         clientProxies = createClientImpls(clientImplementations);
+    }
+
+    public Serialisers createSerializers() {
+        ClientSerialisers s = new ClientSerialisers();
+        s.registerBuiltins(RuntimeType.CLIENT);
+        return s;
     }
 
     private ClientProxies createClientImpls(Map<String, RuntimeValue<Function<WebTarget, ?>>> clientImplementations) {

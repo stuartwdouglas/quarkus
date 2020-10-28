@@ -12,7 +12,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 
-public abstract class InputStreamMessageBodyHandler implements MessageBodyWriter<InputStream>, MessageBodyReader<InputStream> {
+public class InputStreamMessageBodyHandler implements MessageBodyWriter<InputStream>, MessageBodyReader<InputStream> {
     public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
         return true;
     }
