@@ -108,6 +108,7 @@ import io.quarkus.rest.server.runtime.providers.exceptionmappers.AuthenticationF
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.AuthenticationRedirectExceptionMapper;
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.ForbiddenExceptionMapper;
 import io.quarkus.rest.server.runtime.providers.exceptionmappers.UnauthorizedExceptionMapper;
+import io.quarkus.rest.server.runtime.util.ScoreSystemProducer;
 import io.quarkus.rest.spi.AbstractInterceptorBuildItem;
 import io.quarkus.rest.spi.BeanFactory;
 import io.quarkus.rest.spi.ContainerRequestFilterBuildItem;
@@ -150,7 +151,8 @@ public class QuarkusRestProcessor {
     AutoInjectAnnotationBuildItem contextInjection(
             BuildProducer<AdditionalBeanBuildItem> additionalBeanBuildItemBuildProducer) {
         additionalBeanBuildItemBuildProducer
-                .produce(AdditionalBeanBuildItem.builder().addBeanClasses(ContextProducers.class).build());
+                .produce(AdditionalBeanBuildItem.builder().addBeanClasses(ContextProducers.class, ScoreSystemProducer.class)
+                        .build());
         return new AutoInjectAnnotationBuildItem(DotName.createSimple(Context.class.getName()),
                 DotName.createSimple(BeanParam.class.getName()));
 
