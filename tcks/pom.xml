@@ -25,7 +25,6 @@
         <module>microprofile-rest-client</module>
         <module>microprofile-openapi</module>
         <module>microprofile-opentracing</module>
-        <module>quarkus-rest</module>
     </modules>
 
     <properties>
