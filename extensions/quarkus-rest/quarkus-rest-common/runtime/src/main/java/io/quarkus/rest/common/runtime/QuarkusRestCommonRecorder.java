@@ -7,6 +7,9 @@ import java.util.Map;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.rest.common.runtime.core.ArcBeanFactory;
 import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
+import io.quarkus.rest.common.runtime.core.Serialisers;
+import io.quarkus.rest.common.runtime.model.ResourceReader;
+import io.quarkus.rest.common.runtime.model.ResourceWriter;
 import io.quarkus.rest.spi.BeanFactory;
 import io.quarkus.runtime.annotations.Recorder;
 
@@ -29,6 +32,16 @@ public class QuarkusRestCommonRecorder {
     public <T> BeanFactory<T> factory(String targetClass, BeanContainer beanContainer) {
         return new ArcBeanFactory<>(loadClass(targetClass),
                 beanContainer);
+    }
+
+    public void registerWriter(Serialisers serialisers, String entityClassName,
+            ResourceWriter writer) {
+        serialisers.addWriter(loadClass(entityClassName), writer);
+    }
+
+    public void registerReader(Serialisers serialisers, String entityClassName,
+            ResourceReader reader) {
+        serialisers.addReader(loadClass(entityClassName), reader);
     }
 
     public void registerInvocationHandlerGenericType(GenericTypeMapping genericTypeMapping, String invocationHandlerClass,

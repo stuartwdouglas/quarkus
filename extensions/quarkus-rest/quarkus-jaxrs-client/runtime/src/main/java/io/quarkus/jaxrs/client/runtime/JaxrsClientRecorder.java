@@ -50,6 +50,7 @@ public class JaxrsClientRecorder extends QuarkusRestCommonRecorder {
     public Serialisers createSerializers() {
         ClientSerialisers s = new ClientSerialisers();
         s.registerBuiltins(RuntimeType.CLIENT);
+        serialisers = s;
         return s;
     }
 

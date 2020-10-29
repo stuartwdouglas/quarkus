@@ -1,4 +1,4 @@
-package io.quarkus.rest.server.runtime.core;
+package io.quarkus.rest.common.runtime.core;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

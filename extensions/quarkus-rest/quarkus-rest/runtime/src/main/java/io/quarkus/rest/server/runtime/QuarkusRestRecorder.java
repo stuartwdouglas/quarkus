@@ -38,6 +38,7 @@ import org.jboss.logging.Logger;
 import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.rest.common.runtime.QuarkusRestCommonRecorder;
 import io.quarkus.rest.common.runtime.core.GenericTypeMapping;
+import io.quarkus.rest.common.runtime.core.SingletonBeanFactory;
 import io.quarkus.rest.common.runtime.jaxrs.QuarkusRestConfiguration;
 import io.quarkus.rest.common.runtime.model.HasPriority;
 import io.quarkus.rest.common.runtime.model.ParameterType;
@@ -46,11 +47,9 @@ import io.quarkus.rest.common.runtime.model.ResourceDynamicFeature;
 import io.quarkus.rest.common.runtime.model.ResourceExceptionMapper;
 import io.quarkus.rest.common.runtime.model.ResourceFeature;
 import io.quarkus.rest.common.runtime.model.ResourceInterceptors;
-import io.quarkus.rest.common.runtime.model.ResourceReader;
 import io.quarkus.rest.common.runtime.model.ResourceReaderInterceptor;
 import io.quarkus.rest.common.runtime.model.ResourceRequestInterceptor;
 import io.quarkus.rest.common.runtime.model.ResourceResponseInterceptor;
-import io.quarkus.rest.common.runtime.model.ResourceWriter;
 import io.quarkus.rest.common.runtime.model.ResourceWriterInterceptor;
 import io.quarkus.rest.common.runtime.util.QuarkusMultivaluedHashMap;
 import io.quarkus.rest.common.runtime.util.ServerMediaType;
@@ -62,7 +61,6 @@ import io.quarkus.rest.server.runtime.core.LazyMethod;
 import io.quarkus.rest.server.runtime.core.ParamConverterProviders;
 import io.quarkus.rest.server.runtime.core.QuarkusRestDeployment;
 import io.quarkus.rest.server.runtime.core.ServerSerialisers;
-import io.quarkus.rest.server.runtime.core.SingletonBeanFactory;
 import io.quarkus.rest.server.runtime.core.parameters.AsyncResponseExtractor;
 import io.quarkus.rest.server.runtime.core.parameters.BeanParamExtractor;
 import io.quarkus.rest.server.runtime.core.parameters.BodyParamExtractor;
@@ -1144,16 +1142,6 @@ public class QuarkusRestRecorder extends QuarkusRestCommonRecorder {
 
     public void registerDynamicFeature(DynamicFeatures dynamicFeatures, ResourceDynamicFeature dynamicFeature) {
         dynamicFeatures.addFeature(dynamicFeature);
-    }
-
-    public void registerWriter(ServerSerialisers serialisers, String entityClassName,
-            ResourceWriter writer) {
-        serialisers.addWriter(loadClass(entityClassName), writer);
-    }
-
-    public void registerReader(ServerSerialisers serialisers, String entityClassName,
-            ResourceReader reader) {
-        serialisers.addReader(loadClass(entityClassName), reader);
     }
 
 }

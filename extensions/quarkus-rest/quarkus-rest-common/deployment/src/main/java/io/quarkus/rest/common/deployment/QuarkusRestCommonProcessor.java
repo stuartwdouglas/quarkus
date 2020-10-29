@@ -218,10 +218,7 @@ public class QuarkusRestCommonProcessor {
                 String writerClassName = writerClass.name().toString();
                 AnnotationInstance constrainedToInstance = writerClass.classAnnotation(QuarkusRestDotNames.CONSTRAINED_TO);
                 if (constrainedToInstance != null) {
-                    RuntimeType constrainedTo = RuntimeType.valueOf(constrainedToInstance.value().asEnum());
-                    if (runtimeType != RuntimeType.SERVER || constrainedTo != RuntimeType.CLIENT) {
-                        runtimeType = constrainedTo;
-                    }
+                    runtimeType = RuntimeType.valueOf(constrainedToInstance.value().asEnum());
                 }
                 messageBodyWriterBuildItemBuildProducer.produce(new MessageBodyWriterBuildItem(writerClassName,
                         typeParameters.get(0).name().toString(), mediaTypeStrings, runtimeType, false));
@@ -246,10 +243,7 @@ public class QuarkusRestCommonProcessor {
                 }
                 AnnotationInstance constrainedToInstance = readerClass.classAnnotation(QuarkusRestDotNames.CONSTRAINED_TO);
                 if (constrainedToInstance != null) {
-                    RuntimeType constrainedTo = RuntimeType.valueOf(constrainedToInstance.value().asEnum());
-                    if (runtimeType != RuntimeType.SERVER || constrainedTo != RuntimeType.CLIENT) {
-                        runtimeType = constrainedTo;
-                    }
+                    runtimeType = RuntimeType.valueOf(constrainedToInstance.value().asEnum());
                 }
                 messageBodyReaderBuildItemBuildProducer.produce(new MessageBodyReaderBuildItem(readerClassName,
                         typeParameters.get(0).name().toString(), mediaTypeStrings, runtimeType, false));
