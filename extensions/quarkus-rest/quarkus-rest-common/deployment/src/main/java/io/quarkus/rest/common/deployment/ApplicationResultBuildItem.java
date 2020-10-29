@@ -7,6 +7,7 @@ import javax.ws.rs.core.Application;
 import org.jboss.jandex.ClassInfo;
 
 import io.quarkus.builder.item.SimpleBuildItem;
+import io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames;
 
 public final class ApplicationResultBuildItem extends SimpleBuildItem {
 
@@ -27,6 +28,16 @@ public final class ApplicationResultBuildItem extends SimpleBuildItem {
         this.application = application;
         this.selectedAppClass = selectedAppClass;
         this.blocking = blocking;
+    }
+
+    public KeepProviderResult keepProvider(ClassInfo providerClass) {
+        if (filterClasses) {
+            // we don't care about provider annotations, they're manually registered (but for the server only)
+            return allowedClasses.contains(providerClass.name().toString()) ? KeepProviderResult.SERVER_ONLY
+                    : KeepProviderResult.DISCARD;
+        }
+        return providerClass.classAnnotation(QuarkusRestDotNames.PROVIDER) != null ? KeepProviderResult.NORMAL
+                : KeepProviderResult.DISCARD;
     }
 
     public Set<String> getAllowedClasses() {
@@ -56,4 +67,11 @@ public final class ApplicationResultBuildItem extends SimpleBuildItem {
     public boolean isBlocking() {
         return blocking;
     }
+
+    public enum KeepProviderResult {
+        NORMAL,
+        SERVER_ONLY,
+        DISCARD
+    }
+
 }

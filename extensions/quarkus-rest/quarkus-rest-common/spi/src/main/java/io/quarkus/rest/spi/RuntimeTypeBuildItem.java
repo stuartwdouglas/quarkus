@@ -1,5 +1,8 @@
 package io.quarkus.rest.spi;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import javax.ws.rs.RuntimeType;
 
 public interface RuntimeTypeBuildItem {
@@ -10,4 +13,8 @@ public interface RuntimeTypeBuildItem {
      */
     RuntimeType getRuntimeType();
 
+    static <T extends RuntimeTypeBuildItem> Collection<T> filter(Collection<T> items, RuntimeType current) {
+        return items.stream().filter(s -> s.getRuntimeType() == null || s.getRuntimeType() == current)
+                .collect(Collectors.toList());
+    }
 }

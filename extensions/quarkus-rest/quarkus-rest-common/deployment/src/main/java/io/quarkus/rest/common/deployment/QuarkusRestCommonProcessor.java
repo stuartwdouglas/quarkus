@@ -3,14 +3,18 @@ package io.quarkus.rest.common.deployment;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.RuntimeType;
 import javax.ws.rs.core.Application;
 
 import org.jboss.jandex.AnnotationInstance;
@@ -23,11 +27,16 @@ import org.jboss.jandex.Type;
 
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
+import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.deployment.util.JandexUtil;
+import io.quarkus.rest.common.deployment.ApplicationResultBuildItem.KeepProviderResult;
 import io.quarkus.rest.common.deployment.framework.QuarkusRestDotNames;
+import io.quarkus.rest.spi.MessageBodyReaderBuildItem;
+import io.quarkus.rest.spi.MessageBodyWriterBuildItem;
 
 public class QuarkusRestCommonProcessor {
 
@@ -169,6 +178,84 @@ public class QuarkusRestCommonProcessor {
 
         resourceScanningResultBuildItemBuildProducer.produce(new ResourceScanningResultBuildItem(scannedResources,
                 scannedResourcePaths, possibleSubResources, pathInterfaces, resourcesThatNeedCustomProducer, beanParams));
+    }
+
+    @BuildStep
+    public void setupEndpoints(BeanArchiveIndexBuildItem beanArchiveIndexBuildItem,
+            ApplicationResultBuildItem applicationResultBuildItem,
+            BeanContainerBuildItem beanContainerBuildItem,
+            Optional<ResourceScanningResultBuildItem> resourceScanningResultBuildItem,
+            BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
+            BuildProducer<MessageBodyWriterBuildItem> messageBodyWriterBuildItemBuildProducer,
+            BuildProducer<MessageBodyReaderBuildItem> messageBodyReaderBuildItemBuildProducer) throws NoSuchMethodException {
+
+        if (!resourceScanningResultBuildItem.isPresent()) {
+            // no detected @Path, bail out
+            return;
+        }
+
+        IndexView index = beanArchiveIndexBuildItem.getIndex();
+        Collection<ClassInfo> writers = index
+                .getAllKnownImplementors(QuarkusRestDotNames.MESSAGE_BODY_WRITER);
+        Collection<ClassInfo> readers = index
+                .getAllKnownImplementors(QuarkusRestDotNames.MESSAGE_BODY_READER);
+
+        for (ClassInfo writerClass : writers) {
+            KeepProviderResult keepProviderResult = applicationResultBuildItem.keepProvider(writerClass);
+            if (keepProviderResult != KeepProviderResult.DISCARD) {
+                RuntimeType runtimeType = null;
+                if (keepProviderResult == KeepProviderResult.SERVER_ONLY) {
+                    runtimeType = RuntimeType.SERVER;
+                }
+                List<String> mediaTypeStrings = Collections.emptyList();
+                AnnotationInstance producesAnnotation = writerClass.classAnnotation(QuarkusRestDotNames.PRODUCES);
+                if (producesAnnotation != null) {
+                    mediaTypeStrings = Arrays.asList(producesAnnotation.value().asStringArray());
+                }
+                List<Type> typeParameters = JandexUtil.resolveTypeParameters(writerClass.name(),
+                        QuarkusRestDotNames.MESSAGE_BODY_WRITER,
+                        index);
+                String writerClassName = writerClass.name().toString();
+                AnnotationInstance constrainedToInstance = writerClass.classAnnotation(QuarkusRestDotNames.CONSTRAINED_TO);
+                if (constrainedToInstance != null) {
+                    RuntimeType constrainedTo = RuntimeType.valueOf(constrainedToInstance.value().asEnum());
+                    if (runtimeType != RuntimeType.SERVER || constrainedTo != RuntimeType.CLIENT) {
+                        runtimeType = constrainedTo;
+                    }
+                }
+                messageBodyWriterBuildItemBuildProducer.produce(new MessageBodyWriterBuildItem(writerClassName,
+                        typeParameters.get(0).name().toString(), mediaTypeStrings, runtimeType, false));
+            }
+        }
+
+        for (ClassInfo readerClass : readers) {
+            KeepProviderResult keepProviderResult = applicationResultBuildItem.keepProvider(readerClass);
+            if (keepProviderResult != KeepProviderResult.DISCARD) {
+                List<Type> typeParameters = JandexUtil.resolveTypeParameters(readerClass.name(),
+                        QuarkusRestDotNames.MESSAGE_BODY_READER,
+                        index);
+                RuntimeType runtimeType = null;
+                if (keepProviderResult == KeepProviderResult.SERVER_ONLY) {
+                    runtimeType = RuntimeType.SERVER;
+                }
+                List<String> mediaTypeStrings = Collections.emptyList();
+                String readerClassName = readerClass.name().toString();
+                AnnotationInstance consumesAnnotation = readerClass.classAnnotation(QuarkusRestDotNames.CONSUMES);
+                if (consumesAnnotation != null) {
+                    mediaTypeStrings = Arrays.asList(consumesAnnotation.value().asStringArray());
+                }
+                AnnotationInstance constrainedToInstance = readerClass.classAnnotation(QuarkusRestDotNames.CONSTRAINED_TO);
+                if (constrainedToInstance != null) {
+                    RuntimeType constrainedTo = RuntimeType.valueOf(constrainedToInstance.value().asEnum());
+                    if (runtimeType != RuntimeType.SERVER || constrainedTo != RuntimeType.CLIENT) {
+                        runtimeType = constrainedTo;
+                    }
+                }
+                messageBodyReaderBuildItemBuildProducer.produce(new MessageBodyReaderBuildItem(readerClassName,
+                        typeParameters.get(0).name().toString(), mediaTypeStrings, runtimeType, false));
+                reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, readerClassName));
+            }
+        }
     }
 
     private MethodInfo hasJaxRsCtorParams(ClassInfo classInfo) {
