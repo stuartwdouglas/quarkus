@@ -436,8 +436,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          path: tcks
+      - name: Download Quarkus REST Testsuite
+        uses: actions/checkout@v2
+        with:
+          repository: quarkusio/quarkus-rest-testsuite
+          path: quarkus-rest-testsuite
       - name: Reclaim Disk Space
         run: .github/ci-prerequisites.sh
+        working-directory: ./tcks
       - name: Set up JDK 11
         # Uses sha for added security since tags can be updated
         uses: joschi/setup-jdk@68381f2c0646f942f70b69f8e81fe10e1ed5d293
@@ -451,10 +459,15 @@ jobs:
       - name: Extract Maven Repo
         shell: bash
         run: tar -xzf maven-repo.tgz -C ~
+      - name: Run Quarkus REST TCK
+        run: mvn -B --settings ../tcks/.github/mvn-settings.xml install
+        working-directory: ./quarkus-rest-testsuite
       - name: Build with Maven
         run: mvn -B --settings .github/mvn-settings.xml -Dno-native -Dno-format -DskipTests -Dtcks install
+        working-directory: ./tcks
       - name: Verify with Maven
         run: mvn -B --settings .github/mvn-settings.xml -f tcks/pom.xml verify
+        working-directory: ./tcks
       - name: Prepare failure archive (if maven failed)
         if: failure()
         shell: bash
