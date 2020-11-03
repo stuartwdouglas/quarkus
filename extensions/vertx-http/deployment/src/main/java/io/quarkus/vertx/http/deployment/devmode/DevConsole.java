@@ -14,19 +14,25 @@ import java.util.function.BiFunction;
 import org.yaml.snakeyaml.Yaml;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.quarkus.dev.console.DevConsoleManager;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.NamespaceResolver;
+import io.quarkus.qute.ReflectionValueResolver;
 import io.quarkus.qute.Results;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
+import io.quarkus.qute.ValueResolvers;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
 public class DevConsole implements Handler<RoutingContext> {
 
     Engine engine = Engine.builder().addDefaultSectionHelpers().addDefaultValueResolvers()
+            .addValueResolver(new ReflectionValueResolver())
+            .addValueResolver(ValueResolvers.rawResolver())
             .addNamespaceResolver(NamespaceResolver.builder("inject").resolve(ctx -> {
-                return Results.Result.NOT_FOUND;
+                Object result = DevConsoleManager.resolve(ctx.getName());
+                return result == null ? Results.Result.NOT_FOUND : result;
             }).build()).build();
 
     @Override
