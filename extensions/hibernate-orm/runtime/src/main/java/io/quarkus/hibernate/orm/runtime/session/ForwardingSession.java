@@ -246,7 +246,7 @@ public abstract class ForwardingSession implements Session {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T unwrap(Class<T> cls) {
-        if (cls.isAssignableFrom(Session.class)) {
+        if (cls.isAssignableFrom(Session.class) && cls.isAssignableFrom(getClass())) {
             return (T) this;
         }
         return delegate().unwrap(cls);
