@@ -35,7 +35,7 @@ public class ResteasyReactiveVertxWebSocketIntegrationProcessor {
 
             @Override
             public ParameterExtractor handleCustomParameter(Type paramType, Map<DotName, AnnotationInstance> annotations,
-                    boolean field, Map<String, Object> methodContext) {
+                    boolean field, Map<String, Object> methodContext, String errorLocation) {
                 if (paramType.name().equals(SERVER_WEB_SOCKET)) {
                     methodContext.put(NAME, true);
                     return new VertxWebSocketParamExtractor();

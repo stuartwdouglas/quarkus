@@ -28,7 +28,6 @@ import org.jboss.resteasy.reactive.common.processor.scanning.ResteasyReactiveSca
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.AnnotationsTransformerBuildItem;
 import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
-import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -174,7 +173,6 @@ public class ResteasyReactiveCommonProcessor {
     @BuildStep
     public void setupEndpoints(BeanArchiveIndexBuildItem beanArchiveIndexBuildItem,
             ApplicationResultBuildItem applicationResultBuildItem,
-            BeanContainerBuildItem beanContainerBuildItem,
             Optional<ResourceScanningResultBuildItem> resourceScanningResultBuildItem,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
             BuildProducer<MessageBodyWriterBuildItem> messageBodyWriterBuildItemBuildProducer,

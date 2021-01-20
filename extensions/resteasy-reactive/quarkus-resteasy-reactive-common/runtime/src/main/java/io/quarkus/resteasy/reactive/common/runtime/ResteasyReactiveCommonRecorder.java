@@ -9,7 +9,7 @@ import org.jboss.resteasy.reactive.common.model.ResourceReader;
 import org.jboss.resteasy.reactive.common.model.ResourceWriter;
 import org.jboss.resteasy.reactive.spi.BeanFactory;
 
-import io.quarkus.arc.runtime.BeanContainer;
+import io.quarkus.arc.Arc;
 import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
@@ -28,9 +28,8 @@ public class ResteasyReactiveCommonRecorder {
         primitiveTypes = Collections.unmodifiableMap(prims);
     }
 
-    public <T> BeanFactory<T> factory(String targetClass, BeanContainer beanContainer) {
-        return new ArcBeanFactory<>(loadClass(targetClass),
-                beanContainer);
+    public <T> BeanFactory<T> factory(String targetClass) {
+        return new ArcBeanFactory<>(loadClass(targetClass), Arc.container());
     }
 
     public void registerWriter(Serialisers serialisers, String entityClassName,

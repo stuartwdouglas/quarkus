@@ -194,11 +194,11 @@ public class ResteasyReactiveRecorder extends ResteasyReactiveCommonRecorder {
         };
     }
 
-    public Function<Class<?>, BeanFactory<?>> factoryCreator(BeanContainer container) {
+    public Function<Class<?>, BeanFactory<?>> factoryCreator() {
         return new Function<Class<?>, BeanFactory<?>>() {
             @Override
             public BeanFactory<?> apply(Class<?> aClass) {
-                return new ArcBeanFactory<>(aClass, container);
+                return new ArcBeanFactory<>(aClass, Arc.container());
             }
         };
     }

@@ -17,8 +17,16 @@ public interface MethodScanner {
     }
 
     default ParameterExtractor handleCustomParameter(Type paramType, Map<DotName, AnnotationInstance> annotations,
-            boolean field, Map<String, Object> methodContext) {
+            boolean field, Map<String, Object> methodContext, String errorLocation) {
         return null;
+    }
+
+    /**
+     *
+     * @return The priority of the scanner. High priority scanners run first.
+     */
+    default int priority() {
+        return 0;
     }
 
 }

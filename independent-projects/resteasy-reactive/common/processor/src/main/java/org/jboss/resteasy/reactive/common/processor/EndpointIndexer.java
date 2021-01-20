@@ -716,7 +716,7 @@ public abstract class EndpointIndexer<T extends EndpointIndexer<T, PARAM, METHOD
         if (defaultValueAnnotation != null) {
             builder.setDefaultValue(defaultValueAnnotation.value().asString());
         }
-        if (handleCustomParameter(anns, builder, paramType, field, methodContext)) {
+        if (handleCustomParameter(anns, builder, paramType, field, methodContext, errorLocation)) {
             return builder;
         } else if (moreThanOne(pathParam, queryParam, headerParam, formParam, cookieParam, contextParam, beanParam,
                 restPathParam, restQueryParam, restHeaderParam, restFormParam, restCookieParam)) {
@@ -861,7 +861,7 @@ public abstract class EndpointIndexer<T extends EndpointIndexer<T, PARAM, METHOD
     }
 
     protected boolean handleCustomParameter(Map<DotName, AnnotationInstance> anns, PARAM builder, Type paramType, boolean field,
-            Map<String, Object> methodContext) {
+            Map<String, Object> methodContext, String errorLocation) {
         return false;
     }
 

@@ -67,7 +67,7 @@ public class JaxrsClientProcessor {
     @BuildStep
     @Record(ExecutionTime.STATIC_INIT)
     void setupClientProxies(ResteasyReactiveClientRecorder recorder,
-            BeanContainerBuildItem beanContainerBuildItem,
+            @SuppressWarnings("unused") BeanContainerBuildItem beanContainerBuildItem, //needed for ordering
             ApplicationResultBuildItem applicationResultBuildItem,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClassBuildItemBuildProducer,
             List<MessageBodyReaderBuildItem> messageBodyReaderBuildItems,
@@ -82,7 +82,7 @@ public class JaxrsClientProcessor {
         Serialisers serialisers = recorder.createSerializers();
 
         SerializersUtil.setupSerializers(recorder, reflectiveClassBuildItemBuildProducer, messageBodyReaderBuildItems,
-                messageBodyWriterBuildItems, beanContainerBuildItem, applicationResultBuildItem, serialisers,
+                messageBodyWriterBuildItems, applicationResultBuildItem, serialisers,
                 RuntimeType.CLIENT);
 
         if (resourceScanningResultBuildItem == null
@@ -105,7 +105,7 @@ public class JaxrsClientProcessor {
                 .setAdditionalReaders(additionalReaders)
                 .setHttpAnnotationToMethod(result.getHttpAnnotationToMethod())
                 .setInjectableBeans(new HashMap<>())
-                .setFactoryCreator(new QuarkusFactoryCreator(recorder, beanContainerBuildItem.getValue()))
+                .setFactoryCreator(new QuarkusFactoryCreator(recorder))
                 .setAdditionalWriters(additionalWriters)
                 .setDefaultBlocking(applicationResultBuildItem.getResult().isBlocking())
                 .setHasRuntimeConverters(false).build();
@@ -130,7 +130,7 @@ public class JaxrsClientProcessor {
             Class readerClass = additionalReader.getHandlerClass();
             ResourceReader reader = new ResourceReader();
             reader.setBuiltin(true);
-            reader.setFactory(recorder.factory(readerClass.getName(), beanContainerBuildItem.getValue()));
+            reader.setFactory(recorder.factory(readerClass.getName()));
             reader.setMediaTypeStrings(Collections.singletonList(additionalReader.getMediaType()));
             recorder.registerReader(serialisers, additionalReader.getEntityClass().getName(), reader);
             reflectiveClassBuildItemBuildProducer
@@ -141,7 +141,7 @@ public class JaxrsClientProcessor {
             Class writerClass = entry.getHandlerClass();
             ResourceWriter writer = new ResourceWriter();
             writer.setBuiltin(true);
-            writer.setFactory(recorder.factory(writerClass.getName(), beanContainerBuildItem.getValue()));
+            writer.setFactory(recorder.factory(writerClass.getName()));
             writer.setMediaTypeStrings(Collections.singletonList(entry.getMediaType()));
             recorder.registerWriter(serialisers, entry.getEntityClass().getName(), writer);
             reflectiveClassBuildItemBuildProducer

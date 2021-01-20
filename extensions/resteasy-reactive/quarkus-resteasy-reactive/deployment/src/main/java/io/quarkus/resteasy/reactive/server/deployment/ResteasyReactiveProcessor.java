@@ -64,7 +64,6 @@ import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.BeanArchiveIndexBuildItem;
 import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
-import io.quarkus.arc.runtime.BeanContainer;
 import io.quarkus.arc.runtime.ClientProxyUnwrapper;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
@@ -200,27 +199,22 @@ public class ResteasyReactiveProcessor {
 
     @BuildStep
     @Record(ExecutionTime.STATIC_INIT)
-    public void setupEndpoints(Capabilities capabilities, BeanArchiveIndexBuildItem beanArchiveIndexBuildItem,
-            BeanContainerBuildItem beanContainerBuildItem,
+    public ResteasyReactiveDeploymentInfoBuildItem setupEndpoints(Capabilities capabilities,
+            BeanArchiveIndexBuildItem beanArchiveIndexBuildItem,
             ResteasyReactiveConfig config,
             Optional<ResourceScanningResultBuildItem> resourceScanningResultBuildItem,
             BuildProducer<GeneratedClassBuildItem> generatedClassBuildItemBuildProducer,
             BuildProducer<BytecodeTransformerBuildItem> bytecodeTransformerBuildItemBuildProducer,
             ResteasyReactiveRecorder recorder,
             RecorderContext recorderContext,
-            ShutdownContextBuildItem shutdownContext,
-            HttpBuildTimeConfig vertxConfig,
             List<DynamicFeatureBuildItem> dynamicFeatures,
             List<MessageBodyReaderBuildItem> additionalMessageBodyReaders,
             List<MessageBodyWriterBuildItem> additionalMessageBodyWriters,
             List<JaxrsFeatureBuildItem> features,
             List<ServerDefaultProducesHandlerBuildItem> serverDefaultProducesHandlers,
-            Optional<RequestContextFactoryBuildItem> requestContextFactoryBuildItem,
             Optional<ClassLevelExceptionMappersBuildItem> classLevelExceptionMappers,
-            BuildProducer<ResteasyReactiveDeploymentBuildItem> quarkusRestDeploymentBuildItemBuildProducer,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
             BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchy,
-            BuildProducer<RouteBuildItem> routes,
             ApplicationResultBuildItem applicationResultBuildItem,
             ResourceInterceptorsBuildItem resourceInterceptorsBuildItem,
             ExceptionMappersBuildItem exceptionMappersBuildItem,
@@ -230,7 +224,7 @@ public class ResteasyReactiveProcessor {
 
         if (!resourceScanningResultBuildItem.isPresent()) {
             // no detected @Path, bail out
-            return;
+            return null;
         }
 
         if (capabilities.isPresent(Capability.RESTEASY)) {
@@ -269,12 +263,6 @@ public class ResteasyReactiveProcessor {
         ExceptionMapping exceptionMapping = exceptionMappersBuildItem.getExceptionMapping();
         ContextResolvers contextResolvers = contextResolversBuildItem.getContextResolvers();
         ParamConverterProviders paramConverterProviders = paramConverterProvidersBuildItem.getParamConverterProviders();
-        Function<String, BeanFactory<?>> factoryFunction = s -> FactoryUtils.factory(s, singletonClasses, recorder,
-                beanContainerBuildItem);
-        interceptors.initializeDefaultFactories(factoryFunction);
-        exceptionMapping.initializeDefaultFactories(factoryFunction);
-        contextResolvers.initializeDefaultFactories(factoryFunction);
-        paramConverterProviders.initializeDefaultFactories(factoryFunction);
         paramConverterProviders.sort();
         interceptors.sort();
 
@@ -286,7 +274,7 @@ public class ResteasyReactiveProcessor {
                     .addMethodScanners(
                             methodScanners.stream().map(MethodScannerBuildItem::getMethodScanner).collect(Collectors.toList()))
                     .setIndex(index)
-                    .setFactoryCreator(new QuarkusFactoryCreator(recorder, beanContainerBuildItem.getValue()))
+                    .setFactoryCreator(new QuarkusFactoryCreator(recorder))
                     .setEndpointInvokerFactory(new QuarkusInvokerFactory(generatedClassBuildItemBuildProducer, recorder))
                     .setGeneratedClassBuildItemBuildProducer(generatedClassBuildItemBuildProducer)
                     .setBytecodeTransformerBuildProducer(bytecodeTransformerBuildItemBuildProducer)
@@ -406,8 +394,7 @@ public class ResteasyReactiveProcessor {
                 ResourceFeature resourceFeature = new ResourceFeature();
                 resourceFeature
                         .setFactory(
-                                FactoryUtils.factory(feature.getClassName(), singletonClasses, recorder,
-                                        beanContainerBuildItem));
+                                FactoryUtils.factory(feature.getClassName(), singletonClasses, recorder));
                 feats.addFeature(resourceFeature);
             }
 
@@ -415,25 +402,23 @@ public class ResteasyReactiveProcessor {
             for (DynamicFeatureBuildItem additionalDynamicFeature : dynamicFeatures) {
                 ResourceDynamicFeature resourceFeature = new ResourceDynamicFeature();
                 resourceFeature.setFactory(
-                        recorder.factory(additionalDynamicFeature.getClassName(), beanContainerBuildItem.getValue()));
+                        recorder.factory(additionalDynamicFeature.getClassName()));
                 dynamicFeats.addFeature(resourceFeature);
             }
 
             ServerSerialisers serialisers = new ServerSerialisers();
             SerializersUtil.setupSerializers(recorder, reflectiveClass, additionalMessageBodyReaders,
-                    additionalMessageBodyWriters, beanContainerBuildItem, applicationResultBuildItem, serialisers,
+                    additionalMessageBodyWriters, applicationResultBuildItem, serialisers,
                     RuntimeType.SERVER);
             // built-ins
 
             for (Serialisers.BuiltinWriter builtinWriter : ServerSerialisers.BUILTIN_WRITERS) {
                 registerWriter(recorder, serialisers, builtinWriter.entityClass, builtinWriter.writerClass,
-                        beanContainerBuildItem.getValue(),
                         builtinWriter.mediaType);
                 reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, builtinWriter.writerClass.getName()));
             }
             for (Serialisers.BuiltinReader builtinReader : ServerSerialisers.BUILTIN_READERS) {
                 registerReader(recorder, serialisers, builtinReader.entityClass, builtinReader.readerClass,
-                        beanContainerBuildItem.getValue(),
                         builtinReader.mediaType, builtinReader.constraint);
                 reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, builtinReader.readerClass.getName()));
             }
@@ -441,20 +426,17 @@ public class ResteasyReactiveProcessor {
             for (AdditionalReaderWriter.Entry additionalReader : additionalReaders.get()) {
                 Class readerClass = additionalReader.getHandlerClass();
                 registerReader(recorder, serialisers, additionalReader.getEntityClass(), readerClass,
-                        beanContainerBuildItem.getValue(), additionalReader.getMediaType(), additionalReader.getConstraint());
+                        additionalReader.getMediaType(), additionalReader.getConstraint());
                 reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, readerClass.getName()));
             }
 
             for (AdditionalReaderWriter.Entry entry : additionalWriters.get()) {
                 Class writerClass = entry.getHandlerClass();
-                registerWriter(recorder, serialisers, entry.getEntityClass(), writerClass,
-                        beanContainerBuildItem.getValue(), entry.getMediaType());
+                registerWriter(recorder, serialisers, entry.getEntityClass(), writerClass, entry.getMediaType());
                 reflectiveClass.produce(new ReflectiveClassBuildItem(true, false, false, writerClass.getName()));
             }
 
             initConverters.returnValue(null);
-            BeanFactory<ResteasyReactiveInitialiser> initClassFactory = recorder.factory(QUARKUS_INIT_CLASS,
-                    beanContainerBuildItem.getValue());
 
             String applicationPath = determineApplicationPath(index);
             // spec allows the path contain encoded characters
@@ -466,7 +448,7 @@ public class ResteasyReactiveProcessor {
             // Handler used for both the default and non-default deployment path (specified as application path or resteasyConfig.path)
             // Routes use the order VertxHttpRecorder.DEFAULT_ROUTE_ORDER + 1 to ensure the default route is called before the resteasy one
             Class<? extends Application> applicationClass = application == null ? Application.class : application.getClass();
-            RuntimeValue<Deployment> deployment = recorder.createDeployment(new DeploymentInfo()
+            DeploymentInfo info = new DeploymentInfo()
                     .setInterceptors(interceptors.sort())
                     .setConfig(new org.jboss.resteasy.reactive.common.ResteasyReactiveConfig(
                             config.inputBufferSize.asLongValue(), config.singleDefaultProduces, config.defaultProduces))
@@ -475,35 +457,59 @@ public class ResteasyReactiveProcessor {
                     .setFeatures(feats)
                     .setClientProxyUnwrapper(new ClientProxyUnwrapper())
                     .setApplicationSupplier(recorder.handleApplication(applicationClass, singletonClasses.isEmpty()))
-                    .setFactoryCreator(recorder.factoryCreator(beanContainerBuildItem.getValue()))
+                    .setFactoryCreator(recorder.factoryCreator())
                     .setDynamicFeatures(dynamicFeats)
                     .setSerialisers(serialisers)
                     .setApplicationPath(applicationPath)
                     .setResourceClasses(resourceClasses)
                     .setLocatableResourceClasses(subResourceClasses)
-                    .setParamConverterProviders(paramConverterProviders),
-                    beanContainerBuildItem.getValue(), shutdownContext, vertxConfig,
-                    requestContextFactoryBuildItem.map(RequestContextFactoryBuildItem::getFactory).orElse(null),
-                    initClassFactory);
+                    .setParamConverterProviders(paramConverterProviders);
+            return new ResteasyReactiveDeploymentInfoBuildItem(info, deploymentPath);
+        }
+    }
 
-            quarkusRestDeploymentBuildItemBuildProducer
-                    .produce(new ResteasyReactiveDeploymentBuildItem(deployment, deploymentPath));
-            if (!requestContextFactoryBuildItem.isPresent()) {
-                Handler<RoutingContext> handler = recorder.handler(deployment);
+    @BuildStep
+    @Record(ExecutionTime.STATIC_INIT)
+    void doDeploy(ResteasyReactiveDeploymentInfoBuildItem info,
+            ApplicationResultBuildItem applicationResultBuildItem,
+            BuildProducer<RouteBuildItem> routes,
+            ShutdownContextBuildItem shutdownContext,
+            ResteasyReactiveRecorder recorder,
+            HttpBuildTimeConfig vertxConfig,
+            Optional<RequestContextFactoryBuildItem> requestContextFactoryBuildItem,
+            BeanContainerBuildItem beanContainerBuildItem,
+            BuildProducer<ResteasyReactiveDeploymentBuildItem> quarkusRestDeploymentBuildItemBuildProducer) {
 
-                // Exact match for resources matched to the root path
-                routes.produce(new RouteBuildItem(
-                        new BasicRoute(deploymentPath, VertxHttpRecorder.DEFAULT_ROUTE_ORDER + 1), handler));
-                String matchPath = deploymentPath;
-                if (matchPath.endsWith("/")) {
-                    matchPath += "*";
-                } else {
-                    matchPath += "/*";
-                }
-                // Match paths that begin with the deployment path
-                routes.produce(
-                        new RouteBuildItem(new BasicRoute(matchPath, VertxHttpRecorder.DEFAULT_ROUTE_ORDER + 1), handler));
+        Function<String, BeanFactory<?>> factoryFunction = s -> FactoryUtils.factory(s,
+                applicationResultBuildItem.getResult().getSingletonClasses(), recorder);
+        info.getDeploymentInfo().getInterceptors().initializeDefaultFactories(factoryFunction);
+        info.getDeploymentInfo().getExceptionMapping().initializeDefaultFactories(factoryFunction);
+        info.getDeploymentInfo().getCtxResolvers().initializeDefaultFactories(factoryFunction);
+        info.getDeploymentInfo().getParamConverterProviders().initializeDefaultFactories(factoryFunction);
+
+        BeanFactory<ResteasyReactiveInitialiser> initClassFactory = recorder.factory(QUARKUS_INIT_CLASS);
+        RuntimeValue<Deployment> deployment = recorder.createDeployment(info.getDeploymentInfo(),
+                beanContainerBuildItem.getValue(), shutdownContext, vertxConfig,
+                requestContextFactoryBuildItem.map(RequestContextFactoryBuildItem::getFactory).orElse(null),
+                initClassFactory);
+
+        quarkusRestDeploymentBuildItemBuildProducer
+                .produce(new ResteasyReactiveDeploymentBuildItem(deployment, info.getApplicationPath()));
+        if (!requestContextFactoryBuildItem.isPresent()) {
+            Handler<RoutingContext> handler = recorder.handler(deployment);
+
+            // Exact match for resources matched to the root path
+            routes.produce(new RouteBuildItem(
+                    new BasicRoute(info.getApplicationPath(), VertxHttpRecorder.DEFAULT_ROUTE_ORDER + 1), handler));
+            String matchPath = info.getApplicationPath();
+            if (matchPath.endsWith("/")) {
+                matchPath += "*";
+            } else {
+                matchPath += "/*";
             }
+            // Match paths that begin with the deployment path
+            routes.produce(
+                    new RouteBuildItem(new BasicRoute(matchPath, VertxHttpRecorder.DEFAULT_ROUTE_ORDER + 1), handler));
         }
     }
 
@@ -579,19 +585,19 @@ public class ResteasyReactiveProcessor {
     }
 
     private void registerWriter(ResteasyReactiveRecorder recorder, ServerSerialisers serialisers, Class<?> entityClass,
-            Class<? extends MessageBodyWriter<?>> writerClass, BeanContainer beanContainer,
+            Class<? extends MessageBodyWriter<?>> writerClass,
             String mediaType) {
         ResourceWriter writer = new ResourceWriter();
-        writer.setFactory(recorder.factory(writerClass.getName(), beanContainer));
+        writer.setFactory(recorder.factory(writerClass.getName()));
         writer.setMediaTypeStrings(Collections.singletonList(mediaType));
         recorder.registerWriter(serialisers, entityClass.getName(), writer);
     }
 
     private void registerReader(ResteasyReactiveRecorder recorder, ServerSerialisers serialisers, Class<?> entityClass,
-            Class<? extends MessageBodyReader<?>> readerClass, BeanContainer beanContainer, String mediaType,
+            Class<? extends MessageBodyReader<?>> readerClass, String mediaType,
             RuntimeType constraint) {
         ResourceReader reader = new ResourceReader();
-        reader.setFactory(recorder.factory(readerClass.getName(), beanContainer));
+        reader.setFactory(recorder.factory(readerClass.getName()));
         reader.setMediaTypeStrings(Collections.singletonList(mediaType));
         reader.setConstraint(constraint);
         recorder.registerReader(serialisers, entityClass.getName(), reader);

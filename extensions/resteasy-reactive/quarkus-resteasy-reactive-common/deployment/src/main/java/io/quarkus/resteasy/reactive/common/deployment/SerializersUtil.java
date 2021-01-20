@@ -8,7 +8,6 @@ import org.jboss.resteasy.reactive.common.core.Serialisers;
 import org.jboss.resteasy.reactive.common.model.ResourceReader;
 import org.jboss.resteasy.reactive.common.model.ResourceWriter;
 
-import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.resteasy.reactive.common.runtime.ResteasyReactiveCommonRecorder;
@@ -22,7 +21,6 @@ public class SerializersUtil {
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
             List<MessageBodyReaderBuildItem> messageBodyReaderBuildItems,
             List<MessageBodyWriterBuildItem> messageBodyWriterBuildItems,
-            BeanContainerBuildItem beanContainerBuildItem,
             ApplicationResultBuildItem applicationResultBuildItem,
             Serialisers serialisers, RuntimeType runtimeType) {
 
@@ -32,8 +30,7 @@ public class SerializersUtil {
             writer.setBuiltin(additionalWriter.isBuiltin());
             String writerClassName = additionalWriter.getClassName();
             writer.setFactory(FactoryUtils.factory(writerClassName,
-                    applicationResultBuildItem.getResult().getSingletonClasses(), recorder,
-                    beanContainerBuildItem));
+                    applicationResultBuildItem.getResult().getSingletonClasses(), recorder));
             writer.setConstraint(additionalWriter.getRuntimeType());
             if (!additionalWriter.getMediaTypeStrings().isEmpty()) {
                 writer.setMediaTypeStrings(additionalWriter.getMediaTypeStrings());
@@ -47,8 +44,7 @@ public class SerializersUtil {
             reader.setBuiltin(additionalReader.isBuiltin());
             String readerClassName = additionalReader.getClassName();
             reader.setFactory(FactoryUtils.factory(readerClassName,
-                    applicationResultBuildItem.getResult().getSingletonClasses(), recorder,
-                    beanContainerBuildItem));
+                    applicationResultBuildItem.getResult().getSingletonClasses(), recorder));
             reader.setConstraint(additionalReader.getRuntimeType());
             if (!additionalReader.getMediaTypeStrings().isEmpty()) {
                 reader.setMediaTypeStrings(additionalReader.getMediaTypeStrings());

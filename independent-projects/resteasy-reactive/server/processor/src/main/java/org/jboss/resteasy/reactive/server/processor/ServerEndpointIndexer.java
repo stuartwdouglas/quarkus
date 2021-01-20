@@ -14,6 +14,7 @@ import io.quarkus.gizmo.MethodCreator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -63,6 +64,12 @@ public class ServerEndpointIndexer
         this.initConverters = builder.initConverters;
         this.endpointInvokerFactory = builder.endpointInvokerFactory;
         this.methodScanners = new ArrayList<>(builder.methodScanners);
+        methodScanners.sort(new Comparator<MethodScanner>() {
+            @Override
+            public int compare(MethodScanner o1, MethodScanner o2) {
+                return Integer.compare(o2.priority(), o1.priority());
+            }
+        });
     }
 
     protected void addWriterForType(AdditionalWriters additionalWriters, Type paramType) {
@@ -105,9 +112,9 @@ public class ServerEndpointIndexer
 
     @Override
     protected boolean handleCustomParameter(Map<DotName, AnnotationInstance> anns, ServerIndexedParameter builder,
-            Type paramType, boolean field, Map<String, Object> methodContext) {
+            Type paramType, boolean field, Map<String, Object> methodContext, String errorLocation) {
         for (MethodScanner i : methodScanners) {
-            ParameterExtractor res = i.handleCustomParameter(paramType, anns, field, methodContext);
+            ParameterExtractor res = i.handleCustomParameter(paramType, anns, field, methodContext, errorLocation);
             if (res != null) {
                 builder.setType(ParameterType.CUSTOM);
                 builder.setCustomerParameterExtractor(res);

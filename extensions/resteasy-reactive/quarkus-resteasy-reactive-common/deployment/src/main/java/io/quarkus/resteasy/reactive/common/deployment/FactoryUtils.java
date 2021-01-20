@@ -7,25 +7,21 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.resteasy.reactive.common.core.SingletonBeanFactory;
 import org.jboss.resteasy.reactive.spi.BeanFactory;
 
-import io.quarkus.arc.deployment.BeanContainerBuildItem;
 import io.quarkus.resteasy.reactive.common.runtime.ResteasyReactiveCommonRecorder;
 
 public class FactoryUtils {
     public static <T> BeanFactory<T> factory(ClassInfo providerClass, Set<String> singletons,
-            ResteasyReactiveCommonRecorder recorder,
-            BeanContainerBuildItem beanContainerBuildItem) {
-        return factory(providerClass.name().toString(), singletons, recorder, beanContainerBuildItem);
+            ResteasyReactiveCommonRecorder recorder) {
+        return factory(providerClass.name().toString(), singletons, recorder);
     }
 
     public static <T> BeanFactory<T> factory(String providerClass, Set<String> singletons,
-            ResteasyReactiveCommonRecorder recorder,
-            BeanContainerBuildItem beanContainerBuildItem) {
+            ResteasyReactiveCommonRecorder recorder) {
         Objects.requireNonNull(providerClass, "providerClass cannot be null");
         if (singletons.contains(providerClass)) {
             return new SingletonBeanFactory<>(providerClass);
         } else {
-            return recorder.factory(providerClass,
-                    beanContainerBuildItem.getValue());
+            return recorder.factory(providerClass);
         }
     }
 }

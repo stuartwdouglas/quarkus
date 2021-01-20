@@ -3,6 +3,8 @@ package io.quarkus.arc.deployment;
 import java.util.Collection;
 import java.util.stream.Stream;
 
+import org.jboss.jandex.ClassInfo;
+
 import io.quarkus.arc.processor.BeanDeployment;
 import io.quarkus.arc.processor.BeanInfo;
 import io.quarkus.arc.processor.BeanResolver;
@@ -17,12 +19,14 @@ abstract class RegisteredComponentsBuildItem extends SimpleBuildItem {
     private final Collection<InjectionPointInfo> injectionPoints;
     private final Collection<ObserverInfo> observers;
     private final BeanResolver beanResolver;
+    private final Collection<ClassInfo> qualifiers;
 
     public RegisteredComponentsBuildItem(BeanDeployment beanDeployment) {
         this.beans = beanDeployment.getBeans();
         this.injectionPoints = beanDeployment.getInjectionPoints();
         this.observers = beanDeployment.getObservers();
         this.beanResolver = beanDeployment.getBeanResolver();
+        this.qualifiers = beanDeployment.getQualifiers();
     }
 
     /**
@@ -63,4 +67,11 @@ abstract class RegisteredComponentsBuildItem extends SimpleBuildItem {
         return beanResolver;
     }
 
+    /**
+     *
+     * @return All registered qualifiers
+     */
+    public Collection<ClassInfo> getQualifiers() {
+        return qualifiers;
+    }
 }
