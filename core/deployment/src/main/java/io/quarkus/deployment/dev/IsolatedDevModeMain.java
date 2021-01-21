@@ -46,6 +46,7 @@ import io.quarkus.deployment.codegen.CodeGenData;
 import io.quarkus.deployment.steps.ClassTransformingBuildStep;
 import io.quarkus.deployment.util.FSWatchUtil;
 import io.quarkus.dev.console.DevConsoleManager;
+import io.quarkus.dev.spi.DeploymentFailedStartHandler;
 import io.quarkus.dev.spi.DevModeType;
 import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.runner.bootstrap.AugmentActionImpl;
@@ -86,7 +87,8 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                             @Override
                             public void accept(Integer integer) {
                                 if (restarting || ApplicationLifecycleManager.isVmShuttingDown()
-                                        || context.isAbortOnFailedStart()) {
+                                        || context.isAbortOnFailedStart() ||
+                                        context.isTest()) {
                                     return;
                                 }
                                 System.out.println("Quarkus application exited with code " + integer);
@@ -238,6 +240,21 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 hotReplacementSetups.add(service);
                 service.setupHotDeployment(processor);
                 processor.addHotReplacementSetup(service);
+            }
+            for (DeploymentFailedStartHandler service : ServiceLoader.load(DeploymentFailedStartHandler.class,
+                    curatedApplication.getAugmentClassLoader())) {
+                processor.addDeploymentFailedStartHandler(new Runnable() {
+                    @Override
+                    public void run() {
+                        ClassLoader old = Thread.currentThread().getContextClassLoader();
+                        try {
+                            Thread.currentThread().setContextClassLoader(curatedApplication.getAugmentClassLoader());
+                            service.handleFailedInitialStart();
+                        } finally {
+                            Thread.currentThread().setContextClassLoader(old);
+                        }
+                    }
+                });
             }
             DevConsoleManager.setQuarkusBootstrap(curatedApplication.getQuarkusBootstrap());
             DevConsoleManager.setHotReplacementContext(processor);

@@ -1,5 +1,7 @@
 package io.quarkus.arc.runtime;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -10,6 +12,7 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.runtime.configuration.ConfigurationException;
 import io.smallrye.config.ConfigMappings;
 import io.smallrye.config.SmallRyeConfig;
 
@@ -25,6 +28,8 @@ public class ConfigRecorder {
         if (cl == null) {
             cl = ConfigRecorder.class.getClassLoader();
         }
+        Set<String> problems = new HashSet<>();
+        StringBuilder msg = new StringBuilder();
         for (Entry<String, Set<String>> entry : properties.entrySet()) {
             Set<String> propertyTypes = entry.getValue();
             for (String propertyType : propertyTypes) {
@@ -35,14 +40,21 @@ public class ConfigRecorder {
                 }
                 try {
                     if (!config.getOptionalValue(entry.getKey(), propertyClass).isPresent()) {
-                        throw new DeploymentException(
-                                "No config value of type " + entry.getValue() + " exists for: " + entry.getKey());
+                        problems.add(entry.getKey());
+                        if (msg.length() != 0) {
+                            msg.append("\n");
+                        }
+                        msg.append("No config value of type " + entry.getValue() + " exists for: " + entry.getKey());
                     }
                 } catch (IllegalArgumentException e) {
-                    throw new DeploymentException(
-                            "Failed to load config value of type " + entry.getValue() + " for: " + entry.getKey(), e);
+                    throw new DeploymentException(new ConfigurationException(
+                            "Failed to load config value of type " + entry.getValue() + " for: " + entry.getKey(), e,
+                            Collections.singleton(entry.getKey())));
                 }
             }
+        }
+        if (!problems.isEmpty()) {
+            throw new DeploymentException(new ConfigurationException(msg.toString(), problems));
         }
     }
 

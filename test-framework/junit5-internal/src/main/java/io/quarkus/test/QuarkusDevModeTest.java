@@ -97,6 +97,7 @@ public class QuarkusDevModeTest
     private Path projectSourceRoot;
     private Path testLocation;
     private String[] commandLineArgs = new String[0];
+    private boolean allowFailedStart = false;
 
     private static final List<CompilationProvider> compilationProviders;
 
@@ -200,13 +201,17 @@ public class QuarkusDevModeTest
             DevModeContext context = exportArchive(deploymentDir, projectSourceRoot, projectSourceParent);
             context.setArgs(commandLineArgs);
             context.setTest(true);
-            context.setAbortOnFailedStart(true);
+            context.setAbortOnFailedStart(!allowFailedStart);
             context.getBuildSystemProperties().put("quarkus.banner.enabled", "false");
             devModeMain = new DevModeMain(context);
             devModeMain.start();
             ApplicationStateNotification.waitForApplicationStart();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            if (allowFailedStart) {
+                e.printStackTrace();
+            } else {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -636,4 +641,12 @@ public class QuarkusDevModeTest
         return null;
     }
 
+    public boolean isAllowFailedStart() {
+        return allowFailedStart;
+    }
+
+    public QuarkusDevModeTest setAllowFailedStart(boolean allowFailedStart) {
+        this.allowFailedStart = allowFailedStart;
+        return this;
+    }
 }

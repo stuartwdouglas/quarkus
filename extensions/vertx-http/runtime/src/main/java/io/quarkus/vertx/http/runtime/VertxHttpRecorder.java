@@ -218,7 +218,6 @@ public class VertxHttpRecorder {
                     return ProcessorInfo.availableProcessors() * 2; //this is dev mode, so the number of IO threads not always being 100% correct does not really matter in this case
                 }
             }, null);
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

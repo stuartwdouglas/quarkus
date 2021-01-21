@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.Statement;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -128,12 +129,17 @@ public class DataSources {
         if (!dataSourceJdbcRuntimeConfig.url.isPresent()) {
             String errorMessage;
             // we don't have any URL configuration so using a standard message
+            String name;
             if (DataSourceUtil.isDefault(dataSourceName)) {
                 errorMessage = "quarkus.datasource.jdbc.url has not been defined";
+                name = "quarkus.datasource.jdbc.url";
             } else {
                 errorMessage = "quarkus.datasource." + dataSourceName + ".jdbc.url has not been defined";
+                name = "quarkus.datasource." + dataSourceName;
             }
-            throw new ConfigurationException(errorMessage);
+            throw new ConfigurationException(errorMessage,
+                    Collections.singleton("quarkus.datasource"
+                            + (dataSourceName.equals("<default>") ? "" : "." + dataSourceName) + ".jdbc.url"));
         }
 
         // we first make sure that all available JDBC drivers are loaded in the current TCCL

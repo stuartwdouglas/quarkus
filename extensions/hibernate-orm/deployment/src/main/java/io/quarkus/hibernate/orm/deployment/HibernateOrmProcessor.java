@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -695,7 +696,9 @@ public final class HibernateOrmProcessor {
                         || DataSourceUtil.isDefault(hibernateOrmConfig.defaultPersistenceUnit.datasource.get()))
                 && !defaultJdbcDataSource.isPresent()) {
             throw new ConfigurationException(
-                    "Model classes are defined for the default persistence unit but no default datasource found: the default EntityManagerFactory will not be created.");
+                    "Model classes are defined for the default persistence unit but no default datasource found: the default EntityManagerFactory will not be created.",
+                    new HashSet<>(Arrays.asList("quarkus.datasource.db-kind", "quarkus.datasource.username",
+                            "quarkus.datasource.password", "quarkus.datasource.jdbc.url")));
         }
 
         for (Entry<String, HibernateOrmConfigPersistenceUnit> persistenceUnitEntry : hibernateOrmConfig.persistenceUnits
@@ -738,7 +741,9 @@ public final class HibernateOrmProcessor {
                     .findFirst()
                     .orElseThrow(() -> new ConfigurationException(
                             String.format("The datasource '%1$s' is not configured but the persistence unit '%2$s' uses it.",
-                                    persistenceUnitConfig.datasource.get(), persistenceUnitName)));
+                                    persistenceUnitConfig.datasource.get(), persistenceUnitName),
+                            new HashSet<>(Arrays.asList("quarkus.datasource.db-kind", "quarkus.datasource.username",
+                                    "quarkus.datasource.password", "quarkus.datasource.jdbc.url"))));
             dataSource = persistenceUnitConfig.datasource.get();
         } else {
             if (!PersistenceUnitUtil.isDefaultPersistenceUnit(persistenceUnitName)) {
@@ -752,7 +757,9 @@ public final class HibernateOrmProcessor {
                     .findFirst()
                     .orElseThrow(() -> new ConfigurationException(
                             String.format("The default datasource is not configured but the persistence unit '%s' uses it.",
-                                    persistenceUnitName)));
+                                    persistenceUnitName),
+                            new HashSet<>(Arrays.asList("quarkus.datasource.db-kind", "quarkus.datasource.username",
+                                    "quarkus.datasource.password", "quarkus.datasource.jdbc.url"))));
             dataSource = DataSourceUtil.DEFAULT_DATASOURCE_NAME;
         }
 

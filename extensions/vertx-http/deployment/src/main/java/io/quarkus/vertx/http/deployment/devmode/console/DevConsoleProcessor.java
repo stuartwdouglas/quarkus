@@ -111,6 +111,7 @@ public class DevConsoleProcessor {
         if (virtualBootstrap != null) {
             return;
         }
+        DevConsoleManager.registerHandler(new DevConsoleHttpHandler());
         devConsoleVertx = Vertx.vertx();
         VertxInternal vertx = (VertxInternal) devConsoleVertx;
         QuarkusClassLoader ccl = (QuarkusClassLoader) DevConsoleProcessor.class.getClassLoader();
@@ -289,7 +290,6 @@ public class DevConsoleProcessor {
             }
         }
 
-        DevConsoleManager.registerHandler(new DevConsoleHttpHandler());
         //must be last so the above routes have precedence
         routeBuildItemBuildProducer.produce(new RouteBuildItem.Builder()
                 .route("/dev/*")
