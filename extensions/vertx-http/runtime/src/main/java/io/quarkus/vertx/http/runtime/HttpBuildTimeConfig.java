@@ -31,29 +31,38 @@ public class HttpBuildTimeConfig {
     public boolean virtual;
 
     /**
-     * The HTTP root path for non application endpoints. Various endpoints such as metrics, health,
-     * and open api are deployed under this path.
-     * Setting the value to "/" disables the separate non application root,
-     * resulting in all non application endpoints being served from "/" along with the application.
+     * The HTTP root path for non-application endpoints. Various extension-provided endpoints such as metrics, health,
+     * and openapi are deployed under this path.
+     * <p>
+     * <dl>
+     *     <dt>Relative path (Default, {@literal q})</dt>
+     *     <dd>Non-application endpoints will be served from {@literal quarkus.http.root-path}{@literal /}{quarkus.http.non-application-root-path}.</dd>
+     *     <dt>Absolute path ({@literal /q}</dt>
+     *     <dd>Non-application endpoints will be served from {@literal quarkus.http.root-path}{@literal /}{quarkus.http.non-application-root-path}.</dd>
+     *     <dt>Empty path</dt>
+     *     <dd>Non-application endpoints will be served from {@literal quarkus.http.root-path}.</dd>
+     * </dl>
      */
-    @ConfigItem(defaultValue = "/q")
+    @ConfigItem(defaultValue = "q")
     public String nonApplicationRootPath;
 
     /**
-     * Whether to redirect non application endpoints from previous location off the root to the
-     * new non application root path.
-     * Enabled by default.
+     * Provide redirect endpoints for non-application endpoints existing prior to Quarkus 1.10.
+     * Specifically:
+     * <ul>
+     *     <li>/graphql-ui</li>
+     *     <li>/health</li>
+     *     <li>/health-ui</li>
+     *     <li>/metrics</li>
+     *     <li>/openapi</li>
+     *     <li>/swagger-ui</li>
+     * </ul>
+     * <p>
+     * Default is {@literal true} for Quarkus 1.11.x to facilitate transition to name-spaced URIs using {quarkus.http.non-application-root-path}.
+     * <p>
+     * Quarkus 1.12 will change the default to {@literal false},
+     * and the config item will be removed in Quarkus 2.0.
      */
     @ConfigItem(defaultValue = "true")
     public boolean redirectToNonApplicationRootPath;
-
-    public String adjustPath(String path) {
-        if (!path.startsWith("/")) {
-            throw new IllegalArgumentException("Path must start with /");
-        }
-        if (rootPath.equals("/")) {
-            return path;
-        }
-        return rootPath + path;
-    }
 }
