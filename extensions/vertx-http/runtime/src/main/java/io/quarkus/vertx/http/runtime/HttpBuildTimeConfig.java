@@ -48,7 +48,7 @@ public class HttpBuildTimeConfig {
 
     /**
      * Provide redirect endpoints for non-application endpoints existing prior to Quarkus 1.11.
-     * Specifically:
+     * This will trigger HTTP 301 Redirects for the following:
      * <ul>
      *     <li>/graphql-ui</li>
      *     <li>/health</li>
