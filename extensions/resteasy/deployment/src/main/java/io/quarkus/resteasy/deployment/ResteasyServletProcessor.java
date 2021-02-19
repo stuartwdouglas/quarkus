@@ -56,8 +56,8 @@ public class ResteasyServletProcessor {
             BuildProducer<io.quarkus.resteasy.server.common.spi.ResteasyJaxrsConfigBuildItem> resteasyJaxrsConfig,
             HttpRootPathBuildItem httpRootPathBuildItem) {
         if (resteasyServerConfig.isPresent()) {
-            String rootPath = httpRootPathBuildItem.adjustPath(resteasyServerConfig.get().getRootPath());
-            String defaultPath = httpRootPathBuildItem.adjustPath(resteasyServerConfig.get().getPath());
+            String rootPath = httpRootPathBuildItem.resolvePath(resteasyServerConfig.get().getRootPath());
+            String defaultPath = httpRootPathBuildItem.resolvePath(resteasyServerConfig.get().getPath());
 
             deprecatedResteasyJaxrsConfig.produce(new ResteasyJaxrsConfigBuildItem(defaultPath));
             resteasyJaxrsConfig

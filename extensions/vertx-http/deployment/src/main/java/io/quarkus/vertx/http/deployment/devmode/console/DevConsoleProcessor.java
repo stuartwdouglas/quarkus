@@ -189,10 +189,10 @@ public class DevConsoleProcessor {
             NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) {
 
         // "" or "/myroot"
-        String httpRootPath = httpRootPathBuildItem.adjustPath("/");
+        String httpRootPath = httpRootPathBuildItem.resolvePath("/");
         httpRootPath = httpRootPath.substring(0, httpRootPath.lastIndexOf("/"));
         // "" or "/myroot" or "/q" or "/myroot/q"
-        String frameworkRootPath = httpRootPathBuildItem.adjustPath(nonApplicationRootPathBuildItem.adjustPath("/"));
+        String frameworkRootPath = httpRootPathBuildItem.resolvePath(nonApplicationRootPathBuildItem.resolvePath("/"));
         frameworkRootPath = frameworkRootPath.substring(0, frameworkRootPath.lastIndexOf("/"));
 
         Handler<RoutingContext> errorHandler = new Handler<RoutingContext>() {
@@ -211,7 +211,7 @@ public class DevConsoleProcessor {
                 .handler(new DevConsole(engine, httpRootPath, frameworkRootPath));
         mainRouter = Router.router(devConsoleVertx);
         mainRouter.errorHandler(500, errorHandler);
-        mainRouter.route(httpRootPathBuildItem.adjustPath(nonApplicationRootPathBuildItem.adjustPath("/dev/*")))
+        mainRouter.route(httpRootPathBuildItem.resolvePath(nonApplicationRootPathBuildItem.resolvePath("/dev/*")))
                 .subRouter(router);
     }
 
@@ -326,7 +326,7 @@ public class DevConsoleProcessor {
     public void setupActions(BuildProducer<NotFoundPageDisplayableEndpointBuildItem> displayableEndpoints,
             NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) {
         displayableEndpoints.produce(new NotFoundPageDisplayableEndpointBuildItem(
-                nonApplicationRootPathBuildItem.adjustPath("/dev/"), "Dev UI"));
+                nonApplicationRootPathBuildItem.resolvePath("/dev/"), "Dev UI"));
     }
 
     @BuildStep(onlyIf = IsDevelopment.class)

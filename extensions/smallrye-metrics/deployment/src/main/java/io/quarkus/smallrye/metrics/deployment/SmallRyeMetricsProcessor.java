@@ -144,7 +144,7 @@ public class SmallRyeMetricsProcessor {
     MetricsCapabilityBuildItem metricsCapabilityBuildItem(NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) {
         if (metrics.extensionsEnabled) {
             return new MetricsCapabilityBuildItem(MetricsFactory.MP_METRICS::equals,
-                    nonApplicationRootPathBuildItem.adjustPath(metrics.path));
+                    nonApplicationRootPathBuildItem.resolvePath(metrics.path));
         }
         return null;
     }
@@ -166,13 +166,13 @@ public class SmallRyeMetricsProcessor {
         }
         routes.produce(new RouteBuildItem.Builder()
                 .routeFunction(route)
-                .handler(recorder.handler(frameworkRoot.adjustPathIncludingHttpRootPath(metrics.path)))
+                .handler(recorder.handler(frameworkRoot.resolvePath(metrics.path)))
                 .blockingRoute()
                 .nonApplicationRoute()
                 .build());
         routes.produce(new RouteBuildItem.Builder()
                 .routeFunction(slash)
-                .handler(recorder.handler(frameworkRoot.adjustPathIncludingHttpRootPath(metrics.path)))
+                .handler(recorder.handler(frameworkRoot.resolvePath(metrics.path)))
                 .blockingRoute()
                 .nonApplicationRoute()
                 .build());

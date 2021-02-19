@@ -161,7 +161,7 @@ class SmallRyeHealthProcessor {
 
         // add health endpoints to not found page
         if (launchMode.getLaunchMode().isDevOrTest()) {
-            String basePath = nonApplicationRootPathBuildItem.adjustPath(healthConfig.rootPath);
+            String basePath = nonApplicationRootPathBuildItem.resolvePath(healthConfig.rootPath);
             displayableEndpoints.produce(new NotFoundPageDisplayableEndpointBuildItem(basePath));
             String subcontextBasePath = adjustSubcontextBasePath(basePath);
             displayableEndpoints
@@ -294,7 +294,7 @@ class SmallRyeHealthProcessor {
 
         // Add to OpenAPI if OpenAPI is available
         if (capabilities.isPresent(Capability.SMALLRYE_OPENAPI)) {
-            String basePath = httpRootPath.adjustPath(nonApplicationRootPathBuildItem.adjustPath(healthConfig.rootPath));
+            String basePath = httpRootPath.resolvePath(nonApplicationRootPathBuildItem.resolvePath(healthConfig.rootPath));
             String subcontextBasePath = adjustSubcontextBasePath(basePath);
             HealthOpenAPIFilter filter = new HealthOpenAPIFilter(basePath,
                     subcontextBasePath + healthConfig.livenessPath,
@@ -337,11 +337,11 @@ class SmallRyeHealthProcessor {
         livenessPathItemProducer.produce(
                 new KubernetesHealthLivenessPathBuildItem(
                         httpConfig
-                                .adjustPath(frameworkRootPath.adjustPath(subcontextBasePath + healthConfig.livenessPath))));
+                                .adjustPath(frameworkRootPath.resolvePath(subcontextBasePath + healthConfig.livenessPath))));
         readinessPathItemProducer.produce(
                 new KubernetesHealthReadinessPathBuildItem(
                         httpConfig
-                                .adjustPath(frameworkRootPath.adjustPath(subcontextBasePath + healthConfig.readinessPath))));
+                                .adjustPath(frameworkRootPath.resolvePath(subcontextBasePath + healthConfig.readinessPath))));
     }
 
     @BuildStep
@@ -416,8 +416,8 @@ class SmallRyeHealthProcessor {
                         "quarkus.smallrye-health.root-path-ui was set to \"/\", this is not allowed as it blocks the application from serving anything else.");
             }
 
-            String healthPath = httpRootPath.adjustPath(nonApplicationRootPathBuildItem.adjustPath(healthConfig.rootPath));
-            String healthUiPath = httpRootPath.adjustPath(nonApplicationRootPathBuildItem.adjustPath(healthConfig.ui.rootPath));
+            String healthPath = httpRootPath.resolvePath(nonApplicationRootPathBuildItem.resolvePath(healthConfig.rootPath));
+            String healthUiPath = httpRootPath.resolvePath(nonApplicationRootPathBuildItem.resolvePath(healthConfig.ui.rootPath));
 
             AppArtifact artifact = WebJarUtil.getAppArtifact(curateOutcomeBuildItem, HEALTH_UI_WEBJAR_GROUP_ID,
                     HEALTH_UI_WEBJAR_ARTIFACT_ID);
@@ -433,7 +433,7 @@ class SmallRyeHealthProcessor {
                 notFoundPageDisplayableEndpointProducer
                         .produce(new NotFoundPageDisplayableEndpointBuildItem(
                                 nonApplicationRootPathBuildItem
-                                        .adjustPath(healthConfig.ui.rootPath + "/")));
+                                        .resolvePath(healthConfig.ui.rootPath + "/")));
 
                 // Handle live reload of branding files
                 if (liveReloadBuildItem.isLiveReload() && !liveReloadBuildItem.getChangedResources().isEmpty()) {

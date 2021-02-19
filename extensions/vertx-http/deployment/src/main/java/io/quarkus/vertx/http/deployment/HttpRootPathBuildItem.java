@@ -1,26 +1,35 @@
 package io.quarkus.vertx.http.deployment;
 
+import java.net.URI;
+
 import io.quarkus.builder.item.SimpleBuildItem;
+import io.quarkus.deployment.util.UriNormalizationUtil;
 
 public final class HttpRootPathBuildItem extends SimpleBuildItem {
 
-    private final String rootPath;
+    /**
+     * Normalized from quarkus.http.root-path.
+     * Will end in a slash
+     */
+    private final URI rootPath;
 
     public HttpRootPathBuildItem(String rootPath) {
-        this.rootPath = rootPath;
+        this.rootPath = UriNormalizationUtil.toURI(rootPath, true);
     }
 
     public String getRootPath() {
-        return rootPath;
+        return rootPath.getPath();
     }
 
-    public String adjustPath(String path) {
-        if (!path.startsWith("/")) {
-            throw new IllegalArgumentException("Path must start with /");
-        }
-        if (rootPath.equals("/")) {
-            return path;
-        }
-        return rootPath + path;
+    /**
+     * Resolve path into an absolute path.
+     * If path is relative, it will be resolved against `quarkus.http.root-path`.
+     * An absolute path will be normalized and returned.
+     *
+     * @param path Path to be resolved to an absolute path.
+     * @return An absolute path
+     */
+    public String resolvePath(String path) {
+        return UriNormalizationUtil.normalizeWithBase(rootPath, path, false).getPath();
     }
 }

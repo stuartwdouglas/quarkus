@@ -21,7 +21,7 @@ public class ArcEndpointProcessor {
             BuildProducer<RouteBuildItem> routes,
             BuildProducer<NotFoundPageDisplayableEndpointBuildItem> displayableEndpoints,
             NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) {
-        String basePath = nonApplicationRootPathBuildItem.adjustPath("/arc");
+        String basePath = nonApplicationRootPathBuildItem.resolvePath("/arc");
         String beansPath = basePath + "/beans";
         String removedBeansPath = basePath + "/removed-beans";
         String observersPath = basePath + "/observers";

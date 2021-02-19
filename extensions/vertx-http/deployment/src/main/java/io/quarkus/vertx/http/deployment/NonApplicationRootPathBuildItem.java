@@ -1,54 +1,51 @@
 package io.quarkus.vertx.http.deployment;
 
+import java.net.URI;
+
 import io.quarkus.builder.item.SimpleBuildItem;
+import io.quarkus.deployment.util.UriNormalizationUtil;
 
 public final class NonApplicationRootPathBuildItem extends SimpleBuildItem {
-    private final String httpRootPath;
-    private final String frameworkRootPath;
-    private final boolean separateRoot;
+    /**
+     * Normalized of quarkus.http.root-path.
+     * Must end in a slash
+     */
+    protected final URI httpRootPath;
 
-    public NonApplicationRootPathBuildItem(String frameworkRootPath) {
-        this(frameworkRootPath, null);
+    /**
+     * Normalized from quarkus.http.non-application-root-path
+     */
+    private final URI nonApplicationRootPath;
+
+    private final boolean separateRouterRequired;
+
+    public NonApplicationRootPathBuildItem(String httpRootPath, String nonApplicationRootPath) {
+        // Presume value always starts with a slash and is normalized
+        this.httpRootPath = UriNormalizationUtil.toURI(httpRootPath, true);
+
+        this.nonApplicationRootPath = UriNormalizationUtil.normalizeWithBase(this.httpRootPath, nonApplicationRootPath,
+                true);
+
+        this.separateRouterRequired = !nonApplicationRootPath.equals(httpRootPath);
     }
 
-    public NonApplicationRootPathBuildItem(String frameworkRootPath, String httpRootPath) {
-        this.frameworkRootPath = frameworkRootPath;
-        this.separateRoot = frameworkRootPath != null
-                && !frameworkRootPath.equals("")
-                && !frameworkRootPath.equals("/");
-        this.httpRootPath = httpRootPath;
+    public String getNonApplicationRootPath() {
+        return nonApplicationRootPath.getPath();
     }
 
-    public String getFrameworkRootPath() {
-        return frameworkRootPath;
-    }
-
-    public boolean isSeparateRoot() {
-        return separateRoot;
+    public boolean isSeparateRouterRequired() {
+        return separateRouterRequired;
     }
 
     /**
-     * Adjusts a path by including the non-application root path.
+     * Resolve path into an absolute path.
+     * If path is relative, it will be resolved against `quarkus.http.non-application-root-path`.
+     * An absolute path will be normalized and returned.
+     *
+     * @param path Path to be resolved to an absolute path.
+     * @return An absolute path
      */
-    public String adjustPath(String path) {
-        if (!path.startsWith("/")) {
-            throw new IllegalArgumentException("Path must start with /");
-        }
-        if (frameworkRootPath.equals("/")) {
-            return path;
-        }
-        return frameworkRootPath + path;
-    }
-
-    /**
-     * Adjusts a path by including both the non-application root path and
-     * the HTTP root path.
-     */
-    public String adjustPathIncludingHttpRootPath(String path) {
-        String withFrameWorkPath = adjustPath(path);
-        if (httpRootPath == null || httpRootPath.equals("/")) {
-            return withFrameWorkPath;
-        }
-        return httpRootPath + withFrameWorkPath;
+    public String resolvePath(String path) {
+        return UriNormalizationUtil.normalizeWithBase(nonApplicationRootPath, path, false).getPath();
     }
 }

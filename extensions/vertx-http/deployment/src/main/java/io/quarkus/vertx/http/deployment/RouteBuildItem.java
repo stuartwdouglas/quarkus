@@ -141,7 +141,7 @@ public final class RouteBuildItem extends MultiBuildItem {
 
         public Builder nonApplicationRoute() {
             this.frameworkRoute = true;
-            this.requiresLegacyRedirect = true;
+            this.requiresLegacyRedirect = false;
             return this;
         }
 

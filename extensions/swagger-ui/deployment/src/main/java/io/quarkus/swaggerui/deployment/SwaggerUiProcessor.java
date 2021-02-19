@@ -93,9 +93,9 @@ public class SwaggerUiProcessor {
                         "quarkus.swagger-ui.path was set to \"/\", this is not allowed as it blocks the application from serving anything else.");
             }
 
-            String openApiPath = httpRootPathBuildItem.adjustPath(nonApplicationRootPathBuildItem.adjustPath(openapi.path));
+            String openApiPath = httpRootPathBuildItem.resolvePath(nonApplicationRootPathBuildItem.resolvePath(openapi.path));
             String swaggerUiPath = httpRootPathBuildItem
-                    .adjustPath(nonApplicationRootPathBuildItem.adjustPath(swaggerUiConfig.path));
+                    .resolvePath(nonApplicationRootPathBuildItem.resolvePath(swaggerUiConfig.path));
 
             AppArtifact artifact = WebJarUtil.getAppArtifact(curateOutcomeBuildItem, SWAGGER_UI_WEBJAR_GROUP_ID,
                     SWAGGER_UI_WEBJAR_ARTIFACT_ID);
@@ -109,7 +109,7 @@ public class SwaggerUiProcessor {
 
                 swaggerUiBuildProducer.produce(new SwaggerUiBuildItem(tempPath.toAbsolutePath().toString(), swaggerUiPath));
                 displayableEndpoints.produce(new NotFoundPageDisplayableEndpointBuildItem(
-                        nonApplicationRootPathBuildItem.adjustPath(swaggerUiConfig.path + "/"), "Open API UI"));
+                        nonApplicationRootPathBuildItem.resolvePath(swaggerUiConfig.path + "/"), "Open API UI"));
 
                 // Handle live reload of branding files
                 if (liveReloadBuildItem.isLiveReload() && !liveReloadBuildItem.getChangedResources().isEmpty()) {
