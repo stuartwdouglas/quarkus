@@ -38,7 +38,7 @@ public class HttpBuildTimeConfig {
      *     <dt>Relative path (Default, {@literal q})</dt>
      *     <dd>Non-application endpoints will be served from {@literal quarkus.http.root-path}{@literal /}{quarkus.http.non-application-root-path}.</dd>
      *     <dt>Absolute path ({@literal /q}</dt>
-     *     <dd>Non-application endpoints will be served from {@literal quarkus.http.root-path}{@literal /}{quarkus.http.non-application-root-path}.</dd>
+     *     <dd>Non-application endpoints will be served from the specified path.</dd>
      *     <dt>Empty path</dt>
      *     <dd>Non-application endpoints will be served from {@literal quarkus.http.root-path}.</dd>
      * </dl>
