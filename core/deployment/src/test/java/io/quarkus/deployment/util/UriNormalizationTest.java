@@ -19,94 +19,7 @@ public class UriNormalizationTest {
     }
 
     @Test
-    void testNormalizeSlashRelativePaths() {
-        URI root = UriNormalizationUtil.toURI("/", true);
-        URI app = UriNormalizationUtil.toURI("/app", true);
-        URI q = UriNormalizationUtil.toURI("/app/q", true);
-
-        Assertions.assertEquals("/", UriNormalizationUtil.normalizeWithBase(root, "#example", false).getPath());
-        Assertions.assertEquals("/", UriNormalizationUtil.normalizeWithBase(root, "?example", false).getPath());
-
-        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(root, "example", false).getPath());
-        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(root, "./example", false).getPath());
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(root, "junk/../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(root, "junk/../../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(root, "../example", false));
-
-        Assertions.assertEquals("/app/example", UriNormalizationUtil.normalizeWithBase(app, "example", false).getPath());
-        Assertions.assertEquals("/app/example", UriNormalizationUtil.normalizeWithBase(app, "./example", false).getPath());
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(app, "junk/../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(app, "junk/../../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(app, "../example", false));
-
-        Assertions.assertEquals("/app/q/example", UriNormalizationUtil.normalizeWithBase(q, "example", false).getPath());
-        Assertions.assertEquals("/app/q/example", UriNormalizationUtil.normalizeWithBase(q, "./example", false).getPath());
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(q, "junk/../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(q, "junk/../../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(q, "../example", false));
-    }
-
-    @Test
-    void normalizeAbsolutePaths() {
-        URI root = UriNormalizationUtil.toURI("/", true);
-        URI app = UriNormalizationUtil.toURI("/app", true);
-        URI q = UriNormalizationUtil.toURI("/app/q", true);
-
-        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(root, "/example", false).getPath());
-        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(root, "//example", false).getPath());
-        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(root, "/example#", false).getPath());
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(root, "/%2fexample", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(root, "/junk/../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(root, "/junk/../../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(root, "/../example", false));
-
-        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(app, "/example", false).getPath());
-        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(app, "//example", false).getPath());
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(app, "/%2fexample", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(app, "/junk/../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(app, "/junk/../../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(app, "/../example", false));
-
-        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(q, "/example", false).getPath());
-        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(q, "//example", false).getPath());
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(q, "/%2fexample", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(q, "/junk/../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(q, "/junk/../../example", false));
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> UriNormalizationUtil.normalizeWithBase(q, "/../example", false));
-    }
-
-    @Test
-    void testNormalizeRelativePaths() {
-        URI root = UriNormalizationUtil.toURI("bob", true);
-        Assertions.assertEquals("bob/", UriNormalizationUtil.normalizeWithBase(root, "#example", false).getPath());
-        Assertions.assertEquals("bob/", UriNormalizationUtil.normalizeWithBase(root, "?example", false).getPath());
-        Assertions.assertEquals("bob/george", UriNormalizationUtil.normalizeWithBase(root, "george", false).getPath());
-        Assertions.assertEquals("/george", UriNormalizationUtil.normalizeWithBase(root, "/george", false).getPath());
-    }
-
-    @Test
-    void testMoreThings() {
+    void testExamples() {
         URI root = UriNormalizationUtil.toURI("/", true);
         URI prefix = UriNormalizationUtil.toURI("/prefix", true);
         URI foo = UriNormalizationUtil.toURI("foo", true);
@@ -125,6 +38,25 @@ public class UriNormalizationTest {
         Assertions.assertEquals("foo/example", UriNormalizationUtil.normalizeWithBase(foo, "example", false).getPath());
         Assertions.assertEquals("/example/", UriNormalizationUtil.normalizeWithBase(foo, "/example", true).getPath());
         Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(foo, "/example", false).getPath());
+    }
 
+    @Test
+    void testDubiousUriPaths() {
+        URI root = UriNormalizationUtil.toURI("/", true);
+
+        Assertions.assertEquals("/", UriNormalizationUtil.normalizeWithBase(root, "#example", false).getPath());
+        Assertions.assertEquals("/", UriNormalizationUtil.normalizeWithBase(root, "?example", false).getPath());
+
+        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(root, "./example", false).getPath());
+        Assertions.assertEquals("/example", UriNormalizationUtil.normalizeWithBase(root, "//example", false).getPath());
+
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> UriNormalizationUtil.normalizeWithBase(root, "/%2fexample", false));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> UriNormalizationUtil.normalizeWithBase(root, "junk/../example", false));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> UriNormalizationUtil.normalizeWithBase(root, "junk/../../example", false));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> UriNormalizationUtil.normalizeWithBase(root, "../example", false));
     }
 }

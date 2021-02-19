@@ -91,6 +91,7 @@ public class UriNormalizationUtil {
      * </ul>
      *
      * @param base URI to resolve relative paths. Use {@link #toURI(String, boolean)} to construct this parameter.
+     * 
      * @param segment Relative or absolute path
      * @param trailingSlash true if resulting URI must end with a '/'
      * @throws IllegalArgumentException if the path contains invalid characters or path segments.
