@@ -36,7 +36,7 @@ public class HttpBuildTimeConfig {
      * <p>
      * <dl>
      *     <dt>Relative path (Default, {@literal q})</dt>
-     *     <dd>Non-application endpoints will be served from {@literal quarkus.http.root-path}{@literal /}{quarkus.http.non-application-root-path}.</dd>
+     *     <dd>Non-application endpoints will be served from {@literal quarkus.http.root-path}{@literal /}{@literal quarkus.http.non-application-root-path}.</dd>
      *     <dt>Absolute path ({@literal /q}</dt>
      *     <dd>Non-application endpoints will be served from the specified path.</dd>
      *     <dt>Empty path</dt>
@@ -47,7 +47,7 @@ public class HttpBuildTimeConfig {
     public String nonApplicationRootPath;
 
     /**
-     * Provide redirect endpoints for non-application endpoints existing prior to Quarkus 1.10.
+     * Provide redirect endpoints for non-application endpoints existing prior to Quarkus 1.11.
      * Specifically:
      * <ul>
      *     <li>/graphql-ui</li>
