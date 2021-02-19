@@ -9,9 +9,9 @@ public class HttpRootPathBuildItemTest {
         HttpRootPathBuildItem buildItem = new HttpRootPathBuildItem("/");
 
         Assertions.assertEquals("/", buildItem.resolvePath(""));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("extension"));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("/extension"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../extension"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("foo"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("/foo"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../foo"));
     }
 
     @Test
@@ -19,8 +19,8 @@ public class HttpRootPathBuildItemTest {
         HttpRootPathBuildItem buildItem = new HttpRootPathBuildItem("/app");
 
         Assertions.assertEquals("/app/", buildItem.resolvePath(""));
-        Assertions.assertEquals("/app/extension", buildItem.resolvePath("extension"));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("/extension"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../extension"));
+        Assertions.assertEquals("/app/foo", buildItem.resolvePath("foo"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("/foo"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../foo"));
     }
 }

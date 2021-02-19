@@ -9,11 +9,11 @@ public class NonApplicationRootPathBuildItemTest {
         NonApplicationRootPathBuildItem buildItem = new NonApplicationRootPathBuildItem("/", "q");
 
         Assertions.assertEquals("/q/", buildItem.resolvePath(""));
-        Assertions.assertEquals("/q/extension", buildItem.resolvePath("extension"));
-        Assertions.assertEquals("/q/extension/sub/path", buildItem.resolvePath("extension/sub/path"));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("/extension"));
-        Assertions.assertEquals("/extension/sub/path", buildItem.resolvePath("/extension/sub/path"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../extension"));
+        Assertions.assertEquals("/q/foo", buildItem.resolvePath("foo"));
+        Assertions.assertEquals("/q/foo/sub/path", buildItem.resolvePath("foo/sub/path"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("/foo"));
+        Assertions.assertEquals("/foo/sub/path", buildItem.resolvePath("/foo/sub/path"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../foo"));
     }
 
     @Test
@@ -21,9 +21,9 @@ public class NonApplicationRootPathBuildItemTest {
         NonApplicationRootPathBuildItem buildItem = new NonApplicationRootPathBuildItem("/", "/q");
 
         Assertions.assertEquals("/q/", buildItem.resolvePath(""));
-        Assertions.assertEquals("/q/extension", buildItem.resolvePath("extension"));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("/extension"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../extension"));
+        Assertions.assertEquals("/q/foo", buildItem.resolvePath("foo"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("/foo"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../foo"));
     }
 
     @Test
@@ -31,9 +31,9 @@ public class NonApplicationRootPathBuildItemTest {
         NonApplicationRootPathBuildItem buildItem = new NonApplicationRootPathBuildItem("/app", "q");
 
         Assertions.assertEquals("/app/q/", buildItem.resolvePath(""));
-        Assertions.assertEquals("/app/q/extension", buildItem.resolvePath("extension"));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("/extension"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../extension"));
+        Assertions.assertEquals("/app/q/foo", buildItem.resolvePath("foo"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("/foo"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../foo"));
     }
 
     @Test
@@ -41,9 +41,9 @@ public class NonApplicationRootPathBuildItemTest {
         NonApplicationRootPathBuildItem buildItem = new NonApplicationRootPathBuildItem("/app", "/q");
 
         Assertions.assertEquals("/q/", buildItem.resolvePath(""));
-        Assertions.assertEquals("/q/extension", buildItem.resolvePath("extension"));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("/extension"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../extension"));
+        Assertions.assertEquals("/q/foo", buildItem.resolvePath("foo"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("/foo"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../foo"));
     }
 
     @Test
@@ -51,9 +51,9 @@ public class NonApplicationRootPathBuildItemTest {
         NonApplicationRootPathBuildItem buildItem = new NonApplicationRootPathBuildItem("/", "");
 
         Assertions.assertEquals("/", buildItem.resolvePath(""));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("extension"));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("/extension"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../extension"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("foo"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("/foo"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../foo"));
     }
 
     @Test
@@ -61,8 +61,8 @@ public class NonApplicationRootPathBuildItemTest {
         NonApplicationRootPathBuildItem buildItem = new NonApplicationRootPathBuildItem("/", "/");
 
         Assertions.assertEquals("/", buildItem.resolvePath(""));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("extension"));
-        Assertions.assertEquals("/extension", buildItem.resolvePath("/extension"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../extension"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("foo"));
+        Assertions.assertEquals("/foo", buildItem.resolvePath("/foo"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../foo"));
     }
 }

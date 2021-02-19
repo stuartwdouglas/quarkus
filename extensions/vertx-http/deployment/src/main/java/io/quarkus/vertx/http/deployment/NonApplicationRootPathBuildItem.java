@@ -29,23 +29,67 @@ public final class NonApplicationRootPathBuildItem extends SimpleBuildItem {
         this.separateRouterRequired = !nonApplicationRootPath.equals(httpRootPath);
     }
 
-    public String getNonApplicationRootPath() {
-        return nonApplicationRootPath.getPath();
-    }
-
     public boolean isSeparateRouterRequired() {
         return separateRouterRequired;
+    }
+
+    /**
+     * Return normalized root path configured from {@literal quarkus.http.root-path}
+     * and {quarkus.http.non-application-root-path}.
+     * This path will always end in a slash.
+     * <p>
+     * Use {@link #resolvePath(String)} if you need to construct a URI for
+     * a non-application endpoint.
+     *
+     * @return Normalized non-application root path ending with a slash
+     * @see #resolvePath(String)
+     */
+    public String getNonApplicationRootPath() {
+        return nonApplicationRootPath.getPath();
     }
 
     /**
      * Resolve path into an absolute path.
      * If path is relative, it will be resolved against `quarkus.http.non-application-root-path`.
      * An absolute path will be normalized and returned.
+     * <p>
+     * Given {@literal quarkus.http.root-path=/} and
+     * {@literal quarkus.http.non-application-root-path="q"}
+     * <ul>
+     * <li>{@code resolvePath("foo")} will return {@literal /q/foo}</li>
+     * <li>{@code resolvePath("/foo")} will return {@literal /foo}</li>
+     * </ul>
+     * <p>
+     * Given {@literal quarkus.http.root-path=/} and
+     * {@literal quarkus.http.non-application-root-path="/q"}
+     * <ul>
+     * <li>{@code resolvePath("foo")} will return {@literal /q/foo}</li>
+     * <li>{@code resolvePath("/foo")} will return {@literal /foo}</li>
+     * </ul>
+     * Given {@literal quarkus.http.root-path=/app} and
+     * {@literal quarkus.http.non-application-root-path="q"}
+     * <ul>
+     * <li>{@code resolvePath("foo")} will return {@literal /app/q/foo}</li>
+     * <li>{@code resolvePath("/foo")} will return {@literal /foo}</li>
+     * </ul>
+     * Given {@literal quarkus.http.root-path=/app} and
+     * {@literal quarkus.http.non-application-root-path="/q"}
+     * <ul>
+     * <li>{@code resolvePath("foo")} will return {@literal /q/foo}</li>
+     * <li>{@code resolvePath("/foo")} will return {@literal /foo}</li>
+     * </ul>
+     * <p>
+     * The returned path will not end with a slash.
      *
      * @param path Path to be resolved to an absolute path.
-     * @return An absolute path
+     * @return An absolute path not ending with a slash
+     * @see UriNormalizationUtil#normalizeWithBase(URI, String, boolean)
+     * @throws IllegalArgumentException if path is null or empty
      */
     public String resolvePath(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            throw new IllegalArgumentException("Specified path can not be empty");
+        }
         return UriNormalizationUtil.normalizeWithBase(nonApplicationRootPath, path, false).getPath();
     }
 }
