@@ -62,7 +62,7 @@ public class HttpBuildTimeConfig {
      * Default is {@literal true} for Quarkus 1.11.x to facilitate transition to name-spaced URIs using
      * {quarkus.http.non-application-root-path}.
      * <p>
-     * Quarkus 1.12 will change the default to {@literal false},
+     * Quarkus 1.13 will change the default to {@literal false},
      * and the config item will be removed in Quarkus 2.0.
      */
     @ConfigItem(defaultValue = "true")

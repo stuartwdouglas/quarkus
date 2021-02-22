@@ -290,10 +290,13 @@ public class DevConsoleProcessor {
             Entry<String, String> groupAndArtifact = i.groupIdAndArtifactId(curateOutcomeBuildItem);
             // if the handler is a proxy, then that means it's been produced by a recorder and therefore belongs in the regular runtime Vert.x instance
             if (i.getHandler() instanceof BytecodeRecorderImpl.ReturnedProxy) {
-                routeBuildItemBuildProducer.produce(new RouteBuildItem(
-                        new RuntimeDevConsoleRoute(groupAndArtifact.getKey(), groupAndArtifact.getValue(), i.getPath(),
-                                i.getMethod()),
-                        i.getHandler()));
+                routeBuildItemBuildProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
+                        .routeFunction(
+                                new RuntimeDevConsoleRoute(nonApplicationRootPathBuildItem.getNonApplicationRootPath(),
+                                        groupAndArtifact.getKey(),
+                                        groupAndArtifact.getValue(), i.getPath(), i.getMethod()))
+                        .handler(i.getHandler())
+                        .build());
             } else {
                 router.route(HttpMethod.valueOf(i.getMethod()),
                         "/" + groupAndArtifact.getKey() + "." + groupAndArtifact.getValue() + "/" + i.getPath())

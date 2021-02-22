@@ -8,12 +8,15 @@ import io.vertx.ext.web.Router;
 
 public class RuntimeDevConsoleRoute implements Function<Router, Route> {
 
+    private String nonApplicationRootPath;
     private String groupId;
     private String artifactId;
     private String path;
     private String method;
 
-    public RuntimeDevConsoleRoute(String groupId, String artifactId, String path, String method) {
+    public RuntimeDevConsoleRoute(String nonApplicationRootPath, String groupId, String artifactId, String path,
+            String method) {
+        this.nonApplicationRootPath = nonApplicationRootPath;
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.path = path;
@@ -61,7 +64,8 @@ public class RuntimeDevConsoleRoute implements Function<Router, Route> {
 
     @Override
     public Route apply(Router route) {
-        return route.route(HttpMethod.valueOf(method), "/q/dev/" + groupId + "." + artifactId + "/" + path)
+        return route
+                .route(HttpMethod.valueOf(method), nonApplicationRootPath + "dev/" + groupId + "." + artifactId + "/" + path)
                 .order(-100);
     }
 }
