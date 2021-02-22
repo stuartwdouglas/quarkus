@@ -13,7 +13,7 @@ public class SmallRyeGraphQLConfig {
     /**
      * The rootPath under which queries will be served. Default to /graphql
      */
-    @ConfigItem(defaultValue = "/graphql")
+    @ConfigItem(defaultValue = "graphql")
     String rootPath;
 
     /**
