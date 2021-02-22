@@ -164,17 +164,15 @@ public class SmallRyeMetricsProcessor {
         if (launchModeBuildItem.getLaunchMode().isDevOrTest()) {
             displayableEndpoints.produce(new NotFoundPageDisplayableEndpointBuildItem(metrics.path));
         }
-        routes.produce(new RouteBuildItem.Builder()
+        routes.produce(frameworkRoot.routeBuilder()
                 .routeFunction(route)
                 .handler(recorder.handler(frameworkRoot.resolvePath(metrics.path)))
                 .blockingRoute()
-                .nonApplicationRoute()
                 .build());
-        routes.produce(new RouteBuildItem.Builder()
+        routes.produce(frameworkRoot.routeBuilder()
                 .routeFunction(slash)
                 .handler(recorder.handler(frameworkRoot.resolvePath(metrics.path)))
                 .blockingRoute()
-                .nonApplicationRoute()
                 .build());
     }
 

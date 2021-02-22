@@ -144,6 +144,7 @@ public class SwaggerUiProcessor {
     @Record(ExecutionTime.RUNTIME_INIT)
     public void registerSwaggerUiHandler(SwaggerUiRecorder recorder,
             BuildProducer<RouteBuildItem> routes,
+            NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem,
             SwaggerUiBuildItem finalDestinationBuildItem,
             SwaggerUiRuntimeConfig runtimeConfig,
             LaunchModeBuildItem launchMode,
@@ -154,18 +155,14 @@ public class SwaggerUiProcessor {
                     finalDestinationBuildItem.getSwaggerUiPath(),
                     runtimeConfig);
 
-            routes.produce(
-                    new RouteBuildItem.Builder()
-                            .route(swaggerUiConfig.path)
-                            .handler(handler)
-                            .nonApplicationRoute()
-                            .build());
-            routes.produce(
-                    new RouteBuildItem.Builder()
-                            .route(swaggerUiConfig.path + "/*")
-                            .handler(handler)
-                            .nonApplicationRoute()
-                            .build());
+            routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
+                    .route(swaggerUiConfig.path)
+                    .handler(handler)
+                    .build());
+            routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
+                    .route(swaggerUiConfig.path + "/*")
+                    .handler(handler)
+                    .build());
         }
     }
 

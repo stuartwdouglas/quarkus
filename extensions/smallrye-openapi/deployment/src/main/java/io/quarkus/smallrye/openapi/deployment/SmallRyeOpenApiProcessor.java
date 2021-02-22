@@ -172,11 +172,10 @@ public class SmallRyeOpenApiProcessor {
         }
 
         Handler<RoutingContext> handler = recorder.handler(openApiRuntimeConfig);
-        return new RouteBuildItem.Builder()
+        return nonApplicationRootPathBuildItem.routeBuilder()
                 .route(openApiConfig.path)
                 .handler(handler)
                 .blockingRoute()
-                .nonApplicationRoute()
                 .build();
     }
 

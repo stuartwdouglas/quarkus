@@ -469,9 +469,8 @@ public class SmallRyeGraphQLProcessor {
                         "quarkus.smallrye-graphql.root-path-ui was set to \"/\", this is not allowed as it blocks the application from serving anything else.");
             }
 
-            String graphQLPath = httpRootPath.adjustPath(graphQLConfig.rootPath);
-            String graphQLUiPath = httpRootPath
-                    .adjustPath(nonApplicationRootPathBuildItem.adjustPath(graphQLConfig.ui.rootPath));
+            String graphQLPath = httpRootPath.resolvePath(graphQLConfig.rootPath);
+            String graphQLUiPath = nonApplicationRootPathBuildItem.resolvePath(graphQLConfig.ui.rootPath);
 
             AppArtifact artifact = WebJarUtil.getAppArtifact(curateOutcomeBuildItem, GRAPHQL_UI_WEBJAR_GROUP_ID,
                     GRAPHQL_UI_WEBJAR_ARTIFACT_ID);
@@ -486,7 +485,7 @@ public class SmallRyeGraphQLProcessor {
                         .produce(new SmallRyeGraphQLBuildItem(tempPath.toAbsolutePath().toString(), graphQLUiPath));
                 notFoundPageDisplayableEndpointProducer
                         .produce(new NotFoundPageDisplayableEndpointBuildItem(
-                                nonApplicationRootPathBuildItem.adjustPath(graphQLConfig.ui.rootPath) + "/",
+                                nonApplicationRootPathBuildItem.resolvePath(graphQLConfig.ui.rootPath) + "/",
                                 "MicroProfile GraphQL UI"));
 
                 // Handle live reload of branding files
@@ -532,18 +531,17 @@ public class SmallRyeGraphQLProcessor {
             SmallRyeGraphQLRuntimeConfig runtimeConfig,
             SmallRyeGraphQLBuildItem smallRyeGraphQLBuildItem,
             LaunchModeBuildItem launchMode,
+            NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem,
             SmallRyeGraphQLConfig graphQLConfig) throws Exception {
 
         if (shouldInclude(launchMode, graphQLConfig)) {
             Handler<RoutingContext> handler = recorder.uiHandler(smallRyeGraphQLBuildItem.getGraphqlUiFinalDestination(),
                     smallRyeGraphQLBuildItem.getGraphqlUiPath(), runtimeConfig);
-            routeProducer.produce(new RouteBuildItem.Builder()
-                    .nonApplicationRoute(true)
+            routeProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
                     .route(graphQLConfig.ui.rootPath)
                     .handler(handler)
                     .build());
-            routeProducer.produce(new RouteBuildItem.Builder()
-                    .nonApplicationRoute(true)
+            routeProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
                     .route(graphQLConfig.ui.rootPath + "/*")
                     .handler(handler)
                     .build());
