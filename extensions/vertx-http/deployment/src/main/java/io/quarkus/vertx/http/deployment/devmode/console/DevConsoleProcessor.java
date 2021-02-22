@@ -287,10 +287,9 @@ public class DevConsoleProcessor {
         newRouter(buildEngine(devTemplatePaths), httpRootPathBuildItem, nonApplicationRootPathBuildItem);
 
         // Add the log stream
-        routeBuildItemBuildProducer.produce(new RouteBuildItem.Builder()
+        routeBuildItemBuildProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
                 .route("/dev/logstream")
                 .handler(recorder.websocketHandler(historyHandlerBuildItem.value))
-                .nonApplicationRoute(false)
                 .build());
 
         for (DevConsoleRouteBuildItem i : routes) {
@@ -310,15 +309,13 @@ public class DevConsoleProcessor {
 
         DevConsoleManager.registerHandler(new DevConsoleHttpHandler());
         //must be last so the above routes have precedence
-        routeBuildItemBuildProducer.produce(new RouteBuildItem.Builder()
+        routeBuildItemBuildProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
                 .route("/dev/*")
                 .handler(new DevConsoleFilter())
-                .nonApplicationRoute(false)
                 .build());
-        routeBuildItemBuildProducer.produce(new RouteBuildItem.Builder()
+        routeBuildItemBuildProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
                 .route("/dev")
                 .handler(new RedirectHandler())
-                .nonApplicationRoute(false)
                 .build());
     }
 
@@ -333,17 +330,17 @@ public class DevConsoleProcessor {
     @Record(ExecutionTime.RUNTIME_INIT)
     public void deployStaticResources(DevConsoleRecorder recorder, CurateOutcomeBuildItem curateOutcomeBuildItem,
             LaunchModeBuildItem launchMode, ShutdownContextBuildItem shutdownContext,
-            BuildProducer<RouteBuildItem> routeBuildItemBuildProducer) throws IOException {
+            BuildProducer<RouteBuildItem> routeBuildItemBuildProducer,
+            NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) throws IOException {
         AppArtifact devConsoleResourcesArtifact = WebJarUtil.getAppArtifact(curateOutcomeBuildItem, "io.quarkus",
                 "quarkus-vertx-http-deployment");
 
         Path devConsoleStaticResourcesDeploymentPath = WebJarUtil.copyResourcesForDevOrTest(curateOutcomeBuildItem, launchMode,
                 devConsoleResourcesArtifact, STATIC_RESOURCES_PATH);
 
-        routeBuildItemBuildProducer.produce(new RouteBuildItem.Builder()
+        routeBuildItemBuildProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
                 .route("/dev/resources/*")
                 .handler(recorder.devConsoleHandler(devConsoleStaticResourcesDeploymentPath.toString(), shutdownContext))
-                .nonApplicationRoute(false)
                 .build());
     }
 

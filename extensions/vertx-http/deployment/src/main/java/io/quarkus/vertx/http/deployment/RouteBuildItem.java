@@ -19,7 +19,7 @@ public final class RouteBuildItem extends MultiBuildItem {
     private final Function<Router, Route> routeFunction;
     private final Handler<RoutingContext> handler;
     private final HandlerType type;
-    private final boolean frameworkRoute;
+    private final boolean isFrameworkRoute;
     private final boolean requiresLegacyRedirect;
 
     /**
@@ -30,7 +30,7 @@ public final class RouteBuildItem extends MultiBuildItem {
         this.routeFunction = routeFunction;
         this.handler = handler;
         this.type = type;
-        this.frameworkRoute = false;
+        this.isFrameworkRoute = false;
         this.requiresLegacyRedirect = false;
     }
 
@@ -74,12 +74,12 @@ public final class RouteBuildItem extends MultiBuildItem {
         this(new BasicRoute(route), handler);
     }
 
-    private RouteBuildItem(Builder builder) {
+    RouteBuildItem(Builder builder, boolean isFrameworkRoute, boolean requiresLegacyRedirect) {
         this.routeFunction = builder.routeFunction;
         this.handler = builder.handler;
         this.type = builder.type;
-        this.frameworkRoute = builder.frameworkRoute;
-        this.requiresLegacyRedirect = builder.requiresLegacyRedirect;
+        this.isFrameworkRoute = isFrameworkRoute;
+        this.requiresLegacyRedirect = requiresLegacyRedirect;
     }
 
     public Handler<RoutingContext> getHandler() {
@@ -95,19 +95,21 @@ public final class RouteBuildItem extends MultiBuildItem {
     }
 
     public boolean isFrameworkRoute() {
-        return frameworkRoute;
+        return isFrameworkRoute;
     }
 
     public boolean isRequiresLegacyRedirect() {
         return requiresLegacyRedirect;
     }
 
+    /**
+     * NonApplicationRootPathBuildItem.Builder extends this.
+     * Please verify the extended builders behavior when changing this one.
+     */
     public static class Builder {
         private Function<Router, Route> routeFunction;
         private Handler<RoutingContext> handler;
         private HandlerType type = HandlerType.NORMAL;
-        private boolean frameworkRoute = false;
-        private boolean requiresLegacyRedirect = false;
 
         public Builder routeFunction(Function<Router, Route> routeFunction) {
             this.routeFunction = routeFunction;
@@ -139,20 +141,8 @@ public final class RouteBuildItem extends MultiBuildItem {
             return this;
         }
 
-        public Builder nonApplicationRoute() {
-            this.frameworkRoute = true;
-            this.requiresLegacyRedirect = false;
-            return this;
-        }
-
-        public Builder nonApplicationRoute(boolean requiresLegacyRedirect) {
-            this.frameworkRoute = true;
-            this.requiresLegacyRedirect = requiresLegacyRedirect;
-            return this;
-        }
-
         public RouteBuildItem build() {
-            return new RouteBuildItem(this);
+            return new RouteBuildItem(this, false, false);
         }
     }
 }

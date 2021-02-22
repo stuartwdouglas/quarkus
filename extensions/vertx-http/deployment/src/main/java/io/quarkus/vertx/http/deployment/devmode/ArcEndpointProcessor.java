@@ -21,19 +21,31 @@ public class ArcEndpointProcessor {
             BuildProducer<RouteBuildItem> routes,
             BuildProducer<NotFoundPageDisplayableEndpointBuildItem> displayableEndpoints,
             NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) {
-        String basePath = nonApplicationRootPathBuildItem.resolvePath("/arc");
+        String basePath = "arc";
         String beansPath = basePath + "/beans";
         String removedBeansPath = basePath + "/removed-beans";
         String observersPath = basePath + "/observers";
-        routes.produce(RouteBuildItem.builder().route(basePath)
+        routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
+                .route(basePath)
                 .handler(recorder.createSummaryHandler(getConfigProperties(arcConfig))).build());
-        routes.produce(RouteBuildItem.builder().route(beansPath).handler(recorder.createBeansHandler()).build());
-        routes.produce(RouteBuildItem.builder().route(removedBeansPath).handler(recorder.createRemovedBeansHandler()).build());
-        routes.produce(RouteBuildItem.builder().route(observersPath).handler(recorder.createObserversHandler()).build());
-        displayableEndpoints.produce(new NotFoundPageDisplayableEndpointBuildItem(basePath));
-        displayableEndpoints.produce(new NotFoundPageDisplayableEndpointBuildItem(beansPath));
-        displayableEndpoints.produce(new NotFoundPageDisplayableEndpointBuildItem(removedBeansPath));
-        displayableEndpoints.produce(new NotFoundPageDisplayableEndpointBuildItem(observersPath));
+        routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
+                .route(beansPath)
+                .handler(recorder.createBeansHandler()).build());
+        routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
+                .route(removedBeansPath)
+                .handler(recorder.createRemovedBeansHandler()).build());
+        routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
+                .route(observersPath)
+                .handler(recorder.createObserversHandler()).build());
+        // Use NonApplicationRootPathBuildItem to resolve path
+        displayableEndpoints
+                .produce(new NotFoundPageDisplayableEndpointBuildItem(nonApplicationRootPathBuildItem.resolvePath(basePath)));
+        displayableEndpoints
+                .produce(new NotFoundPageDisplayableEndpointBuildItem(nonApplicationRootPathBuildItem.resolvePath(beansPath)));
+        displayableEndpoints.produce(
+                new NotFoundPageDisplayableEndpointBuildItem(nonApplicationRootPathBuildItem.resolvePath(removedBeansPath)));
+        displayableEndpoints.produce(
+                new NotFoundPageDisplayableEndpointBuildItem(nonApplicationRootPathBuildItem.resolvePath(observersPath)));
     }
 
     // Note that we can't turn ArcConfig into BUILD_AND_RUN_TIME_FIXED because it's referencing IndexDependencyConfig

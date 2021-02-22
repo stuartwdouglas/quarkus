@@ -7,6 +7,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.CodeSource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -80,7 +81,7 @@ class VertxHttpProcessor {
 
     @BuildStep
     NonApplicationRootPathBuildItem frameworkRoot(HttpBuildTimeConfig httpBuildTimeConfig) {
-        return new NonApplicationRootPathBuildItem(httpBuildTimeConfig.nonApplicationRootPath, httpBuildTimeConfig.rootPath);
+        return new NonApplicationRootPathBuildItem(httpBuildTimeConfig.rootPath, httpBuildTimeConfig.nonApplicationRootPath);
     }
 
     @BuildStep
@@ -127,33 +128,40 @@ class VertxHttpProcessor {
             BuildProducer<VertxNonApplicationRouterBuildItem> frameworkRouterBuildProducer,
             ShutdownContextBuildItem shutdown) {
 
-        RuntimeValue<Router> router = recorder.initializeRouter(vertx.getVertx());
+        RuntimeValue<Router> httpRouteRouter = recorder.initializeRouter(vertx.getVertx());
         RuntimeValue<Router> frameworkRouter = recorder.initializeRouter(vertx.getVertx());
+
+        List<RouteBuildItem> redirectRoutes = new ArrayList<>();
         boolean frameworkRouterFound = false;
-        recorder.setNonApplicationRedirectHandler(nonApplicationRootPath.getNonApplicationRootPath(),
-                httpBuildTimeConfig.rootPath);
 
         for (RouteBuildItem route : routes) {
-            if (nonApplicationRootPath.isSeparateRouterRequired() && route.isFrameworkRoute()) {
+            if (nonApplicationRootPath.isDedicatedRouterRequired() && route.isFrameworkRoute()) {
+                // Non-application endpoints on a separate path
                 frameworkRouterFound = true;
                 recorder.addRoute(frameworkRouter, route.getRouteFunction(), route.getHandler(), route.getType());
 
-                // Handle redirects from old paths to new non application endpoint root
                 if (httpBuildTimeConfig.redirectToNonApplicationRootPath && route.isRequiresLegacyRedirect()) {
-                    recorder.addRoute(router, route.getRouteFunction(),
-                            recorder.getNonApplicationRedirectHandler(),
-                            route.getType());
+                    redirectRoutes.add(route);
                 }
             } else {
-                recorder.addRoute(router, route.getRouteFunction(), route.getHandler(), route.getType());
+                recorder.addRoute(httpRouteRouter, route.getRouteFunction(), route.getHandler(), route.getType());
             }
         }
 
         if (frameworkRouterFound) {
             frameworkRouterBuildProducer.produce(new VertxNonApplicationRouterBuildItem(frameworkRouter));
+
+            if (redirectRoutes.size() > 0) {
+                recorder.setNonApplicationRedirectHandler(nonApplicationRootPath.getNonApplicationRootPath(),
+                        nonApplicationRootPath.getNormalizedHttpRootPath());
+
+                redirectRoutes.forEach(route -> recorder.addRoute(httpRouteRouter, route.getRouteFunction(),
+                        recorder.getNonApplicationRedirectHandler(),
+                        route.getType()));
+            }
         }
 
-        return new VertxWebRouterBuildItem(router);
+        return new VertxWebRouterBuildItem(httpRouteRouter);
     }
 
     @BuildStep
@@ -168,7 +176,7 @@ class VertxHttpProcessor {
             VertxHttpRecorder recorder, BeanContainerBuildItem beanContainer, CoreVertxBuildItem vertx,
             LaunchModeBuildItem launchMode,
             List<DefaultRouteBuildItem> defaultRoutes, List<FilterBuildItem> filters,
-            VertxWebRouterBuildItem router,
+            VertxWebRouterBuildItem httpRouteRouter,
             Optional<VertxNonApplicationRouterBuildItem> frameworkRouter,
             NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem,
             HttpBuildTimeConfig httpBuildTimeConfig, HttpConfiguration httpConfiguration,
@@ -205,15 +213,25 @@ class VertxHttpProcessor {
         Handler<RoutingContext> bodyHandler = !requireBodyHandlerBuildItems.isEmpty() ? bodyHandlerBuildItem.getHandler()
                 : null;
 
+        Optional<RuntimeValue<Router>> mainRouter = Optional.empty();
+
         if (frameworkRouter.isPresent()) {
-            recorder.mountFrameworkRouter(router.getRouter(),
-                    frameworkRouter.get().getRouter(),
-                    nonApplicationRootPathBuildItem.getNonApplicationRootPath());
+            if (nonApplicationRootPathBuildItem.isAttachedToMainRouter()) {
+                // Create nested framework router
+                recorder.mountFrameworkRouter(httpRouteRouter.getRouter(),
+                        frameworkRouter.get().getRouter(),
+                        nonApplicationRootPathBuildItem.getVertxRouterPath());
+            } else {
+                // Create independent router, not mounted under application router
+                mainRouter = Optional.of(recorder.initializeRouter(vertx.getVertx()));
+                recorder.mountFrameworkRouter(mainRouter.get(), frameworkRouter.get().getRouter(),
+                        nonApplicationRootPathBuildItem.getVertxRouterPath());
+            }
         }
 
         recorder.finalizeRouter(beanContainer.getValue(),
                 defaultRoute.map(DefaultRouteBuildItem::getRoute).orElse(null),
-                listOfFilters, vertx.getVertx(), lrc, router.getRouter(), httpBuildTimeConfig.rootPath,
+                listOfFilters, vertx.getVertx(), lrc, mainRouter, httpRouteRouter.getRouter(), httpBuildTimeConfig.rootPath,
                 launchMode.getLaunchMode(),
                 !requireBodyHandlerBuildItems.isEmpty(), bodyHandler, httpConfiguration, gracefulShutdownFilter,
                 shutdownConfig, executorBuildItem.getExecutorProxy());
