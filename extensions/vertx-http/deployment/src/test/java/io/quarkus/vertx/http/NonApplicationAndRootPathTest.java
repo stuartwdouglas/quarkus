@@ -67,10 +67,7 @@ public class NonApplicationAndRootPathTest {
     @Test
     public void testNonApplicationEndpointOnRootPathWithRedirect() {
         // Note RestAssured knows the path prefix is /api
-        RestAssured.given().log().all().get("/non-app-relative")
-                .then()
-                .log().all()
-                .statusCode(200).body(Matchers.equalTo("/api/q/non-app-relative"));
+        RestAssured.given().get("/non-app-relative").then().statusCode(200).body(Matchers.equalTo("/api/q/non-app-relative"));
     }
 
     @Test
