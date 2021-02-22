@@ -60,14 +60,16 @@ public class PrometheusRegistryProcessor {
         PrometheusConfigGroup pConfig = mConfig.export.prometheus;
         log.debug("PROMETHEUS CONFIG: " + pConfig);
 
+        String resolvedPath = nonApplicationRootPathBuildItem.resolvePath(pConfig.path);
+        String matchPath = resolvedPath + (resolvedPath.endsWith("/") ? "*" : "/*");
+
         // Exact match for resources matched to the root path
         routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
-                .routeFunction(recorder.route(pConfig.path))
+                .routeFunction(recorder.route(resolvedPath))
                 .handler(recorder.getHandler())
                 .build());
 
         // Match paths that begin with the deployment path
-        String matchPath = pConfig.path + (pConfig.path.endsWith("/") ? "*" : "/*");
         routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
                 .routeFunction(recorder.route(matchPath))
                 .handler(recorder.getHandler())

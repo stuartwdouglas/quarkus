@@ -21,6 +21,12 @@ public class HttpRootPathBuildItemTest {
         Assertions.assertEquals("/app/", buildItem.resolvePath(""));
         Assertions.assertEquals("/app/foo", buildItem.resolvePath("foo"));
         Assertions.assertEquals("/foo", buildItem.resolvePath("/foo"));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> buildItem.resolvePath("../foo"));
+    }
+
+    @Test
+    void testResolveResolvedPath() {
+        HttpRootPathBuildItem buildItem = new HttpRootPathBuildItem("/app");
+        Assertions.assertEquals("/app/", buildItem.resolvePath("/app"));
+        Assertions.assertEquals("/app/foo", buildItem.resolvePath("/app/foo"));
     }
 }

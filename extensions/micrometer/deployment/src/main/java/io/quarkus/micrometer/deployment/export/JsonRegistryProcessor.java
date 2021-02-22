@@ -41,12 +41,15 @@ public class JsonRegistryProcessor {
                 .addBeanClass(JsonMeterRegistryProvider.class)
                 .setUnremovable().build());
         registryProviders.produce(new MicrometerRegistryProviderBuildItem(JsonMeterRegistry.class));
+
         routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
                 .routeFunction(recorder.route(config.export.json.path))
                 .handler(recorder.getHandler())
                 .requiresLegacyRedirect()
                 .build());
-        log.debug("Initialized a JSON meter registry on path=" + config.export.json.path);
+
+        log.debug("Initialized a JSON meter registry on path="
+                + nonApplicationRootPathBuildItem.resolvePath(config.export.json.path));
     }
 
 }
