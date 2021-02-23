@@ -99,9 +99,8 @@ public class SmallRyeMetricsRecorder {
         };
     }
 
-    public SmallRyeMetricsHandler handler(String metricsPath) {
+    public SmallRyeMetricsHandler handler() {
         SmallRyeMetricsHandler handler = new SmallRyeMetricsHandler();
-        handler.setMetricsPath(metricsPath);
         // tell the metrics internal handler to not append CORS headers
         // these will be handled by the Quarkus CORS filter, if enabled
         CDI.current().select(MetricsRequestHandler.class).get().appendCorsHeaders(false);

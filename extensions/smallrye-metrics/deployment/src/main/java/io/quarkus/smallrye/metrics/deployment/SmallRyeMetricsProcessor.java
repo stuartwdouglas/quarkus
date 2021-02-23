@@ -166,12 +166,12 @@ public class SmallRyeMetricsProcessor {
         }
         routes.produce(frameworkRoot.routeBuilder()
                 .routeFunction(route)
-                .handler(recorder.handler(frameworkRoot.resolvePath(metrics.path)))
+                .handler(recorder.handler())
                 .blockingRoute()
                 .build());
         routes.produce(frameworkRoot.routeBuilder()
                 .routeFunction(slash)
-                .handler(recorder.handler(frameworkRoot.resolvePath(metrics.path)))
+                .handler(recorder.handler())
                 .blockingRoute()
                 .build());
     }
