@@ -16,14 +16,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.regex.Pattern;
@@ -264,26 +258,35 @@ public class DevConsoleProcessor {
 
     @BuildStep
     @Record(ExecutionTime.STATIC_INIT)
-    public HistoryHandlerBuildItem hander(BuildProducer<LogHandlerBuildItem> logHandlerBuildItemBuildProducer,
+    public HistoryHandlerBuildItem handler(BuildProducer<LogHandlerBuildItem> logHandlerBuildItemBuildProducer,
             LogStreamRecorder recorder) {
         RuntimeValue<Optional<HistoryHandler>> handler = recorder.handler();
         logHandlerBuildItemBuildProducer.produce(new LogHandlerBuildItem((RuntimeValue) handler));
         return new HistoryHandlerBuildItem(handler);
     }
 
+    @Consume(LoggingSetupBuildItem.class)
+    @BuildStep(onlyIf = IsDevelopment.class)
+    public void setUpDevConsoleEngine(List<DevTemplatePathBuildItem> devTemplatePaths,
+            List<RouteBuildItem> allRoutes,
+            NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) {
+
+        initializeVirtual();
+        Engine quteEngine = buildEngine(devTemplatePaths,
+                allRoutes,
+                nonApplicationRootPathBuildItem);
+        newRouter(quteEngine, nonApplicationRootPathBuildItem);
+    }
+
     @Record(ExecutionTime.RUNTIME_INIT)
     @Consume(LoggingSetupBuildItem.class)
     @BuildStep(onlyIf = IsDevelopment.class)
-    public void setupActions(List<DevConsoleRouteBuildItem> routes,
+    public void setupDevConsoleRoutes(List<DevConsoleRouteBuildItem> routes,
             BuildProducer<RouteBuildItem> routeBuildItemBuildProducer,
-            List<DevTemplatePathBuildItem> devTemplatePaths,
             LogStreamRecorder recorder,
             CurateOutcomeBuildItem curateOutcomeBuildItem,
             HistoryHandlerBuildItem historyHandlerBuildItem,
             NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) {
-        initializeVirtual();
-
-        newRouter(buildEngine(devTemplatePaths), nonApplicationRootPathBuildItem);
 
         // Add the log stream
         routeBuildItemBuildProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
@@ -339,7 +342,9 @@ public class DevConsoleProcessor {
                 .build());
     }
 
-    private Engine buildEngine(List<DevTemplatePathBuildItem> devTemplatePaths) {
+    private Engine buildEngine(List<DevTemplatePathBuildItem> devTemplatePaths,
+            List<RouteBuildItem> allRoutes,
+            NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) {
         EngineBuilder builder = Engine.builder().addDefaults();
 
         // Escape some characters for HTML templates
@@ -362,17 +367,35 @@ public class DevConsoleProcessor {
                     return result == null ? Results.Result.NOT_FOUND : result;
                 }).build());
 
+        // Create map of resolved paths
+        Map<String, String> resolvedPaths = new HashMap<>();
+        for (RouteBuildItem item : allRoutes) {
+            DevConsoleResolvedPathBuildItem resolvedPathBuildItem = item.getDevConsoleResolvedPath();
+            if (resolvedPathBuildItem != null) {
+                resolvedPaths.put(resolvedPathBuildItem.getName(),
+                        resolvedPathBuildItem.getEndpointPath(nonApplicationRootPathBuildItem));
+            }
+        }
+
         // {config:property('quarkus.lambda.handler')}
+        // {config:http-path('quarkus.smallrye-graphql.ui.root-path')}
         // Note that the output value is always string!
         builder.addNamespaceResolver(NamespaceResolver.builder("config").resolveAsync(ctx -> {
             List<Expression> params = ctx.getParams();
-            if (params.size() != 1 || !ctx.getName().equals("property")) {
+            if (params.size() != 1 || !ctx.getName().equals("property") || !ctx.getName().equals("http-path")) {
                 return Results.NOT_FOUND;
             }
-            return ctx.evaluate(params.get(0)).thenCompose(propertyName -> {
-                Optional<String> val = ConfigProvider.getConfig().getOptionalValue(propertyName.toString(), String.class);
-                return CompletableFuture.completedFuture(val.isPresent() ? val.get() : Result.NOT_FOUND);
-            });
+            if (ctx.getName().equals("http-path")) {
+                return ctx.evaluate(params.get(0)).thenCompose(propertyName -> {
+                    String value = resolvedPaths.get(propertyName.toString());
+                    return CompletableFuture.completedFuture(value != null ? value : Result.NOT_FOUND);
+                });
+            } else {
+                return ctx.evaluate(params.get(0)).thenCompose(propertyName -> {
+                    Optional<String> val = ConfigProvider.getConfig().getOptionalValue(propertyName.toString(), String.class);
+                    return CompletableFuture.completedFuture(val.isPresent() ? val.get() : Result.NOT_FOUND);
+                });
+            }
         }).build());
 
         // JavaDoc formatting

@@ -7,6 +7,7 @@ import java.util.function.Function;
 import io.quarkus.builder.item.SimpleBuildItem;
 import io.quarkus.deployment.util.UriNormalizationUtil;
 import io.quarkus.vertx.http.deployment.devmode.NotFoundPageDisplayableEndpointBuildItem;
+import io.quarkus.vertx.http.deployment.devmode.console.DevConsoleResolvedPathBuildItem;
 import io.quarkus.vertx.http.runtime.HandlerType;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.Route;
@@ -269,31 +270,47 @@ public final class NonApplicationRootPathBuildItem extends SimpleBuildItem {
 
         @Override
         public Builder displayOnNotFoundPage() {
-            this.displayOnNotFoundPage = true;
+            super.displayOnNotFoundPage();
             return this;
         }
 
         @Override
         public Builder displayOnNotFoundPage(String notFoundPageTitle) {
-            this.displayOnNotFoundPage = true;
-            this.notFoundPageTitle = notFoundPageTitle;
+            super.displayOnNotFoundPage(notFoundPageTitle);
             return this;
         }
 
         @Override
         public Builder displayOnNotFoundPage(String notFoundPageTitle, String notFoundPagePath) {
-            this.displayOnNotFoundPage = true;
-            this.notFoundPageTitle = notFoundPageTitle;
-            this.notFoundPagePath = notFoundPagePath;
+            super.displayOnNotFoundPage(notFoundPageTitle, notFoundPagePath);
             return this;
         }
 
+        @Override
+        public Builder devConsoleAttribute(String attributeName) {
+            super.devConsoleAttribute(attributeName);
+            return this;
+        }
+
+        @Override
         public RouteBuildItem build() {
             // If path is same as absolute, we don't enable legacy redirect
             if (requiresLegacyRedirect && path.equals(absolute)) {
                 requiresLegacyRedirect = false;
             }
             return new RouteBuildItem(this, routeType, requiresLegacyRedirect);
+        }
+
+        @Override
+        protected DevConsoleResolvedPathBuildItem getDevConsoleResolvedPath() {
+            if (devConsoleAttribute == null) {
+                return null;
+            }
+            if (absolute == null) {
+                throw new RuntimeException("Cannot discover value of " + devConsoleAttribute
+                        + " as no explicit path was specified and a route function is in use");
+            }
+            return new DevConsoleResolvedPathBuildItem(devConsoleAttribute, absolute, true);
         }
 
         @Override

@@ -163,7 +163,7 @@ public class SmallRyeMetricsProcessor {
                 .route(metrics.path + (metrics.path.endsWith("/") ? "*" : "/*"))
                 .handler(recorder.handler(frameworkRoot.resolvePath(metrics.path)))
                 .requiresLegacyRedirect()
-                .displayOnNotFoundPage("Metrics", metrics.path)
+                .displayOnNotFoundPage("Metrics")
                 .blockingRoute()
                 .build());
         routes.produce(frameworkRoot.routeBuilder()
