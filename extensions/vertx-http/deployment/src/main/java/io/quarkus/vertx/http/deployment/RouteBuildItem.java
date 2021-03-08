@@ -126,7 +126,7 @@ public final class RouteBuildItem extends MultiBuildItem {
     }
 
     /**
-     * NonApplicationRootPathBuildItem.Builder extends this.
+     * HttpRootPathBuildItem.Builder and NonApplicationRootPathBuildItem.Builder extend this.
      * Please verify the extended builders behavior when changing this one.
      */
     public static class Builder {
@@ -136,6 +136,18 @@ public final class RouteBuildItem extends MultiBuildItem {
         protected boolean displayOnNotFoundPage;
         protected String notFoundPageTitle;
         protected String notFoundPagePath;
+
+        /**
+         * Use HttpRootPathBuildItem and NonApplicationRootPathBuildItem to
+         * ensure paths are constructed/normalized correctly
+         * 
+         * @deprecated
+         * @see HttpRootPathBuildItem#routeBuilder()
+         * @see NonApplicationRootPathBuildItem#routeBuilder()
+         */
+        @Deprecated
+        Builder() {
+        }
 
         /**
          * {@link #routeFunction(String, Consumer)} should be used instead
@@ -149,12 +161,22 @@ public final class RouteBuildItem extends MultiBuildItem {
             return this;
         }
 
+        /**
+         * @param path A normalized path (e.g. use HttpRootPathBuildItem to construct/resolve the path value) defining
+         *        the route. This path this is also used on the "Not Found" page in dev mode.
+         * @param routeFunction a Consumer of Route
+         */
         public Builder routeFunction(String path, Consumer<Route> routeFunction) {
             this.routeFunction = new BasicRoute(path, null, routeFunction);
             this.notFoundPagePath = path;
             return this;
         }
 
+        /**
+         * @param route A normalized path used to define a basic route
+         *        (e.g. use HttpRootPathBuildItem to construct/resolve the path value). This path this is also
+         *        used on the "Not Found" page in dev mode.
+         */
         public Builder route(String route) {
             this.routeFunction = new BasicRoute(route);
             this.notFoundPagePath = route;

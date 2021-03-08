@@ -69,18 +69,10 @@ public final class NonApplicationRootPathBuildItem extends SimpleBuildItem {
      */
     String getVertxRouterPath() {
         if (attachedToMainRouter) {
-            return "/" + relativize(httpRootPath.getPath(), nonApplicationRootPath.getPath());
+            return "/" + UriNormalizationUtil.relativize(httpRootPath.getPath(), nonApplicationRootPath.getPath());
         } else {
             return getNonApplicationRootPath();
         }
-    }
-
-    String relativize(String rootPath, String leafPath) {
-        if (leafPath.startsWith(rootPath)) {
-            return leafPath.substring(rootPath.length());
-        }
-
-        return null;
     }
 
     public String getNormalizedHttpRootPath() {
@@ -208,12 +200,12 @@ public final class NonApplicationRootPathBuildItem extends SimpleBuildItem {
                     && route.startsWith(buildItem.getNonApplicationRootPath());
 
             if (isFrameworkRoute) {
-                // relative non-application root
-                this.path = "/" + buildItem.relativize(buildItem.getNonApplicationRootPath(), route);
+                // relative non-application root (leading slash for vert.x)
+                this.path = "/" + UriNormalizationUtil.relativize(buildItem.getNonApplicationRootPath(), route);
                 this.routeType = RouteBuildItem.RouteType.FRAMEWORK_ROUTE;
             } else if (route.startsWith(buildItem.httpRootPath.getPath())) {
-                // relative to http root
-                this.path = "/" + buildItem.relativize(buildItem.httpRootPath.getPath(), route);
+                // relative to http root (leading slash for vert.x route)
+                this.path = "/" + UriNormalizationUtil.relativize(buildItem.httpRootPath.getPath(), route);
                 this.routeType = RouteBuildItem.RouteType.APPLICATION_ROUTE;
             } else if (route.startsWith("/")) {
                 // absolute path
