@@ -267,8 +267,10 @@ public class DevConsoleProcessor {
 
     @Consume(LoggingSetupBuildItem.class)
     @BuildStep(onlyIf = IsDevelopment.class)
-    public void setUpDevConsoleEngine(List<DevTemplatePathBuildItem> devTemplatePaths,
+    public ServiceStartBuildItem setupDeploymentSideHandling(List<DevTemplatePathBuildItem> devTemplatePaths,
+            CurateOutcomeBuildItem curateOutcomeBuildItem,
             List<RouteBuildItem> allRoutes,
+            List<DevConsoleRouteBuildItem> routes,
             NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem) {
 
         initializeVirtual();
@@ -276,6 +278,18 @@ public class DevConsoleProcessor {
                 allRoutes,
                 nonApplicationRootPathBuildItem);
         newRouter(quteEngine, nonApplicationRootPathBuildItem);
+
+        for (DevConsoleRouteBuildItem i : routes) {
+            Entry<String, String> groupAndArtifact = i.groupIdAndArtifactId(curateOutcomeBuildItem);
+            // deployment side handling
+            if (!(i.getHandler() instanceof BytecodeRecorderImpl.ReturnedProxy)) {
+                router.route(HttpMethod.valueOf(i.getMethod()),
+                        "/" + groupAndArtifact.getKey() + "." + groupAndArtifact.getValue() + "/" + i.getPath())
+                        .handler(i.getHandler());
+            }
+        }
+
+        return null;
     }
 
     @Record(ExecutionTime.RUNTIME_INIT)
@@ -297,6 +311,7 @@ public class DevConsoleProcessor {
         for (DevConsoleRouteBuildItem i : routes) {
             Entry<String, String> groupAndArtifact = i.groupIdAndArtifactId(curateOutcomeBuildItem);
             // if the handler is a proxy, then that means it's been produced by a recorder and therefore belongs in the regular runtime Vert.x instance
+            // otherwise this is handled in the setupDeploymentSideHandling method
             if (i.getHandler() instanceof BytecodeRecorderImpl.ReturnedProxy) {
                 routeBuildItemBuildProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
                         .routeFunction(
@@ -304,10 +319,6 @@ public class DevConsoleProcessor {
                                 new RuntimeDevConsoleRoute(i.getMethod()))
                         .handler(i.getHandler())
                         .build());
-            } else {
-                router.route(HttpMethod.valueOf(i.getMethod()),
-                        "/" + groupAndArtifact.getKey() + "." + groupAndArtifact.getValue() + "/" + i.getPath())
-                        .handler(i.getHandler());
             }
         }
 
@@ -370,7 +381,7 @@ public class DevConsoleProcessor {
         // Create map of resolved paths
         Map<String, String> resolvedPaths = new HashMap<>();
         for (RouteBuildItem item : allRoutes) {
-            DevConsoleResolvedPathBuildItem resolvedPathBuildItem = item.getDevConsoleResolvedPath();
+            ConfiguredPathInfo resolvedPathBuildItem = item.getDevConsoleResolvedPath();
             if (resolvedPathBuildItem != null) {
                 resolvedPaths.put(resolvedPathBuildItem.getName(),
                         resolvedPathBuildItem.getEndpointPath(nonApplicationRootPathBuildItem));
@@ -382,7 +393,7 @@ public class DevConsoleProcessor {
         // Note that the output value is always string!
         builder.addNamespaceResolver(NamespaceResolver.builder("config").resolveAsync(ctx -> {
             List<Expression> params = ctx.getParams();
-            if (params.size() != 1 || !ctx.getName().equals("property") || !ctx.getName().equals("http-path")) {
+            if (params.size() != 1 || (!ctx.getName().equals("property") && !ctx.getName().equals("http-path"))) {
                 return Results.NOT_FOUND;
             }
             if (ctx.getName().equals("http-path")) {

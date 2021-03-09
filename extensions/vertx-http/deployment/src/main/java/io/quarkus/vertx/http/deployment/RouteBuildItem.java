@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 import io.quarkus.builder.item.MultiBuildItem;
 import io.quarkus.vertx.http.deployment.devmode.NotFoundPageDisplayableEndpointBuildItem;
-import io.quarkus.vertx.http.deployment.devmode.console.DevConsoleResolvedPathBuildItem;
+import io.quarkus.vertx.http.deployment.devmode.console.ConfiguredPathInfo;
 import io.quarkus.vertx.http.runtime.BasicRoute;
 import io.quarkus.vertx.http.runtime.HandlerType;
 import io.vertx.core.Handler;
@@ -25,7 +25,7 @@ public final class RouteBuildItem extends MultiBuildItem {
     private final RouteType routeType;
     private final boolean requiresLegacyRedirect;
     private final NotFoundPageDisplayableEndpointBuildItem notFoundPageDisplayableEndpoint;
-    private final DevConsoleResolvedPathBuildItem devConsoleResolvedPathBuildItem;
+    private final ConfiguredPathInfo devConsoleResolvedPathBuildItem;
 
     /**
      * @deprecated Use the Builder instead.
@@ -88,7 +88,7 @@ public final class RouteBuildItem extends MultiBuildItem {
         this.routeType = routeType;
         this.requiresLegacyRedirect = requiresLegacyRedirect;
         this.notFoundPageDisplayableEndpoint = builder.getNotFoundEndpoint();
-        this.devConsoleResolvedPathBuildItem = builder.getDevConsoleResolvedPath();
+        this.devConsoleResolvedPathBuildItem = builder.getRouteConfigInfo();
     }
 
     public Handler<RoutingContext> getHandler() {
@@ -123,7 +123,7 @@ public final class RouteBuildItem extends MultiBuildItem {
         return notFoundPageDisplayableEndpoint;
     }
 
-    public DevConsoleResolvedPathBuildItem getDevConsoleResolvedPath() {
+    public ConfiguredPathInfo getDevConsoleResolvedPath() {
         return devConsoleResolvedPathBuildItem;
     }
 
@@ -145,7 +145,7 @@ public final class RouteBuildItem extends MultiBuildItem {
         protected String notFoundPageTitle;
         protected String notFoundPagePath;
         protected String routePath;
-        protected String devConsoleAttribute;
+        protected String routeConfigKey;
 
         /**
          * Use HttpRootPathBuildItem and NonApplicationRootPathBuildItem to
@@ -237,8 +237,8 @@ public final class RouteBuildItem extends MultiBuildItem {
             return this;
         }
 
-        public Builder devConsoleAttribute(String attributeName) {
-            this.devConsoleAttribute = attributeName;
+        public Builder routeConfigKey(String attributeName) {
+            this.routeConfigKey = attributeName;
             return this;
         }
 
@@ -246,15 +246,15 @@ public final class RouteBuildItem extends MultiBuildItem {
             return new RouteBuildItem(this, RouteType.APPLICATION_ROUTE, false);
         }
 
-        protected DevConsoleResolvedPathBuildItem getDevConsoleResolvedPath() {
-            if (devConsoleAttribute == null) {
+        protected ConfiguredPathInfo getRouteConfigInfo() {
+            if (routeConfigKey == null) {
                 return null;
             }
             if (routePath == null) {
-                throw new RuntimeException("Cannot discover value of " + devConsoleAttribute
+                throw new RuntimeException("Cannot discover value of " + routeConfigKey
                         + " as no explicit path was specified and a route function is in use");
             }
-            return new DevConsoleResolvedPathBuildItem(devConsoleAttribute, routePath, false);
+            return new ConfiguredPathInfo(routeConfigKey, routePath, false);
         }
 
         protected NotFoundPageDisplayableEndpointBuildItem getNotFoundEndpoint() {

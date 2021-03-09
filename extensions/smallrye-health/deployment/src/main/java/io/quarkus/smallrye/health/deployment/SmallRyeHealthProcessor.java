@@ -208,6 +208,7 @@ class SmallRyeHealthProcessor {
         // Register the health handler
         routes.produce(nonApplicationRootPathBuildItem.routeBuilder()
                 .route(healthConfig.rootPath)
+                .routeConfigKey("quarkus.smallrye-health.root-path")
                 .handler(new SmallRyeHealthHandler())
                 .requiresLegacyRedirect()
                 .displayOnNotFoundPage()
@@ -467,6 +468,7 @@ class SmallRyeHealthProcessor {
                     smallRyeHealthBuildItem.getHealthUiPath(), runtimeConfig);
             routeProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
                     .route(healthConfig.ui.rootPath)
+                    .routeConfigKey("quarkus.smallrye-health.ui.root-path")
                     .displayOnNotFoundPage("Health UI")
                     .requiresLegacyRedirect()
                     .handler(handler)

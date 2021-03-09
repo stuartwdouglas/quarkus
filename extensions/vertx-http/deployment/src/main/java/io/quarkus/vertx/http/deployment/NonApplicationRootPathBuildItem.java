@@ -7,7 +7,7 @@ import java.util.function.Function;
 import io.quarkus.builder.item.SimpleBuildItem;
 import io.quarkus.deployment.util.UriNormalizationUtil;
 import io.quarkus.vertx.http.deployment.devmode.NotFoundPageDisplayableEndpointBuildItem;
-import io.quarkus.vertx.http.deployment.devmode.console.DevConsoleResolvedPathBuildItem;
+import io.quarkus.vertx.http.deployment.devmode.console.ConfiguredPathInfo;
 import io.quarkus.vertx.http.runtime.HandlerType;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.Route;
@@ -287,8 +287,8 @@ public final class NonApplicationRootPathBuildItem extends SimpleBuildItem {
         }
 
         @Override
-        public Builder devConsoleAttribute(String attributeName) {
-            super.devConsoleAttribute(attributeName);
+        public Builder routeConfigKey(String attributeName) {
+            super.routeConfigKey(attributeName);
             return this;
         }
 
@@ -302,15 +302,15 @@ public final class NonApplicationRootPathBuildItem extends SimpleBuildItem {
         }
 
         @Override
-        protected DevConsoleResolvedPathBuildItem getDevConsoleResolvedPath() {
-            if (devConsoleAttribute == null) {
+        protected ConfiguredPathInfo getRouteConfigInfo() {
+            if (routeConfigKey == null) {
                 return null;
             }
             if (absolute == null) {
-                throw new RuntimeException("Cannot discover value of " + devConsoleAttribute
+                throw new RuntimeException("Cannot discover value of " + routeConfigKey
                         + " as no explicit path was specified and a route function is in use");
             }
-            return new DevConsoleResolvedPathBuildItem(devConsoleAttribute, absolute, true);
+            return new ConfiguredPathInfo(routeConfigKey, absolute, true);
         }
 
         @Override
