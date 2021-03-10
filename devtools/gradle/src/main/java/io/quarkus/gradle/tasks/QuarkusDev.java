@@ -348,16 +348,17 @@ public class QuarkusDev extends QuarkusTask {
             resourcesOutputPath = classesDir;
         }
 
-        DevModeContext.ModuleInfo wsModuleInfo = new DevModeContext.ModuleInfo(key,
-                project.getName(),
-                project.getProjectDir().getAbsolutePath(),
-                sourcePaths,
-                classesDir,
-                resourcesSrcDir.getAbsolutePath(),
-                resourcesOutputPath,
-                sourceParentPaths,
-                project.getBuildDir().toPath().resolve("generated-sources").toAbsolutePath().toString(),
-                project.getBuildDir().toString());
+        DevModeContext.ModuleInfo wsModuleInfo = new DevModeContext.ModuleInfo.Builder().setAppArtifactKey(key)
+                .setName(project.getName())
+                .setProjectDirectory(project.getProjectDir().getAbsolutePath())
+                .setSourcePaths(sourcePaths)
+                .setClassesPath(classesDir)
+                .setResourcePath(resourcesSrcDir.getAbsolutePath())
+                .setResourcesOutputPath(resourcesOutputPath)
+                .setSourceParents(sourceParentPaths)
+                .setPreBuildOutputDir(project.getBuildDir().toPath().resolve("generated-sources").toAbsolutePath().toString())
+                .setTargetDir(project.getBuildDir().toString())
+                .build();
 
         if (root) {
             builder.mainModule(wsModuleInfo);

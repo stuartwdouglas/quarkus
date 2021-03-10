@@ -338,6 +338,10 @@ public class LocalProject {
         return resolveRelativeToBaseDir(configuredBuildDir(this, build -> build.getSourceDirectory()), "src/main/java");
     }
 
+    public Path getTestSourcesSourcesDir() {
+        return resolveRelativeToBaseDir(configuredBuildDir(this, build -> build.getTestSourceDirectory()), "src/test/java");
+    }
+
     public Path getSourcesDir() {
         return getSourcesSourcesDir().getParent();
     }
@@ -348,6 +352,14 @@ public class LocalProject {
         //todo: support multiple resources dirs for config hot deployment
         final String resourcesDir = resources.isEmpty() ? null : resources.get(0).getDirectory();
         return resolveRelativeToBaseDir(resourcesDir, "src/main/resources");
+    }
+
+    public Path getTestResourcesSourcesDir() {
+        final List<Resource> resources = rawModel.getBuild() == null ? Collections.emptyList()
+                : rawModel.getBuild().getTestResources();
+        //todo: support multiple resources dirs for config hot deployment
+        final String resourcesDir = resources.isEmpty() ? null : resources.get(0).getDirectory();
+        return resolveRelativeToBaseDir(resourcesDir, "src/test/resources");
     }
 
     public Model getRawModel() {

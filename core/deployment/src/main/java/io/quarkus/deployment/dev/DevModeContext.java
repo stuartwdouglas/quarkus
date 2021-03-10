@@ -232,10 +232,17 @@ public class DevModeContext implements Serializable {
         private final String classesPath;
         private final String resourcePath;
         private final String resourcesOutputPath;
+
         private final String preBuildOutputDir;
         private final Set<String> sourceParents;
         private final String targetDir;
 
+        private final Set<String> testSourcePaths;
+        private final String testClassesPath;
+        private final String testResourcePath;
+        private final String testResourcesOutputPath;
+
+        @Deprecated
         public ModuleInfo(AppArtifactKey appArtifactKey,
                 String name,
                 String projectDirectory,
@@ -250,6 +257,7 @@ public class DevModeContext implements Serializable {
                     preBuildOutputDir, targetDir);
         }
 
+        @Deprecated
         public ModuleInfo(
                 AppArtifactKey appArtifactKey, String name,
                 String projectDirectory,
@@ -270,6 +278,27 @@ public class DevModeContext implements Serializable {
             this.sourceParents = sourceParents;
             this.preBuildOutputDir = preBuildOutputDir;
             this.targetDir = targetDir;
+            this.testSourcePaths = Collections.emptySet();
+            this.testClassesPath = null;
+            this.testResourcePath = null;
+            this.testResourcesOutputPath = null;
+        }
+
+        public ModuleInfo(Builder builder) {
+            this.appArtifactKey = builder.appArtifactKey;
+            this.name = builder.name;
+            this.projectDirectory = builder.projectDirectory;
+            this.sourcePaths = new LinkedHashSet<>(builder.sourcePaths);
+            this.classesPath = builder.classesPath;
+            this.resourcePath = builder.resourcePath;
+            this.resourcesOutputPath = builder.resourcesOutputPath;
+            this.sourceParents = builder.sourceParents;
+            this.preBuildOutputDir = builder.preBuildOutputDir;
+            this.targetDir = builder.targetDir;
+            this.testSourcePaths = new LinkedHashSet<>(builder.testSourcePaths);
+            this.testClassesPath = builder.testClassesPath;
+            this.testResourcePath = builder.testResourcePath;
+            this.testResourcesOutputPath = builder.testResourcesOutputPath;
         }
 
         public String getName() {
@@ -316,6 +345,100 @@ public class DevModeContext implements Serializable {
 
         public AppArtifactKey getAppArtifactKey() {
             return appArtifactKey;
+        }
+
+        public static class Builder {
+
+            private AppArtifactKey appArtifactKey;
+            private String name;
+            private String projectDirectory;
+            private Set<String> sourcePaths = Collections.emptySet();
+            private String classesPath;
+            private String resourcePath;
+            private String resourcesOutputPath;
+
+            private String preBuildOutputDir;
+            private Set<String> sourceParents = Collections.emptySet();
+            private String targetDir;
+
+            private Set<String> testSourcePaths = Collections.emptySet();
+            private String testClassesPath;
+            private String testResourcePath;
+            private String testResourcesOutputPath;
+
+            public Builder setAppArtifactKey(AppArtifactKey appArtifactKey) {
+                this.appArtifactKey = appArtifactKey;
+                return this;
+            }
+
+            public Builder setName(String name) {
+                this.name = name;
+                return this;
+            }
+
+            public Builder setProjectDirectory(String projectDirectory) {
+                this.projectDirectory = projectDirectory;
+                return this;
+            }
+
+            public Builder setSourcePaths(Set<String> sourcePaths) {
+                this.sourcePaths = sourcePaths;
+                return this;
+            }
+
+            public Builder setClassesPath(String classesPath) {
+                this.classesPath = classesPath;
+                return this;
+            }
+
+            public Builder setResourcePath(String resourcePath) {
+                this.resourcePath = resourcePath;
+                return this;
+            }
+
+            public Builder setResourcesOutputPath(String resourcesOutputPath) {
+                this.resourcesOutputPath = resourcesOutputPath;
+                return this;
+            }
+
+            public Builder setPreBuildOutputDir(String preBuildOutputDir) {
+                this.preBuildOutputDir = preBuildOutputDir;
+                return this;
+            }
+
+            public Builder setSourceParents(Set<String> sourceParents) {
+                this.sourceParents = sourceParents;
+                return this;
+            }
+
+            public Builder setTargetDir(String targetDir) {
+                this.targetDir = targetDir;
+                return this;
+            }
+
+            public Builder setTestSourcePaths(Set<String> testSourcePaths) {
+                this.testSourcePaths = testSourcePaths;
+                return this;
+            }
+
+            public Builder setTestClassesPath(String testClassesPath) {
+                this.testClassesPath = testClassesPath;
+                return this;
+            }
+
+            public Builder setTestResourcePath(String testResourcePath) {
+                this.testResourcePath = testResourcePath;
+                return this;
+            }
+
+            public Builder setTestResourcesOutputPath(String testResourcesOutputPath) {
+                this.testResourcesOutputPath = testResourcesOutputPath;
+                return this;
+            }
+
+            public ModuleInfo build() {
+                return new ModuleInfo(this);
+            }
         }
     }
 

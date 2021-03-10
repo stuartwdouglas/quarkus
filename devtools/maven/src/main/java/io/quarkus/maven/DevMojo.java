@@ -501,6 +501,9 @@ public class DevMojo extends AbstractMojo {
         Set<String> sourcePaths = null;
         String classesPath = null;
         String resourcePath = null;
+        Set<String> testSourcePaths = null;
+        String testClassesPath = null;
+        String testResourcePath = null;
 
         final MavenProject mavenProject = session.getProjectMap().get(
                 String.format("%s:%s:%s", localProject.getGroupId(), localProject.getArtifactId(), localProject.getVersion()));
@@ -513,9 +516,21 @@ public class DevMojo extends AbstractMojo {
             } else {
                 sourcePaths = Collections.emptySet();
             }
+            Path testSourcePath = localProject.getTestSourcesSourcesDir().toAbsolutePath();
+            if (Files.isDirectory(testSourcePath)) {
+                testSourcePaths = Collections.singleton(
+                        testSourcePath.toString());
+            } else {
+                testSourcePaths = Collections.emptySet();
+            }
         } else {
             projectDirectory = mavenProject.getBasedir().getPath();
             sourcePaths = mavenProject.getCompileSourceRoots().stream()
+                    .map(Paths::get)
+                    .filter(Files::isDirectory)
+                    .map(src -> src.toAbsolutePath().toString())
+                    .collect(Collectors.toSet());
+            testSourcePaths = mavenProject.getTestCompileSourceRoots().stream()
                     .map(Paths::get)
                     .filter(Files::isDirectory)
                     .map(src -> src.toAbsolutePath().toString())
@@ -527,9 +542,17 @@ public class DevMojo extends AbstractMojo {
         if (Files.isDirectory(classesDir)) {
             classesPath = classesDir.toAbsolutePath().toString();
         }
+        Path testClassesDir = localProject.getTestClassesDir();
+        if (Files.isDirectory(testClassesDir)) {
+            testClassesPath = testClassesDir.toAbsolutePath().toString();
+        }
         Path resourcesSourcesDir = localProject.getResourcesSourcesDir();
         if (Files.isDirectory(resourcesSourcesDir)) {
             resourcePath = resourcesSourcesDir.toAbsolutePath().toString();
+        }
+        Path testResourcesSourcesDir = localProject.getTestResourcesSourcesDir();
+        if (Files.isDirectory(testResourcesSourcesDir)) {
+            testResourcePath = testResourcesSourcesDir.toAbsolutePath().toString();
         }
 
         if (classesPath == null && (!sourcePaths.isEmpty() || resourcePath != null)) {
@@ -539,15 +562,20 @@ public class DevMojo extends AbstractMojo {
 
         Path targetDir = Paths.get(project.getBuild().getDirectory());
 
-        DevModeContext.ModuleInfo moduleInfo = new DevModeContext.ModuleInfo(localProject.getKey(),
-                localProject.getArtifactId(),
-                projectDirectory,
-                sourcePaths,
-                classesPath,
-                resourcePath,
-                sourceParent.toAbsolutePath().toString(),
-                targetDir.resolve("generated-sources").toAbsolutePath().toString(),
-                targetDir.toAbsolutePath().toString());
+        DevModeContext.ModuleInfo moduleInfo = new DevModeContext.ModuleInfo.Builder().setAppArtifactKey(localProject.getKey())
+                .setName(localProject.getArtifactId())
+                .setProjectDirectory(projectDirectory)
+                .setSourcePaths(sourcePaths)
+                .setClassesPath(classesPath)
+                .setResourcePath(resourcePath)
+                .setSourceParents(Collections.singleton(sourceParent.toAbsolutePath().toString()))
+                .setPreBuildOutputDir(targetDir.resolve("generated-sources").toAbsolutePath().toString())
+                .setTargetDir(targetDir.toAbsolutePath().toString())
+                .setTestSourcePaths(testSourcePaths)
+                .setTestClassesPath(testClassesPath)
+                .setTestResourcePath(testResourcePath)
+                .build();
+
         if (root) {
             builder.mainModule(moduleInfo);
         } else {
