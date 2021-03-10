@@ -83,6 +83,7 @@ import io.quarkus.builder.BuildStep;
 import io.quarkus.deployment.builditem.TestAnnotationBuildItem;
 import io.quarkus.deployment.builditem.TestClassBeanBuildItem;
 import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
+import io.quarkus.deployment.dev.testing.TestRunner;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.configuration.DurationConverter;
 import io.quarkus.runtime.configuration.ProfileManager;
@@ -220,9 +221,6 @@ public class QuarkusTestExtension
             // clear the test.url system property as the value leaks into the run when using different profiles
             System.clearProperty("test.url");
 
-            final QuarkusBootstrap.Builder runnerBuilder = QuarkusBootstrap.builder()
-                    .setIsolateDeployment(true)
-                    .setMode(QuarkusBootstrap.Mode.TEST);
             QuarkusTestProfile profileInstance = null;
             if (profile != null) {
                 profileInstance = profile.getConstructor().newInstance();
@@ -254,7 +252,6 @@ public class QuarkusTestExtension
             }
 
             final Path projectRoot = Paths.get("").normalize().toAbsolutePath();
-            runnerBuilder.setProjectRoot(projectRoot);
             Path outputDir;
             try {
                 // this should work for both maven and gradle
@@ -263,7 +260,6 @@ public class QuarkusTestExtension
                 // this shouldn't happen since testClassLocation is usually found under the project dir
                 outputDir = projectRoot;
             }
-            runnerBuilder.setTargetDirectory(outputDir);
 
             rootBuilder.add(appClassLocation);
             final Path appResourcesLocation = PathTestHelper.getResourcesForClassesDirOrNull(appClassLocation, "main");
@@ -292,12 +288,22 @@ public class QuarkusTestExtension
                     }
                 }
             }
-            runnerBuilder.setApplicationRoot(rootBuilder.build());
+            CuratedApplication curatedApplication;
+            if (TestRunner.curatedApplication != null) {
+                curatedApplication = TestRunner.curatedApplication;
+            } else {
+                final QuarkusBootstrap.Builder runnerBuilder = QuarkusBootstrap.builder()
+                        .setIsolateDeployment(true)
+                        .setMode(QuarkusBootstrap.Mode.TEST);
+                runnerBuilder.setTargetDirectory(outputDir);
+                runnerBuilder.setProjectRoot(projectRoot);
+                runnerBuilder.setApplicationRoot(rootBuilder.build());
 
-            CuratedApplication curatedApplication = runnerBuilder
-                    .setTest(true)
-                    .build()
-                    .bootstrap();
+                curatedApplication = runnerBuilder
+                        .setTest(true)
+                        .build()
+                        .bootstrap();
+            }
 
             Index testClassesIndex = TestClassIndexer.indexTestClasses(requiredTestClass);
             // we need to write the Index to make it reusable from other parts of the testing infrastructure that run in different ClassLoaders

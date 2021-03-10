@@ -347,6 +347,22 @@ public class DevModeContext implements Serializable {
             return appArtifactKey;
         }
 
+        public Set<String> getTestSourcePaths() {
+            return testSourcePaths;
+        }
+
+        public String getTestClassesPath() {
+            return testClassesPath;
+        }
+
+        public String getTestResourcePath() {
+            return testResourcePath;
+        }
+
+        public String getTestResourcesOutputPath() {
+            return testResourcesOutputPath;
+        }
+
         public static class Builder {
 
             private AppArtifactKey appArtifactKey;
