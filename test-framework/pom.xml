@@ -39,6 +39,7 @@
         <module>oidc-server</module>
         <module>keycloak-server</module>
         <module>jacoco</module>
+        <module>junit5-platform</module>
     </modules>
 
 </project>
