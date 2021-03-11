@@ -652,6 +652,7 @@ public class QuarkusTestExtension
             } catch (Throwable e) {
                 failedBoot = true;
                 firstException = e;
+                store.put(FailedCleanup.class.getName(), new FailedCleanup());
             }
         }
         return state;
@@ -1088,10 +1089,21 @@ public class QuarkusTestExtension
                         log.error("Failed to shutdown Quarkus test resources", e);
                     } finally {
                         Thread.currentThread().setContextClassLoader(old);
+                        ConfigProviderResolver.setInstance(null);
                     }
                 }
                 Runtime.getRuntime().removeShutdownHook(shutdownHook);
             }
+        }
+    }
+
+    class FailedCleanup implements ExtensionContext.Store.CloseableResource {
+
+        @Override
+        public void close() {
+            firstException = null;
+            failedBoot = false;
+            ConfigProviderResolver.setInstance(null);
         }
     }
 

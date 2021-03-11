@@ -37,6 +37,8 @@ public class DevServicesDatasourceProcessor {
 
     static volatile Map<String, String> cachedProperties;
 
+    static volatile List<RunTimeConfigurationDefaultBuildItem> databaseConfig;
+
     static volatile boolean first = true;
 
     @BuildStep(onlyIfNot = IsNormal.class)
@@ -62,8 +64,9 @@ public class DevServicesDatasourceProcessor {
                 }
             }
             if (!restartRequired) {
-
-
+                for (RunTimeConfigurationDefaultBuildItem i : databaseConfig) {
+                    runTimeConfigurationDefaultBuildItemBuildProducer.produce(i);
+                }
                 return null;
             }
             for (Closeable i : databases) {
@@ -75,6 +78,7 @@ public class DevServicesDatasourceProcessor {
             }
             databases = null;
             cachedProperties = null;
+            databaseConfig = null;
         }
         DevServicesDatasourceResultBuildItem.DbResult defaultResult;
         Map<String, DevServicesDatasourceResultBuildItem.DbResult> namedResults = new HashMap<>();
@@ -104,10 +108,10 @@ public class DevServicesDatasourceProcessor {
         defaultResult = startDevDb(null, curateOutcomeBuildItem, installedDrivers, devDBProviderMap,
                 dataSourceBuildTimeConfig.defaultDataSource,
                 configHandlersByDbType, propertiesMap, closeableList);
+        List<RunTimeConfigurationDefaultBuildItem> dbConfig = new ArrayList<>();
         if (defaultResult != null) {
             for (Map.Entry<String, String> i : defaultResult.getConfigProperties().entrySet()) {
-                runTimeConfigurationDefaultBuildItemBuildProducer
-                        .produce(new RunTimeConfigurationDefaultBuildItem(i.getKey(), i.getValue()));
+                dbConfig.add(new RunTimeConfigurationDefaultBuildItem(i.getKey(), i.getValue()));
             }
         }
         for (Map.Entry<String, DataSourceBuildTimeConfig> entry : dataSourceBuildTimeConfig.namedDataSources.entrySet()) {
@@ -117,11 +121,15 @@ public class DevServicesDatasourceProcessor {
             if (result != null) {
                 namedResults.put(entry.getKey(), result);
                 for (Map.Entry<String, String> i : result.getConfigProperties().entrySet()) {
-                    runTimeConfigurationDefaultBuildItemBuildProducer
-                            .produce(new RunTimeConfigurationDefaultBuildItem(i.getKey(), i.getValue()));
+                    dbConfig.add(new RunTimeConfigurationDefaultBuildItem(i.getKey(), i.getValue()));
                 }
             }
         }
+        for (RunTimeConfigurationDefaultBuildItem i : dbConfig) {
+            runTimeConfigurationDefaultBuildItemBuildProducer
+                    .produce(i);
+        }
+        databaseConfig = dbConfig;
 
         if (first) {
             first = false;
