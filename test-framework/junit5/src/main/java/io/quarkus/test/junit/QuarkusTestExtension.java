@@ -373,7 +373,10 @@ public class QuarkusTestExtension
                                 }
                                 tm.close();
                             } finally {
-                                hangDetectionExecutor.shutdown();
+                                if (hangTaskKey != null) {
+                                    hangTaskKey.cancel(true);
+                                }
+                                hangDetectionExecutor.shutdownNow();
                             }
                         }
                         try {

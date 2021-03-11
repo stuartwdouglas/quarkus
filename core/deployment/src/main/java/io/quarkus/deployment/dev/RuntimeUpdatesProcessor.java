@@ -40,8 +40,10 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
 
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.runner.Timing;
 import io.quarkus.changeagent.ClassChangeAgent;
+import io.quarkus.deployment.dev.testing.TestRunner;
 import io.quarkus.deployment.util.FSWatchUtil;
 import io.quarkus.deployment.util.FileUtil;
 import io.quarkus.dev.spi.DevModeType;
@@ -94,6 +96,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     private final BiConsumer<Set<String>, ClassScanResult> restartCallback;
     private final BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification;
     private final BiFunction<String, byte[], byte[]> classTransformers;
+    private final QuarkusBootstrap quarkusBootstrap;
 
     /**
      * The index for the last successful start. Used to determine if the class has changed its structure
@@ -104,7 +107,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     public RuntimeUpdatesProcessor(Path applicationRoot, DevModeContext context, ClassLoaderCompiler compiler,
             DevModeType devModeType, BiConsumer<Set<String>, ClassScanResult> restartCallback,
             BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification,
-            BiFunction<String, byte[], byte[]> classTransformers) {
+            BiFunction<String, byte[], byte[]> classTransformers, QuarkusBootstrap quarkusBootstrap) {
         this.applicationRoot = applicationRoot;
         this.context = context;
         this.compiler = compiler;
@@ -112,6 +115,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         this.restartCallback = restartCallback;
         this.copyResourceNotification = copyResourceNotification;
         this.classTransformers = classTransformers;
+        this.quarkusBootstrap = quarkusBootstrap;
     }
 
     @Override
@@ -265,6 +269,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         } else if (instrumentationChange) {
             log.infof("Hot replace performed via instrumentation, no restart needed, total time: %ss ",
                     Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
+            TestRunner.runInternal(context, quarkusBootstrap);
         }
         return false;
     }

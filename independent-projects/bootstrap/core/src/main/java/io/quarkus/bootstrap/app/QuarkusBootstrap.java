@@ -89,6 +89,7 @@ public class QuarkusBootstrap implements Serializable {
     private final boolean rebuild;
     private final Set<AppArtifactKey> localArtifacts;
     private final List<ClassLoaderEventListener> classLoadListeners;
+    private final boolean auxiliaryApplication;
 
     private QuarkusBootstrap(Builder builder) {
         this.applicationRoot = builder.applicationRoot;
@@ -118,6 +119,7 @@ public class QuarkusBootstrap implements Serializable {
         this.rebuild = builder.rebuild;
         this.localArtifacts = new HashSet<>(builder.localArtifacts);
         this.classLoadListeners = builder.classLoadListeners;
+        this.auxiliaryApplication = builder.auxiliaryApplication;
     }
 
     public CuratedApplication bootstrap() throws BootstrapException {
@@ -236,6 +238,10 @@ public class QuarkusBootstrap implements Serializable {
         return mode;
     }
 
+    public boolean isAuxiliaryApplication() {
+        return auxiliaryApplication;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -333,6 +339,7 @@ public class QuarkusBootstrap implements Serializable {
         boolean disableClasspathCache;
         AppModel existingModel;
         final Set<AppArtifactKey> localArtifacts = new HashSet<>();
+        boolean auxiliaryApplication;
 
         public Builder() {
         }
@@ -395,6 +402,11 @@ public class QuarkusBootstrap implements Serializable {
 
         public Builder setMode(Mode mode) {
             this.mode = mode;
+            return this;
+        }
+
+        public Builder setAuxiliaryApplication(boolean auxiliaryApplication) {
+            this.auxiliaryApplication = auxiliaryApplication;
             return this;
         }
 
@@ -508,14 +520,6 @@ public class QuarkusBootstrap implements Serializable {
             return this;
         }
 
-        public QuarkusBootstrap build() {
-            Objects.requireNonNull(applicationRoot, "Application root must not be null");
-            if (appArtifact != null) {
-                localArtifacts.add(appArtifact.getKey());
-            }
-            return new QuarkusBootstrap(this);
-        }
-
         public Builder setRebuild(boolean value) {
             this.rebuild = value;
             return this;
@@ -524,6 +528,14 @@ public class QuarkusBootstrap implements Serializable {
         public Builder addClassLoaderEventListeners(List<ClassLoaderEventListener> classLoadListeners) {
             this.classLoadListeners.addAll(classLoadListeners);
             return this;
+        }
+
+        public QuarkusBootstrap build() {
+            Objects.requireNonNull(applicationRoot, "Application root must not be null");
+            if (appArtifact != null) {
+                localArtifacts.add(appArtifact.getKey());
+            }
+            return new QuarkusBootstrap(this);
         }
     }
 

@@ -135,6 +135,11 @@ public class MainClassBuildStep {
         FieldCreator scField = file.getFieldCreator(STARTUP_CONTEXT_FIELD);
         scField.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
 
+        MethodCreator ctor = file.getMethodCreator("<init>", void.class);
+        ctor.invokeSpecialMethod(MethodDescriptor.ofMethod(Application.class, "<init>", void.class, boolean.class),
+                ctor.getThis(), ctor.load(launchMode.isAuxiliaryApplication()));
+        ctor.returnValue(null);
+
         MethodCreator mv = file.getMethodCreator("<clinit>", void.class);
         mv.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
 

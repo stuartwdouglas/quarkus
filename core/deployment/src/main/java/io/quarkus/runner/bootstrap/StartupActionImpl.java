@@ -56,16 +56,10 @@ public class StartupActionImpl implements StartupAction {
         //that is discarded between restarts
         Map<String, byte[]> resources = new HashMap<>();
         resources.putAll(extractGeneratedResources(true));
-        if (curatedApplication.getQuarkusBootstrap().getMode() == QuarkusBootstrap.Mode.TEST) {
-            resources.putAll(extractGeneratedResources(false));
-            baseClassLoader.reset(resources, transformedClasses);
-            runtimeClassLoader = baseClassLoader;
-        } else {
-            baseClassLoader.reset(extractGeneratedResources(false),
-                    transformedClasses);
-            runtimeClassLoader = curatedApplication.createRuntimeClassLoader(baseClassLoader,
-                    resources, transformedClasses);
-        }
+        baseClassLoader.reset(extractGeneratedResources(false),
+                transformedClasses);
+        runtimeClassLoader = curatedApplication.createRuntimeClassLoader(baseClassLoader,
+                resources, transformedClasses);
         this.runtimeClassLoader = runtimeClassLoader;
     }
 
@@ -230,7 +224,7 @@ public class StartupActionImpl implements StartupAction {
                         if (curatedApplication.getQuarkusBootstrap().getMode() == QuarkusBootstrap.Mode.TEST) {
                             //for tests we just always shut down the curated application, as it is only used once
                             //dev mode might be about to restart, so we leave it
-                            curatedApplication.close();
+                            //curatedApplication.close();
                         }
                     }
                 }
