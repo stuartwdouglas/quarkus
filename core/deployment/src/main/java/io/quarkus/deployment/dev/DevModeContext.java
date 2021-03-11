@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
@@ -228,77 +229,28 @@ public class DevModeContext implements Serializable {
         private final AppArtifactKey appArtifactKey;
         private final String name;
         private final String projectDirectory;
-        private final Set<String> sourcePaths;
-        private final String classesPath;
-        private final String resourcePath;
-        private final String resourcesOutputPath;
+        private final CompilationUnit main;
+        private final CompilationUnit test;
 
         private final String preBuildOutputDir;
         private final Set<String> sourceParents;
         private final String targetDir;
 
-        private final Set<String> testSourcePaths;
-        private final String testClassesPath;
-        private final String testResourcePath;
-        private final String testResourcesOutputPath;
-
-        @Deprecated
-        public ModuleInfo(AppArtifactKey appArtifactKey,
-                String name,
-                String projectDirectory,
-                Set<String> sourcePaths,
-                String classesPath,
-                String resourcePath,
-                String sourceParent,
-                String preBuildOutputDir,
-                String targetDir) {
-            this(appArtifactKey, name, projectDirectory, sourcePaths, classesPath, resourcePath, classesPath,
-                    Collections.singleton(sourceParent),
-                    preBuildOutputDir, targetDir);
-        }
-
-        @Deprecated
-        public ModuleInfo(
-                AppArtifactKey appArtifactKey, String name,
-                String projectDirectory,
-                Set<String> sourcePaths,
-                String classesPath,
-                String resourcePath,
-                String resourceOutputPath,
-                Set<String> sourceParents,
-                String preBuildOutputDir,
-                String targetDir) {
-            this.appArtifactKey = appArtifactKey;
-            this.name = name;
-            this.projectDirectory = projectDirectory;
-            this.sourcePaths = sourcePaths == null ? new LinkedHashSet<>() : new LinkedHashSet<>(sourcePaths);
-            this.classesPath = classesPath;
-            this.resourcePath = resourcePath;
-            this.resourcesOutputPath = resourceOutputPath;
-            this.sourceParents = sourceParents;
-            this.preBuildOutputDir = preBuildOutputDir;
-            this.targetDir = targetDir;
-            this.testSourcePaths = Collections.emptySet();
-            this.testClassesPath = null;
-            this.testResourcePath = null;
-            this.testResourcesOutputPath = null;
-        }
-
-        public ModuleInfo(Builder builder) {
+        ModuleInfo(Builder builder) {
             this.appArtifactKey = builder.appArtifactKey;
             this.name = builder.name;
             this.projectDirectory = builder.projectDirectory;
-            this.sourcePaths = new LinkedHashSet<>(builder.sourcePaths);
-            this.classesPath = builder.classesPath;
-            this.resourcePath = builder.resourcePath;
-            this.resourcesOutputPath = builder.resourcesOutputPath;
+            this.main = new CompilationUnit(new LinkedHashSet<>(builder.sourcePaths), builder.classesPath, builder.resourcePath,
+                    builder.resourcesOutputPath);
+            if (builder.testClassesPath != null) {
+                this.test = new CompilationUnit(new LinkedHashSet<>(builder.testSourcePaths),
+                        builder.testClassesPath, builder.testResourcePath, builder.testResourcesOutputPath);
+            } else {
+                this.test = null;
+            }
             this.sourceParents = builder.sourceParents;
             this.preBuildOutputDir = builder.preBuildOutputDir;
             this.targetDir = builder.targetDir;
-            this.testSourcePaths = new LinkedHashSet<>(builder.testSourcePaths);
-            this.testClassesPath = builder.testClassesPath;
-            this.testResourcePath = builder.testResourcePath;
-            this.testResourcesOutputPath = builder.testResourcesOutputPath;
         }
 
         public String getName() {
@@ -309,30 +261,15 @@ public class DevModeContext implements Serializable {
             return projectDirectory;
         }
 
-        public Set<String> getSourcePaths() {
-            return Collections.unmodifiableSet(sourcePaths);
-        }
-
         public Set<String> getSourceParents() {
             return sourceParents;
         }
 
+        //TODO: why isn't this immutable?
         public void addSourcePaths(Collection<String> additionalPaths) {
             additionalPaths.stream()
                     .map(p -> Paths.get(p).isAbsolute() ? p : (projectDirectory + File.separator + p))
-                    .forEach(sourcePaths::add);
-        }
-
-        public String getClassesPath() {
-            return classesPath;
-        }
-
-        public String getResourcePath() {
-            return resourcePath;
-        }
-
-        public String getResourcesOutputPath() {
-            return resourcesOutputPath;
+                    .forEach(main.sourcePaths::add);
         }
 
         public String getPreBuildOutputDir() {
@@ -347,20 +284,12 @@ public class DevModeContext implements Serializable {
             return appArtifactKey;
         }
 
-        public Set<String> getTestSourcePaths() {
-            return testSourcePaths;
+        public CompilationUnit getMain() {
+            return main;
         }
 
-        public String getTestClassesPath() {
-            return testClassesPath;
-        }
-
-        public String getTestResourcePath() {
-            return testResourcePath;
-        }
-
-        public String getTestResourcesOutputPath() {
-            return testResourcesOutputPath;
+        public Optional<CompilationUnit> getTest() {
+            return Optional.ofNullable(test);
         }
 
         public static class Builder {
@@ -455,6 +384,36 @@ public class DevModeContext implements Serializable {
             public ModuleInfo build() {
                 return new ModuleInfo(this);
             }
+        }
+    }
+
+    public static class CompilationUnit implements Serializable {
+        private final Set<String> sourcePaths;
+        private final String classesPath;
+        private final String resourcePath;
+        private final String resourcesOutputPath;
+
+        public CompilationUnit(Set<String> sourcePaths, String classesPath, String resourcePath, String resourcesOutputPath) {
+            this.sourcePaths = sourcePaths;
+            this.classesPath = classesPath;
+            this.resourcePath = resourcePath;
+            this.resourcesOutputPath = resourcesOutputPath;
+        }
+
+        public Set<String> getSourcePaths() {
+            return sourcePaths;
+        }
+
+        public String getClassesPath() {
+            return classesPath;
+        }
+
+        public String getResourcePath() {
+            return resourcePath;
+        }
+
+        public String getResourcesOutputPath() {
+            return resourcesOutputPath;
         }
     }
 

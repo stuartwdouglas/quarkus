@@ -34,9 +34,7 @@ import org.junit.platform.launcher.core.LauncherConfig;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 
-import io.quarkus.bootstrap.app.AdditionalDependency;
 import io.quarkus.bootstrap.app.CuratedApplication;
-import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.deployment.dev.DevModeContext;
 
 public class TestRunner implements Consumer<CuratedApplication> {
@@ -44,31 +42,22 @@ public class TestRunner implements Consumer<CuratedApplication> {
     private static final Logger log = Logger.getLogger(TestRunner.class);
     public static volatile CuratedApplication curatedApplication;
 
-    public static void runTests(DevModeContext devModeContext, QuarkusBootstrap existingBoostrap) {
+    public static void runTests(DevModeContext devModeContext, CuratedApplication testApplication) {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                runInternal(devModeContext, existingBoostrap);
+                runInternal(devModeContext, testApplication);
             }
         }, "Test runner thread");
         t.setDaemon(true);
         t.start();
     }
 
-    public static void runInternal(DevModeContext devModeContext, QuarkusBootstrap existingBoostrap) {
+    public static void runInternal(DevModeContext devModeContext, CuratedApplication testApplication) {
         long start = System.currentTimeMillis();
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
-            curatedApplication = existingBoostrap.clonedBuilder()
-                    .setMode(QuarkusBootstrap.Mode.TEST)
-                    .setDisableClasspathCache(true)
-                    .setIsolateDeployment(true)
-                    .setTest(true)
-                    .setAuxiliaryApplication(true)
-                    .addAdditionalApplicationArchive(new AdditionalDependency(
-                            Paths.get(devModeContext.getApplicationRoot().getTestClassesPath()), true, true))
-                    .build()
-                    .bootstrap();
+            curatedApplication = testApplication;
 
             ClassLoader tcl = curatedApplication.createDeploymentClassLoader();
             Thread.currentThread().setContextClassLoader(tcl);
@@ -178,9 +167,10 @@ public class TestRunner implements Consumer<CuratedApplication> {
         List<URL> classRoots = new ArrayList<>();
         try {
             for (DevModeContext.ModuleInfo i : devModeContext.getAllModules()) {
-                classRoots.add(Paths.get(i.getClassesPath()).toFile().toURL());
+                classRoots.add(Paths.get(i.getMain().getClassesPath()).toFile().toURL());
             }
-            classRoots.add(Paths.get(devModeContext.getApplicationRoot().getTestClassesPath()).toFile().toURL());
+            //we know test is not empty, otherwise we would not be runnning
+            classRoots.add(Paths.get(devModeContext.getApplicationRoot().getTest().get().getClassesPath()).toFile().toURL());
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -188,7 +178,7 @@ public class TestRunner implements Consumer<CuratedApplication> {
 
         //we also only run tests from the current module, which we can also revisit later
         Indexer indexer = new Indexer();
-        try (Stream<Path> files = Files.walk(Paths.get(devModeContext.getApplicationRoot().getTestClassesPath()))) {
+        try (Stream<Path> files = Files.walk(Paths.get(devModeContext.getApplicationRoot().getTest().get().getClassesPath()))) {
             files.filter(s -> s.getFileName().toString().endsWith(".class")).forEach(s -> {
                 try (InputStream in = Files.newInputStream(s)) {
                     indexer.index(in);
