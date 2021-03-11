@@ -43,6 +43,9 @@ public class TestRunner implements Consumer<CuratedApplication> {
     public static volatile CuratedApplication curatedApplication;
 
     public static void runTests(DevModeContext devModeContext, CuratedApplication testApplication) {
+        if (testApplication == null) {
+            return;
+        }
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {

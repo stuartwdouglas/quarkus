@@ -28,7 +28,6 @@ import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
-import io.quarkus.runtime.LaunchMode;
 
 public class DevServicesDatasourceProcessor {
 
@@ -52,7 +51,7 @@ public class DevServicesDatasourceProcessor {
         //figure out if we need to shut down and restart existing databases
         //if not and the DB's have already started we just return
         if (databases != null) {
-            boolean restartRequired = launchMode.getLaunchMode() == LaunchMode.TEST;
+            boolean restartRequired = false;
             if (!restartRequired) {
                 for (Map.Entry<String, String> i : cachedProperties.entrySet()) {
                     if (!Objects.equals(i.getValue(),
@@ -63,6 +62,8 @@ public class DevServicesDatasourceProcessor {
                 }
             }
             if (!restartRequired) {
+
+
                 return null;
             }
             for (Closeable i : databases) {
