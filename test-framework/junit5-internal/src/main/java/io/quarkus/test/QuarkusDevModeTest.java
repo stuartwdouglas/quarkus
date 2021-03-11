@@ -283,13 +283,17 @@ public class QuarkusDevModeTest
             context.setCacheDir(cache.toFile());
 
             context.setApplicationRoot(
-                    new DevModeContext.ModuleInfo(AppArtifactKey.fromString("io.quarkus.test:app-under-test"), "default",
-                            deploymentDir.toAbsolutePath().toString(),
-                            Collections.singleton(deploymentSourcePath.toAbsolutePath().toString()),
-                            classes.toAbsolutePath().toString(), deploymentResourcePath.toAbsolutePath().toString(),
-                            deploymentSourceParentPath.toAbsolutePath().toString(),
-                            targetDir.resolve("generated-sources").toAbsolutePath().toString(),
-                            targetDir.toAbsolutePath().toString()));
+                    new DevModeContext.ModuleInfo.Builder()
+                            .setAppArtifactKey(AppArtifactKey.fromString("io.quarkus.test:app-under-test"))
+                            .setName("default")
+                            .setProjectDirectory(deploymentDir.toAbsolutePath().toString())
+                            .setSourcePaths(Collections.singleton(deploymentSourcePath.toAbsolutePath().toString()))
+                            .setClassesPath(classes.toAbsolutePath().toString())
+                            .setResourcePath(deploymentResourcePath.toAbsolutePath().toString())
+                            .setSourceParents(Collections.singleton(deploymentSourceParentPath.toAbsolutePath().toString()))
+                            .setPreBuildOutputDir(targetDir.resolve("generated-sources").toAbsolutePath().toString())
+                            .setTargetDir(targetDir.toAbsolutePath().toString())
+                            .build());
 
             setDevModeRunnerJarFile(context);
             return context;
@@ -399,7 +403,8 @@ public class QuarkusDevModeTest
                     continue;
                 }
 
-                Path intelliJPath = Paths.get(context.getApplicationRoot().getClassesPath()).getParent().resolve("intellij");
+                Path intelliJPath = Paths.get(context.getApplicationRoot().getMain().getClassesPath()).getParent()
+                        .resolve("intellij");
                 Path dummyJar = intelliJPath.resolve("dummy.jar");
 
                 // create the empty dummy jar
