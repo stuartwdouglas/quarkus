@@ -473,6 +473,10 @@ public class JaxrsClientProcessor {
                     builder = methodCreator.invokeVirtualMethod(invocationBuilderEnricher.getKey(), methodCreator.getThis(),
                             builder, invocationBuilderEnricher.getValue());
                 }
+                methodCreator.invokeInterfaceMethod(
+                        MethodDescriptor.ofMethod(Invocation.Builder.class, "property", Invocation.Builder.class, String.class,
+                                Object.class),
+                        builder, methodCreator.load("org.resteasy.reactive.client.path"), methodCreator.load(method.getPath()));
 
                 Type returnType = jandexMethod.returnType();
                 boolean completionStage = false;
