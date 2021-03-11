@@ -20,8 +20,11 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.reporting.ReportEntry;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestExecutionListener;
@@ -42,15 +45,28 @@ public class TestRunner implements Consumer<CuratedApplication> {
     public static volatile CuratedApplication curatedApplication;
 
     public static void runTests(DevModeContext devModeContext, QuarkusBootstrap existingBoostrap) {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runInternal(devModeContext, existingBoostrap);
+            }
+        }, "Test runner thread");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    public static void runInternal(DevModeContext devModeContext, QuarkusBootstrap existingBoostrap) {
         long start = System.currentTimeMillis();
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
             curatedApplication = existingBoostrap.clonedBuilder()
                     .setMode(QuarkusBootstrap.Mode.TEST)
                     .setDisableClasspathCache(true)
+                    .setIsolateDeployment(true)
                     .setTest(true)
+                    .setAuxiliaryApplication(true)
                     .addAdditionalApplicationArchive(new AdditionalDependency(
-                            Paths.get(devModeContext.getApplicationRoot().getTestClassesPath()), false, true))
+                            Paths.get(devModeContext.getApplicationRoot().getTestClassesPath()), true, true))
                     .build()
                     .bootstrap();
 
@@ -97,8 +113,44 @@ public class TestRunner implements Consumer<CuratedApplication> {
                 @Override
                 public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
                     if (testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED) {
-                        log.error("Test " + testIdentifier.getDisplayName() + " completed " + testExecutionResult.getStatus(),
-                                testExecutionResult.getThrowable().get());
+                        Class<?> testClass = null;
+                        TestSource testSource = testIdentifier.getSource().orElse(null);
+                        if (testSource instanceof ClassSource) {
+                            testClass = ((ClassSource) testSource).getJavaClass();
+                        } else if (testSource instanceof MethodSource) {
+                            testClass = ((MethodSource) testSource).getJavaClass();
+                        }
+                        Throwable throwable = testExecutionResult.getThrowable().get();
+                        if (testClass != null) {
+                            //first we cut all the platform stuff out of the stack trace
+                            StackTraceElement[] st = throwable.getStackTrace();
+                            for (int i = st.length - 1; i >= 0; --i) {
+                                StackTraceElement elem = st[i];
+                                if (elem.getClassName().equals(testClass.getName())) {
+                                    StackTraceElement[] newst = new StackTraceElement[i + 1];
+                                    System.arraycopy(st, 0, newst, 0, i + 1);
+                                    st = newst;
+                                    break;
+                                }
+                            }
+
+                            //now cut out all the restassured internals
+                            //TODO: this should be pluggable
+                            for (int i = st.length - 1; i >= 0; --i) {
+                                StackTraceElement elem = st[i];
+                                if (elem.getClassName().startsWith("io.restassured")) {
+                                    StackTraceElement[] newst = new StackTraceElement[st.length - i];
+                                    System.arraycopy(st, i, newst, 0, st.length - i);
+                                    st = newst;
+                                    break;
+                                }
+                            }
+                            throwable.setStackTrace(st);
+                        }
+                        log.error(
+                                "Test " + testIdentifier.getDisplayName() + " completed " + testExecutionResult.getStatus()
+                                        + "\n",
+                                throwable);
                     } else {
                         log.info("Test " + testIdentifier.getDisplayName() + " completed " + testExecutionResult.getStatus());
                     }

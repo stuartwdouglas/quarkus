@@ -72,9 +72,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
 
     private synchronized void firstStart(QuarkusClassLoader deploymentClassLoader, List<CodeGenData> codeGens) {
 
-        //TODO: REMOVE THIS, its a temp hack
-        TestRunner.runTests(context, curatedApplication.getQuarkusBootstrap());
-
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
 
@@ -116,6 +113,8 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 augmentDone = true;
                 runner = start.runMainClass(context.getArgs());
                 firstStartCompleted = true;
+                //TODO: REMOVE THIS, its a temp hack
+                TestRunner.runTests(context, curatedApplication.getQuarkusBootstrap());
             } catch (Throwable t) {
                 Throwable rootCause = t;
                 while (rootCause.getCause() != null) {
@@ -194,6 +193,8 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 StartupAction start = augmentAction.reloadExistingApplication(firstStartCompleted, changedResources,
                         classChangeInformation);
                 runner = start.runMainClass(context.getArgs());
+                //TODO: REMOVE THIS, its a temp hack
+                TestRunner.runTests(context, curatedApplication.getQuarkusBootstrap());
                 firstStartCompleted = true;
             } catch (Throwable t) {
                 deploymentProblem = t;
@@ -236,7 +237,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                         public byte[] apply(String s, byte[] bytes) {
                             return ClassTransformingBuildStep.transform(s, bytes);
                         }
-                    });
+                    }, curatedApplication.getQuarkusBootstrap());
 
             for (HotReplacementSetup service : ServiceLoader.load(HotReplacementSetup.class,
                     curatedApplication.getBaseRuntimeClassLoader())) {

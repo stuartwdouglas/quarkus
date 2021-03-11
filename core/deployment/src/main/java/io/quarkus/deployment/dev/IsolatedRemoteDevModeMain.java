@@ -136,7 +136,7 @@ public class IsolatedRemoteDevModeMain implements BiConsumer<CuratedApplication,
                         public byte[] apply(String s, byte[] bytes) {
                             return ClassTransformingBuildStep.transform(s, bytes);
                         }
-                    });
+                    }, curatedApplication.getQuarkusBootstrap());
 
             for (HotReplacementSetup service : ServiceLoader.load(HotReplacementSetup.class,
                     curatedApplication.getBaseRuntimeClassLoader())) {
