@@ -425,7 +425,8 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                     throw new RuntimeException(e);
                 }
                 if (!changedSourceFiles.isEmpty()) {
-                    log.info("Changed source files detected, recompiling " + changedSourceFiles);
+                    log.info("Changed source files detected, recompiling "
+                            + changedSourceFiles.stream().map(File::getName).collect(Collectors.joining(", ")));
                     try {
                         final Set<Path> changedPaths = changedSourceFiles.stream()
                                 .map(File::toPath)
