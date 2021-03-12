@@ -135,7 +135,7 @@ public class IsolatedRemoteDevModeMain implements BiConsumer<CuratedApplication,
                         public byte[] apply(String s, byte[] bytes) {
                             return ClassTransformingBuildStep.transform(s, bytes);
                         }
-                    }, curatedApplication.getQuarkusBootstrap(), null, null);
+                    }, null, null);
 
             for (HotReplacementSetup service : ServiceLoader.load(HotReplacementSetup.class,
                     curatedApplication.getBaseRuntimeClassLoader())) {
@@ -199,7 +199,8 @@ public class IsolatedRemoteDevModeMain implements BiConsumer<CuratedApplication,
 
             if (RuntimeUpdatesProcessor.INSTANCE != null) {
                 RuntimeUpdatesProcessor.INSTANCE.checkForFileChange();
-                RuntimeUpdatesProcessor.INSTANCE.checkForChangedClasses();
+                RuntimeUpdatesProcessor.INSTANCE.checkForChangedClasses(true);
+                RuntimeUpdatesProcessor.INSTANCE.checkForChangedTestClasses(true);
             }
 
             JarResult result = generateApplication();

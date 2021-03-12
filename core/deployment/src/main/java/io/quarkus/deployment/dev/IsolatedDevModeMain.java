@@ -69,6 +69,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     private static volatile CuratedApplication curatedApplication;
     private static volatile CuratedApplication testCuratedApplication;
     private static volatile AugmentAction augmentAction;
+    private static volatile TestRunner testRunner;
     private static volatile boolean restarting;
     private static volatile boolean firstStartCompleted;
     private static final CountDownLatch shutdownLatch = new CountDownLatch(1);
@@ -104,7 +105,8 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                                         System.in.read();
                                     }
                                     System.out.println("Restarting...");
-                                    RuntimeUpdatesProcessor.INSTANCE.checkForChangedClasses();
+                                    RuntimeUpdatesProcessor.INSTANCE.checkForChangedClasses(false);
+                                    RuntimeUpdatesProcessor.INSTANCE.checkForChangedTestClasses(false);
                                     restartApp(RuntimeUpdatesProcessor.INSTANCE.checkForFileChange(), null);
                                 } catch (Exception e) {
                                     log.error("Failed to restart", e);
@@ -116,8 +118,9 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 augmentDone = true;
                 runner = start.runMainClass(context.getArgs());
                 firstStartCompleted = true;
-                //TODO: REMOVE THIS, its a temp hack
-                TestRunner.runTests(context, testCuratedApplication);
+                if (testRunner != null) {
+                    testRunner.runTests();
+                }
             } catch (Throwable t) {
                 Throwable rootCause = t;
                 while (rootCause.getCause() != null) {
@@ -197,7 +200,9 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                         classChangeInformation);
                 runner = start.runMainClass(context.getArgs());
                 //TODO: REMOVE THIS, its a temp hack
-                TestRunner.runTests(context, testCuratedApplication);
+                if (testRunner != null) {
+                    testRunner.runTests();
+                }
                 firstStartCompleted = true;
             } catch (Throwable t) {
                 deploymentProblem = t;
@@ -247,13 +252,14 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 log.error("Failed to create compiler, runtime compilation will be unavailable", e);
                 return null;
             }
+            testRunner = new TestRunner(context, testCuratedApplication);
             RuntimeUpdatesProcessor processor = new RuntimeUpdatesProcessor(appRoot, context, compiler,
                     devModeType, this::restartCallback, null, new BiFunction<String, byte[], byte[]>() {
                         @Override
                         public byte[] apply(String s, byte[] bytes) {
                             return ClassTransformingBuildStep.transform(s, bytes);
                         }
-                    }, curatedApplication.getQuarkusBootstrap(), testCompiler, testCuratedApplication);
+                    }, testRunner, testCompiler);
 
             for (HotReplacementSetup service : ServiceLoader.load(HotReplacementSetup.class,
                     curatedApplication.getBaseRuntimeClassLoader())) {
@@ -395,7 +401,8 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                     (DevModeType) params.get(DevModeType.class.getName()));
             if (RuntimeUpdatesProcessor.INSTANCE != null) {
                 RuntimeUpdatesProcessor.INSTANCE.checkForFileChange();
-                RuntimeUpdatesProcessor.INSTANCE.checkForChangedClasses();
+                RuntimeUpdatesProcessor.INSTANCE.checkForChangedClasses(true);
+                RuntimeUpdatesProcessor.INSTANCE.checkForChangedTestClasses(true);
             }
             firstStart(deploymentClassLoader, codeGens);
 

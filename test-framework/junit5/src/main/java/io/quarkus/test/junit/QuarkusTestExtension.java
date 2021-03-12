@@ -83,7 +83,7 @@ import io.quarkus.builder.BuildStep;
 import io.quarkus.deployment.builditem.TestAnnotationBuildItem;
 import io.quarkus.deployment.builditem.TestClassBeanBuildItem;
 import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
-import io.quarkus.deployment.dev.testing.TestRunner;
+import io.quarkus.deployment.dev.testing.CurrentTestApplication;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.configuration.DurationConverter;
 import io.quarkus.runtime.configuration.ProfileManager;
@@ -289,8 +289,8 @@ public class QuarkusTestExtension
                 }
             }
             CuratedApplication curatedApplication;
-            if (TestRunner.curatedApplication != null) {
-                curatedApplication = TestRunner.curatedApplication;
+            if (CurrentTestApplication.curatedApplication != null) {
+                curatedApplication = CurrentTestApplication.curatedApplication;
             } else {
                 final QuarkusBootstrap.Builder runnerBuilder = QuarkusBootstrap.builder()
                         .setIsolateDeployment(true)

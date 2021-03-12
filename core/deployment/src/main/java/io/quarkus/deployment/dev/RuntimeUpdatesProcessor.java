@@ -40,8 +40,6 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
 
-import io.quarkus.bootstrap.app.CuratedApplication;
-import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.runner.Timing;
 import io.quarkus.changeagent.ClassChangeAgent;
 import io.quarkus.deployment.dev.testing.TestRunner;
@@ -71,15 +69,6 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     private volatile Predicate<ClassInfo> disableInstrumentationForClassPredicate = new AlwaysFalsePredicate<>();
     private volatile Predicate<Index> disableInstrumentationForIndexPredicate = new AlwaysFalsePredicate<>();
 
-    /**
-     * A first scan is considered done when we have visited all modules at least once.
-     * This is useful in two ways.
-     * - To make sure that source time stamps have been recorded at least once
-     * - To avoid re-compiling on first run by ignoring all first time changes detected by
-     * {@link RuntimeUpdatesProcessor#checkIfFileModified(Path, Map, boolean)} during the first scan.
-     */
-    private volatile boolean firstScanDone = false;
-
     private final Map<Path, Long> sourceFileTimestamps = new ConcurrentHashMap<>();
     private final Map<Path, Long> watchedFileTimestamps = new ConcurrentHashMap<>();
     private final Map<Path, Long> classFileChangeTimeStamps = new ConcurrentHashMap<>();
@@ -97,7 +86,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     private final BiConsumer<Set<String>, ClassScanResult> restartCallback;
     private final BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification;
     private final BiFunction<String, byte[], byte[]> classTransformers;
-    private final QuarkusBootstrap quarkusBootstrap;
+    private final TestRunner testRunner;
 
     /**
      * The index for the last successful start. Used to determine if the class has changed its structure
@@ -106,13 +95,12 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     private static volatile IndexView lastStartIndex;
 
     private final QuarkusCompiler testCompiler;
-    private final CuratedApplication testApplication;
 
     public RuntimeUpdatesProcessor(Path applicationRoot, DevModeContext context, QuarkusCompiler compiler,
             DevModeType devModeType, BiConsumer<Set<String>, ClassScanResult> restartCallback,
             BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification,
-            BiFunction<String, byte[], byte[]> classTransformers, QuarkusBootstrap quarkusBootstrap,
-            QuarkusCompiler testCompiler, CuratedApplication testApplication) {
+            BiFunction<String, byte[], byte[]> classTransformers,
+            TestRunner testRunner, QuarkusCompiler testCompiler) {
         this.applicationRoot = applicationRoot;
         this.context = context;
         this.compiler = compiler;
@@ -120,9 +108,11 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         this.restartCallback = restartCallback;
         this.copyResourceNotification = copyResourceNotification;
         this.classTransformers = classTransformers;
-        this.quarkusBootstrap = quarkusBootstrap;
+        this.testRunner = testRunner;
         this.testCompiler = testCompiler;
-        this.testApplication = testApplication;
+        if (testCompiler != null && testRunner == null) {
+            throw new IllegalArgumentException("testRunner must not be null if testCompiler is set.");
+        }
     }
 
     @Override
@@ -189,11 +179,22 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
             }
         }
 
-        ClassScanResult changedClassResults = checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain);
+        ClassScanResult changedClassResults = checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, false);
         Set<String> filesChanged = checkForFileChange(DevModeContext.ModuleInfo::getMain);
         ClassScanResult changedTestClassResult = new ClassScanResult();
-        if (testCompiler != null) {
-            changedTestClassResult = checkForChangedClasses(testCompiler, m -> m.getTest().orElse(null));
+        if (testCompiler != null && compileProblem == null) {
+            try {
+                changedTestClassResult = checkForChangedClasses(testCompiler,
+                        m -> m.getTest().orElse(DevModeContext.EMPTY_COMPILATION_UNIT), false);
+                if (compileProblem != null) {
+                    testRunner.testCompileFailed(compileProblem);
+                    compileProblem = null; //we don't want to block the app over a test problem
+                } else {
+                    testRunner.testCompileSucceeded();
+                }
+            } catch (Throwable e) {
+                testRunner.testCompileFailed(e);
+            }
         }
 
         boolean configFileRestartNeeded = filesChanged.stream().map(watchedFilePaths::get).anyMatch(Boolean.TRUE::equals);
@@ -264,16 +265,20 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
             log.infof("Files changed but restart not needed - notified extensions in: %ss ",
                     Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
             if (changedTestClassResult.isChanged()) {
-                log.infof("Tests changed, re-running tests");
-                TestRunner.runInternal(context, testApplication);
+                if (testRunner != null) {
+                    testRunner.runTests();
+                }
             }
         } else if (instrumentationChange) {
             log.infof("Hot replace performed via instrumentation, no restart needed, total time: %ss ",
                     Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
-            TestRunner.runInternal(context, testApplication);
+            if (testRunner != null) {
+                testRunner.runTests();
+            }
         } else if (changedTestClassResult.isChanged()) {
-            log.infof("Tests changed, re-running tests");
-            TestRunner.runInternal(context, testApplication);
+            if (testRunner != null) {
+                testRunner.runTests();
+            }
         }
         return false;
     }
@@ -329,14 +334,25 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         }
     }
 
-    ClassScanResult checkForChangedClasses() throws IOException {
-        return checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain);
+    ClassScanResult checkForChangedClasses(boolean firstScan) throws IOException {
+        return checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, firstScan);
     }
 
+    ClassScanResult checkForChangedTestClasses(boolean firstScan) throws IOException {
+        return checkForChangedClasses(testCompiler, s -> s.getTest().orElse(DevModeContext.EMPTY_COMPILATION_UNIT), firstScan);
+    }
+
+    /**
+     * A first scan is considered done when we have visited all modules at least once.
+     * This is useful in two ways.
+     * - To make sure that source time stamps have been recorded at least once
+     * - To avoid re-compiling on first run by ignoring all first time changes detected by
+     * {@link RuntimeUpdatesProcessor#checkIfFileModified(Path, Map, boolean)} during the first scan.
+     */
     ClassScanResult checkForChangedClasses(QuarkusCompiler compiler,
-            Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf) throws IOException {
+            Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf, boolean firstScan) throws IOException {
         ClassScanResult classScanResult = new ClassScanResult();
-        boolean ignoreFirstScanChanges = !firstScanDone;
+        boolean ignoreFirstScanChanges = firstScan;
 
         for (DevModeContext.ModuleInfo module : context.getAllModules()) {
             final List<Path> moduleChangedSourceFilePaths = new ArrayList<>();
@@ -378,7 +394,6 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                     cuf);
         }
 
-        this.firstScanDone = true;
         return classScanResult;
     }
 

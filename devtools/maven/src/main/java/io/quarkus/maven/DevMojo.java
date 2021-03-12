@@ -84,7 +84,7 @@ import io.quarkus.maven.utilities.MojoUtils;
  * <p>
  * You can use this dev mode in a remote container environment with {@code remote-dev}.
  */
-@Mojo(name = "dev", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "dev", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, requiresDependencyResolution = ResolutionScope.TEST)
 public class DevMojo extends AbstractMojo {
 
     private static final String EXT_PROPERTIES_PATH = "META-INF/quarkus-extension.properties";
@@ -114,6 +114,22 @@ public class DevMojo extends AbstractMojo {
             "install",
             "deploy"));
 
+    /**
+     * running any one of these phases means the test-compile phase will have been run, if these have
+     * not been run we manually run test-compile
+     */
+    private static final Set<String> POST_TEST_COMPILE_PHASES = new HashSet<>(Arrays.asList(
+            "test-compile",
+            "process-test-classes",
+            "test",
+            "prepare-package",
+            "package",
+            "pre-integration-test",
+            "integration-test",
+            "post-integration-test",
+            "verify",
+            "install",
+            "deploy"));
     private static final String QUARKUS_PLUGIN_GROUPID = "io.quarkus";
     private static final String QUARKUS_PLUGIN_ARTIFACTID = "quarkus-maven-plugin";
     private static final String QUARKUS_GENERATE_CODE_GOAL = "generate-code";
@@ -340,7 +356,8 @@ public class DevMojo extends AbstractMojo {
                         getLog().info("Changes detected to " + changed + ", restarting dev mode");
                         final DevModeRunner newRunner;
                         try {
-                            triggerCompile();
+                            triggerCompile(false);
+                            triggerCompile(true);
                             newRunner = new DevModeRunner();
                         } catch (Exception e) {
                             getLog().info("Could not load changed pom.xml file, changes not applied", e);
@@ -362,6 +379,7 @@ public class DevMojo extends AbstractMojo {
     private void handleAutoCompile() throws MojoExecutionException {
         //we check to see if there was a compile (or later) goal before this plugin
         boolean compileNeeded = true;
+        boolean testCompileNeeded = true;
         boolean prepareNeeded = true;
         for (String goal : session.getGoals()) {
             if (goal.endsWith("quarkus:prepare")) {
@@ -370,6 +388,10 @@ public class DevMojo extends AbstractMojo {
 
             if (POST_COMPILE_PHASES.contains(goal)) {
                 compileNeeded = false;
+                break;
+            }
+            if (POST_TEST_COMPILE_PHASES.contains(goal)) {
+                testCompileNeeded = false;
                 break;
             }
             if (goal.endsWith("quarkus:dev")) {
@@ -382,7 +404,10 @@ public class DevMojo extends AbstractMojo {
             if (prepareNeeded) {
                 triggerPrepare();
             }
-            triggerCompile();
+            triggerCompile(false);
+        }
+        if (testCompileNeeded) {
+            triggerCompile(true);
         }
     }
 
@@ -394,25 +419,25 @@ public class DevMojo extends AbstractMojo {
         executeIfConfigured(QUARKUS_PLUGIN_GROUPID, QUARKUS_PLUGIN_ARTIFACTID, QUARKUS_GENERATE_CODE_GOAL);
     }
 
-    private void triggerCompile() throws MojoExecutionException {
-        handleResources();
+    private void triggerCompile(boolean test) throws MojoExecutionException {
+        handleResources(test);
 
         // compile the Kotlin sources if needed
-        executeIfConfigured(ORG_JETBRAINS_KOTLIN, KOTLIN_MAVEN_PLUGIN, "compile");
+        executeIfConfigured(ORG_JETBRAINS_KOTLIN, KOTLIN_MAVEN_PLUGIN, test ? "testCompile" : "compile");
 
         // Compile the Java sources if needed
-        executeIfConfigured(ORG_APACHE_MAVEN_PLUGINS, MAVEN_COMPILER_PLUGIN, "compile");
+        executeIfConfigured(ORG_APACHE_MAVEN_PLUGINS, MAVEN_COMPILER_PLUGIN, test ? "testCompile" : "compile");
     }
 
     /**
      * Execute the resources:resources goal if resources have been configured on the project
      */
-    private void handleResources() throws MojoExecutionException {
+    private void handleResources(boolean test) throws MojoExecutionException {
         List<Resource> resources = project.getResources();
         if (resources.isEmpty()) {
             return;
         }
-        executeIfConfigured(ORG_APACHE_MAVEN_PLUGINS, MAVEN_RESOURCES_PLUGIN, "resources");
+        executeIfConfigured(ORG_APACHE_MAVEN_PLUGINS, MAVEN_RESOURCES_PLUGIN, test ? "testResources" : "resources");
     }
 
     private void executeIfConfigured(String pluginGroupId, String pluginArtifactId, String goal) throws MojoExecutionException {
