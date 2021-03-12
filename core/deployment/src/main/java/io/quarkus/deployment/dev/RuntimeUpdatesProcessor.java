@@ -22,9 +22,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -87,6 +90,8 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     private final BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification;
     private final BiFunction<String, byte[], byte[]> classTransformers;
     private final TestRunner testRunner;
+    private final Timer timer;
+    private final ReentrantLock scanLock = new ReentrantLock();
 
     /**
      * The index for the last successful start. Used to determine if the class has changed its structure
@@ -113,6 +118,53 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         if (testCompiler != null && testRunner == null) {
             throw new IllegalArgumentException("testRunner must not be null if testCompiler is set.");
         }
+        if (testCompiler != null) {
+            timer = new Timer("Test Compile Timer", true);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    periodicTestCompile();
+                }
+            }, 1000, 1000);
+        } else {
+            timer = null;
+        }
+    }
+
+    private void periodicTestCompile() {
+        //noop if already scanning
+        if (scanLock.tryLock()) {
+            try {
+                ClassScanResult changedTestClassResult = compileTestClasses();
+                if (changedTestClassResult.isChanged()) {
+                    checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, false, true);
+                    if (compileProblem != null) {
+                        testRunner.testCompileFailed(compileProblem);
+                    } else {
+                        testRunner.runTests();
+                    }
+                }
+            } finally {
+                scanLock.unlock();
+            }
+        }
+    }
+
+    private ClassScanResult compileTestClasses() {
+        ClassScanResult changedTestClassResult = new ClassScanResult();
+        try {
+            changedTestClassResult = checkForChangedClasses(testCompiler,
+                    m -> m.getTest().orElse(DevModeContext.EMPTY_COMPILATION_UNIT), false, false);
+            if (compileProblem != null) {
+                testRunner.testCompileFailed(compileProblem);
+                compileProblem = null; //we don't want to block the app over a test problem
+            } else {
+                testRunner.testCompileSucceeded();
+            }
+        } catch (Throwable e) {
+            testRunner.testCompileFailed(e);
+        }
+        return changedTestClassResult;
     }
 
     @Override
@@ -169,118 +221,115 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
 
     @Override
     public boolean doScan(boolean userInitiated) throws IOException {
+        scanLock.lock();
+        try {
 
-        final long startNanoseconds = System.nanoTime();
-        for (Runnable step : preScanSteps) {
-            try {
-                step.run();
-            } catch (Throwable t) {
-                log.error("Pre Scan step failed", t);
-            }
-        }
-
-        ClassScanResult changedClassResults = checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, false);
-        Set<String> filesChanged = checkForFileChange(DevModeContext.ModuleInfo::getMain);
-        ClassScanResult changedTestClassResult = new ClassScanResult();
-        if (testCompiler != null && compileProblem == null) {
-            try {
-                changedTestClassResult = checkForChangedClasses(testCompiler,
-                        m -> m.getTest().orElse(DevModeContext.EMPTY_COMPILATION_UNIT), false);
-                if (compileProblem != null) {
-                    testRunner.testCompileFailed(compileProblem);
-                    compileProblem = null; //we don't want to block the app over a test problem
-                } else {
-                    testRunner.testCompileSucceeded();
-                }
-            } catch (Throwable e) {
-                testRunner.testCompileFailed(e);
-            }
-        }
-
-        boolean configFileRestartNeeded = filesChanged.stream().map(watchedFilePaths::get).anyMatch(Boolean.TRUE::equals);
-
-        boolean instrumentationChange = false;
-        if (ClassChangeAgent.getInstrumentation() != null && lastStartIndex != null && !configFileRestartNeeded
-                && devModeType != DevModeType.REMOTE_LOCAL_SIDE) {
-            //attempt to do an instrumentation based reload
-            //if only code has changed and not the class structure, then we can do a reload
-            //using the JDK instrumentation API (assuming we were started with the javaagent)
-            if (changedClassResults.deletedClasses.isEmpty() && !changedClassResults.changedClasses.isEmpty()) {
+            final long startNanoseconds = System.nanoTime();
+            for (Runnable step : preScanSteps) {
                 try {
-                    Indexer indexer = new Indexer();
-                    //attempt to use the instrumentation API
-                    ClassDefinition[] defs = new ClassDefinition[changedClassResults.changedClasses.size()];
-                    int index = 0;
-                    for (Path i : changedClassResults.changedClasses) {
-                        byte[] bytes = Files.readAllBytes(i);
-                        String name = indexer.index(new ByteArrayInputStream(bytes)).name().toString();
-                        defs[index++] = new ClassDefinition(Thread.currentThread().getContextClassLoader().loadClass(name),
-                                classTransformers.apply(name, bytes));
-                    }
-                    Index current = indexer.complete();
-                    boolean ok = instrumentationEnabled()
-                            && !disableInstrumentationForIndexPredicate.test(current);
-                    if (ok) {
-                        for (ClassInfo clazz : current.getKnownClasses()) {
-                            ClassInfo old = lastStartIndex.getClassByName(clazz.name());
-                            if (!ClassComparisonUtil.isSameStructure(clazz, old)
-                                    || disableInstrumentationForClassPredicate.test(clazz)) {
-                                ok = false;
-                                break;
+                    step.run();
+                } catch (Throwable t) {
+                    log.error("Pre Scan step failed", t);
+                }
+            }
+
+            ClassScanResult changedClassResults = checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, false,
+                    false);
+            Set<String> filesChanged = checkForFileChange(DevModeContext.ModuleInfo::getMain);
+            ClassScanResult changedTestClassResult = new ClassScanResult();
+            if (testCompiler != null && compileProblem == null) {
+                changedTestClassResult = compileTestClasses();
+            }
+
+            boolean configFileRestartNeeded = filesChanged.stream().map(watchedFilePaths::get).anyMatch(Boolean.TRUE::equals);
+
+            boolean instrumentationChange = false;
+            if (ClassChangeAgent.getInstrumentation() != null && lastStartIndex != null && !configFileRestartNeeded
+                    && devModeType != DevModeType.REMOTE_LOCAL_SIDE) {
+                //attempt to do an instrumentation based reload
+                //if only code has changed and not the class structure, then we can do a reload
+                //using the JDK instrumentation API (assuming we were started with the javaagent)
+                if (changedClassResults.deletedClasses.isEmpty() && !changedClassResults.changedClasses.isEmpty()) {
+                    try {
+                        Indexer indexer = new Indexer();
+                        //attempt to use the instrumentation API
+                        ClassDefinition[] defs = new ClassDefinition[changedClassResults.changedClasses.size()];
+                        int index = 0;
+                        for (Path i : changedClassResults.changedClasses) {
+                            byte[] bytes = Files.readAllBytes(i);
+                            String name = indexer.index(new ByteArrayInputStream(bytes)).name().toString();
+                            defs[index++] = new ClassDefinition(Thread.currentThread().getContextClassLoader().loadClass(name),
+                                    classTransformers.apply(name, bytes));
+                        }
+                        Index current = indexer.complete();
+                        boolean ok = instrumentationEnabled()
+                                && !disableInstrumentationForIndexPredicate.test(current);
+                        if (ok) {
+                            for (ClassInfo clazz : current.getKnownClasses()) {
+                                ClassInfo old = lastStartIndex.getClassByName(clazz.name());
+                                if (!ClassComparisonUtil.isSameStructure(clazz, old)
+                                        || disableInstrumentationForClassPredicate.test(clazz)) {
+                                    ok = false;
+                                    break;
+                                }
                             }
                         }
-                    }
 
-                    if (ok) {
-                        log.info("Application restart not required, replacing classes via instrumentation");
-                        ClassChangeAgent.getInstrumentation().redefineClasses(defs);
-                        instrumentationChange = true;
+                        if (ok) {
+                            log.info("Application restart not required, replacing classes via instrumentation");
+                            ClassChangeAgent.getInstrumentation().redefineClasses(defs);
+                            instrumentationChange = true;
+                        }
+                    } catch (Exception e) {
+                        log.error("Failed to replace classes via instrumentation", e);
+                        instrumentationChange = false;
                     }
-                } catch (Exception e) {
-                    log.error("Failed to replace classes via instrumentation", e);
-                    instrumentationChange = false;
                 }
             }
-        }
 
-        //if there is a deployment problem we always restart on scan
-        //this is because we can't setup the config file watches
-        //in an ideal world we would just check every resource file for changes, however as everything is already
-        //all broken we just assume the reason that they have refreshed is because they have fixed something
-        //trying to watch all resource files is complex and this is likely a good enough solution for what is already an edge case
-        boolean restartNeeded = !instrumentationChange && (changedClassResults.isChanged()
-                || (IsolatedDevModeMain.deploymentProblem != null && userInitiated) || configFileRestartNeeded);
-        if (restartNeeded) {
-            restartCallback.accept(filesChanged, changedClassResults);
-            log.infof("Hot replace total time: %ss ", Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
-            return true;
-        } else if (!filesChanged.isEmpty()) {
-            for (Consumer<Set<String>> consumer : noRestartChangesConsumers) {
-                try {
-                    consumer.accept(filesChanged);
-                } catch (Throwable t) {
-                    log.error("Changed files consumer failed", t);
+            //if there is a deployment problem we always restart on scan
+            //this is because we can't setup the config file watches
+            //in an ideal world we would just check every resource file for changes, however as everything is already
+            //all broken we just assume the reason that they have refreshed is because they have fixed something
+            //trying to watch all resource files is complex and this is likely a good enough solution for what is already an edge case
+            boolean restartNeeded = !instrumentationChange && (changedClassResults.isChanged()
+                    || (IsolatedDevModeMain.deploymentProblem != null && userInitiated) || configFileRestartNeeded);
+            if (restartNeeded) {
+                restartCallback.accept(filesChanged, changedClassResults);
+                log.infof("Hot replace total time: %ss ",
+                        Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
+                return true;
+            } else if (!filesChanged.isEmpty()) {
+                for (Consumer<Set<String>> consumer : noRestartChangesConsumers) {
+                    try {
+                        consumer.accept(filesChanged);
+                    } catch (Throwable t) {
+                        log.error("Changed files consumer failed", t);
+                    }
                 }
-            }
-            log.infof("Files changed but restart not needed - notified extensions in: %ss ",
-                    Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
-            if (changedTestClassResult.isChanged()) {
+                log.infof("Files changed but restart not needed - notified extensions in: %ss ",
+                        Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
+                if (changedTestClassResult.isChanged()) {
+                    if (testRunner != null) {
+                        testRunner.runTests();
+                    }
+                }
+            } else if (instrumentationChange) {
+                log.infof("Hot replace performed via instrumentation, no restart needed, total time: %ss ",
+                        Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
+                if (testRunner != null) {
+                    testRunner.runTests();
+                }
+            } else if (changedTestClassResult.isChanged()) {
                 if (testRunner != null) {
                     testRunner.runTests();
                 }
             }
-        } else if (instrumentationChange) {
-            log.infof("Hot replace performed via instrumentation, no restart needed, total time: %ss ",
-                    Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
-            if (testRunner != null) {
-                testRunner.runTests();
-            }
-        } else if (changedTestClassResult.isChanged()) {
-            if (testRunner != null) {
-                testRunner.runTests();
-            }
+            return false;
+
+        } finally {
+            scanLock.unlock();
         }
-        return false;
     }
 
     private Boolean instrumentationEnabled() {
@@ -334,12 +383,13 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         }
     }
 
-    ClassScanResult checkForChangedClasses(boolean firstScan) throws IOException {
-        return checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, firstScan);
+    ClassScanResult checkForChangedClasses(boolean firstScan) {
+        return checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, firstScan, false);
     }
 
-    ClassScanResult checkForChangedTestClasses(boolean firstScan) throws IOException {
-        return checkForChangedClasses(testCompiler, s -> s.getTest().orElse(DevModeContext.EMPTY_COMPILATION_UNIT), firstScan);
+    ClassScanResult checkForChangedTestClasses(boolean firstScan) {
+        return checkForChangedClasses(testCompiler, s -> s.getTest().orElse(DevModeContext.EMPTY_COMPILATION_UNIT), firstScan,
+                false);
     }
 
     /**
@@ -350,7 +400,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
      * {@link RuntimeUpdatesProcessor#checkIfFileModified(Path, Map, boolean)} during the first scan.
      */
     ClassScanResult checkForChangedClasses(QuarkusCompiler compiler,
-            Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf, boolean firstScan) throws IOException {
+            Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf, boolean firstScan, boolean compileOnly) {
         ClassScanResult classScanResult = new ClassScanResult();
         boolean ignoreFirstScanChanges = firstScan;
 
@@ -371,6 +421,8 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                             .map(Path::toFile)
                             //Needing a concurrent Set, not many standard options:
                             .collect(Collectors.toCollection(ConcurrentSkipListSet::new));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
                 if (!changedSourceFiles.isEmpty()) {
                     log.info("Changed source files detected, recompiling " + changedSourceFiles);
@@ -390,8 +442,10 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
 
             }
 
-            checkForClassFilesChangesInModule(module, moduleChangedSourceFilePaths, ignoreFirstScanChanges, classScanResult,
-                    cuf);
+            if (!compileOnly) {
+                checkForClassFilesChangesInModule(module, moduleChangedSourceFilePaths, ignoreFirstScanChanges, classScanResult,
+                        cuf);
+            }
         }
 
         return classScanResult;
@@ -696,6 +750,9 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
 
     @Override
     public void close() throws IOException {
+        if (timer != null) {
+            timer.cancel();
+        }
         compiler.close();
         FSWatchUtil.shutdown();
     }
