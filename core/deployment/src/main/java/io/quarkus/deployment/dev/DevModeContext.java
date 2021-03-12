@@ -26,6 +26,8 @@ import io.quarkus.bootstrap.model.AppArtifactKey;
  */
 public class DevModeContext implements Serializable {
 
+    public static final CompilationUnit EMPTY_COMPILATION_UNIT = new CompilationUnit(Collections.emptySet(), null, null, null);
+
     public static final String ENABLE_PREVIEW_FLAG = "--enable-preview";
 
     private ModuleInfo applicationRoot;

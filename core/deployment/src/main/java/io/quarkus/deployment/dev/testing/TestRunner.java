@@ -43,34 +43,68 @@ import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.deployment.dev.DevModeContext;
 import io.quarkus.dev.testing.ContinuousTestingLogHandler;
 
-public class TestRunner implements Consumer<CuratedApplication> {
+public class TestRunner {
 
     private static final Logger log = Logger.getLogger(TestRunner.class);
-    public static volatile CuratedApplication curatedApplication;
 
-    public static void runTests(DevModeContext devModeContext, CuratedApplication testApplication) {
+    private final DevModeContext devModeContext;
+    private final CuratedApplication testApplication;
+
+    private boolean testsRunning = false;
+    private boolean testsQueued = false;
+
+    private Throwable compileProblem;
+
+    public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication) {
+        this.devModeContext = devModeContext;
+        this.testApplication = testApplication;
+    }
+
+    public void runTests() {
+        if (compileProblem != null) {
+            return;
+        }
         if (testApplication == null) {
             return;
+        }
+        synchronized (TestRunner.class) {
+            if (testsRunning) {
+                testsQueued = true;
+                return;
+            }
         }
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                runInternal(devModeContext, testApplication);
+                try {
+                    runInternal();
+                } finally {
+                    boolean run = false;
+                    synchronized (TestRunner.class) {
+                        testsRunning = false;
+                        if (testsQueued) {
+                            testsQueued = false;
+                            run = true;
+                        }
+                    }
+                    if (run) {
+                        runTests();
+                    }
+                }
             }
         }, "Test runner thread");
         t.setDaemon(true);
         t.start();
     }
 
-    public static void runInternal(DevModeContext devModeContext, CuratedApplication testApplication) {
+    private void runInternal() {
         long start = System.currentTimeMillis();
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
-            curatedApplication = testApplication;
 
-            ClassLoader tcl = curatedApplication.createDeploymentClassLoader();
+            ClassLoader tcl = testApplication.createDeploymentClassLoader();
             Thread.currentThread().setContextClassLoader(tcl);
-            ((Consumer) tcl.loadClass(TestRunner.class.getName()).newInstance()).accept(curatedApplication);
+            ((Consumer) tcl.loadClass(CurrentTestApplication.class.getName()).newInstance()).accept(testApplication);
 
             List<Class<?>> quarkusTestClasses = discoverTestClasses(devModeContext);
 
@@ -175,9 +209,12 @@ public class TestRunner implements Consumer<CuratedApplication> {
             });
             ContinuousTestingLogHandler.setLogHandler(null);
             if (failures.isEmpty()) {
-                log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get() + " were skipped.");
+                log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
+                        + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms");
             } else {
-                log.error("Test run failed, " + methodCount.get() + " tests were run, " + failures.size() + " failed.");
+                log.error("Test run failed, " + methodCount.get() + " tests were run, " + failures.size() + " failed, "
+                        + skipped.get()
+                        + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms");
                 for (Map.Entry<String, TestExecutionResult> entry : failures.entrySet()) {
                     log.error(
                             "Test " + entry.getKey() + " failed "
@@ -240,8 +277,12 @@ public class TestRunner implements Consumer<CuratedApplication> {
         return ret;
     }
 
-    @Override
-    public void accept(CuratedApplication c) {
-        curatedApplication = c; //huge hack, fixme before merge
+    public synchronized void testCompileFailed(Throwable e) {
+        compileProblem = e;
+        log.error("Test compile failed", e);
+    }
+
+    public synchronized void testCompileSucceeded() {
+        compileProblem = null;
     }
 }
