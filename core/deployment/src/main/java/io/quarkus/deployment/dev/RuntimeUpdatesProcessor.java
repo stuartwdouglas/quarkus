@@ -143,8 +143,8 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         if (scanLock.tryLock()) {
             try {
                 ClassScanResult changedTestClassResult = compileTestClasses();
-                if (changedTestClassResult.isChanged()) {
-                    checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, false, true);
+                ClassScanResult changedApp = checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, false, true);
+                if (changedTestClassResult.isChanged() || changedApp.isChanged()) {
                     if (compileProblem != null) {
                         testRunner.testCompileFailed(compileProblem);
                     } else {
@@ -441,6 +441,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                     throw new RuntimeException(e);
                 }
                 if (!changedSourceFiles.isEmpty()) {
+                    classScanResult.compilationHappened = true;
                     log.info("Changed source files detected, recompiling "
                             + changedSourceFiles.stream().map(File::getName).collect(Collectors.joining(", ")));
                     try {

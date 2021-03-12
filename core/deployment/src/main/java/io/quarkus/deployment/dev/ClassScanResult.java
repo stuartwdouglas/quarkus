@@ -11,9 +11,10 @@ public class ClassScanResult {
     final Set<String> changedClassNames = new HashSet<>();
     final Set<String> deletedClassNames = new HashSet<>();
     final Set<String> addedClassNames = new HashSet<>();
+    boolean compilationHappened;
 
     public boolean isChanged() {
-        return !changedClasses.isEmpty() || !deletedClasses.isEmpty() || !addedClasses.isEmpty();
+        return !changedClasses.isEmpty() || !deletedClasses.isEmpty() || !addedClasses.isEmpty() || compilationHappened;
     }
 
     public void addDeletedClass(Path moduleClassesPath, Path classFilePath) {
@@ -36,4 +37,5 @@ public class ClassScanResult {
                 .replace(moduleClassesPath.getFileSystem().getSeparator(), ".");
         return cf.substring(0, cf.length() - ".class".length());
     }
+
 }
