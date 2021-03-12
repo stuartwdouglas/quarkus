@@ -9,8 +9,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +41,7 @@ import org.junit.platform.launcher.core.LauncherFactory;
 
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.dev.testing.ContinuousTestingLogHandler;
 
 public class TestRunner implements Consumer<CuratedApplication> {
 
@@ -72,46 +78,63 @@ public class TestRunner implements Consumer<CuratedApplication> {
             LauncherDiscoveryRequest request = new LauncherDiscoveryRequestBuilder()
                     .selectors(quarkusTestClasses.stream().map(DiscoverySelectors::selectClass).collect(Collectors.toList()))
                     .build();
-
             TestPlan testPlan = launcher.discover(request);
+
+            log.info("Starting test run with " + quarkusTestClasses.size() + " test cases");
+            final AtomicInteger methodCount = new AtomicInteger();
+            final AtomicInteger skipped = new AtomicInteger();
+            final Map<String, TestExecutionResult> failures = new HashMap<>();
+
+            ContinuousTestingLogHandler.setLogHandler(new Predicate<LogRecord>() {
+                @Override
+                public boolean test(LogRecord logRecord) {
+                    int threadId = logRecord.getThreadID();
+                    Thread thread = null;
+                    if (threadId == Thread.currentThread().getId()) {
+                        thread = Thread.currentThread();
+                    } else {
+                        for (Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+                            if (e.getKey().getId() == threadId) {
+                                thread = e.getKey();
+                                break;
+                            }
+                        }
+                    }
+                    if (thread == null) {
+                        return true;
+                    }
+                    ClassLoader cl = thread.getContextClassLoader();
+                    while (cl.getParent() != null) {
+                        if (cl == testApplication.getAugmentClassLoader()
+                                || cl == testApplication.getBaseRuntimeClassLoader()) {
+                            return false;
+                        }
+                        cl = cl.getParent();
+                    }
+                    return true;
+                }
+            });
+
             launcher.execute(testPlan, new TestExecutionListener() {
-                @Override
-                public void testPlanExecutionStarted(TestPlan testPlan) {
-                    log.info("STARTING TESTS");
-
-                }
-
-                @Override
-                public void testPlanExecutionFinished(TestPlan testPlan) {
-                    log.info("TESTS COMPLETE in " + (System.currentTimeMillis() - start) + "ms");
-                }
-
-                @Override
-                public void dynamicTestRegistered(TestIdentifier testIdentifier) {
-
-                }
 
                 @Override
                 public void executionSkipped(TestIdentifier testIdentifier, String reason) {
-
-                }
-
-                @Override
-                public void executionStarted(TestIdentifier testIdentifier) {
-                    log.info("running " + testIdentifier.getDisplayName());
-
+                    skipped.incrementAndGet();
                 }
 
                 @Override
                 public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+                    Class<?> testClass = null;
+                    String displayName = testIdentifier.getDisplayName();
+                    TestSource testSource = testIdentifier.getSource().orElse(null);
+                    if (testSource instanceof ClassSource) {
+                        testClass = ((ClassSource) testSource).getJavaClass();
+                    } else if (testSource instanceof MethodSource) {
+                        testClass = ((MethodSource) testSource).getJavaClass();
+                        methodCount.incrementAndGet();
+                        displayName = ((MethodSource) testSource).getJavaMethod().toString();
+                    }
                     if (testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED) {
-                        Class<?> testClass = null;
-                        TestSource testSource = testIdentifier.getSource().orElse(null);
-                        if (testSource instanceof ClassSource) {
-                            testClass = ((ClassSource) testSource).getJavaClass();
-                        } else if (testSource instanceof MethodSource) {
-                            testClass = ((MethodSource) testSource).getJavaClass();
-                        }
                         Throwable throwable = testExecutionResult.getThrowable().get();
                         if (testClass != null) {
                             //first we cut all the platform stuff out of the stack trace
@@ -139,12 +162,9 @@ public class TestRunner implements Consumer<CuratedApplication> {
                             }
                             throwable.setStackTrace(st);
                         }
-                        log.error(
-                                "Test " + testIdentifier.getDisplayName() + " completed " + testExecutionResult.getStatus()
-                                        + "\n",
-                                throwable);
-                    } else {
-                        log.info("Test " + testIdentifier.getDisplayName() + " completed " + testExecutionResult.getStatus());
+                        failures.put(displayName, testExecutionResult);
+                    } else if (testExecutionResult.getStatus() == TestExecutionResult.Status.ABORTED) {
+                        skipped.incrementAndGet();
                     }
                 }
 
@@ -153,10 +173,24 @@ public class TestRunner implements Consumer<CuratedApplication> {
 
                 }
             });
+            ContinuousTestingLogHandler.setLogHandler(null);
+            if (failures.isEmpty()) {
+                log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get() + " were skipped.");
+            } else {
+                log.error("Test run failed, " + methodCount.get() + " tests were run, " + failures.size() + " failed.");
+                for (Map.Entry<String, TestExecutionResult> entry : failures.entrySet()) {
+                    log.error(
+                            "Test " + entry.getKey() + " failed "
+                                    + entry.getValue().getStatus()
+                                    + "\n",
+                            entry.getValue().getThrowable().get());
 
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
+            ContinuousTestingLogHandler.setLogHandler(null);
             Thread.currentThread().setContextClassLoader(old);
         }
     }
