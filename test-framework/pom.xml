@@ -37,7 +37,6 @@
         <module>ldap</module>
         <module>security</module>
         <module>jacoco</module>
-        <module>junit5-platform</module>
     </modules>
 
 </project>
