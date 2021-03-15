@@ -17,6 +17,30 @@ public class ClassScanResult {
         return !changedClasses.isEmpty() || !deletedClasses.isEmpty() || !addedClasses.isEmpty() || compilationHappened;
     }
 
+    public static ClassScanResult merge(ClassScanResult m1, ClassScanResult m2) {
+        if (m1 == null) {
+            return m2;
+        }
+        if (m2 == null) {
+            return m1;
+        }
+        ClassScanResult ret = new ClassScanResult();
+        ret.changedClasses.addAll(m1.changedClasses);
+        ret.deletedClasses.addAll(m1.deletedClasses);
+        ret.addedClasses.addAll(m1.deletedClasses);
+        ret.changedClassNames.addAll(m1.changedClassNames);
+        ret.deletedClassNames.addAll(m1.deletedClassNames);
+        ret.addedClassNames.addAll(m1.addedClassNames);
+        ret.changedClasses.addAll(m2.changedClasses);
+        ret.deletedClasses.addAll(m2.deletedClasses);
+        ret.addedClasses.addAll(m2.deletedClasses);
+        ret.changedClassNames.addAll(m2.changedClassNames);
+        ret.deletedClassNames.addAll(m2.deletedClassNames);
+        ret.addedClassNames.addAll(m2.addedClassNames);
+        ret.compilationHappened = m1.compilationHappened | m2.compilationHappened;
+        return ret;
+    }
+
     public void addDeletedClass(Path moduleClassesPath, Path classFilePath) {
         deletedClasses.add(classFilePath);
         deletedClassNames.add(toName(moduleClassesPath, classFilePath));
@@ -30,6 +54,10 @@ public class ClassScanResult {
     public void addAddedClass(Path moduleClassesPath, Path classFilePath) {
         addedClasses.add(classFilePath);
         addedClassNames.add(toName(moduleClassesPath, classFilePath));
+    }
+
+    public Set<String> getChangedClassNames() {
+        return changedClassNames;
     }
 
     private String toName(Path moduleClassesPath, Path classFilePath) {

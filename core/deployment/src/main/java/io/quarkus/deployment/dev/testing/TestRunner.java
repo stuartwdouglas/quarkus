@@ -9,9 +9,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -26,6 +31,7 @@ import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.reporting.ReportEntry;
 import org.junit.platform.engine.support.descriptor.ClassSource;
@@ -40,8 +46,10 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 
 import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.deployment.dev.ClassScanResult;
 import io.quarkus.deployment.dev.DevModeContext;
 import io.quarkus.dev.testing.ContinuousTestingLogHandler;
+import io.quarkus.dev.testing.TracingHandler;
 
 public class TestRunner {
 
@@ -52,8 +60,12 @@ public class TestRunner {
 
     private boolean testsRunning = false;
     private boolean testsQueued = false;
+    private ClassScanResult queuedChanges = null;
 
     private Throwable compileProblem;
+
+    private final TestClassUsages testClassUsages = new TestClassUsages();
+    private boolean paused;
 
     public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication) {
         this.devModeContext = devModeContext;
@@ -61,6 +73,10 @@ public class TestRunner {
     }
 
     public void runTests() {
+        runTests(null);
+    }
+
+    public void runTests(ClassScanResult classScanResult) {
         if (compileProblem != null) {
             return;
         }
@@ -69,26 +85,38 @@ public class TestRunner {
         }
         synchronized (TestRunner.class) {
             if (testsRunning) {
-                testsQueued = true;
+                if (testsQueued) {
+                    if (queuedChanges != null) { //if this is null a full run is scheduled
+                        this.queuedChanges = ClassScanResult.merge(this.queuedChanges, classScanResult);
+                    }
+                } else {
+                    testsQueued = true;
+                    this.queuedChanges = classScanResult;
+                }
                 return;
+            } else {
+                testsRunning = true;
             }
         }
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    runInternal();
+                    runInternal(classScanResult);
                 } finally {
                     boolean run = false;
+                    ClassScanResult current;
                     synchronized (TestRunner.class) {
                         testsRunning = false;
                         if (testsQueued) {
                             testsQueued = false;
                             run = true;
                         }
+                        current = queuedChanges;
+                        queuedChanges = null;
                     }
                     if (run) {
-                        runTests();
+                        runTests(current);
                     }
                 }
             }
@@ -97,7 +125,16 @@ public class TestRunner {
         t.start();
     }
 
-    private void runInternal() {
+    public synchronized void pause() {
+        //todo
+        paused = true;
+    }
+
+    public synchronized void resume() {
+        paused = false;
+    }
+
+    private void runInternal(ClassScanResult classScanResult) {
         long start = System.currentTimeMillis();
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
@@ -109,8 +146,12 @@ public class TestRunner {
             List<Class<?>> quarkusTestClasses = discoverTestClasses(devModeContext);
 
             Launcher launcher = LauncherFactory.create(LauncherConfig.builder().build());
-            LauncherDiscoveryRequest request = new LauncherDiscoveryRequestBuilder()
-                    .selectors(quarkusTestClasses.stream().map(DiscoverySelectors::selectClass).collect(Collectors.toList()))
+            LauncherDiscoveryRequestBuilder launchBuilder = new LauncherDiscoveryRequestBuilder()
+                    .selectors(quarkusTestClasses.stream().map(DiscoverySelectors::selectClass).collect(Collectors.toList()));
+            if (classScanResult != null) {
+                launchBuilder.filters(testClassUsages.getTestsToRun(classScanResult.getChangedClassNames()));
+            }
+            LauncherDiscoveryRequest request = launchBuilder
                     .build();
             TestPlan testPlan = launcher.discover(request);
 
@@ -149,7 +190,23 @@ public class TestRunner {
                 }
             });
 
+            final Deque<Set<String>> touchedClasses = new LinkedBlockingDeque<>();
+            TracingHandler.setTracingHandler(new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                    Set<String> set = touchedClasses.peek();
+                    if (set != null) {
+                        set.add(s);
+                    }
+                }
+            });
+
             launcher.execute(testPlan, new TestExecutionListener() {
+
+                @Override
+                public void executionStarted(TestIdentifier testIdentifier) {
+                    touchedClasses.push(Collections.synchronizedSet(new HashSet<>()));
+                }
 
                 @Override
                 public void executionSkipped(TestIdentifier testIdentifier, String reason) {
@@ -161,12 +218,16 @@ public class TestRunner {
                     Class<?> testClass = null;
                     String displayName = testIdentifier.getDisplayName();
                     TestSource testSource = testIdentifier.getSource().orElse(null);
+                    Set<String> touched = touchedClasses.pop();
                     if (testSource instanceof ClassSource) {
                         testClass = ((ClassSource) testSource).getJavaClass();
+                        testClassUsages.updateTestData(testClass.getName(), touched);
                     } else if (testSource instanceof MethodSource) {
                         testClass = ((MethodSource) testSource).getJavaClass();
                         methodCount.incrementAndGet();
                         displayName = ((MethodSource) testSource).getJavaMethod().toString();
+                        testClassUsages.updateTestData(testClass.getName(), UniqueId.parse(testIdentifier.getUniqueId()),
+                                touched);
                     }
                     if (testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED) {
                         Throwable throwable = testExecutionResult.getThrowable().get();
