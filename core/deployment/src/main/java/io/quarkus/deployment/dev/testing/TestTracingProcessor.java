@@ -16,6 +16,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
+import io.quarkus.deployment.logging.LogCleanupFilterBuildItem;
 import io.quarkus.dev.testing.TracingHandler;
 
 /**
@@ -24,6 +25,11 @@ import io.quarkus.dev.testing.TracingHandler;
  * This allows for fine grained running of tests when a file changes.
  */
 public class TestTracingProcessor {
+
+    @BuildStep(onlyIf = IsTest.class)
+    LogCleanupFilterBuildItem handle() {
+        return new LogCleanupFilterBuildItem("org.junit.platform.launcher.core.EngineDiscoveryOrchestrator", "0 containers");
+    }
 
     @BuildStep(onlyIf = IsTest.class)
     public void instrumentTestClasses(CombinedIndexBuildItem combinedIndexBuildItem,

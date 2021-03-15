@@ -83,6 +83,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
      */
     private final TimestampSet main = new TimestampSet();
     private final TimestampSet test = new TimestampSet();
+    final Map<Path, Long> sourceFileTimestamps = new ConcurrentHashMap<>();
 
     /**
      * Resources that appear in both src and target, these will be removed if the src resource subsequently disappears.
@@ -248,10 +249,6 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
             ClassScanResult changedClassResults = checkForChangedClasses(compiler, DevModeContext.ModuleInfo::getMain, false,
                     main);
             Set<String> filesChanged = checkForFileChange(DevModeContext.ModuleInfo::getMain, main);
-            ClassScanResult changedTestClassResult = new ClassScanResult();
-            if (testCompiler != null && compileProblem == null) {
-                changedTestClassResult = compileTestClasses();
-            }
 
             boolean configFileRestartNeeded = filesChanged.stream().map(watchedFilePaths::get).anyMatch(Boolean.TRUE::equals);
             boolean instrumentationChange = false;
@@ -327,24 +324,12 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                     } catch (Throwable t) {
                         log.error("Changed files consumer failed", t);
                     }
-                    log.infof("Files changed but restart not needed - notified extensions in: %ss ",
-                            Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
-                    if (changedTestClassResult.isChanged()) {
-                        if (testRunner != null) {
-                            testRunner.runTests();
-                        }
-                    }
                 }
+                log.infof("Files changed but restart not needed - notified extensions in: %ss ",
+                        Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
             } else if (instrumentationChange) {
                 log.infof("Live reload performed via instrumentation, no restart needed, total time: %ss ",
                         Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
-                if (testRunner != null) {
-                    testRunner.runTests();
-                }
-            } else if (changedTestClassResult.isChanged()) {
-                if (testRunner != null) {
-                    testRunner.runTests();
-                }
             }
             return false;
             
@@ -512,7 +497,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                             if (!sourceFilePath.toFile().exists()) {
                                 // Source file has been deleted. Delete class and restart
                                 cleanUpClassFile(classFilePath, timestampSet);
-                                timestampSet.sourceFileTimestamps.remove(sourceFilePath);
+                                sourceFileTimestamps.remove(sourceFilePath);
                                 classScanResult.addDeletedClass(moduleClassesPath, classFilePath);
                             } else {
                                 timestampSet.classFilePathToSourceFilePath.put(classFilePath, sourceFilePath);
@@ -682,7 +667,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
 
     private boolean sourceFileWasRecentModified(final Path sourcePath, boolean ignoreFirstScanChanges,
             TimestampSet timestampSet) {
-        return checkIfFileModified(sourcePath, timestampSet.sourceFileTimestamps, ignoreFirstScanChanges);
+        return checkIfFileModified(sourcePath, sourceFileTimestamps, ignoreFirstScanChanges);
     }
 
     private boolean classFileWasRecentModified(final Path classFilePath, boolean ignoreFirstScanChanges,
@@ -824,13 +809,11 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         return files;
     }
     static class TimestampSet {
-        final Map<Path, Long> sourceFileTimestamps = new ConcurrentHashMap<>();
         final Map<Path, Long> watchedFileTimestamps = new ConcurrentHashMap<>();
         final Map<Path, Long> classFileChangeTimeStamps = new ConcurrentHashMap<>();
         final Map<Path, Path> classFilePathToSourceFilePath = new ConcurrentHashMap<>();
 
         public void merge(TimestampSet other) {
-            sourceFileTimestamps.putAll(other.sourceFileTimestamps);
             watchedFileTimestamps.putAll(other.watchedFileTimestamps);
             classFileChangeTimeStamps.putAll(other.classFileChangeTimeStamps);
             classFilePathToSourceFilePath.putAll(other.classFilePathToSourceFilePath);

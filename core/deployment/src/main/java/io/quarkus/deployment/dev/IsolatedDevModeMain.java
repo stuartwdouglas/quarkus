@@ -199,10 +199,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 StartupAction start = augmentAction.reloadExistingApplication(firstStartCompleted, changedResources,
                         classChangeInformation);
                 runner = start.runMainClass(context.getArgs());
-                //TODO: REMOVE THIS, its a temp hack
-                if (testRunner != null) {
-                    testRunner.runTests();
-                }
                 firstStartCompleted = true;
             } catch (Throwable t) {
                 deploymentProblem = t;
