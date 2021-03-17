@@ -14,6 +14,8 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -126,6 +128,21 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         if (testCompiler != null && testRunner == null) {
             throw new IllegalArgumentException("testRunner must not be null if testCompiler is set.");
         }
+    }
+
+    @Override
+    public Path getClassesDir() {
+        //TODO: fix all these
+        for (DevModeContext.ModuleInfo i : context.getAllModules()) {
+            return Paths.get(i.getMain().getClassesPath());
+        }
+        return null;
+    }
+
+    @Override
+    public List<Path> getSourcesDir() {
+        return context.getAllModules().stream().flatMap(m -> m.getMain().getSourcePaths().stream()).map(Paths::get)
+                .collect(toList());
     }
 
     public Timer startTestScanningTimer() {
