@@ -10,6 +10,7 @@ import org.objectweb.asm.Opcodes;
 
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+import io.quarkus.deployment.IsNormal;
 import io.quarkus.deployment.IsTest;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -26,7 +27,7 @@ import io.quarkus.dev.testing.TracingHandler;
  */
 public class TestTracingProcessor {
 
-    @BuildStep(onlyIf = IsTest.class)
+    @BuildStep(onlyIfNot = IsNormal.class)
     LogCleanupFilterBuildItem handle() {
         return new LogCleanupFilterBuildItem("org.junit.platform.launcher.core.EngineDiscoveryOrchestrator", "0 containers");
     }

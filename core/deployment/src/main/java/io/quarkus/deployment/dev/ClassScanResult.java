@@ -60,6 +60,30 @@ public class ClassScanResult {
         return changedClassNames;
     }
 
+    public Set<Path> getChangedClasses() {
+        return changedClasses;
+    }
+
+    public Set<Path> getDeletedClasses() {
+        return deletedClasses;
+    }
+
+    public Set<Path> getAddedClasses() {
+        return addedClasses;
+    }
+
+    public Set<String> getDeletedClassNames() {
+        return deletedClassNames;
+    }
+
+    public Set<String> getAddedClassNames() {
+        return addedClassNames;
+    }
+
+    public boolean isCompilationHappened() {
+        return compilationHappened;
+    }
+
     private String toName(Path moduleClassesPath, Path classFilePath) {
         String cf = moduleClassesPath.relativize(classFilePath).toString()
                 .replace(moduleClassesPath.getFileSystem().getSeparator(), ".");

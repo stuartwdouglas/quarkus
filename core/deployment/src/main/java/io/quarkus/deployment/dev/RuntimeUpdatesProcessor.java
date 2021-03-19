@@ -253,7 +253,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     public boolean doScan(boolean userInitiated) throws IOException {
         scanLock.lock();
         try {
-
+            testRunner.pause();
             final long startNanoseconds = System.nanoTime();
             for (Runnable step : preScanSteps) {
                 try {
@@ -352,6 +352,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
             
         } finally {
             scanLock.unlock();
+            testRunner.resume();
         }
     }
 

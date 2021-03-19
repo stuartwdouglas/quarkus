@@ -65,6 +65,7 @@ public class TestRunner {
     private Throwable compileProblem;
 
     private final TestClassUsages testClassUsages = new TestClassUsages();
+    private final TestState testState = new TestState();
     private boolean paused;
 
     public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication) {
@@ -104,6 +105,7 @@ public class TestRunner {
                 try {
                     runInternal(classScanResult);
                 } finally {
+                    waitTillResumed();
                     boolean run = false;
                     ClassScanResult current;
                     synchronized (TestRunner.class) {
@@ -154,11 +156,16 @@ public class TestRunner {
             LauncherDiscoveryRequest request = launchBuilder
                     .build();
             TestPlan testPlan = launcher.discover(request);
+            if (!testPlan.containsTests()) {
+                //nothing to see here
+                return;
+            }
 
-            log.info("Starting test run with " + quarkusTestClasses.size() + " test cases");
+            log.debug("Starting test run with " + quarkusTestClasses.size() + " test cases");
             final AtomicInteger methodCount = new AtomicInteger();
             final AtomicInteger skipped = new AtomicInteger();
             final Map<String, TestExecutionResult> failures = new HashMap<>();
+            final List<LogRecord> logOutput = new ArrayList<>();
 
             ContinuousTestingLogHandler.setLogHandler(new Predicate<LogRecord>() {
                 @Override
@@ -182,6 +189,7 @@ public class TestRunner {
                     while (cl.getParent() != null) {
                         if (cl == testApplication.getAugmentClassLoader()
                                 || cl == testApplication.getBaseRuntimeClassLoader()) {
+                            logOutput.add(logRecord);
                             return false;
                         }
                         cl = cl.getParent();
@@ -201,15 +209,19 @@ public class TestRunner {
                 }
             });
 
+            Map<String, Map<UniqueId, TestResult>> resultsByClass = new HashMap<>();
+
             launcher.execute(testPlan, new TestExecutionListener() {
 
                 @Override
                 public void executionStarted(TestIdentifier testIdentifier) {
+                    waitTillResumed();
                     touchedClasses.push(Collections.synchronizedSet(new HashSet<>()));
                 }
 
                 @Override
                 public void executionSkipped(TestIdentifier testIdentifier, String reason) {
+                    //TODO
                     skipped.incrementAndGet();
                 }
 
@@ -219,6 +231,7 @@ public class TestRunner {
                     String displayName = testIdentifier.getDisplayName();
                     TestSource testSource = testIdentifier.getSource().orElse(null);
                     Set<String> touched = touchedClasses.pop();
+                    UniqueId id = UniqueId.parse(testIdentifier.getUniqueId());
                     if (testSource instanceof ClassSource) {
                         testClass = ((ClassSource) testSource).getJavaClass();
                         testClassUsages.updateTestData(testClass.getName(), touched);
@@ -226,9 +239,15 @@ public class TestRunner {
                         testClass = ((MethodSource) testSource).getJavaClass();
                         methodCount.incrementAndGet();
                         displayName = ((MethodSource) testSource).getJavaMethod().toString();
-                        testClassUsages.updateTestData(testClass.getName(), UniqueId.parse(testIdentifier.getUniqueId()),
+                        testClassUsages.updateTestData(testClass.getName(), id,
                                 touched);
                     }
+                    if (testClass != null) {
+                        Map<UniqueId, TestResult> results = resultsByClass.computeIfAbsent(testClass.getName(),
+                                s -> new HashMap<>());
+                        results.put(id, new TestResult(displayName, id, testExecutionResult, new ArrayList<>(logOutput)));
+                    }
+                    logOutput.clear();
                     if (testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED) {
                         Throwable throwable = testExecutionResult.getThrowable().get();
                         if (testClass != null) {
@@ -268,10 +287,24 @@ public class TestRunner {
 
                 }
             });
+            testState.updateResults(resultsByClass);
+            if (classScanResult != null) {
+                testState.classesRemoved(classScanResult.getDeletedClassNames());
+            }
             ContinuousTestingLogHandler.setLogHandler(null);
+            waitTillResumed();
+            List<TestResult> historicFailures = testState.getHistoricFailures(resultsByClass);
             if (failures.isEmpty()) {
-                log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
-                        + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms");
+                if (historicFailures.isEmpty()) {
+                    log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
+                            + " were skipped. Tests took " + (System.currentTimeMillis() - start)
+                            + "ms. All tests are passing.");
+                } else {
+                    log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
+                            + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms. "
+                            + historicFailures.size() + " tests that were not run are still failing,"
+                            + formatFailureSummary(historicFailures));
+                }
             } else {
                 log.error("Test run failed, " + methodCount.get() + " tests were run, " + failures.size() + " failed, "
                         + skipped.get()
@@ -282,7 +315,10 @@ public class TestRunner {
                                     + entry.getValue().getStatus()
                                     + "\n",
                             entry.getValue().getThrowable().get());
-
+                }
+                if (!historicFailures.isEmpty()) {
+                    log.error("In addition " + historicFailures.size() + " tests that were not re-run are still failing,"
+                            + formatFailureSummary(historicFailures));
                 }
             }
         } catch (Exception e) {
@@ -290,6 +326,37 @@ public class TestRunner {
         } finally {
             ContinuousTestingLogHandler.setLogHandler(null);
             Thread.currentThread().setContextClassLoader(old);
+        }
+    }
+
+    private String formatFailureSummary(List<TestResult> totalFailures) {
+        StringBuilder sb = new StringBuilder();
+        if (totalFailures.size() > 3) {
+            sb.append(" including: ");
+        } else {
+            sb.append(" failing tests are: ");
+        }
+        for (int i = 0; i < Math.min(totalFailures.size(), 3); ++i) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            sb.append(totalFailures.get(i).displayName);
+        }
+        if (totalFailures.size() > 3) {
+            sb.append(", ...");
+        }
+        return sb.toString();
+    }
+
+    public void waitTillResumed() {
+        synchronized (TestRunner.this) {
+            while (paused) {
+                try {
+                    TestRunner.this.wait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
 
