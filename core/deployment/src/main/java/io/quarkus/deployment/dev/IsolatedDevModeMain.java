@@ -28,11 +28,9 @@ import java.util.stream.Collectors;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.logging.Logger;
 
-import io.quarkus.bootstrap.app.AdditionalDependency;
 import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.ClassChangeInformation;
 import io.quarkus.bootstrap.app.CuratedApplication;
-import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.app.RunningQuarkusApplication;
 import io.quarkus.bootstrap.app.StartupAction;
 import io.quarkus.bootstrap.classloading.ClassPathElement;
@@ -45,7 +43,6 @@ import io.quarkus.builder.BuildStep;
 import io.quarkus.deployment.CodeGenerator;
 import io.quarkus.deployment.builditem.ApplicationClassPredicateBuildItem;
 import io.quarkus.deployment.codegen.CodeGenData;
-import io.quarkus.deployment.dev.testing.TestRunner;
 import io.quarkus.deployment.steps.ClassTransformingBuildStep;
 import io.quarkus.deployment.util.FSWatchUtil;
 import io.quarkus.dev.console.DevConsoleManager;
@@ -69,7 +66,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     private static volatile CuratedApplication curatedApplication;
     private static volatile CuratedApplication testCuratedApplication;
     private static volatile AugmentAction augmentAction;
-    private static volatile TestRunner testRunner;
     private static volatile boolean restarting;
     private static volatile boolean firstStartCompleted;
     private static final CountDownLatch shutdownLatch = new CountDownLatch(1);
@@ -118,9 +114,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 augmentDone = true;
                 runner = start.runMainClass(context.getArgs());
                 firstStartCompleted = true;
-                if (testRunner != null) {
-                    testRunner.runTests();
-                }
             } catch (Throwable t) {
                 Throwable rootCause = t;
                 while (rootCause.getCause() != null) {
@@ -227,35 +220,15 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                 compilationProviders.add(provider);
                 context.getAllModules().forEach(moduleInfo -> moduleInfo.addSourcePaths(provider.handledSourcePaths()));
             }
-            QuarkusCompiler compiler;
-            QuarkusCompiler testCompiler = null;
-            try {
-                compiler = new QuarkusCompiler(curatedApplication, compilationProviders, context);
-                if (context.getApplicationRoot().getTest().isPresent()) {
-                    testCuratedApplication = curatedApplication.getQuarkusBootstrap().clonedBuilder()
-                            .setMode(QuarkusBootstrap.Mode.TEST)
-                            .setDisableClasspathCache(true)
-                            .setIsolateDeployment(true)
-                            .setTest(true)
-                            .setAuxiliaryApplication(true)
-                            .addAdditionalApplicationArchive(new AdditionalDependency(
-                                    Paths.get(context.getApplicationRoot().getTest().get().getClassesPath()), true, true))
-                            .build()
-                            .bootstrap();
-                    testCompiler = new QuarkusCompiler(testCuratedApplication, compilationProviders, context);
-                }
-            } catch (Exception e) {
-                log.error("Failed to create compiler, runtime compilation will be unavailable", e);
-                return null;
-            }
-            testRunner = new TestRunner(context, testCuratedApplication);
+            QuarkusCompiler compiler = new QuarkusCompiler(curatedApplication, compilationProviders, context);
+            TestSupport testSupport = new TestSupport(curatedApplication, compilationProviders, context);
             RuntimeUpdatesProcessor processor = new RuntimeUpdatesProcessor(appRoot, context, compiler,
                     devModeType, this::restartCallback, null, new BiFunction<String, byte[], byte[]>() {
                         @Override
                         public byte[] apply(String s, byte[] bytes) {
                             return ClassTransformingBuildStep.transform(s, bytes);
                         }
-                    }, testRunner, testCompiler);
+                    }, testSupport);
 
             for (HotReplacementSetup service : ServiceLoader.load(HotReplacementSetup.class,
                     curatedApplication.getBaseRuntimeClassLoader())) {
@@ -398,7 +371,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
             if (RuntimeUpdatesProcessor.INSTANCE != null) {
                 RuntimeUpdatesProcessor.INSTANCE.checkForFileChange();
                 RuntimeUpdatesProcessor.INSTANCE.checkForChangedClasses(true);
-                RuntimeUpdatesProcessor.INSTANCE.checkForChangedTestClasses(true);
             }
             firstStart(deploymentClassLoader, codeGens);
 

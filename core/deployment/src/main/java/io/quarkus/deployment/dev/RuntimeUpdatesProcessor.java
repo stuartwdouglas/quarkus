@@ -65,7 +65,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
 
     private static final String CLASS_EXTENSION = ".class";
 
-    static volatile RuntimeUpdatesProcessor INSTANCE;
+    public static volatile RuntimeUpdatesProcessor INSTANCE;
 
     private final Path applicationRoot;
     private final DevModeContext context;
@@ -99,7 +99,6 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     private final BiConsumer<Set<String>, ClassScanResult> restartCallback;
     private final BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification;
     private final BiFunction<String, byte[], byte[]> classTransformers;
-    private final TestRunner testRunner;
     private Timer timer;
     private final ReentrantLock scanLock = new ReentrantLock();
 
@@ -109,13 +108,13 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
      */
     private static volatile IndexView lastStartIndex;
 
-    private final QuarkusCompiler testCompiler;
+    private final TestSupport testSupport;
 
     public RuntimeUpdatesProcessor(Path applicationRoot, DevModeContext context, QuarkusCompiler compiler,
-                                   DevModeType devModeType, BiConsumer<Set<String>, ClassScanResult> restartCallback,
-                                   BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification,
-                                   BiFunction<String, byte[], byte[]> classTransformers,
-                                   TestRunner testRunner, QuarkusCompiler testCompiler) {
+            DevModeType devModeType, BiConsumer<Set<String>, ClassScanResult> restartCallback,
+            BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification,
+            BiFunction<String, byte[], byte[]> classTransformers,
+            TestSupport testSupport) {
         this.applicationRoot = applicationRoot;
         this.context = context;
         this.compiler = compiler;
@@ -123,11 +122,25 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         this.restartCallback = restartCallback;
         this.copyResourceNotification = copyResourceNotification;
         this.classTransformers = classTransformers;
-        this.testRunner = testRunner;
-        this.testCompiler = testCompiler;
-        if (testCompiler != null && testRunner == null) {
-            throw new IllegalArgumentException("testRunner must not be null if testCompiler is set.");
-        }
+        this.testSupport = testSupport;
+        testSupport.addStartListener(new Runnable() {
+            @Override
+            public void run() {
+                checkForChangedTestClasses(true);
+                startTestScanningTimer();
+            }
+        });
+        testSupport.addStopListener(new Runnable() {
+            @Override
+            public void run() {
+                timer.cancel();
+                timer = null;
+            }
+        });
+    }
+
+    public TestSupport getTestSupport() {
+        return testSupport;
     }
 
     @Override
@@ -145,18 +158,14 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                 .collect(toList());
     }
 
-    public Timer startTestScanningTimer() {
-        if (testCompiler != null) {
-            timer = new Timer("Test Compile Timer", true);
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    periodicTestCompile();
-                }
-            }, 1000, 1000);
-        } else {
-            timer = null;
-        }
+    private Timer startTestScanningTimer() {
+        timer = new Timer("Test Compile Timer", true);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                periodicTestCompile();
+            }
+        }, 1000, 1000);
         return timer;
     }
 
@@ -169,9 +178,9 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                 ClassScanResult merged = ClassScanResult.merge(changedTestClassResult, changedApp);
                 if (merged.isChanged()) {
                     if (compileProblem != null) {
-                        testRunner.testCompileFailed(compileProblem);
+                        testSupport.getTestRunner().testCompileFailed(compileProblem);
                     } else {
-                        testRunner.runTests(merged);
+                        testSupport.getTestRunner().runTests(merged);
                     }
                 }
             } finally {
@@ -181,6 +190,8 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     }
 
     private ClassScanResult compileTestClasses() {
+        QuarkusCompiler testCompiler = testSupport.getCompiler();
+        TestRunner testRunner = testSupport.getTestRunner();
         ClassScanResult changedTestClassResult = new ClassScanResult();
         try {
             changedTestClassResult = checkForChangedClasses(testCompiler,
@@ -253,7 +264,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     public boolean doScan(boolean userInitiated) throws IOException {
         scanLock.lock();
         try {
-            testRunner.pause();
+            testSupport.pause();
             final long startNanoseconds = System.nanoTime();
             for (Runnable step : preScanSteps) {
                 try {
@@ -352,7 +363,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
             
         } finally {
             scanLock.unlock();
-            testRunner.resume();
+            testSupport.resume();
         }
     }
 
@@ -414,7 +425,10 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     }
 
     ClassScanResult checkForChangedTestClasses(boolean firstScan) {
-        ClassScanResult ret = checkForChangedClasses(testCompiler,
+        if (!testSupport.isStarted()) {
+            return new ClassScanResult();
+        }
+        ClassScanResult ret = checkForChangedClasses(testSupport.getCompiler(),
                 s -> s.getTest().orElse(DevModeContext.EMPTY_COMPILATION_UNIT), firstScan,
                 test);
         if (firstScan) {

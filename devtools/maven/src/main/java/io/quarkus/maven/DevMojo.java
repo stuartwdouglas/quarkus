@@ -595,6 +595,7 @@ public class DevMojo extends AbstractMojo {
                 .setProjectDirectory(projectDirectory)
                 .setSourcePaths(sourcePaths)
                 .setClassesPath(classesPath)
+                .setResourcesOutputPath(classesPath)
                 .setResourcePath(resourcePath)
                 .setSourceParents(Collections.singleton(sourceParent.toAbsolutePath().toString()))
                 .setPreBuildOutputDir(targetDir.resolve("generated-sources").toAbsolutePath().toString())

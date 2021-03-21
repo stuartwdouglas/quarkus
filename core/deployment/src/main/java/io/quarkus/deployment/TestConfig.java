@@ -11,11 +11,21 @@ import io.quarkus.runtime.annotations.ConfigRoot;
 /**
  * This is used currently only to suppress warnings about unknown properties
  * when the user supplies something like: -Dquarkus.test.profile=someProfile or -Dquarkus.test.native-image-profile=someProfile
- *
+ * <p>
  * TODO refactor code to actually use these values
  */
 @ConfigRoot
 public class TestConfig {
+
+    /**
+     * If continuous testing is enabled.
+     * <p>
+     * If this is true results will be printed to the console. If this is false
+     * continuous testing can still be used, however it needs to be explicitly
+     * started from the Dev UI, and console output will not be printed.
+     */
+    @ConfigItem(defaultValue = "true")
+    public boolean enabled;
 
     /**
      * Duration to wait for the native image to built during testing

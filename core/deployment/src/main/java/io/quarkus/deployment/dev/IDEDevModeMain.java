@@ -126,6 +126,7 @@ public class IDEDevModeMain implements BiConsumer<CuratedApplication, Map<String
                 .setProjectDirectory(project.getDir().toAbsolutePath().toString())
                 .setSourcePaths(Collections.singleton(project.getSourcesSourcesDir().toAbsolutePath().toString()))
                 .setClassesPath(project.getClassesDir().toAbsolutePath().toString())
+                .setResourcesOutputPath(project.getClassesDir().toAbsolutePath().toString())
                 .setResourcePath(project.getResourcesSourcesDir().toAbsolutePath().toString())
                 .setSourceParents(Collections.singleton(project.getSourcesDir().toString()))
                 .setPreBuildOutputDir(project.getCodeGenOutputDir().toString())

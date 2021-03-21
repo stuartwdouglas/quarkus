@@ -44,6 +44,7 @@ import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherConfig;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
+import org.opentest4j.TestAbortedException;
 
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.deployment.dev.ClassScanResult;
@@ -67,6 +68,11 @@ public class TestRunner {
     private final TestClassUsages testClassUsages = new TestClassUsages();
     private final TestState testState = new TestState();
     private boolean paused;
+    /**
+     * disabled is different to paused, when the runner is disabled we abort all runs rather than pausing them.
+     */
+    private boolean disabled;
+    private boolean consoleOutput;
 
     public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication) {
         this.devModeContext = devModeContext;
@@ -84,7 +90,10 @@ public class TestRunner {
         if (testApplication == null) {
             return;
         }
-        synchronized (TestRunner.class) {
+        if (disabled) {
+            return;
+        }
+        synchronized (TestRunner.this) {
             if (testsRunning) {
                 if (testsQueued) {
                     if (queuedChanges != null) { //if this is null a full run is scheduled
@@ -107,15 +116,17 @@ public class TestRunner {
                 } finally {
                     waitTillResumed();
                     boolean run = false;
-                    ClassScanResult current;
-                    synchronized (TestRunner.class) {
-                        testsRunning = false;
-                        if (testsQueued) {
-                            testsQueued = false;
-                            run = true;
+                    ClassScanResult current = null;
+                    synchronized (TestRunner.this) {
+                        if (!disabled) {
+                            testsRunning = false;
+                            if (testsQueued) {
+                                testsQueued = false;
+                                run = true;
+                            }
+                            current = queuedChanges;
+                            queuedChanges = null;
                         }
-                        current = queuedChanges;
-                        queuedChanges = null;
                     }
                     if (run) {
                         runTests(current);
@@ -134,6 +145,16 @@ public class TestRunner {
 
     public synchronized void resume() {
         paused = false;
+        notifyAll();
+    }
+
+    public synchronized void disable() {
+        disabled = true;
+        notifyAll();
+    }
+
+    public synchronized void enable() {
+        disabled = false;
     }
 
     private void runInternal(ClassScanResult classScanResult) {
@@ -227,6 +248,9 @@ public class TestRunner {
 
                 @Override
                 public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+                    if (disabled) {
+                        return;
+                    }
                     Class<?> testClass = null;
                     String displayName = testIdentifier.getDisplayName();
                     TestSource testSource = testIdentifier.getSource().orElse(null);
@@ -287,6 +311,9 @@ public class TestRunner {
 
                 }
             });
+            if (disabled) {
+                return;
+            }
             testState.updateResults(resultsByClass);
             if (classScanResult != null) {
                 testState.classesRemoved(classScanResult.getDeletedClassNames());
@@ -294,31 +321,33 @@ public class TestRunner {
             ContinuousTestingLogHandler.setLogHandler(null);
             waitTillResumed();
             List<TestResult> historicFailures = testState.getHistoricFailures(resultsByClass);
-            if (failures.isEmpty()) {
-                if (historicFailures.isEmpty()) {
-                    log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
-                            + " were skipped. Tests took " + (System.currentTimeMillis() - start)
-                            + "ms. All tests are passing.");
+            if (consoleOutput) {
+                if (failures.isEmpty()) {
+                    if (historicFailures.isEmpty()) {
+                        log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
+                                + " were skipped. Tests took " + (System.currentTimeMillis() - start)
+                                + "ms. All tests are passing.");
+                    } else {
+                        log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
+                                + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms. "
+                                + historicFailures.size() + " tests that were not run are still failing,"
+                                + formatFailureSummary(historicFailures));
+                    }
                 } else {
-                    log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
-                            + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms. "
-                            + historicFailures.size() + " tests that were not run are still failing,"
-                            + formatFailureSummary(historicFailures));
-                }
-            } else {
-                log.error("Test run failed, " + methodCount.get() + " tests were run, " + failures.size() + " failed, "
-                        + skipped.get()
-                        + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms");
-                for (Map.Entry<String, TestExecutionResult> entry : failures.entrySet()) {
-                    log.error(
-                            "Test " + entry.getKey() + " failed "
-                                    + entry.getValue().getStatus()
-                                    + "\n",
-                            entry.getValue().getThrowable().get());
-                }
-                if (!historicFailures.isEmpty()) {
-                    log.error("In addition " + historicFailures.size() + " tests that were not re-run are still failing,"
-                            + formatFailureSummary(historicFailures));
+                    log.error("Test run failed, " + methodCount.get() + " tests were run, " + failures.size() + " failed, "
+                            + skipped.get()
+                            + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms");
+                    for (Map.Entry<String, TestExecutionResult> entry : failures.entrySet()) {
+                        log.error(
+                                "Test " + entry.getKey() + " failed "
+                                        + entry.getValue().getStatus()
+                                        + "\n",
+                                entry.getValue().getThrowable().get());
+                    }
+                    if (!historicFailures.isEmpty()) {
+                        log.error("In addition " + historicFailures.size() + " tests that were not re-run are still failing,"
+                                + formatFailureSummary(historicFailures));
+                    }
                 }
             }
         } catch (Exception e) {
@@ -350,12 +379,15 @@ public class TestRunner {
 
     public void waitTillResumed() {
         synchronized (TestRunner.this) {
-            while (paused) {
+            while (paused && !disabled) {
                 try {
                     TestRunner.this.wait();
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
+            }
+            if (disabled) {
+                throw new TestAbortedException("Tests are disabled");
             }
         }
     }
@@ -412,5 +444,13 @@ public class TestRunner {
 
     public synchronized void testCompileSucceeded() {
         compileProblem = null;
+    }
+
+    public void setConsoleOutput(boolean consoleOutput) {
+        this.consoleOutput = consoleOutput;
+    }
+
+    public boolean getConsoleOutput() {
+        return consoleOutput;
     }
 }

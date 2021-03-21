@@ -12,11 +12,14 @@ import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.deployment.IsNormal;
 import io.quarkus.deployment.IsTest;
+import io.quarkus.deployment.TestConfig;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
+import io.quarkus.deployment.builditem.ServiceStartBuildItem;
+import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
 import io.quarkus.deployment.logging.LogCleanupFilterBuildItem;
 import io.quarkus.dev.testing.TracingHandler;
 
@@ -27,9 +30,32 @@ import io.quarkus.dev.testing.TracingHandler;
  */
 public class TestTracingProcessor {
 
+    private static Boolean lastEnabledValue;
+
     @BuildStep(onlyIfNot = IsNormal.class)
     LogCleanupFilterBuildItem handle() {
         return new LogCleanupFilterBuildItem("org.junit.platform.launcher.core.EngineDiscoveryOrchestrator", "0 containers");
+    }
+
+    @BuildStep(onlyIfNot = IsNormal.class)
+    ServiceStartBuildItem startTesting(TestConfig config) {
+        if (RuntimeUpdatesProcessor.INSTANCE == null) {
+            return null;
+        }
+        RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setConsoleOutput(config.enabled);
+        if (lastEnabledValue == null || lastEnabledValue != config.enabled) {
+            //we only change this if the config value has changed
+            //the user may have enabled or disabled this via the Dev UI
+            //so we don't change it unless the config is changed, or on the
+            //first run
+            if (config.enabled) {
+                RuntimeUpdatesProcessor.INSTANCE.getTestSupport().start();
+            } else {
+                RuntimeUpdatesProcessor.INSTANCE.getTestSupport().stop();
+            }
+            lastEnabledValue = config.enabled;
+        }
+        return null;
     }
 
     @BuildStep(onlyIf = IsTest.class)
