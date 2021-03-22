@@ -58,6 +58,7 @@ import org.jboss.resteasy.reactive.server.core.serialization.FixedEntityWriter;
 import org.jboss.resteasy.reactive.server.core.serialization.FixedEntityWriterArray;
 import org.jboss.resteasy.reactive.server.handlers.AbortChainHandler;
 import org.jboss.resteasy.reactive.server.handlers.BlockingHandler;
+import org.jboss.resteasy.reactive.server.handlers.CoroutineInvocationHandler;
 import org.jboss.resteasy.reactive.server.handlers.ExceptionHandler;
 import org.jboss.resteasy.reactive.server.handlers.FixedProducesHandler;
 import org.jboss.resteasy.reactive.server.handlers.FormBodyHandler;
@@ -79,10 +80,12 @@ import org.jboss.resteasy.reactive.server.model.HandlerChainCustomizer;
 import org.jboss.resteasy.reactive.server.model.ParamConverterProviders;
 import org.jboss.resteasy.reactive.server.model.ServerMethodParameter;
 import org.jboss.resteasy.reactive.server.model.ServerResourceMethod;
+import org.jboss.resteasy.reactive.server.spi.CoroutineEndpointInvoker;
 import org.jboss.resteasy.reactive.server.spi.EndpointInvoker;
 import org.jboss.resteasy.reactive.server.spi.ResteasyReactiveResourceInfo;
 import org.jboss.resteasy.reactive.server.spi.ServerMessageBodyWriter;
 import org.jboss.resteasy.reactive.server.spi.ServerRestHandler;
+import org.jboss.resteasy.reactive.server.spi.StandardEndpointInvoker;
 import org.jboss.resteasy.reactive.server.util.ScoreSystem;
 import org.jboss.resteasy.reactive.spi.BeanFactory;
 
@@ -256,7 +259,6 @@ public class RuntimeResourceDeployment {
 
         // given that we may inject form params in the endpoint we need to make sure we read the body before
         // we create/inject our endpoint
-        EndpointInvoker invoker = method.getInvoker().get();
         ServerRestHandler instanceHandler = null;
         if (!locatableResource) {
             if (clazz.isPerRequestResource()) {
@@ -301,7 +303,12 @@ public class RuntimeResourceDeployment {
                     param.isObtainedAsCollection(), param.isOptional()));
         }
         addHandlers(handlers, method, info, HandlerChainCustomizer.Phase.BEFORE_METHOD_INVOKE);
-        handlers.add(new InvocationHandler(invoker));
+        EndpointInvoker invoker = method.getInvoker().get();
+        if (invoker instanceof CoroutineEndpointInvoker) {
+            handlers.add(new CoroutineInvocationHandler((CoroutineEndpointInvoker) invoker));
+        } else {
+            handlers.add(new InvocationHandler((StandardEndpointInvoker) invoker));
+        }
         addHandlers(handlers, method, info, HandlerChainCustomizer.Phase.AFTER_METHOD_INVOKE);
 
         Type returnType = TypeSignatureParser.parse(method.getReturnType());

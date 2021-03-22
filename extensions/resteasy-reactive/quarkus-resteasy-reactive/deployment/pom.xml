@@ -46,6 +46,12 @@
             <artifactId>quarkus-resteasy-reactive-common-deployment</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-core-jvm</artifactId>
+            <version>1.4.2</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-security-deployment</artifactId>
             <scope>test</scope>

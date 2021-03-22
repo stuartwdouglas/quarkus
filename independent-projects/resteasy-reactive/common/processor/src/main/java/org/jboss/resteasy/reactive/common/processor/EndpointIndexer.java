@@ -117,6 +117,7 @@ public abstract class EndpointIndexer<T extends EndpointIndexer<T, PARAM, METHOD
     private static final String[] PRODUCES_PLAIN_TEXT_NEGOTIATED = new String[] { MediaType.TEXT_PLAIN, MediaType.WILDCARD };
     private static final String[] PRODUCES_PLAIN_TEXT = new String[] { MediaType.TEXT_PLAIN };
     public static final String CDI_WRAPPER_SUFFIX = "$$CDIWrapper";
+    public static final DotName CONTINUATION = DotName.createSimple("kotlin.coroutines.Continuation");
 
     static {
         Map<String, String> prims = new HashMap<>();
@@ -402,43 +403,49 @@ public abstract class EndpointIndexer<T extends EndpointIndexer<T, PARAM, METHOD
                 Map<DotName, AnnotationInstance> anns = parameterAnnotations[i];
                 boolean encoded = anns.containsKey(ResteasyReactiveDotNames.ENCODED);
                 Type paramType = currentMethodInfo.parameters().get(i);
-                String errorLocation = "method " + currentMethodInfo + " on class " + currentMethodInfo.declaringClass();
+                if (!paramType.name().equals(CONTINUATION)) {
+                    String errorLocation = "method " + currentMethodInfo + " on class " + currentMethodInfo.declaringClass();
 
-                PARAM parameterResult = extractParameterInfo(currentClassInfo, actualEndpointInfo,
-                        existingConverters, additionalReaders,
-                        anns, paramType, errorLocation, false, hasRuntimeConverters, pathParameters,
-                        currentMethodInfo.parameterName(i),
-                        methodContext);
-                suspended |= parameterResult.isSuspended();
-                sse |= parameterResult.isSse();
-                String name = parameterResult.getName();
-                String defaultValue = parameterResult.getDefaultValue();
-                ParameterType type = parameterResult.getType();
-                if (type == ParameterType.BODY) {
-                    if (hasBodyParam)
-                        throw new RuntimeException(
-                                "Resource method " + currentMethodInfo + " can only have a single body parameter: "
-                                        + currentMethodInfo.parameterName(i));
-                    hasBodyParam = true;
-                }
-                String elementType = parameterResult.getElementType();
-                boolean single = parameterResult.isSingle();
-                if (defaultValue == null && paramType.kind() == Type.Kind.PRIMITIVE) {
-                    defaultValue = "0";
-                }
-                methodParameters[i] = createMethodParameter(currentClassInfo, actualEndpointInfo, encoded, paramType,
-                        parameterResult, name, defaultValue, type, elementType, single,
-                        AsmUtil.getSignature(paramType, typeArgMapper));
+                    PARAM parameterResult = extractParameterInfo(currentClassInfo, actualEndpointInfo,
+                            existingConverters, additionalReaders,
+                            anns, paramType, errorLocation, false, hasRuntimeConverters, pathParameters,
+                            currentMethodInfo.parameterName(i),
+                            methodContext);
+                    suspended |= parameterResult.isSuspended();
+                    sse |= parameterResult.isSse();
+                    String name = parameterResult.getName();
+                    String defaultValue = parameterResult.getDefaultValue();
+                    ParameterType type = parameterResult.getType();
+                    if (type == ParameterType.BODY) {
+                        if (hasBodyParam)
+                            throw new RuntimeException(
+                                    "Resource method " + currentMethodInfo + " can only have a single body parameter: "
+                                            + currentMethodInfo.parameterName(i));
+                        hasBodyParam = true;
+                    }
+                    String elementType = parameterResult.getElementType();
+                    boolean single = parameterResult.isSingle();
+                    if (defaultValue == null && paramType.kind() == Type.Kind.PRIMITIVE) {
+                        defaultValue = "0";
+                    }
+                    methodParameters[i] = createMethodParameter(currentClassInfo, actualEndpointInfo, encoded, paramType,
+                            parameterResult, name, defaultValue, type, elementType, single,
+                            AsmUtil.getSignature(paramType, typeArgMapper));
 
-                if (type == ParameterType.BEAN) {
-                    // transform the bean param
-                    formParamRequired |= handleBeanParam(actualEndpointInfo, paramType, methodParameters, i);
-                } else if (type == ParameterType.FORM) {
-                    formParamRequired = true;
-                } else if (type == ParameterType.MULTI_PART_FORM) {
-                    multipart = true;
-                    ClassInfo multipartClassInfo = index.getClassByName(paramType.name());
-                    handleMultipart(multipartClassInfo);
+                    if (type == ParameterType.BEAN) {
+                        // transform the bean param
+                        formParamRequired |= handleBeanParam(actualEndpointInfo, paramType, methodParameters, i);
+                    } else if (type == ParameterType.FORM) {
+                        formParamRequired = true;
+                    } else if (type == ParameterType.MULTI_PART_FORM) {
+                        multipart = true;
+                        ClassInfo multipartClassInfo = index.getClassByName(paramType.name());
+                        handleMultipart(multipartClassInfo);
+                    }
+                } else {
+                    MethodParameter[] newParams = new MethodParameter[methodParameters.length - 1];
+                    System.arraycopy(methodParameters, 0, newParams, 0, i);
+                    methodParameters = newParams;
                 }
             }
 

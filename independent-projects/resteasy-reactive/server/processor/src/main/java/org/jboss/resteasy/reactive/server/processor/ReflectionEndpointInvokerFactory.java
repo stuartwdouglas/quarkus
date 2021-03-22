@@ -9,6 +9,7 @@ import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
 import org.jboss.resteasy.reactive.common.model.ResourceMethod;
 import org.jboss.resteasy.reactive.server.spi.EndpointInvoker;
+import org.jboss.resteasy.reactive.server.spi.StandardEndpointInvoker;
 
 public class ReflectionEndpointInvokerFactory implements EndpointInvokerFactory {
 
@@ -23,7 +24,7 @@ public class ReflectionEndpointInvokerFactory implements EndpointInvokerFactory 
                     Class<?> clazz = Class.forName(currentMethod.declaringClass().name().toString(), false,
                             Thread.currentThread().getContextClassLoader());
                     Method meth = clazz.getDeclaredMethod(currentMethod.name(), toParamArray(currentMethod.parameters()));
-                    return new EndpointInvoker() {
+                    return new StandardEndpointInvoker() {
                         @Override
                         public Object invoke(Object instance, Object[] parameters) throws Exception {
                             return meth.invoke(instance, parameters);
