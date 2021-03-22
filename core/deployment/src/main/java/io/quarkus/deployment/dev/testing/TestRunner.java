@@ -49,6 +49,7 @@ import org.opentest4j.TestAbortedException;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.deployment.dev.ClassScanResult;
 import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.dev.terminal.StatusPrintStream;
 import io.quarkus.dev.testing.ContinuousTestingLogHandler;
 import io.quarkus.dev.testing.TracingHandler;
 
@@ -73,6 +74,12 @@ public class TestRunner {
      */
     private boolean disabled;
     private boolean consoleOutput;
+
+    private static final StatusPrintStream OUT;
+
+    static {
+        OUT = StatusPrintStream.INSTANCE;
+    }
 
     public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication) {
         this.devModeContext = devModeContext;
@@ -181,6 +188,8 @@ public class TestRunner {
                 //nothing to see here
                 return;
             }
+            long toRun = testPlan.countTestIdentifiers(TestIdentifier::isTest);
+            OUT.setStatusString("Running 0/" + toRun);
 
             log.debug("Starting test run with " + quarkusTestClasses.size() + " test cases");
             final AtomicInteger methodCount = new AtomicInteger();
@@ -203,17 +212,16 @@ public class TestRunner {
                             }
                         }
                     }
-                    if (thread == null) {
-                        return true;
-                    }
-                    ClassLoader cl = thread.getContextClassLoader();
-                    while (cl.getParent() != null) {
-                        if (cl == testApplication.getAugmentClassLoader()
-                                || cl == testApplication.getBaseRuntimeClassLoader()) {
-                            logOutput.add(logRecord);
-                            return false;
+                    if (thread != null) {
+                        ClassLoader cl = thread.getContextClassLoader();
+                        while (cl.getParent() != null) {
+                            if (cl == testApplication.getAugmentClassLoader()
+                                    || cl == testApplication.getBaseRuntimeClassLoader()) {
+                                logOutput.add(logRecord);
+                                return false;
+                            }
+                            cl = cl.getParent();
                         }
-                        cl = cl.getParent();
                     }
                     return true;
                 }
@@ -265,6 +273,8 @@ public class TestRunner {
                         displayName = ((MethodSource) testSource).getJavaMethod().toString();
                         testClassUsages.updateTestData(testClass.getName(), id,
                                 touched);
+
+                        OUT.setStatusString("Running " + methodCount.get() + "/" + toRun);
                     }
                     if (testClass != null) {
                         Map<UniqueId, TestResult> results = resultsByClass.computeIfAbsent(testClass.getName(),
@@ -318,25 +328,33 @@ public class TestRunner {
             if (classScanResult != null) {
                 testState.classesRemoved(classScanResult.getDeletedClassNames());
             }
+
+            OUT.setStatusString("Tests run");
+            System.out.print("\r");
+            System.out.flush();
             ContinuousTestingLogHandler.setLogHandler(null);
             waitTillResumed();
             List<TestResult> historicFailures = testState.getHistoricFailures(resultsByClass);
             if (consoleOutput) {
                 if (failures.isEmpty()) {
                     if (historicFailures.isEmpty()) {
-                        log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
-                                + " were skipped. Tests took " + (System.currentTimeMillis() - start)
-                                + "ms. All tests are passing.");
+                        OUT.setStatusString(
+                                " \u001B[32mTests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
+                                        + " were skipped. Tests took " + (System.currentTimeMillis() - start)
+                                        + "ms. All tests are passing." + "\u001b[0m");
                     } else {
-                        log.info("Tests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
-                                + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms. "
-                                + historicFailures.size() + " tests that were not run are still failing,"
-                                + formatFailureSummary(historicFailures));
+                        OUT.setStatusString(
+                                "\u001B[33mTests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
+                                        + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms. "
+                                        + historicFailures.size() + " tests that were not run are still failing,"
+                                        + formatFailureSummary(historicFailures) + "\u001b[0m");
                     }
                 } else {
-                    log.error("Test run failed, " + methodCount.get() + " tests were run, " + failures.size() + " failed, "
-                            + skipped.get()
-                            + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms");
+                    StringBuilder sb = new StringBuilder(
+                            "\u001B[91mTest run failed, " + methodCount.get() + " tests were run, " + failures.size()
+                                    + " failed, "
+                                    + skipped.get()
+                                    + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms");
                     for (Map.Entry<String, TestExecutionResult> entry : failures.entrySet()) {
                         log.error(
                                 "Test " + entry.getKey() + " failed "
@@ -345,9 +363,10 @@ public class TestRunner {
                                 entry.getValue().getThrowable().get());
                     }
                     if (!historicFailures.isEmpty()) {
-                        log.error("In addition " + historicFailures.size() + " tests that were not re-run are still failing,"
+                        sb.append("In addition " + historicFailures.size() + " tests that were not re-run are still failing,"
                                 + formatFailureSummary(historicFailures));
                     }
+                    OUT.setStatusString(sb.toString() + "\u001b[0m");
                 }
             }
         } catch (Exception e) {
