@@ -39,10 +39,10 @@ public class TestSupport {
         if (!started) {
             synchronized (this) {
                 if (!started) {
-                    started = true;
-                    runTests = true;
                     try {
                         if (context.getApplicationRoot().getTest().isPresent()) {
+                            started = true;
+                            runTests = true;
                             if (testCuratedApplication == null) {
                                 testCuratedApplication = curatedApplication.getQuarkusBootstrap().clonedBuilder()
                                         .setMode(QuarkusBootstrap.Mode.TEST)
@@ -62,11 +62,11 @@ public class TestSupport {
                             for (Runnable i : startListeners) {
                                 i.run();
                             }
+                            testRunner.enable();
                         }
                     } catch (Exception e) {
                         log.error("Failed to create compiler, runtime compilation will be unavailable", e);
                     }
-                    testRunner.enable();
 
                 }
             }
