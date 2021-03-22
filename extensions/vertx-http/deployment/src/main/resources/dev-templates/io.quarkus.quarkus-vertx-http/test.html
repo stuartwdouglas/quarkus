@@ -1,0 +1,57 @@
+{#include main fluid=true}
+
+{#title}Testing{/title}
+{#body}
+
+<div id="tables" class="table-responsive">
+    {#for cn in info:tests.failingClasses}
+    <div class="col mb-12">
+        <div class="card h-100 shadow">
+            <div class="card-header bg-danger text-light">
+                {cn.className}
+            </div>
+            <div class="card-body">
+                {#for r in cn.failing}
+                <div>
+                <p class="card-text text-danger">
+                    {r.displayName}
+                </p>
+                <p class="card-text text-danger">
+                    {#for log in r.logOutput}
+                    <p class="card-text">
+                        {log.message}
+                    </p>
+                    {/for}
+                </p>
+                </div>
+                {/for}
+                {#for r in cn.passing}
+                <p class="card-text text-success">
+                    {r.displayName}
+                </p>
+                {/for}
+            </div>
+        </div>
+    </div>
+    {/for}
+    <hr/>
+    {#for cn in info:tests.passingClasses}
+    <div class="col mb-12">
+        <div class="card h-100 shadow">
+            <div class="card-header bg-success text-light">
+                {cn.className}
+            </div>
+            <div class="card-body">
+                {#for r in cn.passing}
+                <p class="card-text text-success">
+                    {r.displayName}
+                </p>
+                {/for}
+            </div>
+        </div>
+    </div>
+    {/for}
+</div>
+
+{/body}
+{/include}

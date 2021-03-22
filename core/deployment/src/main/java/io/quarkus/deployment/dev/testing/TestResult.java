@@ -9,13 +9,15 @@ import org.junit.platform.engine.UniqueId;
 public class TestResult {
 
     final String displayName;
+    final String testClass;
     final UniqueId uniqueId;
     final TestExecutionResult testExecutionResult;
     final List<LogRecord> logOutput;
 
-    public TestResult(String displayName, UniqueId uniqueId, TestExecutionResult testExecutionResult,
+    public TestResult(String displayName, String testClass, UniqueId uniqueId, TestExecutionResult testExecutionResult,
             List<LogRecord> logOutput) {
         this.displayName = displayName;
+        this.testClass = testClass;
         this.uniqueId = uniqueId;
         this.testExecutionResult = testExecutionResult;
         this.logOutput = logOutput;
@@ -31,5 +33,13 @@ public class TestResult {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public String getTestClass() {
+        return testClass;
+    }
+
+    public UniqueId getUniqueId() {
+        return uniqueId;
     }
 }

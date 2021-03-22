@@ -67,7 +67,7 @@ public class TestRunner {
     private Throwable compileProblem;
 
     private final TestClassUsages testClassUsages = new TestClassUsages();
-    private final TestState testState = new TestState();
+    private final TestState testState;
     private boolean paused;
     /**
      * disabled is different to paused, when the runner is disabled we abort all runs rather than pausing them.
@@ -81,9 +81,10 @@ public class TestRunner {
         OUT = StatusPrintStream.INSTANCE;
     }
 
-    public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication) {
+    public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication, TestState testState) {
         this.devModeContext = devModeContext;
         this.testApplication = testApplication;
+        this.testState = testState;
     }
 
     public void runTests() {
@@ -279,7 +280,9 @@ public class TestRunner {
                     if (testClass != null) {
                         Map<UniqueId, TestResult> results = resultsByClass.computeIfAbsent(testClass.getName(),
                                 s -> new HashMap<>());
-                        results.put(id, new TestResult(displayName, id, testExecutionResult, new ArrayList<>(logOutput)));
+                        results.put(id,
+                                new TestResult(displayName, testClass.getName(), id, testExecutionResult,
+                                        new ArrayList<>(logOutput)));
                     }
                     logOutput.clear();
                     if (testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED) {
@@ -471,5 +474,9 @@ public class TestRunner {
 
     public boolean getConsoleOutput() {
         return consoleOutput;
+    }
+
+    public TestState getResults() {
+        return testState;
     }
 }

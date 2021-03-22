@@ -10,6 +10,7 @@ import io.quarkus.bootstrap.app.AdditionalDependency;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.deployment.dev.testing.TestRunner;
+import io.quarkus.deployment.dev.testing.TestState;
 
 public class TestSupport {
 
@@ -20,6 +21,7 @@ public class TestSupport {
     final DevModeContext context;
     final List<Runnable> startListeners = new ArrayList<>();
     final List<Runnable> stopListeners = new ArrayList<>();
+    final TestState testState = new TestState();
 
     volatile CuratedApplication testCuratedApplication;
     volatile QuarkusCompiler compiler;
@@ -56,7 +58,7 @@ public class TestSupport {
                                         .build()
                                         .bootstrap();
                                 compiler = new QuarkusCompiler(testCuratedApplication, compilationProviders, context);
-                                testRunner = new TestRunner(context, testCuratedApplication);
+                                testRunner = new TestRunner(context, testCuratedApplication, testState);
                                 testRunner.setConsoleOutput(consoleOutput);
                             }
                             for (Runnable i : startListeners) {
@@ -140,4 +142,7 @@ public class TestSupport {
         return this;
     }
 
+    public TestState getResults() {
+        return testState;
+    }
 }
