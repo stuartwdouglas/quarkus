@@ -65,7 +65,10 @@ public class TestClassUsages implements Serializable {
                 TestSource source = testDescriptor.getSource().get();
                 if (source instanceof ClassSource) {
                     String testClassName = ((ClassSource) source).getClassName();
-                    if (changedClasses.contains(testClassName)) {
+                    ClassAndMethod cm = new ClassAndMethod(testClassName, null);
+                    if (!classNames.containsKey(cm)) {
+                        return FilterResult.included("No test information");
+                    } else if (changedClasses.contains(testClassName)) {
                         return FilterResult.included("Test case was modified");
                     } else if (testClassesToRun.contains(testClassName)) {
                         return FilterResult.included("Has at least one test");
@@ -74,7 +77,10 @@ public class TestClassUsages implements Serializable {
                     }
                 } else if (source instanceof MethodSource) {
                     MethodSource ms = (MethodSource) source;
-                    if (changedClasses.contains(ms.getClassName())) {
+                    ClassAndMethod cm = new ClassAndMethod(ms.getClassName(), testDescriptor.getUniqueId());
+                    if (!classNames.containsKey(cm)) {
+                        return FilterResult.included("No test information");
+                    } else if (changedClasses.contains(ms.getClassName())) {
                         return FilterResult.included("Test case was modified");
                     } else if (touchedIds.contains(testDescriptor.getUniqueId())) {
                         return FilterResult.included("Test touches changed classes");

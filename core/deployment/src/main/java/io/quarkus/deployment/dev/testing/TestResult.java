@@ -13,14 +13,16 @@ public class TestResult {
     final UniqueId uniqueId;
     final TestExecutionResult testExecutionResult;
     final List<LogRecord> logOutput;
+    final boolean test;
 
     public TestResult(String displayName, String testClass, UniqueId uniqueId, TestExecutionResult testExecutionResult,
-            List<LogRecord> logOutput) {
+            List<LogRecord> logOutput, boolean test) {
         this.displayName = displayName;
         this.testClass = testClass;
         this.uniqueId = uniqueId;
         this.testExecutionResult = testExecutionResult;
         this.logOutput = logOutput;
+        this.test = test;
     }
 
     public TestExecutionResult getTestExecutionResult() {
@@ -41,5 +43,9 @@ public class TestResult {
 
     public UniqueId getUniqueId() {
         return uniqueId;
+    }
+
+    public boolean isTest() {
+        return test;
     }
 }

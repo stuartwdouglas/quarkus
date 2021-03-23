@@ -1,5 +1,33 @@
 package io.quarkus.deployment.dev.testing;
 
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.deployment.dev.ClassScanResult;
+import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.dev.terminal.StatusPrintStream;
+import io.quarkus.dev.testing.ContinuousTestingLogHandler;
+import io.quarkus.dev.testing.TracingHandler;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
+import org.jboss.logging.Logger;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
+import org.junit.platform.engine.reporting.ReportEntry;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.TestPlan;
+import org.junit.platform.launcher.core.LauncherConfig;
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.launcher.core.LauncherFactory;
+import org.opentest4j.TestAbortedException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -23,35 +51,6 @@ import java.util.function.Predicate;
 import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.Indexer;
-import org.jboss.logging.Logger;
-import org.junit.platform.engine.TestExecutionResult;
-import org.junit.platform.engine.TestSource;
-import org.junit.platform.engine.UniqueId;
-import org.junit.platform.engine.discovery.DiscoverySelectors;
-import org.junit.platform.engine.reporting.ReportEntry;
-import org.junit.platform.engine.support.descriptor.ClassSource;
-import org.junit.platform.engine.support.descriptor.MethodSource;
-import org.junit.platform.launcher.Launcher;
-import org.junit.platform.launcher.LauncherDiscoveryRequest;
-import org.junit.platform.launcher.TestExecutionListener;
-import org.junit.platform.launcher.TestIdentifier;
-import org.junit.platform.launcher.TestPlan;
-import org.junit.platform.launcher.core.LauncherConfig;
-import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
-import org.junit.platform.launcher.core.LauncherFactory;
-import org.opentest4j.TestAbortedException;
-
-import io.quarkus.bootstrap.app.CuratedApplication;
-import io.quarkus.deployment.dev.ClassScanResult;
-import io.quarkus.deployment.dev.DevModeContext;
-import io.quarkus.dev.terminal.StatusPrintStream;
-import io.quarkus.dev.testing.ContinuousTestingLogHandler;
-import io.quarkus.dev.testing.TracingHandler;
 
 public class TestRunner {
 
@@ -199,6 +198,7 @@ public class TestRunner {
             final List<LogRecord> logOutput = new ArrayList<>();
 
             ContinuousTestingLogHandler.setLogHandler(new Predicate<LogRecord>() {
+
                 @Override
                 public boolean test(LogRecord logRecord) {
                     int threadId = logRecord.getThreadID();
@@ -218,7 +218,11 @@ public class TestRunner {
                         while (cl.getParent() != null) {
                             if (cl == testApplication.getAugmentClassLoader()
                                     || cl == testApplication.getBaseRuntimeClassLoader()) {
-                                logOutput.add(logRecord);
+                                synchronized (logOutput) {
+                                    if (logOutput.isEmpty() || logOutput.get(logOutput.size() - 1) != logRecord) { //this can be called multiple times
+                                        logOutput.add(logRecord);
+                                    }
+                                }
                                 return false;
                             }
                             cl = cl.getParent();
@@ -267,14 +271,26 @@ public class TestRunner {
                     UniqueId id = UniqueId.parse(testIdentifier.getUniqueId());
                     if (testSource instanceof ClassSource) {
                         testClass = ((ClassSource) testSource).getJavaClass();
-                        testClassUsages.updateTestData(testClass.getName(), touched);
+                        if (testExecutionResult.getStatus() != TestExecutionResult.Status.ABORTED) {
+                            for (Set<String> i : touchedClasses) {
+                                //also add the parent touched classes
+                                touched.addAll(i);
+                            }
+                            testClassUsages.updateTestData(testClass.getName(), touched);
+                        }
                     } else if (testSource instanceof MethodSource) {
                         testClass = ((MethodSource) testSource).getJavaClass();
                         methodCount.incrementAndGet();
                         displayName = ((MethodSource) testSource).getJavaMethod().toString();
-                        testClassUsages.updateTestData(testClass.getName(), id,
-                                touched);
 
+                        if (testExecutionResult.getStatus() != TestExecutionResult.Status.ABORTED) {
+                            for (Set<String> i : touchedClasses) {
+                                //also add the parent touched classes
+                                touched.addAll(i);
+                            }
+                            testClassUsages.updateTestData(testClass.getName(), id,
+                                    touched);
+                        }
                         OUT.setStatusString("Running " + methodCount.get() + "/" + toRun);
                     }
                     if (testClass != null) {
@@ -282,7 +298,7 @@ public class TestRunner {
                                 s -> new HashMap<>());
                         results.put(id,
                                 new TestResult(displayName, testClass.getName(), id, testExecutionResult,
-                                        new ArrayList<>(logOutput)));
+                                        new ArrayList<>(logOutput), testIdentifier.isTest()));
                     }
                     logOutput.clear();
                     if (testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED) {

@@ -26,9 +26,11 @@
                 </div>
                 {/for}
                 {#for r in cn.passing}
-                <p class="card-text text-success">
-                    {r.displayName}
-                </p>
+                    {#if r.test}
+                        <p class="card-text text-success">
+                            {r.displayName}
+                        </p>
+                    {/if}
                 {/for}
             </div>
         </div>
@@ -43,9 +45,11 @@
             </div>
             <div class="card-body">
                 {#for r in cn.passing}
-                <p class="card-text text-success">
-                    {r.displayName}
-                </p>
+                  {#if r.test}
+                    <p class="card-text text-success">
+                        {r.displayName}
+                    </p>
+                  {/if}
                 {/for}
             </div>
         </div>
