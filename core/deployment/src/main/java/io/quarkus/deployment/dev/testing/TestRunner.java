@@ -1,33 +1,5 @@
 package io.quarkus.deployment.dev.testing;
 
-import io.quarkus.bootstrap.app.CuratedApplication;
-import io.quarkus.deployment.dev.ClassScanResult;
-import io.quarkus.deployment.dev.DevModeContext;
-import io.quarkus.dev.terminal.StatusPrintStream;
-import io.quarkus.dev.testing.ContinuousTestingLogHandler;
-import io.quarkus.dev.testing.TracingHandler;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.Indexer;
-import org.jboss.logging.Logger;
-import org.junit.platform.engine.TestExecutionResult;
-import org.junit.platform.engine.TestSource;
-import org.junit.platform.engine.UniqueId;
-import org.junit.platform.engine.discovery.DiscoverySelectors;
-import org.junit.platform.engine.reporting.ReportEntry;
-import org.junit.platform.engine.support.descriptor.ClassSource;
-import org.junit.platform.engine.support.descriptor.MethodSource;
-import org.junit.platform.launcher.Launcher;
-import org.junit.platform.launcher.LauncherDiscoveryRequest;
-import org.junit.platform.launcher.TestExecutionListener;
-import org.junit.platform.launcher.TestIdentifier;
-import org.junit.platform.launcher.TestPlan;
-import org.junit.platform.launcher.core.LauncherConfig;
-import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
-import org.junit.platform.launcher.core.LauncherFactory;
-import org.opentest4j.TestAbortedException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -51,6 +23,35 @@ import java.util.function.Predicate;
 import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
+import org.jboss.logging.Logger;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
+import org.junit.platform.engine.reporting.ReportEntry;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.TestPlan;
+import org.junit.platform.launcher.core.LauncherConfig;
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.launcher.core.LauncherFactory;
+import org.opentest4j.TestAbortedException;
+
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.deployment.dev.ClassScanResult;
+import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.dev.terminal.StatusPrintStream;
+import io.quarkus.dev.testing.ContinuousTestingLogHandler;
+import io.quarkus.dev.testing.TracingHandler;
 
 public class TestRunner {
 
@@ -291,7 +292,8 @@ public class TestRunner {
                             testClassUsages.updateTestData(testClass.getName(), id,
                                     touched);
                         }
-                        OUT.setStatusString("Running " + methodCount.get() + "/" + toRun);
+                        OUT.setStatusString("Running " + methodCount.get() + "/" + toRun
+                                + (failures.isEmpty() ? "." : ". " + failures.size() + " failures so far."));
                     }
                     if (testClass != null) {
                         Map<UniqueId, TestResult> results = resultsByClass.computeIfAbsent(testClass.getName(),
