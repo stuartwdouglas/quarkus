@@ -1,4 +1,4 @@
-package io.quarkus.deployment.dev.testing;
+package io.quarkus.deployment.dev.testing.runner;
 
 import java.util.List;
 import java.util.function.BiFunction;

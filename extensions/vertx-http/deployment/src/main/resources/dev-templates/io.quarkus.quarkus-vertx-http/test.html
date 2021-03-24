@@ -4,7 +4,7 @@
 {#body}
 
 <div id="tables" class="table-responsive">
-    {#for cn in info:tests.failingClasses}
+    {#for cn in info:tests.results.failing}
     <div class="col mb-12">
         <div class="card h-100 shadow">
             <div class="card-header bg-danger text-light">
@@ -32,12 +32,19 @@
                         </p>
                     {/if}
                 {/for}
+                {#for r in cn.skipped}
+                {#if r.test}
+                <p class="card-text text-warning">
+                    {r.displayName}
+                </p>
+                {/if}
+                {/for}
             </div>
         </div>
     </div>
     {/for}
     <hr/>
-    {#for cn in info:tests.passingClasses}
+    {#for cn in info:tests.results.passing}
     <div class="col mb-12">
         <div class="card h-100 shadow">
             <div class="card-header bg-success text-light">
@@ -50,6 +57,31 @@
                         {r.displayName}
                     </p>
                   {/if}
+                {/for}
+                {#for r in cn.skipped}
+                    {#if r.test}
+                        <p class="card-text text-warning">
+                            {r.displayName}
+                        </p>
+                    {/if}
+                {/for}
+            </div>
+        </div>
+    </div>
+    {/for}
+    {#for cn in info:tests.results.skipped}
+    <div class="col mb-12">
+        <div class="card h-100 shadow">
+            <div class="card-header bg-warning text-light">
+                {cn.className}
+            </div>
+            <div class="card-body">
+                {#for r in cn.skipped}
+                    {#if r.test}
+                    <p class="card-text text-warning">
+                        {r.displayName}
+                    </p>
+                    {/if}
                 {/for}
             </div>
         </div>

@@ -58,6 +58,22 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.IndexView;
+import org.jboss.jandex.Indexer;
+import org.jboss.logging.Logger;
+
+import io.quarkus.bootstrap.runner.Timing;
+import io.quarkus.changeagent.ClassChangeAgent;
+import io.quarkus.deployment.dev.testing.TestSupport;
+import io.quarkus.deployment.dev.testing.runner.TestRunner;
+import io.quarkus.deployment.util.FSWatchUtil;
+import io.quarkus.deployment.util.FileUtil;
+import io.quarkus.dev.spi.DevModeType;
+import io.quarkus.dev.spi.HotReplacementContext;
+import io.quarkus.dev.spi.HotReplacementSetup;
 
 public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable {
 

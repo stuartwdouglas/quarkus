@@ -3,17 +3,19 @@ package io.quarkus.vertx.http.deployment.devmode.tests;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
+import io.quarkus.deployment.dev.testing.TestRunResults;
+import io.quarkus.deployment.dev.testing.TestSupport;
 import io.quarkus.devconsole.spi.DevConsoleRouteBuildItem;
 import io.quarkus.devconsole.spi.DevConsoleTemplateInfoBuildItem;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 public class TestsProcessor {
     @BuildStep(onlyIf = IsDevelopment.class)
     public DevConsoleTemplateInfoBuildItem results() {
-        return new DevConsoleTemplateInfoBuildItem("tests", RuntimeUpdatesProcessor.INSTANCE.getTestSupport().getResults());
+        return new DevConsoleTemplateInfoBuildItem("tests", TestSupport.instance());
     }
 
     @BuildStep
@@ -26,7 +28,18 @@ public class TestsProcessor {
             @Override
             public void handle(RoutingContext event) {
                 jsonResponse(event);
-
+                TestSupport.RunStatus status = TestSupport.instance().getStatus();
+                TestStatus testStatus = new TestStatus();
+                testStatus.setLastRun(status.getLastRun());
+                testStatus.setRunning(status.getRunning());
+                if (status.getLastRun() > 0) {
+                    TestRunResults result = TestSupport.instance().getCompletedResults(status.getLastRun());
+                    testStatus.setTestsFailed(result.getTestsFailed());
+                    testStatus.setTestsPassed(result.getTestsPassed());
+                    testStatus.setTestsSkipped(result.getTestsSkipped());
+                    testStatus.setTestsRun(result.getTestsFailed() + result.getTestsPassed());
+                }
+                event.response().end(JsonObject.mapFrom(testStatus).encode());
             }
         });
         //

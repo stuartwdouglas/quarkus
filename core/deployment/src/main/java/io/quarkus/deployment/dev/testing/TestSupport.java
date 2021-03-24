@@ -1,16 +1,22 @@
-package io.quarkus.deployment.dev;
+package io.quarkus.deployment.dev.testing;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.app.AdditionalDependency;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
-import io.quarkus.deployment.dev.testing.TestRunner;
-import io.quarkus.deployment.dev.testing.TestState;
+import io.quarkus.deployment.dev.CompilationProvider;
+import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.deployment.dev.QuarkusCompiler;
+import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
+import io.quarkus.deployment.dev.testing.runner.TestRunner;
+import io.quarkus.deployment.dev.testing.runner.TestState;
 
 public class TestSupport {
 
@@ -28,12 +34,86 @@ public class TestSupport {
     volatile TestRunner testRunner;
     volatile boolean started;
     volatile boolean consoleOutput;
+    volatile TestRunResults testRunResults;
+    private final List<CompletableFuture<TestRunResults>> resultsListeners = new ArrayList<>();
 
     public TestSupport(CuratedApplication curatedApplication, List<CompilationProvider> compilationProviders,
             DevModeContext context) {
         this.curatedApplication = curatedApplication;
         this.compilationProviders = compilationProviders;
         this.context = context;
+    }
+
+    public static TestSupport instance() {
+        return RuntimeUpdatesProcessor.INSTANCE.getTestSupport();
+    }
+
+    public boolean isRunning() {
+        if (testRunner == null) {
+            return false;
+        }
+        return testRunner.isRunning();
+    }
+
+    /**
+     * Gets the results for an already completed test run, whoes ID is equal to or larger than the provided id.
+     */
+    public synchronized TestRunResults getCompletedResults(long expectedId) {
+        if (testRunner == null) {
+            throw new IllegalStateException("Test runner not started");
+        }
+        TestRunResults tr = testRunResults;
+        if (tr != null) {
+            if (tr.getId() >= expectedId) {
+                return tr;
+            }
+        }
+        throw new IllegalStateException("Test run with provided id has not completed yet");
+    }
+
+    /**
+     * Gets the results for a test run, whoes ID is equal to or larger than the provided id.
+     * <p>
+     * This can be used to wait for a currently running test suite by using {@link #getStatus()} to
+     * get the currently running id, and then passing it to this method.
+     */
+    public synchronized CompletableFuture<TestRunResults> getRunningResults(long expectedId) {
+        CompletableFuture<TestRunResults> ret = new CompletableFuture<>();
+        if (testRunner == null) {
+            ret.completeExceptionally(new IllegalStateException("Test runner not started"));
+            return ret;
+        }
+        TestRunResults tr = testRunResults;
+        if (tr != null) {
+            if (tr.getId() >= expectedId) {
+                ret.complete(tr);
+                return ret;
+            }
+        }
+        long status = testRunner.getRunningTestRunId();
+        if (status == -1 || expectedId > status) {
+            ret.completeExceptionally(new IllegalStateException("Test run with provided id has not started yet"));
+        }
+        resultsListeners.add(ret);
+        return ret;
+    }
+
+    /**
+     * returns the current status of the test runner.
+     * <p>
+     * This is expressed in terms of test run ids, where -1 signifies
+     * no result.
+     */
+    public RunStatus getStatus() {
+        if (testRunner == null) {
+            return new RunStatus(-1, -1);
+        }
+        long last = -1;
+        TestRunResults tr = testRunResults;
+        if (tr != null) {
+            last = tr.getId();
+        }
+        return new RunStatus(last, testRunner.getRunningTestRunId());
     }
 
     public void start() {
@@ -58,7 +138,18 @@ public class TestSupport {
                                         .build()
                                         .bootstrap();
                                 compiler = new QuarkusCompiler(testCuratedApplication, compilationProviders, context);
-                                testRunner = new TestRunner(context, testCuratedApplication, testState);
+                                testRunner = new TestRunner(context, testCuratedApplication, new Consumer<TestRunResults>() {
+                                    @Override
+                                    public void accept(TestRunResults testRunResults) {
+                                        synchronized (TestSupport.this) {
+                                            TestSupport.this.testRunResults = testRunResults;
+                                            for (CompletableFuture<TestRunResults> i : resultsListeners) {
+                                                i.complete(testRunResults);
+                                            }
+                                            resultsListeners.clear();
+                                        }
+                                    }
+                                }, testState);
                                 testRunner.setConsoleOutput(consoleOutput);
                             }
                             for (Runnable i : startListeners) {
@@ -122,6 +213,10 @@ public class TestSupport {
         return compiler;
     }
 
+    public TestRunResults getTestRunResults() {
+        return testRunResults;
+    }
+
     public synchronized void pause() {
         if (started) {
             testRunner.pause();
@@ -142,7 +237,26 @@ public class TestSupport {
         return this;
     }
 
-    public TestState getResults() {
-        return testState;
+    public TestRunResults getResults() {
+        return testRunResults;
+    }
+
+    public static class RunStatus {
+
+        final long lastRun;
+        final long running;
+
+        public RunStatus(long lastRun, long running) {
+            this.lastRun = lastRun;
+            this.running = running;
+        }
+
+        public long getLastRun() {
+            return lastRun;
+        }
+
+        public long getRunning() {
+            return running;
+        }
     }
 }

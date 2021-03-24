@@ -1,4 +1,4 @@
-package io.quarkus.deployment.dev.testing;
+package io.quarkus.deployment.dev.testing.runner;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
 
+import io.quarkus.deployment.dev.testing.TestClassResult;
+import io.quarkus.deployment.dev.testing.TestResult;
+
 public class TestState {
 
     final Map<String, Map<UniqueId, TestResult>> resultsByClass = new HashMap<>();
@@ -19,20 +22,23 @@ public class TestState {
         return new ArrayList<>(resultsByClass.keySet()).stream().sorted().collect(Collectors.toList());
     }
 
-    public List<PerClassResult> getPassingClasses() {
-        List<PerClassResult> ret = new ArrayList<>();
+    public List<TestClassResult> getPassingClasses() {
+        List<TestClassResult> ret = new ArrayList<>();
         for (Map.Entry<String, Map<UniqueId, TestResult>> i : resultsByClass.entrySet()) {
             List<TestResult> passing = new ArrayList<>();
             List<TestResult> failing = new ArrayList<>();
+            List<TestResult> skipped = new ArrayList<>();
             for (TestResult j : i.getValue().values()) {
                 if (j.getTestExecutionResult().getStatus() == TestExecutionResult.Status.FAILED) {
                     failing.add(j);
+                } else if (j.getTestExecutionResult().getStatus() == TestExecutionResult.Status.ABORTED) {
+                    skipped.add(j);
                 } else {
                     passing.add(j);
                 }
             }
             if (failing.isEmpty()) {
-                PerClassResult p = new PerClassResult(i.getKey(), passing, failing);
+                TestClassResult p = new TestClassResult(i.getKey(), passing, failing, skipped);
                 ret.add(p);
             }
         }
@@ -41,20 +47,23 @@ public class TestState {
         return ret;
     }
 
-    public List<PerClassResult> getFailingClasses() {
-        List<PerClassResult> ret = new ArrayList<>();
+    public List<TestClassResult> getFailingClasses() {
+        List<TestClassResult> ret = new ArrayList<>();
         for (Map.Entry<String, Map<UniqueId, TestResult>> i : resultsByClass.entrySet()) {
             List<TestResult> passing = new ArrayList<>();
             List<TestResult> failing = new ArrayList<>();
+            List<TestResult> skipped = new ArrayList<>();
             for (TestResult j : i.getValue().values()) {
                 if (j.getTestExecutionResult().getStatus() == TestExecutionResult.Status.FAILED) {
                     failing.add(j);
+                } else if (j.getTestExecutionResult().getStatus() == TestExecutionResult.Status.ABORTED) {
+                    skipped.add(j);
                 } else {
                     passing.add(j);
                 }
             }
             if (!failing.isEmpty()) {
-                PerClassResult p = new PerClassResult(i.getKey(), passing, failing);
+                TestClassResult p = new TestClassResult(i.getKey(), passing, failing, skipped);
                 ret.add(p);
             }
         }
@@ -101,7 +110,7 @@ public class TestState {
             for (TestResult j : entry.getValue().values()) {
                 if (j.getTestExecutionResult().getStatus() == TestExecutionResult.Status.FAILED) {
                     if (currentResults.containsKey(entry.getKey())) {
-                        if (currentResults.get(entry.getKey()).containsKey(j.uniqueId)) {
+                        if (currentResults.get(entry.getKey()).containsKey(j.getUniqueId())) {
                             continue;
                         }
                     }
@@ -112,32 +121,4 @@ public class TestState {
         return ret;
     }
 
-    public static class PerClassResult implements Comparable<PerClassResult> {
-        final String className;
-        final List<TestResult> passing;
-        final List<TestResult> failing;
-
-        public PerClassResult(String className, List<TestResult> passing, List<TestResult> failing) {
-            this.className = className;
-            this.passing = passing;
-            this.failing = failing;
-        }
-
-        public String getClassName() {
-            return className;
-        }
-
-        public List<TestResult> getPassing() {
-            return passing;
-        }
-
-        public List<TestResult> getFailing() {
-            return failing;
-        }
-
-        @Override
-        public int compareTo(PerClassResult o) {
-            return className.compareTo(o.className);
-        }
-    }
 }

@@ -14,15 +14,17 @@ public class TestResult {
     final TestExecutionResult testExecutionResult;
     final List<LogRecord> logOutput;
     final boolean test;
+    final long runId;
 
     public TestResult(String displayName, String testClass, UniqueId uniqueId, TestExecutionResult testExecutionResult,
-            List<LogRecord> logOutput, boolean test) {
+            List<LogRecord> logOutput, boolean test, long runId) {
         this.displayName = displayName;
         this.testClass = testClass;
         this.uniqueId = uniqueId;
         this.testExecutionResult = testExecutionResult;
         this.logOutput = logOutput;
         this.test = test;
+        this.runId = runId;
     }
 
     public TestExecutionResult getTestExecutionResult() {
@@ -47,5 +49,9 @@ public class TestResult {
 
     public boolean isTest() {
         return test;
+    }
+
+    public long getRunId() {
+        return runId;
     }
 }

@@ -1,4 +1,4 @@
-package io.quarkus.deployment.dev.testing;
+package io.quarkus.deployment.dev.testing.runner;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,9 +15,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.LogRecord;
@@ -49,6 +51,9 @@ import org.opentest4j.TestAbortedException;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.deployment.dev.ClassScanResult;
 import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.deployment.dev.testing.TestClassResult;
+import io.quarkus.deployment.dev.testing.TestResult;
+import io.quarkus.deployment.dev.testing.TestRunResults;
 import io.quarkus.dev.terminal.StatusPrintStream;
 import io.quarkus.dev.testing.ContinuousTestingLogHandler;
 import io.quarkus.dev.testing.TracingHandler;
@@ -56,9 +61,11 @@ import io.quarkus.dev.testing.TracingHandler;
 public class TestRunner {
 
     private static final Logger log = Logger.getLogger(TestRunner.class);
+    private static final AtomicLong COUNTER = new AtomicLong();
 
     private final DevModeContext devModeContext;
     private final CuratedApplication testApplication;
+    private final Consumer<TestRunResults> resultHandler;
 
     private boolean testsRunning = false;
     private boolean testsQueued = false;
@@ -81,14 +88,23 @@ public class TestRunner {
         OUT = StatusPrintStream.INSTANCE;
     }
 
-    public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication, TestState testState) {
+    public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication, Consumer<TestRunResults> resultHandler,
+            TestState testState) {
         this.devModeContext = devModeContext;
         this.testApplication = testApplication;
+        this.resultHandler = resultHandler;
         this.testState = testState;
     }
 
     public void runTests() {
         runTests(null);
+    }
+
+    public synchronized long getRunningTestRunId() {
+        if (testsRunning) {
+            return COUNTER.get();
+        }
+        return -1;
     }
 
     public void runTests(ClassScanResult classScanResult) {
@@ -198,6 +214,8 @@ public class TestRunner {
             final Map<String, TestExecutionResult> failures = new HashMap<>();
             final List<LogRecord> logOutput = new ArrayList<>();
 
+            final long runId = COUNTER.incrementAndGet();
+
             ContinuousTestingLogHandler.setLogHandler(new Predicate<LogRecord>() {
 
                 @Override
@@ -300,7 +318,7 @@ public class TestRunner {
                                 s -> new HashMap<>());
                         results.put(id,
                                 new TestResult(displayName, testClass.getName(), id, testExecutionResult,
-                                        new ArrayList<>(logOutput), testIdentifier.isTest()));
+                                        new ArrayList<>(logOutput), testIdentifier.isTest(), runId));
                     }
                     logOutput.clear();
                     if (testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED) {
@@ -356,6 +374,8 @@ public class TestRunner {
             ContinuousTestingLogHandler.setLogHandler(null);
             waitTillResumed();
             List<TestResult> historicFailures = testState.getHistoricFailures(resultsByClass);
+            resultHandler.accept(new TestRunResults(runId, classScanResult, classScanResult == null, start,
+                    System.currentTimeMillis(), toResultsMap(historicFailures, resultsByClass)));
             if (consoleOutput) {
                 if (failures.isEmpty()) {
                     if (historicFailures.isEmpty()) {
@@ -398,6 +418,42 @@ public class TestRunner {
         }
     }
 
+    private Map<String, TestClassResult> toResultsMap(List<TestResult> historicFailures,
+            Map<String, Map<UniqueId, TestResult>> resultsByClass) {
+        Map<String, TestClassResult> resultMap = new HashMap<>();
+        Map<String, List<TestResult>> historicMap = new HashMap<>();
+        for (TestResult i : historicFailures) {
+            historicMap.computeIfAbsent(i.getTestClass(), s -> new ArrayList<>()).add(i);
+        }
+        Set<String> classes = new HashSet<>(resultsByClass.keySet());
+        classes.addAll(historicMap.keySet());
+        for (String clazz : classes) {
+            List<TestResult> passing = new ArrayList<>();
+            List<TestResult> failing = new ArrayList<>();
+            List<TestResult> skipped = new ArrayList<>();
+            for (TestResult i : Optional.ofNullable(resultsByClass.get(clazz)).orElse(Collections.emptyMap()).values()) {
+                if (i.getTestExecutionResult().getStatus() == TestExecutionResult.Status.FAILED) {
+                    failing.add(i);
+                } else if (i.getTestExecutionResult().getStatus() == TestExecutionResult.Status.ABORTED) {
+                    skipped.add(i);
+                } else {
+                    passing.add(i);
+                }
+            }
+            for (TestResult i : Optional.ofNullable(historicMap.get(clazz)).orElse(Collections.emptyList())) {
+                if (i.getTestExecutionResult().getStatus() == TestExecutionResult.Status.FAILED) {
+                    failing.add(i);
+                } else if (i.getTestExecutionResult().getStatus() == TestExecutionResult.Status.ABORTED) {
+                    skipped.add(i);
+                } else {
+                    passing.add(i);
+                }
+            }
+            resultMap.put(clazz, new TestClassResult(clazz, passing, failing, skipped));
+        }
+        return resultMap;
+    }
+
     private String formatFailureSummary(List<TestResult> totalFailures) {
         StringBuilder sb = new StringBuilder();
         if (totalFailures.size() > 3) {
@@ -409,7 +465,7 @@ public class TestRunner {
             if (i != 0) {
                 sb.append(", ");
             }
-            sb.append(totalFailures.get(i).displayName);
+            sb.append(totalFailures.get(i).getDisplayName());
         }
         if (totalFailures.size() > 3) {
             sb.append(", ...");
@@ -496,5 +552,9 @@ public class TestRunner {
 
     public TestState getResults() {
         return testState;
+    }
+
+    public boolean isRunning() {
+        return testsRunning;
     }
 }
