@@ -109,11 +109,14 @@ public class TestSupport {
             return new RunStatus(-1, -1);
         }
         long last = -1;
+        //get the running test id before the current status
+        //otherwise there is a race where they both could be -1 even though it has started
+        long runningTestRunId = testRunner.getRunningTestRunId();
         TestRunResults tr = testRunResults;
         if (tr != null) {
             last = tr.getId();
         }
-        return new RunStatus(last, testRunner.getRunningTestRunId());
+        return new RunStatus(last, runningTestRunId);
     }
 
     public void start() {

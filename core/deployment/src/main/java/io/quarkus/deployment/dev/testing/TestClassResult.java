@@ -1,5 +1,6 @@
 package io.quarkus.deployment.dev.testing;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TestClassResult implements Comparable<TestClassResult> {
@@ -47,5 +48,13 @@ public class TestClassResult implements Comparable<TestClassResult> {
     @Override
     public int compareTo(TestClassResult o) {
         return className.compareTo(o.className);
+    }
+
+    public List<TestResult> getResults() {
+        List<TestResult> ret = new ArrayList<>();
+        ret.addAll(passing);
+        ret.addAll(failing);
+        ret.addAll(skipped);
+        return ret;
     }
 }

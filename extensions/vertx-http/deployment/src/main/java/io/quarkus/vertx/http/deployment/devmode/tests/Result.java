@@ -2,6 +2,8 @@ package io.quarkus.vertx.http.deployment.devmode.tests;
 
 import org.junit.platform.engine.TestExecutionResult;
 
+import io.quarkus.deployment.dev.testing.TestResult;
+
 public class Result {
 
     private String name;
@@ -12,14 +14,25 @@ public class Result {
 
     private String exceptionMessage;
 
+    private long runId;
+
     public Result() {
     }
 
-    public Result(String name, TestExecutionResult.Status status, String exceptionType, String exceptionMessage) {
+    public Result(String name, TestExecutionResult.Status status, String exceptionType, String exceptionMessage, long runId) {
         this.name = name;
         this.status = status;
         this.exceptionType = exceptionType;
         this.exceptionMessage = exceptionMessage;
+        this.runId = runId;
+    }
+
+    public Result(TestResult s) {
+        this(s.getDisplayName(),
+                s.getTestExecutionResult().getStatus(),
+                s.getTestExecutionResult().getThrowable().map(t -> t.getClass().getName()).orElse(null),
+                s.getTestExecutionResult().getThrowable().map(Throwable::getMessage).orElse(null),
+                s.getRunId());
     }
 
     public String getName() {
@@ -55,6 +68,15 @@ public class Result {
 
     public Result setExceptionMessage(String exceptionMessage) {
         this.exceptionMessage = exceptionMessage;
+        return this;
+    }
+
+    public long getRunId() {
+        return runId;
+    }
+
+    public Result setRunId(long runId) {
+        this.runId = runId;
         return this;
     }
 }

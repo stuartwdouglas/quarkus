@@ -1,8 +1,13 @@
 package io.quarkus.vertx.http.deployment.devmode.tests;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.dev.testing.TestClassResult;
 import io.quarkus.deployment.dev.testing.TestRunResults;
 import io.quarkus.deployment.dev.testing.TestSupport;
 import io.quarkus.devconsole.spi.DevConsoleRouteBuildItem;
@@ -19,7 +24,7 @@ public class TestsProcessor {
     }
 
     @BuildStep
-    DevConsoleRouteBuildItem handlePost() {
+    DevConsoleRouteBuildItem handleTestStatus() {
         //GET tests/status
         //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)
         //GET tests/results
@@ -42,8 +47,37 @@ public class TestsProcessor {
                 event.response().end(JsonObject.mapFrom(testStatus).encode());
             }
         });
-        //
+    }
 
+    @BuildStep
+    DevConsoleRouteBuildItem handleTestResult() {
+        //GET tests/status
+        //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)
+        //GET tests/results
+
+        return new DevConsoleRouteBuildItem("tests/result", "GET", new Handler<RoutingContext>() {
+            @Override
+            public void handle(RoutingContext event) {
+                long run = Long.parseLong(event.request().params().get("run"));
+                TestSupport.instance().getRunningResults(run).whenComplete(new BiConsumer<TestRunResults, Throwable>() {
+                    @Override
+                    public void accept(TestRunResults testRunResults, Throwable throwable) {
+                        if (throwable != null) {
+                            event.fail(throwable);
+                        } else {
+                            jsonResponse(event);
+                            Map<String, ClassResult> results = new HashMap<>();
+                            for (Map.Entry<String, TestClassResult> entry : testRunResults.getResults().entrySet()) {
+                                results.put(entry.getKey(), new ClassResult(entry.getValue()));
+                            }
+                            SuiteResult result = new SuiteResult(results);
+                            event.response().end(JsonObject.mapFrom(result).encode());
+
+                        }
+                    }
+                });
+            }
+        });
     }
 
     public MultiMap jsonResponse(RoutingContext event) {
