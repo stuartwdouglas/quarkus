@@ -17,5 +17,15 @@ public class HelloResource {
                 event.response().end("hello " + event.pathParam("name"));
             }
         });
+        //setup(router);
+    }
+
+    void setup(Router router) {
+        router.route("/hello").handler(new Handler<RoutingContext>() {
+            @Override
+            public void handle(RoutingContext routingContext) {
+                routingContext.response().end("hello");
+            }
+        });
     }
 }

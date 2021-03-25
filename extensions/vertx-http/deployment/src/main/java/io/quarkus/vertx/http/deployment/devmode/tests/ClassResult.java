@@ -1,6 +1,7 @@
 package io.quarkus.vertx.http.deployment.devmode.tests;
 
 import io.quarkus.deployment.dev.testing.TestClassResult;
+import io.quarkus.deployment.dev.testing.TestResult;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,9 +31,13 @@ public class ClassResult implements Comparable<ClassResult> {
     public ClassResult(TestClassResult res) {
         this.className = res.getClassName();
         this.failing = res.getFailing().stream().map(Result::new).collect(Collectors.toList());
-        this.passing = res.getPassing().stream().map(Result::new).collect(Collectors.toList());
-        this.skipped = res.getSkipped().stream().map(Result::new).collect(Collectors.toList());
+        this.passing = res.getPassing().stream().filter(TestResult::isTest).map(Result::new).collect(Collectors.toList());
+        this.skipped = res.getSkipped().stream().filter(TestResult::isTest).map(Result::new).collect(Collectors.toList());
         this.latestRunId = res.getLatestRunId();
+    }
+
+    public ClassResult() {
+
     }
 
     public String getClassName() {

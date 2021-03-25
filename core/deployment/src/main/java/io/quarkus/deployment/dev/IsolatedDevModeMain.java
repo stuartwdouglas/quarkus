@@ -65,7 +65,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     private static volatile RunningQuarkusApplication runner;
     static volatile Throwable deploymentProblem;
     private static volatile CuratedApplication curatedApplication;
-    private static volatile CuratedApplication testCuratedApplication;
     private static volatile AugmentAction augmentAction;
     private static volatile boolean restarting;
     private static volatile boolean firstStartCompleted;

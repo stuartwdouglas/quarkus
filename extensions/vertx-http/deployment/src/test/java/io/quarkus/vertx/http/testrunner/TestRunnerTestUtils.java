@@ -13,14 +13,17 @@ import java.util.concurrent.TimeUnit;
 public class TestRunnerTestUtils {
 
     public static TestStatus waitForFirstRunToComplete() {
+        return waitForRun(1);
+    }
+
+    public static TestStatus waitForRun(long id) {
         Awaitility.waitAtMost(1, TimeUnit.MINUTES).pollInterval(50, TimeUnit.MILLISECONDS).until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 TestStatus ts = RestAssured.get("q/dev/io.quarkus.quarkus-vertx-http/tests/status").as(TestStatus.class);
-                return ts.getLastRun() == 1;
+                return ts.getLastRun() == id;
             }
         });
         return RestAssured.get("q/dev/io.quarkus.quarkus-vertx-http/tests/status").as(TestStatus.class);
     }
-
 }
