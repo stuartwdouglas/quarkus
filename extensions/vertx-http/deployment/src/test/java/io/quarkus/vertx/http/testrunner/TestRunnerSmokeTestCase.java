@@ -6,6 +6,8 @@ import io.quarkus.vertx.http.deployment.devmode.tests.ClassResult;
 import io.quarkus.vertx.http.deployment.devmode.tests.SuiteResult;
 import io.quarkus.vertx.http.deployment.devmode.tests.TestStatus;
 import io.restassured.RestAssured;
+import java.util.function.Supplier;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Assertions;
@@ -14,6 +16,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
+import io.quarkus.test.QuarkusDevModeTest;
+import io.quarkus.vertx.http.deployment.devmode.tests.TestStatus;
+import io.restassured.RestAssured;
 
 public class TestRunnerSmokeTestCase {
 

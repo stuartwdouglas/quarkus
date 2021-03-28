@@ -6,6 +6,7 @@ import io.quarkus.deployment.dev.testing.TestResult;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 public class ClassResult implements Comparable<ClassResult> {
     String className;
     List<Result> passing;

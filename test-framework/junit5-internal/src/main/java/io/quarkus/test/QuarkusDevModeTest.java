@@ -1,31 +1,5 @@
 package io.quarkus.test;
 
-import io.quarkus.bootstrap.model.AppArtifactKey;
-import io.quarkus.bootstrap.util.ZipUtils;
-import io.quarkus.deployment.dev.CompilationProvider;
-import io.quarkus.deployment.dev.DevModeContext;
-import io.quarkus.deployment.dev.DevModeMain;
-import io.quarkus.deployment.util.FileUtil;
-import io.quarkus.dev.appstate.ApplicationStateNotification;
-import io.quarkus.runtime.LaunchMode;
-import io.quarkus.runtime.configuration.ProfileManager;
-import io.quarkus.runtime.util.ClassPathUtils;
-import io.quarkus.test.common.PathTestHelper;
-import io.quarkus.test.common.PropertyTestUtil;
-import io.quarkus.test.common.TestResourceManager;
-import io.quarkus.test.common.http.TestHTTPResourceManager;
-import org.jboss.logmanager.Logger;
-import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.TestInstanceFactory;
-import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
-import org.junit.jupiter.api.extension.TestInstantiationException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +30,33 @@ import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.stream.Stream;
+
+import org.jboss.logmanager.Logger;
+import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestInstanceFactory;
+import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
+import org.junit.jupiter.api.extension.TestInstantiationException;
+
+import io.quarkus.bootstrap.model.AppArtifactKey;
+import io.quarkus.bootstrap.util.ZipUtils;
+import io.quarkus.deployment.dev.CompilationProvider;
+import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.deployment.dev.DevModeMain;
+import io.quarkus.deployment.util.FileUtil;
+import io.quarkus.dev.appstate.ApplicationStateNotification;
+import io.quarkus.runtime.LaunchMode;
+import io.quarkus.runtime.configuration.ProfileManager;
+import io.quarkus.runtime.util.ClassPathUtils;
+import io.quarkus.test.common.PathTestHelper;
+import io.quarkus.test.common.PropertyTestUtil;
+import io.quarkus.test.common.TestResourceManager;
+import io.quarkus.test.common.http.TestHTTPResourceManager;
 
 /**
  * A test extension for testing Quarkus development mode in extensions. Intended for use by extension developers
@@ -299,7 +300,6 @@ public class QuarkusDevModeTest
             //debugging code
             ExportUtil.exportToQuarkusDeploymentPath(archive);
 
-
             DevModeContext context = new DevModeContext();
             context.setCacheDir(cache.toFile());
 
@@ -313,7 +313,6 @@ public class QuarkusDevModeTest
                     .setSourceParents(Collections.singleton(deploymentSourceParentPath.toAbsolutePath().toString()))
                     .setPreBuildOutputDir(targetDir.resolve("generated-sources").toAbsolutePath().toString())
                     .setTargetDir(targetDir.toAbsolutePath().toString());
-
 
             //now tests, if required
             if (testArchiveProducer != null) {
@@ -494,7 +493,7 @@ public class QuarkusDevModeTest
      * Modifies a source file.
      *
      * @param sourceFile The unqualified name of the source file to modify
-     * @param mutator    A function that will modify the source code
+     * @param mutator A function that will modify the source code
      */
     public void modifySourceFile(String sourceFile, Function<String, String> mutator) {
         modifyFile(sourceFile, mutator, deploymentSourcePath);
@@ -503,7 +502,7 @@ public class QuarkusDevModeTest
     /**
      * Modifies a file
      *
-     * @param file    file path relative to the project's sources parent dir (`src/main` for Maven)
+     * @param file file path relative to the project's sources parent dir (`src/main` for Maven)
      * @param mutator A function that will modify the file
      */
     public void modifyFile(String file, Function<String, String> mutator) {
@@ -514,7 +513,7 @@ public class QuarkusDevModeTest
      * Modifies a source file.
      *
      * @param sourceFile The Class corresponding to the source file to modify
-     * @param mutator    A function that will modify the source code
+     * @param mutator A function that will modify the source code
      */
     public void modifySourceFile(Class<?> sourceFile, Function<String, String> mutator) {
         modifyFile(sourceFile.getSimpleName() + ".java", mutator, deploymentSourcePath);
@@ -596,7 +595,7 @@ public class QuarkusDevModeTest
             //and the current last modified time. Some file systems only resolve file
             //time to the nearest second, so this is necessary for dev mode to pick up the changes
             long timeToBeat = Math.max(System.currentTimeMillis(), Files.getLastModifiedTime(path).toMillis());
-            for (; ; ) {
+            for (;;) {
                 Files.setLastModifiedTime(path, FileTime.fromMillis(System.currentTimeMillis()));
                 long fm = Files.getLastModifiedTime(path).toMillis();
                 Thread.sleep(10);
@@ -659,7 +658,7 @@ public class QuarkusDevModeTest
         //this means that by the time the client request is run the file may not
         //have been closed yet, as the test sees the response as being complete after the last data is send
         //we wait up to 5s for this condition to be resolved
-        for (; ; ) {
+        for (;;) {
             try {
                 Files.delete(resourceFilePath);
                 break;

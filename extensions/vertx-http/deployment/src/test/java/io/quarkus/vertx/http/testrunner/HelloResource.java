@@ -1,11 +1,11 @@
 package io.quarkus.vertx.http.testrunner;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
+
 import io.vertx.core.Handler;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
 
 @ApplicationScoped
 public class HelloResource {

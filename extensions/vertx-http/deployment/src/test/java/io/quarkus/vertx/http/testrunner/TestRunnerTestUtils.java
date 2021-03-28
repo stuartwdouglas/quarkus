@@ -1,11 +1,12 @@
 package io.quarkus.vertx.http.testrunner;
 
-import io.quarkus.vertx.http.deployment.devmode.tests.TestStatus;
-import io.restassured.RestAssured;
-import org.awaitility.Awaitility;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+
+import io.quarkus.vertx.http.deployment.devmode.tests.TestStatus;
+import io.restassured.RestAssured;
 
 /**
  * Utilities for testing the test runner itself
