@@ -1,11 +1,6 @@
 package io.quarkus.vertx.http.testrunner;
 
-import io.quarkus.test.QuarkusDevModeTest;
-import io.quarkus.test.QuarkusUnitTest;
-import io.quarkus.vertx.http.deployment.devmode.tests.ClassResult;
-import io.quarkus.vertx.http.deployment.devmode.tests.SuiteResult;
-import io.quarkus.vertx.http.deployment.devmode.tests.TestStatus;
-import io.restassured.RestAssured;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -14,9 +9,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
 import io.quarkus.test.QuarkusDevModeTest;
+import io.quarkus.vertx.http.deployment.devmode.tests.ClassResult;
+import io.quarkus.vertx.http.deployment.devmode.tests.SuiteResult;
 import io.quarkus.vertx.http.deployment.devmode.tests.TestStatus;
 import io.restassured.RestAssured;
 
@@ -46,7 +41,8 @@ public class TestRunnerSmokeTestCase {
         Assertions.assertEquals(0L, ts.getTestsSkipped());
         Assertions.assertEquals(-1L, ts.getRunning());
 
-        SuiteResult suiteResult = RestAssured.get("q/dev/io.quarkus.quarkus-vertx-http/tests/result?run=1").as(SuiteResult.class);
+        SuiteResult suiteResult = RestAssured.get("q/dev/io.quarkus.quarkus-vertx-http/tests/result?run=1")
+                .as(SuiteResult.class);
         Assertions.assertEquals(1, suiteResult.getResults().size());
         ClassResult cr = suiteResult.getResults().values().iterator().next();
         Assertions.assertEquals(SimpleET.class.getName(), cr.getClassName());

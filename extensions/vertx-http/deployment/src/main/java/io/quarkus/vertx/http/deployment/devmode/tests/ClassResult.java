@@ -1,11 +1,10 @@
 package io.quarkus.vertx.http.deployment.devmode.tests;
 
-import io.quarkus.deployment.dev.testing.TestClassResult;
-import io.quarkus.deployment.dev.testing.TestResult;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.quarkus.deployment.dev.testing.TestClassResult;
+import io.quarkus.deployment.dev.testing.TestResult;
 
 public class ClassResult implements Comparable<ClassResult> {
     String className;
