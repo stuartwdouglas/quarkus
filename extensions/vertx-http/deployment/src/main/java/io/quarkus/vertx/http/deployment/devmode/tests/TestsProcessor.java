@@ -50,6 +50,24 @@ public class TestsProcessor {
     }
 
     @BuildStep
+    DevConsoleRouteBuildItem toggleTestRunner() {
+        //GET tests/status
+        //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)
+        //GET tests/results
+
+        return new DevConsoleRouteBuildItem("tests/toggle", "POST", new Handler<RoutingContext>() {
+            @Override
+            public void handle(RoutingContext event) {
+                if (TestSupport.instance().isStarted()) {
+                    TestSupport.instance().stop();
+                } else {
+                    TestSupport.instance().start();
+                }
+            }
+        });
+    }
+
+    @BuildStep
     DevConsoleRouteBuildItem handleTestResult() {
         //GET tests/status
         //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)

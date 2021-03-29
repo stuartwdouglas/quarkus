@@ -34,6 +34,13 @@ public class ContinuousTestingWebsocketListener {
         }
     }
 
+    public static void setRunning(boolean running) {
+        State state = lastState;
+        if (state != null) {
+            setLastState(new State(running, running && state.inProgress, state.run, state.passed, state.failed, state.skipped));
+        }
+    }
+
     public static class State {
         public final boolean running;
         public final boolean inProgress;

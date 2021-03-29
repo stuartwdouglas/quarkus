@@ -178,11 +178,14 @@ public class TestRunner {
     }
 
     public synchronized void disable() {
+        ContinuousTestingWebsocketListener.setRunning(false);
         disabled = true;
         notifyAll();
+        OUT.setStatusString("");
     }
 
     public synchronized void enable() {
+        ContinuousTestingWebsocketListener.setRunning(true);
         disabled = false;
     }
 

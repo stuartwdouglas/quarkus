@@ -35,6 +35,10 @@ $('document').ready(function () {
         testCloseSocket();
     };
 
+    $("#quarkus-test-result-button-pause").click(function() {
+        var new_uri =window.location.protocol + "//" + window.location.host + frameworkRootPath + "/dev/io.quarkus.quarkus-vertx-http/tests/toggle";
+           $.post( new_uri );
+       });
     
 });
 
@@ -50,7 +54,7 @@ function testOpenSocket() {
     } else {
         new_uri = "ws:";
     }
-    
+
     new_uri += "//" + window.location.host + frameworkRootPath + testsStreamingPath;
     testsWebSocket = new WebSocket(new_uri);
 
@@ -61,16 +65,19 @@ function testOpenSocket() {
             $("#quarkus-test-result-button").removeClass("btn-danger");
             $("#quarkus-test-result-button").addClass("btn-warning");
             $("#quarkus-test-result-button-caption").text("Tests not running");
+            $("#quarkus-test-result-button-pause").text("Start Tests");
         } else if(json.failed == 0){
             $("#quarkus-test-result-button").removeClass("btn-warning");
             $("#quarkus-test-result-button").removeClass("btn-danger");
             $("#quarkus-test-result-button").addClass("btn-success");
             $("#quarkus-test-result-button-caption").text("All tests passed");
+            $("#quarkus-test-result-button-pause").text("Pause Tests");
         } else {
             $("#quarkus-test-result-button").removeClass("btn-success");
             $("#quarkus-test-result-button").removeClass("btn-warning");
             $("#quarkus-test-result-button").addClass("btn-danger");
             $("#quarkus-test-result-button-caption").text(json.failed + " tests failed");
+            $("#quarkus-test-result-button-pause").text("Pause Tests");
         }
         if (json.inProgress) {
             $("#quarkus-test-result-button-loading").css("display", "inline-flex");

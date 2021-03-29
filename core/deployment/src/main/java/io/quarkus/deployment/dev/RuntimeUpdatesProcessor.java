@@ -149,8 +149,12 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         testSupport.addStopListener(new Runnable() {
             @Override
             public void run() {
-                timer.cancel();
-                timer = null;
+                synchronized (RuntimeUpdatesProcessor.this) {
+                    if (timer != null) {
+                        timer.cancel();
+                        timer = null;
+                    }
+                }
             }
         });
     }
@@ -175,13 +179,17 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     }
 
     private Timer startTestScanningTimer() {
-        timer = new Timer("Test Compile Timer", true);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                periodicTestCompile();
+        synchronized (this) {
+            if (timer != null) {
+                timer = new Timer("Test Compile Timer", true);
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        periodicTestCompile();
+                    }
+                }, 1000, 1000);
             }
-        }, 1000, 1000);
+        }
         return timer;
     }
 
