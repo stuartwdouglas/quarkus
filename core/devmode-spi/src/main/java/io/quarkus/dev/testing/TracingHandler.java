@@ -1,19 +1,63 @@
 package io.quarkus.dev.testing;
 
-import java.util.function.Consumer;
-
 public class TracingHandler {
 
-    private static volatile Consumer<String> tracingHandler;
+    private static volatile TraceListener tracingHandler;
 
     public static void trace(String className) {
-        Consumer<String> t = tracingHandler;
+        TraceListener t = tracingHandler;
         if (t != null) {
-            t.accept(className);
+            t.touched(className);
         }
     }
 
-    public static void setTracingHandler(Consumer<String> tracingHandler) {
+    public static void quarkusStarting() {
+        TraceListener t = tracingHandler;
+        if (t != null) {
+            t.quarkusStarting();
+        }
+    }
+
+
+    public static void quarkusStopping() {
+        TraceListener t = tracingHandler;
+        if (t != null) {
+            t.quarkusStopping();
+        }
+    }
+
+    public static void quarkusStarted() {
+        TraceListener t = tracingHandler;
+        if (t != null) {
+            t.quarkusStarted();
+        }
+    }
+
+    public static void quarkusStopped() {
+        TraceListener t = tracingHandler;
+        if (t != null) {
+            t.quarkusStopped();
+        }
+    }
+
+    public static void setTracingHandler(TraceListener tracingHandler) {
         TracingHandler.tracingHandler = tracingHandler;
+    }
+
+    public interface TraceListener {
+
+        void touched(String className);
+
+        default void quarkusStarting() {
+        }
+
+        default void quarkusStopping() {
+        }
+
+        default void quarkusStarted() {
+        }
+
+        default void quarkusStopped() {
+        }
     }
 }

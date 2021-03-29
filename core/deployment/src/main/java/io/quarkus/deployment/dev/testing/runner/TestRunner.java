@@ -1,31 +1,14 @@
 package io.quarkus.deployment.dev.testing.runner;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.logging.LogRecord;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.deployment.dev.ClassScanResult;
+import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.deployment.dev.testing.TestClassResult;
+import io.quarkus.deployment.dev.testing.TestResult;
+import io.quarkus.deployment.dev.testing.TestRunResults;
+import io.quarkus.dev.terminal.StatusPrintStream;
+import io.quarkus.dev.testing.ContinuousTestingLogHandler;
+import io.quarkus.dev.testing.TracingHandler;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
@@ -48,15 +31,32 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.opentest4j.TestAbortedException;
 
-import io.quarkus.bootstrap.app.CuratedApplication;
-import io.quarkus.deployment.dev.ClassScanResult;
-import io.quarkus.deployment.dev.DevModeContext;
-import io.quarkus.deployment.dev.testing.TestClassResult;
-import io.quarkus.deployment.dev.testing.TestResult;
-import io.quarkus.deployment.dev.testing.TestRunResults;
-import io.quarkus.dev.terminal.StatusPrintStream;
-import io.quarkus.dev.testing.ContinuousTestingLogHandler;
-import io.quarkus.dev.testing.TracingHandler;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.logging.LogRecord;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TestRunner {
 
@@ -89,7 +89,7 @@ public class TestRunner {
     }
 
     public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication, Consumer<TestRunResults> resultHandler,
-            TestState testState) {
+                      TestState testState) {
         this.devModeContext = devModeContext;
         this.testApplication = testApplication;
         this.resultHandler = resultHandler;
@@ -252,13 +252,19 @@ public class TestRunner {
             });
 
             final Deque<Set<String>> touchedClasses = new LinkedBlockingDeque<>();
-            TracingHandler.setTracingHandler(new Consumer<String>() {
+            final AtomicReference<Set<String>> startupClasses = new AtomicReference<>();
+            TracingHandler.setTracingHandler(new TracingHandler.TraceListener() {
                 @Override
-                public void accept(String s) {
+                public void touched(String className) {
                     Set<String> set = touchedClasses.peek();
                     if (set != null) {
-                        set.add(s);
+                        set.add(className);
                     }
+                }
+
+                @Override
+                public void quarkusStarting() {
+                    startupClasses.set(touchedClasses.peek());
                 }
             });
 
@@ -295,6 +301,9 @@ public class TestRunner {
                                 //also add the parent touched classes
                                 touched.addAll(i);
                             }
+                            if (startupClasses.get() != null) {
+                                touched.addAll(startupClasses.get());
+                            }
                             testClassUsages.updateTestData(testClass.getName(), touched);
                         }
                     } else if (testSource instanceof MethodSource) {
@@ -306,6 +315,9 @@ public class TestRunner {
                             for (Set<String> i : touchedClasses) {
                                 //also add the parent touched classes
                                 touched.addAll(i);
+                            }
+                            if (startupClasses.get() != null) {
+                                touched.addAll(startupClasses.get());
                             }
                             testClassUsages.updateTestData(testClass.getName(), id,
                                     touched);
@@ -419,7 +431,7 @@ public class TestRunner {
     }
 
     private Map<String, TestClassResult> toResultsMap(List<TestResult> historicFailures,
-            Map<String, Map<UniqueId, TestResult>> resultsByClass) {
+                                                      Map<String, Map<UniqueId, TestResult>> resultsByClass) {
         Map<String, TestClassResult> resultMap = new HashMap<>();
         Map<String, List<TestResult>> historicMap = new HashMap<>();
         for (TestResult i : historicFailures) {

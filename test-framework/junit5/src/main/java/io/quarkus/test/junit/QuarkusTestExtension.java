@@ -1,8 +1,71 @@
 package io.quarkus.test.junit;
 
-import static io.quarkus.test.common.PathTestHelper.getAppClassLocationForTestLocation;
-import static io.quarkus.test.common.PathTestHelper.getTestClassesLocation;
+import io.quarkus.bootstrap.BootstrapConstants;
+import io.quarkus.bootstrap.app.AugmentAction;
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
+import io.quarkus.bootstrap.app.RunningQuarkusApplication;
+import io.quarkus.bootstrap.app.StartupAction;
+import io.quarkus.bootstrap.model.PathsCollection;
+import io.quarkus.bootstrap.resolver.model.QuarkusModel;
+import io.quarkus.bootstrap.runner.Timing;
+import io.quarkus.bootstrap.utils.BuildToolHelper;
+import io.quarkus.builder.BuildChainBuilder;
+import io.quarkus.builder.BuildContext;
+import io.quarkus.builder.BuildStep;
+import io.quarkus.deployment.builditem.TestAnnotationBuildItem;
+import io.quarkus.deployment.builditem.TestClassBeanBuildItem;
+import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
+import io.quarkus.deployment.dev.testing.runner.CurrentTestApplication;
+import io.quarkus.dev.testing.TracingHandler;
+import io.quarkus.runtime.LaunchMode;
+import io.quarkus.runtime.configuration.DurationConverter;
+import io.quarkus.runtime.configuration.ProfileManager;
+import io.quarkus.runtime.test.TestHttpEndpointProvider;
+import io.quarkus.test.common.PathTestHelper;
+import io.quarkus.test.common.PropertyTestUtil;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.common.RestAssuredURLManager;
+import io.quarkus.test.common.TestClassIndexer;
+import io.quarkus.test.common.TestResourceManager;
+import io.quarkus.test.common.TestScopeManager;
+import io.quarkus.test.common.http.TestHTTPEndpoint;
+import io.quarkus.test.common.http.TestHTTPResourceManager;
+import io.quarkus.test.junit.buildchain.TestBuildChainCustomizerProducer;
+import io.quarkus.test.junit.callback.QuarkusTestAfterConstructCallback;
+import io.quarkus.test.junit.callback.QuarkusTestAfterEachCallback;
+import io.quarkus.test.junit.callback.QuarkusTestBeforeAllCallback;
+import io.quarkus.test.junit.callback.QuarkusTestBeforeClassCallback;
+import io.quarkus.test.junit.callback.QuarkusTestBeforeEachCallback;
+import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
+import io.quarkus.test.junit.internal.DeepClone;
+import io.quarkus.test.junit.internal.SerializationWithXStreamFallbackDeepClone;
+import io.quarkus.test.junit.internal.XStreamDeepClone;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.FieldInfo;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Type;
+import org.jboss.logging.Logger;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ConditionEvaluationResult;
+import org.junit.jupiter.api.extension.ExecutionCondition;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.InvocationInterceptor;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
+import org.junit.jupiter.api.extension.TestInstantiationException;
+import org.opentest4j.TestAbortedException;
 
+import javax.enterprise.inject.Alternative;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -41,71 +104,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import javax.enterprise.inject.Alternative;
-
-import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.FieldInfo;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.Type;
-import org.jboss.logging.Logger;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ConditionEvaluationResult;
-import org.junit.jupiter.api.extension.ExecutionCondition;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.InvocationInterceptor;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ParameterResolver;
-import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
-import org.junit.jupiter.api.extension.TestInstantiationException;
-import org.opentest4j.TestAbortedException;
-
-import io.quarkus.bootstrap.BootstrapConstants;
-import io.quarkus.bootstrap.app.AugmentAction;
-import io.quarkus.bootstrap.app.CuratedApplication;
-import io.quarkus.bootstrap.app.QuarkusBootstrap;
-import io.quarkus.bootstrap.app.RunningQuarkusApplication;
-import io.quarkus.bootstrap.app.StartupAction;
-import io.quarkus.bootstrap.model.PathsCollection;
-import io.quarkus.bootstrap.resolver.model.QuarkusModel;
-import io.quarkus.bootstrap.runner.Timing;
-import io.quarkus.bootstrap.utils.BuildToolHelper;
-import io.quarkus.builder.BuildChainBuilder;
-import io.quarkus.builder.BuildContext;
-import io.quarkus.builder.BuildStep;
-import io.quarkus.deployment.builditem.TestAnnotationBuildItem;
-import io.quarkus.deployment.builditem.TestClassBeanBuildItem;
-import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
-import io.quarkus.deployment.dev.testing.runner.CurrentTestApplication;
-import io.quarkus.runtime.LaunchMode;
-import io.quarkus.runtime.configuration.DurationConverter;
-import io.quarkus.runtime.configuration.ProfileManager;
-import io.quarkus.runtime.test.TestHttpEndpointProvider;
-import io.quarkus.test.common.PathTestHelper;
-import io.quarkus.test.common.PropertyTestUtil;
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.common.RestAssuredURLManager;
-import io.quarkus.test.common.TestClassIndexer;
-import io.quarkus.test.common.TestResourceManager;
-import io.quarkus.test.common.TestScopeManager;
-import io.quarkus.test.common.http.TestHTTPEndpoint;
-import io.quarkus.test.common.http.TestHTTPResourceManager;
-import io.quarkus.test.junit.buildchain.TestBuildChainCustomizerProducer;
-import io.quarkus.test.junit.callback.QuarkusTestAfterConstructCallback;
-import io.quarkus.test.junit.callback.QuarkusTestAfterEachCallback;
-import io.quarkus.test.junit.callback.QuarkusTestBeforeAllCallback;
-import io.quarkus.test.junit.callback.QuarkusTestBeforeClassCallback;
-import io.quarkus.test.junit.callback.QuarkusTestBeforeEachCallback;
-import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
-import io.quarkus.test.junit.internal.DeepClone;
-import io.quarkus.test.junit.internal.SerializationWithXStreamFallbackDeepClone;
+import static io.quarkus.test.common.PathTestHelper.getAppClassLocationForTestLocation;
+import static io.quarkus.test.common.PathTestHelper.getTestClassesLocation;
 
 public class QuarkusTestExtension
         implements BeforeEachCallback, AfterEachCallback, BeforeAllCallback, InvocationInterceptor, AfterAllCallback,
@@ -180,6 +180,7 @@ public class QuarkusTestExtension
     };
 
     private ExtensionState doJavaStart(ExtensionContext context, Class<? extends QuarkusTestProfile> profile) throws Throwable {
+        TracingHandler.quarkusStarting();
         hangDetectionExecutor = Executors.newSingleThreadScheduledExecutor();
         String time = "10m";
         //config is not established yet
@@ -335,6 +336,7 @@ public class QuarkusTestExtension
             populateCallbacks(startupAction.getClassLoader());
 
             runningQuarkusApplication = startupAction.run();
+            TracingHandler.quarkusStarted();
 
             //now we have full config reset the hang timer
 
@@ -352,11 +354,13 @@ public class QuarkusTestExtension
             Closeable shutdownTask = new Closeable() {
                 @Override
                 public void close() throws IOException {
+                    TracingHandler.quarkusStopping();
                     try {
                         runningQuarkusApplication.close();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     } finally {
+                        TracingHandler.quarkusStopped();
                         try {
                             while (!shutdownTasks.isEmpty()) {
                                 shutdownTasks.pop().run();
@@ -726,7 +730,7 @@ public class QuarkusTestExtension
 
     @Override
     public void interceptBeforeAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
-            ExtensionContext extensionContext) throws Throwable {
+                                         ExtensionContext extensionContext) throws Throwable {
         if (isNativeOrIntegrationTest()) {
             invocation.proceed();
             return;
@@ -743,7 +747,7 @@ public class QuarkusTestExtension
 
     @Override
     public <T> T interceptTestClassConstructor(Invocation<T> invocation,
-            ReflectiveInvocationContext<Constructor<T>> invocationContext, ExtensionContext extensionContext) throws Throwable {
+                                               ReflectiveInvocationContext<Constructor<T>> invocationContext, ExtensionContext extensionContext) throws Throwable {
         if (isNativeOrIntegrationTest()) {
             return invocation.proceed();
         }
@@ -837,7 +841,7 @@ public class QuarkusTestExtension
 
     @Override
     public void interceptBeforeEachMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
-            ExtensionContext extensionContext) throws Throwable {
+                                          ExtensionContext extensionContext) throws Throwable {
         if (isNativeOrIntegrationTest()) {
             invocation.proceed();
             return;
@@ -848,7 +852,7 @@ public class QuarkusTestExtension
 
     @Override
     public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
-            ExtensionContext extensionContext) throws Throwable {
+                                    ExtensionContext extensionContext) throws Throwable {
         if (isNativeOrIntegrationTest()) {
             invocation.proceed();
             return;
@@ -859,7 +863,7 @@ public class QuarkusTestExtension
 
     @Override
     public void interceptTestTemplateMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
-            ExtensionContext extensionContext) throws Throwable {
+                                            ExtensionContext extensionContext) throws Throwable {
         if (isNativeOrIntegrationTest()) {
             invocation.proceed();
             return;
@@ -871,7 +875,7 @@ public class QuarkusTestExtension
     @SuppressWarnings("unchecked")
     @Override
     public <T> T interceptTestFactoryMethod(Invocation<T> invocation,
-            ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+                                            ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
         if (isNativeOrIntegrationTest()) {
             return invocation.proceed();
         }
@@ -882,7 +886,7 @@ public class QuarkusTestExtension
 
     @Override
     public void interceptAfterEachMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
-            ExtensionContext extensionContext) throws Throwable {
+                                         ExtensionContext extensionContext) throws Throwable {
         if (isNativeOrIntegrationTest()) {
             invocation.proceed();
             return;
@@ -893,7 +897,7 @@ public class QuarkusTestExtension
 
     @Override
     public void interceptAfterAllMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext,
-            ExtensionContext extensionContext) throws Throwable {
+                                        ExtensionContext extensionContext) throws Throwable {
         if (isNativeOrIntegrationTest()) {
             invocation.proceed();
             return;
