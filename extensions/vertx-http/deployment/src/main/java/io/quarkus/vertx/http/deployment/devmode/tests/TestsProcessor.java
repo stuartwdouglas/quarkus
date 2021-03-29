@@ -68,6 +68,20 @@ public class TestsProcessor {
     }
 
     @BuildStep
+    DevConsoleRouteBuildItem runAllTests() {
+        //GET tests/status
+        //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)
+        //GET tests/results
+
+        return new DevConsoleRouteBuildItem("tests/runall", "POST", new Handler<RoutingContext>() {
+            @Override
+            public void handle(RoutingContext event) {
+                TestSupport.instance().start(true);
+            }
+        });
+    }
+
+    @BuildStep
     DevConsoleRouteBuildItem handleTestResult() {
         //GET tests/status
         //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)

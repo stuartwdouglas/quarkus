@@ -121,7 +121,10 @@ public class TestSupport {
     }
 
     public void start() {
-        boolean runTests = false;
+        start(false);
+    }
+
+    public void start(boolean runTests) {
         if (!started) {
             synchronized (this) {
                 if (!started) {

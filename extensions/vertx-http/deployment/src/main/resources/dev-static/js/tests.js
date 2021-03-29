@@ -39,7 +39,11 @@ $('document').ready(function () {
         var new_uri =window.location.protocol + "//" + window.location.host + frameworkRootPath + "/dev/io.quarkus.quarkus-vertx-http/tests/toggle";
            $.post( new_uri );
        });
-    
+
+    $("#quarkus-test-result-button-run-all").click(function() {
+        var new_uri =window.location.protocol + "//" + window.location.host + frameworkRootPath + "/dev/io.quarkus.quarkus-vertx-http/tests/runall";
+           $.post( new_uri );
+       });
 });
 
 function testOpenSocket() {

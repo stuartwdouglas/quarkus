@@ -180,7 +180,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
 
     private Timer startTestScanningTimer() {
         synchronized (this) {
-            if (timer != null) {
+            if (timer == null) {
                 timer = new Timer("Test Compile Timer", true);
                 timer.schedule(new TimerTask() {
                     @Override
