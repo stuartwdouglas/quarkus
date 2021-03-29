@@ -18,7 +18,6 @@ public class TracingHandler {
         }
     }
 
-
     public static void quarkusStopping() {
         TraceListener t = tracingHandler;
         if (t != null) {

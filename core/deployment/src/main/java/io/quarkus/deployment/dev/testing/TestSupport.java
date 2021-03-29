@@ -17,6 +17,7 @@ import io.quarkus.deployment.dev.QuarkusCompiler;
 import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
 import io.quarkus.deployment.dev.testing.runner.TestRunner;
 import io.quarkus.deployment.dev.testing.runner.TestState;
+import io.quarkus.dev.testing.ContinuousTestingWebsocketListener;
 
 public class TestSupport {
 
@@ -124,6 +125,8 @@ public class TestSupport {
         if (!started) {
             synchronized (this) {
                 if (!started) {
+                    ContinuousTestingWebsocketListener
+                            .setLastState(new ContinuousTestingWebsocketListener.State(true, true, 0L, 0L, 0L, 0L));
                     try {
                         if (context.getApplicationRoot().getTest().isPresent()) {
                             started = true;
@@ -151,6 +154,14 @@ public class TestSupport {
                                             }
                                             resultsListeners.clear();
                                         }
+                                        ContinuousTestingWebsocketListener.setLastState(
+                                                new ContinuousTestingWebsocketListener.State(true, testRunner.isRunning(),
+                                                        testRunResults.getTestsPassed() +
+                                                                testRunResults.getTestsFailed() +
+                                                                testRunResults.getTestsSkipped(),
+                                                        testRunResults.getTestsPassed(),
+                                                        testRunResults.getTestsFailed(), testRunResults.getTestsSkipped()));
+
                                     }
                                 }, testState);
                                 testRunner.setConsoleOutput(consoleOutput);

@@ -363,6 +363,12 @@ public class DevConsoleProcessor {
                 .handler(logStreamRecorder.websocketHandler(historyHandlerBuildItem.value))
                 .build());
 
+        // Add continous testing
+        routeBuildItemBuildProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
+                .route("dev/test")
+                .handler(recorder.continousTestHandler())
+                .build());
+
         for (DevConsoleRouteBuildItem i : routes) {
             Entry<String, String> groupAndArtifact = i.groupIdAndArtifactId(curateOutcomeBuildItem);
             // if the handler is a proxy, then that means it's been produced by a recorder and therefore belongs in the regular runtime Vert.x instance
