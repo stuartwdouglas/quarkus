@@ -52,6 +52,7 @@ import org.opentest4j.TestAbortedException;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.deployment.dev.ClassScanResult;
 import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.deployment.dev.console.InputHandler;
 import io.quarkus.deployment.dev.console.QuarkusConsole;
 import io.quarkus.deployment.dev.testing.TestClassResult;
 import io.quarkus.deployment.dev.testing.TestResult;
@@ -198,7 +199,7 @@ public class TestRunner {
             LauncherDiscoveryRequestBuilder launchBuilder = new LauncherDiscoveryRequestBuilder()
                     .selectors(quarkusTestClasses.stream().map(DiscoverySelectors::selectClass).collect(Collectors.toList()));
             if (classScanResult != null) {
-                launchBuilder.filters(testClassUsages.getTestsToRun(classScanResult.getChangedClassNames()));
+                launchBuilder.filters(testClassUsages.getTestsToRun(classScanResult.getChangedClassNames(), testState));
             }
             LauncherDiscoveryRequest request = launchBuilder
                     .build();
@@ -289,7 +290,6 @@ public class TestRunner {
                 @Override
                 public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
 
-                    QuarkusConsole.INSTANCE.setPromptMessage("A test prompt");
                     if (disabled) {
                         return;
                     }
@@ -394,18 +394,10 @@ public class TestRunner {
                     System.currentTimeMillis(), toResultsMap(historicFailures, resultsByClass)));
             if (consoleOutput) {
                 if (failures.isEmpty()) {
-                    if (historicFailures.isEmpty()) {
-                        QuarkusConsole.INSTANCE.setStatusMessage(
-                                " \u001B[32mTests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
-                                        + " were skipped. Tests took " + (System.currentTimeMillis() - start)
-                                        + "ms. All tests are passing." + "\u001b[0m");
-                    } else {
-                        QuarkusConsole.INSTANCE.setStatusMessage(
-                                "\u001B[33mTests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
-                                        + " were skipped. Tests took " + (System.currentTimeMillis() - start) + "ms. "
-                                        + historicFailures.size() + " tests that were not run are still failing,"
-                                        + formatFailureSummary(historicFailures) + "\u001b[0m");
-                    }
+                    QuarkusConsole.INSTANCE.setStatusMessage(
+                            "\u001B[32mTests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
+                                    + " were skipped. Tests took " + (System.currentTimeMillis() - start)
+                                    + "ms." + "\u001b[0m");
                 } else {
                     StringBuilder sb = new StringBuilder(
                             "\u001B[91mTest run failed, " + methodCount.get() + " tests were run, " + failures.size()
@@ -425,6 +417,23 @@ public class TestRunner {
                     }
                     QuarkusConsole.INSTANCE.setStatusMessage(sb.toString() + "\u001b[0m");
                 }
+                QuarkusConsole.INSTANCE.pushInputHandler(new InputHandler() {
+                    @Override
+                    public void handleInput(int[] keys) {
+                        for (int k : keys) {
+                            if (k == 'r') {
+                                runTests();
+                            } else if (k == 'v') {
+                                printFullResults();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void promptHandler(Consumer<String> promptHandler) {
+                        promptHandler.accept("Press [r] to re-run, [v] to view full results, [?] for more options>");
+                    }
+                });
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -432,6 +441,19 @@ public class TestRunner {
             ContinuousTestingLogHandler.setLogHandler(null);
             Thread.currentThread().setContextClassLoader(old);
         }
+    }
+
+    private void printFullResults() {
+        for (TestClassResult i : testState.getFailingClasses()) {
+            for (TestResult failed : i.getFailing()) {
+                log.error(
+                        "Test " + failed.getDisplayName() + " failed "
+                                + failed.getTestExecutionResult().getStatus()
+                                + "\n",
+                        failed.getTestExecutionResult().getThrowable().get());
+            }
+        }
+
     }
 
     private Map<String, TestClassResult> toResultsMap(List<TestResult> historicFailures,

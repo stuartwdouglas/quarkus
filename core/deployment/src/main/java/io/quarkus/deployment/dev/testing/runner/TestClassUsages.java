@@ -31,7 +31,7 @@ public class TestClassUsages implements Serializable {
         classNames.putAll(newData.classNames);
     }
 
-    public synchronized PostDiscoveryFilter getTestsToRun(Set<String> changedClasses) {
+    public synchronized PostDiscoveryFilter getTestsToRun(Set<String> changedClasses, TestState testState) {
 
         Set<UniqueId> touchedIds = new HashSet<>();
         //classes that have at least one test
@@ -56,6 +56,9 @@ public class TestClassUsages implements Serializable {
         return new PostDiscoveryFilter() {
             @Override
             public FilterResult apply(TestDescriptor testDescriptor) {
+                if (testState.isFailed(testDescriptor)) {
+                    return FilterResult.included("Test failed previously");
+                }
                 if (!testDescriptor.getSource().isPresent()) {
                     return FilterResult.included("No source information");
                 }

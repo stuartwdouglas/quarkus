@@ -43,6 +43,7 @@ import io.quarkus.builder.BuildStep;
 import io.quarkus.deployment.CodeGenerator;
 import io.quarkus.deployment.builditem.ApplicationClassPredicateBuildItem;
 import io.quarkus.deployment.codegen.CodeGenData;
+import io.quarkus.deployment.dev.console.InputHandler;
 import io.quarkus.deployment.dev.console.QuarkusConsole;
 import io.quarkus.deployment.dev.testing.TestSupport;
 import io.quarkus.deployment.steps.ClassTransformingBuildStep;
@@ -100,15 +101,28 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                                         || context.isAbortOnFailedStart()) {
                                     return;
                                 }
-                                System.out.println("Quarkus application exited with code " + integer);
-                                System.out.println("Press Enter to restart or Ctrl + C to quit");
+                                final CountDownLatch latch = new CountDownLatch(1);
+                                QuarkusConsole.INSTANCE.pushInputHandler(new InputHandler() {
+                                    @Override
+                                    public void handleInput(int[] keys) {
+                                        for (int i : keys) {
+                                            if (i == 'q') {
+                                                System.exit(0);
+                                            } else {
+                                                QuarkusConsole.INSTANCE.popInputHandler();
+                                                latch.countDown();
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void promptHandler(Consumer<String> promptHandler) {
+                                        promptHandler.accept("\u001B[91mQuarkus application exited with code " + integer
+                                                + "\nPress [q] or Ctrl + C to quit, any other key to restart");
+                                    }
+                                });
                                 try {
-                                    while (System.in.read() != '\n') {
-                                        //noop
-                                    }
-                                    while (System.in.available() > 0) {
-                                        System.in.read();
-                                    }
+                                    latch.await();
                                     System.out.println("Restarting...");
                                     RuntimeUpdatesProcessor.INSTANCE.checkForChangedClasses(false);
                                     RuntimeUpdatesProcessor.INSTANCE.checkForChangedTestClasses(false);

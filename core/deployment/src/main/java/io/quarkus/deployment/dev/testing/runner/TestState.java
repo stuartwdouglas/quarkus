@@ -3,11 +3,13 @@ package io.quarkus.deployment.dev.testing.runner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
 
@@ -17,6 +19,7 @@ import io.quarkus.deployment.dev.testing.TestResult;
 public class TestState {
 
     final Map<String, Map<UniqueId, TestResult>> resultsByClass = new HashMap<>();
+    final Set<UniqueId> failing = new HashSet<>();
 
     public List<String> getClassNames() {
         return new ArrayList<>(resultsByClass.keySet()).stream().sorted().collect(Collectors.toList());
@@ -79,6 +82,13 @@ public class TestState {
             } else {
                 existing.putAll(entry.getValue());
             }
+            for (Map.Entry<UniqueId, TestResult> r : entry.getValue().entrySet()) {
+                if (r.getValue().getTestExecutionResult().getStatus() == TestExecutionResult.Status.FAILED) {
+                    failing.add(r.getKey());
+                } else {
+                    failing.remove(r.getKey());
+                }
+            }
         }
     }
 
@@ -121,4 +131,7 @@ public class TestState {
         return ret;
     }
 
+    public boolean isFailed(TestDescriptor testDescriptor) {
+        return failing.contains(testDescriptor.getUniqueId());
+    }
 }
