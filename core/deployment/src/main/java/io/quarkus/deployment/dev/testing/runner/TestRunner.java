@@ -57,6 +57,7 @@ import io.quarkus.deployment.dev.console.QuarkusConsole;
 import io.quarkus.deployment.dev.testing.TestClassResult;
 import io.quarkus.deployment.dev.testing.TestResult;
 import io.quarkus.deployment.dev.testing.TestRunResults;
+import io.quarkus.deployment.dev.testing.TestSupport;
 import io.quarkus.dev.testing.ContinuousTestingLogHandler;
 import io.quarkus.dev.testing.ContinuousTestingWebsocketListener;
 import io.quarkus.dev.testing.TracingHandler;
@@ -82,8 +83,60 @@ public class TestRunner {
     /**
      * disabled is different to paused, when the runner is disabled we abort all runs rather than pausing them.
      */
-    private boolean disabled;
+    private boolean disabled = true;
+    private boolean firstRun = true;
     private boolean consoleOutput;
+    volatile Consumer<String> promptHandler;
+
+    private final InputHandler disabledHandler = new InputHandler() {
+
+        @Override
+        public void handleInput(int[] keys) {
+            for (int i : keys) {
+                if (i == 'e') {
+                    TestSupport.instance().start(true);
+                }
+            }
+        }
+
+        @Override
+        public void promptHandler(Consumer<String> promptHandler) {
+            TestRunner.this.promptHandler = promptHandler;
+            promptHandler.accept("\u001b[33mTests Disabled, press [e] to enable\u001b[0m");
+            QuarkusConsole.INSTANCE.setStatusMessage(null);
+        }
+    };
+    private final InputHandler firstRunHandler = new InputHandler() {
+
+        @Override
+        public void handleInput(int[] keys) {
+        }
+
+        @Override
+        public void promptHandler(Consumer<String> promptHandler) {
+            promptHandler.accept("\u001b[33mRunning Tests for the first time\u001b[0m");
+            QuarkusConsole.INSTANCE.setStatusMessage(null);
+        }
+    };
+    private final InputHandler runningHandler = new InputHandler() {
+        @Override
+        public void handleInput(int[] keys) {
+            for (int k : keys) {
+                if (k == 'r') {
+                    runTests();
+                } else if (k == 'v') {
+                    printFullResults();
+                } else if (k == 'd') {
+                    TestSupport.instance().stop();
+                }
+            }
+        }
+
+        @Override
+        public void promptHandler(Consumer<String> promptHandler) {
+            promptHandler.accept("Press [r] to re-run, [v] to view full results, [d] to disable, [?] for more options>");
+        }
+    };
 
     public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication, Consumer<TestRunResults> resultHandler,
             TestState testState) {
@@ -91,6 +144,7 @@ public class TestRunner {
         this.testApplication = testApplication;
         this.resultHandler = resultHandler;
         this.testState = testState;
+        QuarkusConsole.INSTANCE.pushInputHandler(disabledHandler);
     }
 
     public void runTests() {
@@ -173,13 +227,23 @@ public class TestRunner {
     }
 
     public synchronized void disable() {
+        QuarkusConsole.INSTANCE.popInputHandler();
+        QuarkusConsole.INSTANCE.pushInputHandler(disabledHandler);
+        QuarkusConsole.INSTANCE.setStatusMessage(null);
         ContinuousTestingWebsocketListener.setRunning(false);
         disabled = true;
         notifyAll();
-        QuarkusConsole.INSTANCE.setStatusMessage("");
     }
 
     public synchronized void enable() {
+        if (!disabled) {
+            return;
+        }
+        if (promptHandler != null) {
+            QuarkusConsole.INSTANCE.popInputHandler();
+            QuarkusConsole.INSTANCE.pushInputHandler(firstRunHandler);
+        }
+        firstRun = true;
         ContinuousTestingWebsocketListener.setRunning(true);
         disabled = false;
     }
@@ -417,23 +481,10 @@ public class TestRunner {
                     }
                     QuarkusConsole.INSTANCE.setStatusMessage(sb.toString() + "\u001b[0m");
                 }
-                QuarkusConsole.INSTANCE.pushInputHandler(new InputHandler() {
-                    @Override
-                    public void handleInput(int[] keys) {
-                        for (int k : keys) {
-                            if (k == 'r') {
-                                runTests();
-                            } else if (k == 'v') {
-                                printFullResults();
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void promptHandler(Consumer<String> promptHandler) {
-                        promptHandler.accept("Press [r] to re-run, [v] to view full results, [?] for more options>");
-                    }
-                });
+            }
+            if (firstRun) {
+                QuarkusConsole.INSTANCE.pushInputHandler(runningHandler);
+                firstRun = false;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

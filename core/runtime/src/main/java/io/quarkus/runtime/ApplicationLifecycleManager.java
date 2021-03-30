@@ -63,7 +63,7 @@ public class ApplicationLifecycleManager {
     private static final Condition stateCond = stateLock.newCondition();
 
     private static int exitCode = -1;
-    private static boolean shutdownRequested;
+    private static volatile boolean shutdownRequested;
     private static Application currentApplication;
     private static boolean hooksRegistered;
     private static boolean vmShuttingDown;
@@ -139,7 +139,7 @@ public class ApplicationLifecycleManager {
                 try {
                     while (!shutdownRequested) {
                         Thread.interrupted();
-                        stateCond.await();
+                        stateCond.awaitUninterruptibly();
                     }
                 } finally {
                     stateLock.unlock();

@@ -11,8 +11,6 @@ import org.aesh.terminal.Connection;
 import org.aesh.terminal.tty.Size;
 import org.aesh.terminal.utils.ANSI;
 
-import io.quarkus.runtime.Quarkus;
-
 public class QuarkusConsole implements Consumer<Connection> {
 
     public static volatile QuarkusConsole INSTANCE;
@@ -43,6 +41,7 @@ public class QuarkusConsole implements Consumer<Connection> {
     }
 
     public synchronized QuarkusConsole setStatusMessage(String statusMessage) {
+        clearStatusMessages();
         int newLines = countLines(statusMessage) + countLines(promptMessage);
         if (statusMessage == null) {
             if (promptMessage != null) {
@@ -85,6 +84,7 @@ public class QuarkusConsole implements Consumer<Connection> {
     }
 
     private synchronized QuarkusConsole setPromptMessage(String promptMessage) {
+        clearStatusMessages();
         int newLines = countLines(statusMessage) + countLines(promptMessage);
         if (statusMessage == null) {
             if (promptMessage != null) {
@@ -118,8 +118,15 @@ public class QuarkusConsole implements Consumer<Connection> {
         conn.setSignalHandler(event -> {
             switch (event) {
                 case INT:
-                    Quarkus.asyncExit();
-                    end(conn);
+                    //todo: why does async exit not work here
+                    //Quarkus.asyncExit();
+                    //end(conn);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            System.exit(0);
+                        }
+                    }).start();
                     break;
             }
         });
@@ -161,10 +168,7 @@ public class QuarkusConsole implements Consumer<Connection> {
             return;
         }
 
-        gotoLine(size.getHeight() - totalStatusLines);
-        for (int i = 0; i < totalStatusLines; ++i) {
-            connection.write(emptyLine);
-        }
+        clearStatusMessages();
         gotoLine(size.getHeight() - totalStatusLines);
         connection.write("\n--\n");
         if (statusMessage != null) {
@@ -175,6 +179,13 @@ public class QuarkusConsole implements Consumer<Connection> {
         }
         if (promptMessage != null) {
             connection.write(promptMessage);
+        }
+    }
+
+    private void clearStatusMessages() {
+        gotoLine(size.getHeight() - totalStatusLines);
+        for (int i = 0; i <= totalStatusLines; ++i) {
+            connection.write(emptyLine);
         }
     }
 
@@ -219,6 +230,7 @@ public class QuarkusConsole implements Consumer<Connection> {
     }
 
     public synchronized void write(String s) {
+        clearStatusMessages();
         int cursorPos = lastWriteCursorX;
         gotoLine(size.getHeight());
         String stripped = strip(s);
