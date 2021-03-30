@@ -212,6 +212,7 @@
         <avro.version>1.10.2</avro.version>
         <jacoco.version>0.8.6</jacoco.version>
         <testcontainers.version>1.15.2</testcontainers.version>
+        <jline.version>3.19.0</jline.version>
     </properties>
 
     <dependencyManagement>
@@ -4734,7 +4735,16 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
+            <dependency>
+                <groupId>org.jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>${jline.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jline</groupId>
+                <artifactId>jline-terminal-jna</artifactId>
+                <version>${jline.version}</version>
+            </dependency>
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>apache-client</artifactId>

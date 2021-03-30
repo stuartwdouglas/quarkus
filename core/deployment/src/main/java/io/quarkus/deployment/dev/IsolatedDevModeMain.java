@@ -43,6 +43,7 @@ import io.quarkus.builder.BuildStep;
 import io.quarkus.deployment.CodeGenerator;
 import io.quarkus.deployment.builditem.ApplicationClassPredicateBuildItem;
 import io.quarkus.deployment.codegen.CodeGenData;
+import io.quarkus.deployment.dev.console.QuarkusConsole;
 import io.quarkus.deployment.dev.testing.TestSupport;
 import io.quarkus.deployment.steps.ClassTransformingBuildStep;
 import io.quarkus.deployment.util.FSWatchUtil;
@@ -69,6 +70,14 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     private static volatile boolean restarting;
     private static volatile boolean firstStartCompleted;
     private static final CountDownLatch shutdownLatch = new CountDownLatch(1);
+
+    static {
+        try {
+            QuarkusConsole.main(new String[0]);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private synchronized void firstStart(QuarkusClassLoader deploymentClassLoader, List<CodeGenData> codeGens) {
 

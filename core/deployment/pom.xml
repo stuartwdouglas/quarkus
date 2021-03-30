@@ -15,6 +15,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.aesh</groupId>
+            <artifactId>readline</artifactId>
+            <version>2.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.common</groupId>
             <artifactId>wildfly-common</artifactId>
         </dependency>
@@ -51,6 +56,14 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-devtools-utilities</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline-terminal-jna</artifactId>
         </dependency>
         <dependency>
             <!-- We don't want the annotation processor to run
