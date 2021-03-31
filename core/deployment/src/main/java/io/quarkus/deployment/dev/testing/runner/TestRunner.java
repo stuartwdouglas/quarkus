@@ -357,7 +357,8 @@ public class TestRunner {
                     } else if (testSource instanceof MethodSource) {
                         testClass = ((MethodSource) testSource).getJavaClass();
                         methodCount.incrementAndGet();
-                        displayName = ((MethodSource) testSource).getJavaMethod().toString();
+                        displayName = testClass.getSimpleName() + "#" + displayName;
+
 
                         if (testExecutionResult.getStatus() != TestExecutionResult.Status.ABORTED) {
                             for (Set<String> i : touchedClasses) {
