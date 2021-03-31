@@ -1,0 +1,487 @@
+package io.quarkus.deployment.dev.testing.runner;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.logging.LogRecord;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
+import org.jboss.jandex.Indexer;
+import org.jboss.logging.Logger;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
+import org.junit.platform.engine.reporting.ReportEntry;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.TestPlan;
+import org.junit.platform.launcher.core.LauncherConfig;
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.launcher.core.LauncherFactory;
+import org.opentest4j.TestAbortedException;
+
+import io.quarkus.bootstrap.app.CuratedApplication;
+import io.quarkus.deployment.dev.ClassScanResult;
+import io.quarkus.deployment.dev.DevModeContext;
+import io.quarkus.deployment.dev.testing.TestClassResult;
+import io.quarkus.deployment.dev.testing.TestResult;
+import io.quarkus.deployment.dev.testing.TestRunResults;
+import io.quarkus.dev.testing.ContinuousTestingLogHandler;
+import io.quarkus.dev.testing.TracingHandler;
+
+/**
+ * This class is responsible for running a single run of JUnit tests.
+ */
+public class JunitTestRunner {
+
+    private static final Logger log = Logger.getLogger(JunitTestRunner.class);
+    private final long runId;
+    private final DevModeContext devModeContext;
+    private final CuratedApplication testApplication;
+    private final ClassScanResult classScanResult;
+    private final TestClassUsages testClassUsages;
+    private final TestState testState;
+    private final TestListener listener;
+
+    private volatile boolean testsRunning = false;
+    private volatile boolean aborted;
+    private volatile boolean paused;
+
+    public JunitTestRunner(Builder builder) {
+        this.runId = builder.runId;
+        this.devModeContext = builder.devModeContext;
+        this.testApplication = builder.testApplication;
+        this.classScanResult = builder.classScanResult;
+        this.testClassUsages = builder.testClassUsages;
+        this.listener = builder.listener;
+        this.testState = builder.testState;
+    }
+
+    public void runTests() {
+        long start = System.currentTimeMillis();
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        try {
+
+            ClassLoader tcl = testApplication.createDeploymentClassLoader();
+            Thread.currentThread().setContextClassLoader(tcl);
+            ((Consumer) tcl.loadClass(CurrentTestApplication.class.getName()).newInstance()).accept(testApplication);
+
+            List<Class<?>> quarkusTestClasses = discoverTestClasses(devModeContext);
+
+            Launcher launcher = LauncherFactory.create(LauncherConfig.builder().build());
+            LauncherDiscoveryRequestBuilder launchBuilder = new LauncherDiscoveryRequestBuilder()
+                    .selectors(quarkusTestClasses.stream().map(DiscoverySelectors::selectClass).collect(Collectors.toList()));
+            if (classScanResult != null) {
+                launchBuilder.filters(testClassUsages.getTestsToRun(classScanResult.getChangedClassNames(), testState));
+            }
+            LauncherDiscoveryRequest request = launchBuilder
+                    .build();
+            TestPlan testPlan = launcher.discover(request);
+            if (!testPlan.containsTests()) {
+                //nothing to see here
+                return;
+            }
+            long toRun = testPlan.countTestIdentifiers(TestIdentifier::isTest);
+            listener.runStarted(toRun);
+            log.debug("Starting test run with " + quarkusTestClasses.size() + " test cases");
+            TestLogCapturingHandler logHandler = new TestLogCapturingHandler();
+            ContinuousTestingLogHandler.setLogHandler(logHandler);
+
+            final Deque<Set<String>> touchedClasses = new LinkedBlockingDeque<>();
+            final AtomicReference<Set<String>> startupClasses = new AtomicReference<>();
+            TracingHandler.setTracingHandler(new TracingHandler.TraceListener() {
+                @Override
+                public void touched(String className) {
+                    Set<String> set = touchedClasses.peek();
+                    if (set != null) {
+                        set.add(className);
+                    }
+                }
+
+                @Override
+                public void quarkusStarting() {
+                    startupClasses.set(touchedClasses.peek());
+                }
+            });
+
+            Map<String, Map<UniqueId, TestResult>> resultsByClass = new HashMap<>();
+
+            launcher.execute(testPlan, new TestExecutionListener() {
+
+                @Override
+                public void executionStarted(TestIdentifier testIdentifier) {
+                    waitTillResumed();
+                    touchedClasses.push(Collections.synchronizedSet(new HashSet<>()));
+                }
+
+                @Override
+                public void executionSkipped(TestIdentifier testIdentifier, String reason) {
+                    waitTillResumed();
+                }
+
+                @Override
+                public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+
+                    if (aborted) {
+                        return;
+                    }
+                    Class<?> testClass = null;
+                    String displayName = testIdentifier.getDisplayName();
+                    TestSource testSource = testIdentifier.getSource().orElse(null);
+                    Set<String> touched = touchedClasses.pop();
+                    UniqueId id = UniqueId.parse(testIdentifier.getUniqueId());
+                    if (testSource instanceof ClassSource) {
+                        testClass = ((ClassSource) testSource).getJavaClass();
+                        if (testExecutionResult.getStatus() != TestExecutionResult.Status.ABORTED) {
+                            for (Set<String> i : touchedClasses) {
+                                //also add the parent touched classes
+                                touched.addAll(i);
+                            }
+                            if (startupClasses.get() != null) {
+                                touched.addAll(startupClasses.get());
+                            }
+                            testClassUsages.updateTestData(testClass.getName(), touched);
+                        }
+                    } else if (testSource instanceof MethodSource) {
+                        testClass = ((MethodSource) testSource).getJavaClass();
+                        displayName = testClass.getSimpleName() + "#" + displayName;
+
+                        if (testExecutionResult.getStatus() != TestExecutionResult.Status.ABORTED) {
+                            for (Set<String> i : touchedClasses) {
+                                //also add the parent touched classes
+                                touched.addAll(i);
+                            }
+                            if (startupClasses.get() != null) {
+                                touched.addAll(startupClasses.get());
+                            }
+                            testClassUsages.updateTestData(testClass.getName(), id,
+                                    touched);
+                        }
+                    }
+                    if (testClass != null) {
+                        Map<UniqueId, TestResult> results = resultsByClass.computeIfAbsent(testClass.getName(),
+                                s -> new HashMap<>());
+                        TestResult result = new TestResult(displayName, testClass.getName(), id, testExecutionResult,
+                                logHandler.captureOutput(), testIdentifier.isTest(), runId);
+                        results.put(id, result);
+                        if (result.isTest()) {
+                            listener.testComplete(result);
+                        }
+                    }
+                    if (testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED) {
+                        Throwable throwable = testExecutionResult.getThrowable().get();
+                        if (testClass != null) {
+                            //first we cut all the platform stuff out of the stack trace
+                            StackTraceElement[] st = throwable.getStackTrace();
+                            for (int i = st.length - 1; i >= 0; --i) {
+                                StackTraceElement elem = st[i];
+                                if (elem.getClassName().equals(testClass.getName())) {
+                                    StackTraceElement[] newst = new StackTraceElement[i + 1];
+                                    System.arraycopy(st, 0, newst, 0, i + 1);
+                                    st = newst;
+                                    break;
+                                }
+                            }
+
+                            //now cut out all the restassured internals
+                            //TODO: this should be pluggable
+                            for (int i = st.length - 1; i >= 0; --i) {
+                                StackTraceElement elem = st[i];
+                                if (elem.getClassName().startsWith("io.restassured")) {
+                                    StackTraceElement[] newst = new StackTraceElement[st.length - i];
+                                    System.arraycopy(st, i, newst, 0, st.length - i);
+                                    st = newst;
+                                    break;
+                                }
+                            }
+                            throwable.setStackTrace(st);
+                        }
+                    }
+                }
+
+                @Override
+                public void reportingEntryPublished(TestIdentifier testIdentifier, ReportEntry entry) {
+
+                }
+            });
+            if (aborted) {
+                return;
+            }
+            testState.updateResults(resultsByClass);
+            if (classScanResult != null) {
+                testState.classesRemoved(classScanResult.getDeletedClassNames());
+            }
+
+            ContinuousTestingLogHandler.setLogHandler(null);
+            List<TestResult> historicFailures = testState.getHistoricFailures(resultsByClass);
+            listener.runComplete(new TestRunResults(runId, classScanResult, classScanResult == null, start,
+                    System.currentTimeMillis(), toResultsMap(historicFailures, resultsByClass)));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            ContinuousTestingLogHandler.setLogHandler(null);
+            Thread.currentThread().setContextClassLoader(old);
+        }
+    }
+
+    public synchronized void abort() {
+        listener.runAborted();
+        aborted = true;
+        notifyAll();
+    }
+
+    public synchronized void pause() {
+        //todo
+        paused = true;
+    }
+
+    public synchronized void resume() {
+        paused = false;
+        notifyAll();
+    }
+
+    private Map<String, TestClassResult> toResultsMap(List<TestResult> historicFailures,
+            Map<String, Map<UniqueId, TestResult>> resultsByClass) {
+        Map<String, TestClassResult> resultMap = new HashMap<>();
+        Map<String, List<TestResult>> historicMap = new HashMap<>();
+        for (TestResult i : historicFailures) {
+            historicMap.computeIfAbsent(i.getTestClass(), s -> new ArrayList<>()).add(i);
+        }
+        Set<String> classes = new HashSet<>(resultsByClass.keySet());
+        classes.addAll(historicMap.keySet());
+        for (String clazz : classes) {
+            List<TestResult> passing = new ArrayList<>();
+            List<TestResult> failing = new ArrayList<>();
+            List<TestResult> skipped = new ArrayList<>();
+            for (TestResult i : Optional.ofNullable(resultsByClass.get(clazz)).orElse(Collections.emptyMap()).values()) {
+                if (i.getTestExecutionResult().getStatus() == TestExecutionResult.Status.FAILED) {
+                    failing.add(i);
+                } else if (i.getTestExecutionResult().getStatus() == TestExecutionResult.Status.ABORTED) {
+                    skipped.add(i);
+                } else {
+                    passing.add(i);
+                }
+            }
+            for (TestResult i : Optional.ofNullable(historicMap.get(clazz)).orElse(Collections.emptyList())) {
+                if (i.getTestExecutionResult().getStatus() == TestExecutionResult.Status.FAILED) {
+                    failing.add(i);
+                } else if (i.getTestExecutionResult().getStatus() == TestExecutionResult.Status.ABORTED) {
+                    skipped.add(i);
+                } else {
+                    passing.add(i);
+                }
+            }
+            resultMap.put(clazz, new TestClassResult(clazz, passing, failing, skipped));
+        }
+        return resultMap;
+    }
+
+    public void waitTillResumed() {
+        synchronized (JunitTestRunner.this) {
+            while (paused && !aborted) {
+                try {
+                    JunitTestRunner.this.wait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (aborted) {
+                throw new TestAbortedException("Tests are disabled");
+            }
+        }
+    }
+
+    private static List<Class<?>> discoverTestClasses(DevModeContext devModeContext) {
+        //maven has a lot of rules around this and is configurable
+        //for now this is out of scope, we are just going to consider all @QuarkusTest classes
+        //we can revisit this later
+
+        //simple class loading
+        List<URL> classRoots = new ArrayList<>();
+        try {
+            for (DevModeContext.ModuleInfo i : devModeContext.getAllModules()) {
+                classRoots.add(Paths.get(i.getMain().getClassesPath()).toFile().toURL());
+            }
+            //we know test is not empty, otherwise we would not be runnning
+            classRoots.add(Paths.get(devModeContext.getApplicationRoot().getTest().get().getClassesPath()).toFile().toURL());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        URLClassLoader ucl = new URLClassLoader(classRoots.toArray(new URL[0]), Thread.currentThread().getContextClassLoader());
+
+        //we also only run tests from the current module, which we can also revisit later
+        Indexer indexer = new Indexer();
+        try (Stream<Path> files = Files.walk(Paths.get(devModeContext.getApplicationRoot().getTest().get().getClassesPath()))) {
+            files.filter(s -> s.getFileName().toString().endsWith(".class")).forEach(s -> {
+                try (InputStream in = Files.newInputStream(s)) {
+                    indexer.index(in);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        //todo: sort by profile, account for modules
+        Index index = indexer.complete();
+        List<Class<?>> ret = new ArrayList<>();
+        for (AnnotationInstance i : index.getAnnotations(DotName.createSimple("io.quarkus.test.junit.QuarkusTest"))) {
+            try {
+                ret.add(ucl.loadClass(i.target().asClass().name().toString()));
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return ret;
+    }
+
+    public TestState getResults() {
+        return testState;
+    }
+
+    public boolean isRunning() {
+        return testsRunning;
+    }
+
+    public interface TestListener {
+
+        void runStarted(long toRun);
+
+        void testComplete(TestResult result);
+
+        void runComplete(TestRunResults results);
+
+        void runAborted();
+
+    }
+
+    private class TestLogCapturingHandler implements Predicate<LogRecord> {
+
+        private final List<LogRecord> logOutput;
+
+        public TestLogCapturingHandler() {
+            this.logOutput = new ArrayList<>();
+        }
+
+        public List<LogRecord> captureOutput() {
+            List<LogRecord> ret = new ArrayList<>(logOutput);
+            logOutput.clear();
+            return ret;
+        }
+
+        @Override
+        public boolean test(LogRecord logRecord) {
+            int threadId = logRecord.getThreadID();
+            Thread thread = null;
+            if (threadId == Thread.currentThread().getId()) {
+                thread = Thread.currentThread();
+            } else {
+                for (Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+                    if (e.getKey().getId() == threadId) {
+                        thread = e.getKey();
+                        break;
+                    }
+                }
+            }
+            if (thread != null) {
+                ClassLoader cl = thread.getContextClassLoader();
+                while (cl.getParent() != null) {
+                    if (cl == testApplication.getAugmentClassLoader()
+                            || cl == testApplication.getBaseRuntimeClassLoader()) {
+                        synchronized (logOutput) {
+                            if (logOutput.isEmpty() || logOutput.get(logOutput.size() - 1) != logRecord) { //this can be called multiple times
+                                logOutput.add(logRecord);
+                            }
+                        }
+                        return false;
+                    }
+                    cl = cl.getParent();
+                }
+            }
+            return true;
+        }
+    }
+
+    static class Builder {
+        private TestState testState;
+        private long runId = -1;
+        private DevModeContext devModeContext;
+        private CuratedApplication testApplication;
+        private ClassScanResult classScanResult;
+        private TestClassUsages testClassUsages;
+        private TestListener listener;
+
+        public Builder setRunId(long runId) {
+            this.runId = runId;
+            return this;
+        }
+
+        public Builder setDevModeContext(DevModeContext devModeContext) {
+            this.devModeContext = devModeContext;
+            return this;
+        }
+
+        public Builder setTestApplication(CuratedApplication testApplication) {
+            this.testApplication = testApplication;
+            return this;
+        }
+
+        public Builder setClassScanResult(ClassScanResult classScanResult) {
+            this.classScanResult = classScanResult;
+            return this;
+        }
+
+        public Builder setTestClassUsages(TestClassUsages testClassUsages) {
+            this.testClassUsages = testClassUsages;
+            return this;
+        }
+
+        public Builder setListener(TestListener listener) {
+            this.listener = listener;
+            return this;
+        }
+
+        public Builder setTestState(TestState testState) {
+            this.testState = testState;
+            return this;
+        }
+
+        public JunitTestRunner build() {
+            Objects.requireNonNull(devModeContext, "devModeContext");
+            Objects.requireNonNull(testClassUsages, "testClassUsages");
+            Objects.requireNonNull(testApplication, "testApplication");
+            Objects.requireNonNull(testState, "testState");
+            Objects.requireNonNull(listener, "listener");
+            return new JunitTestRunner(this);
+        }
+    }
+}

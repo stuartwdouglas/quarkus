@@ -118,12 +118,16 @@ public class TestRunResults {
         return historicPassing;
     }
 
-    public long getStarted() {
+    public long getStartedTime() {
         return started;
     }
 
-    public long getCompleted() {
+    public long getCompletedTime() {
         return completed;
+    }
+
+    public long getTotalTime() {
+        return completed - started;
     }
 
     public List<TestClassResult> getFailing() {
