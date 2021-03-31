@@ -40,8 +40,9 @@ public class QuarkusConsole implements Consumer<Connection> {
         setup(connection);
     }
 
-    public synchronized QuarkusConsole setStatusMessage(String statusMessage) {
-        clearStatusMessages();
+    private synchronized QuarkusConsole setStatusMessage(String statusMessage) {
+        StringBuilder buffer = new StringBuilder();
+        clearStatusMessages(buffer);
         int newLines = countLines(statusMessage) + countLines(promptMessage);
         if (statusMessage == null) {
             if (promptMessage != null) {
@@ -54,12 +55,13 @@ public class QuarkusConsole implements Consumer<Connection> {
         }
         if (newLines > totalStatusLines) {
             for (int i = 0; i < newLines - totalStatusLines; ++i) {
-                connection.write("\n");
+                buffer.append("\n");
             }
         }
         this.statusMessage = statusMessage;
         this.totalStatusLines = newLines;
-        printStatusAndPrompt();
+        printStatusAndPrompt(buffer);
+        connection.write(buffer.toString());
         return this;
     }
 
@@ -84,7 +86,8 @@ public class QuarkusConsole implements Consumer<Connection> {
     }
 
     private synchronized QuarkusConsole setPromptMessage(String promptMessage) {
-        clearStatusMessages();
+        StringBuilder buffer = new StringBuilder();
+        clearStatusMessages(buffer);
         int newLines = countLines(statusMessage) + countLines(promptMessage);
         if (statusMessage == null) {
             if (promptMessage != null) {
@@ -97,12 +100,13 @@ public class QuarkusConsole implements Consumer<Connection> {
         }
         if (newLines > totalStatusLines) {
             for (int i = 0; i < newLines - totalStatusLines; ++i) {
-                connection.write("\n");
+                buffer.append("\n");
             }
         }
         this.promptMessage = promptMessage;
         this.totalStatusLines = newLines;
-        printStatusAndPrompt();
+        printStatusAndPrompt(buffer);
+        connection.write(buffer.toString());
         return this;
     }
 
@@ -153,7 +157,9 @@ public class QuarkusConsole implements Consumer<Connection> {
 
         attributes = conn.enterRawMode();
 
-        printStatusAndPrompt();
+        StringBuilder sb = new StringBuilder();
+        printStatusAndPrompt(sb);
+        conn.write(sb.toString());
     }
 
     /**
@@ -162,39 +168,37 @@ public class QuarkusConsole implements Consumer<Connection> {
      * this will overwrite the bottom part of the screen
      * callers are responsible for writing enough newlines to
      * preserve any console history they want.
+     *
+     * @param buffer
      */
-    private void printStatusAndPrompt() {
+    private void printStatusAndPrompt(StringBuilder buffer) {
         if (totalStatusLines == 0) {
             return;
         }
 
-        clearStatusMessages();
-        gotoLine(size.getHeight() - totalStatusLines);
-        connection.write("\n--\n");
+        clearStatusMessages(buffer);
+        gotoLine(buffer, size.getHeight() - totalStatusLines);
+        buffer.append("\n--\n");
         if (statusMessage != null) {
-            connection.write(statusMessage);
+            buffer.append(statusMessage);
             if (promptMessage != null) {
-                connection.write("\n");
+                buffer.append("\n");
             }
         }
         if (promptMessage != null) {
-            connection.write(promptMessage);
+            buffer.append(promptMessage);
         }
     }
 
-    private void clearStatusMessages() {
-        gotoLine(size.getHeight() - totalStatusLines);
+    private void clearStatusMessages(StringBuilder buffer) {
+        gotoLine(buffer, size.getHeight() - totalStatusLines);
         for (int i = 0; i <= totalStatusLines; ++i) {
-            connection.write(emptyLine);
+            buffer.append(emptyLine);
         }
     }
 
     private StringBuilder gotoLine(StringBuilder builder, int line) {
         return builder.append("\033[").append(line).append(";").append(0).append("H");
-    }
-
-    private void gotoLine(int line) {
-        connection.write("\033[" + line + ";" + 0 + "H");
     }
 
     int countLines(String s) {
@@ -230,9 +234,10 @@ public class QuarkusConsole implements Consumer<Connection> {
     }
 
     public synchronized void write(String s) {
-        clearStatusMessages();
+        StringBuilder buffer = new StringBuilder();
+        clearStatusMessages(buffer);
         int cursorPos = lastWriteCursorX;
-        gotoLine(size.getHeight());
+        gotoLine(buffer, size.getHeight());
         String stripped = strip(s);
         int lines = countLines(s, cursorPos);
         int trailing = 0;
@@ -251,9 +256,10 @@ public class QuarkusConsole implements Consumer<Connection> {
         }
 
         if (cursorPos > 1 && lines == 0) {
-            connection.write(s);
+            buffer.append(s);
             lastWriteCursorX = newCursorPos;
             //partial line, just write it
+            connection.write(buffer.toString());
             return;
         }
         if (lines == 0) {
@@ -262,14 +268,13 @@ public class QuarkusConsole implements Consumer<Connection> {
         //move the existing content up by the number of lines
         int appendLines = cursorPos > 1 ? lines - 1 : lines;
         for (int i = 0; i < appendLines; ++i) {
-            connection.write("\n");
+            buffer.append("\n");
         }
-        StringBuilder builder = new StringBuilder();
-        builder.append("\033[").append(size.getHeight() - totalStatusLines - lines).append(";").append(0).append("H");
-        connection.write(builder.toString());
-        connection.write(s);
+        buffer.append("\033[").append(size.getHeight() - totalStatusLines - lines).append(";").append(0).append("H");
+        buffer.append(s);
         lastWriteCursorX = newCursorPos;
-        printStatusAndPrompt();
+        printStatusAndPrompt(buffer);
+        connection.write(buffer.toString());
 
     }
 
@@ -281,29 +286,39 @@ public class QuarkusConsole implements Consumer<Connection> {
         new TerminalConnection(new QuarkusConsole());
     }
 
-    class InputHolder implements Consumer<String> {
+    class InputHolder implements InputHandler.ConsoleStatus {
         final InputHandler handler;
         volatile boolean enabled;
         String prompt;
+        String status;
 
         private InputHolder(InputHandler handler) {
             this.handler = handler;
         }
 
-        @Override
-        public void accept(String s) {
-            if (enabled) {
-                setPromptMessage(s);
-            }
-            prompt = s;
-        }
-
         public InputHolder setEnabled(boolean enabled) {
             this.enabled = enabled;
             if (enabled) {
-                accept(prompt);
+                setPrompt(prompt);
+                setStatus(status);
             }
             return this;
+        }
+
+        @Override
+        public void setPrompt(String prompt) {
+            this.prompt = prompt;
+            if (enabled) {
+                setPromptMessage(prompt);
+            }
+        }
+
+        @Override
+        public void setStatus(String status) {
+            this.status = status;
+            if (enabled) {
+                setStatusMessage(status);
+            }
         }
     }
 }

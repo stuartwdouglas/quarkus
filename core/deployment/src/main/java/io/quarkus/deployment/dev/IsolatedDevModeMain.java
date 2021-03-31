@@ -116,8 +116,8 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                                     }
 
                                     @Override
-                                    public void promptHandler(Consumer<String> promptHandler) {
-                                        promptHandler.accept("\u001B[91mQuarkus application exited with code " + integer
+                                    public void promptHandler(ConsoleStatus promptHandler) {
+                                        promptHandler.setPrompt("\u001B[91mQuarkus application exited with code " + integer
                                                 + "\nPress [q] or Ctrl + C to quit, any other key to restart");
                                     }
                                 });
