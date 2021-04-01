@@ -310,6 +310,7 @@ public class QuarkusDevModeTest
                     .setSourcePaths(Collections.singleton(deploymentSourcePath.toAbsolutePath().toString()))
                     .setClassesPath(classes.toAbsolutePath().toString())
                     .setResourcePath(deploymentResourcePath.toAbsolutePath().toString())
+                    .setResourcesOutputPath(classes.toAbsolutePath().toString())
                     .setSourceParents(Collections.singleton(deploymentSourceParentPath.toAbsolutePath().toString()))
                     .setPreBuildOutputDir(targetDir.resolve("generated-sources").toAbsolutePath().toString())
                     .setTargetDir(targetDir.toAbsolutePath().toString());
