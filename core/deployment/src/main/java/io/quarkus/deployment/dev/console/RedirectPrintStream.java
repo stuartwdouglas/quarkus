@@ -7,22 +7,19 @@ import java.util.Locale;
 
 public class RedirectPrintStream extends PrintStream {
 
-    private final QuarkusConsole delegate;
-
     private Formatter formatter;
 
-    RedirectPrintStream(QuarkusConsole underlying) {
+    RedirectPrintStream() {
         super(new ByteArrayOutputStream(0)); // never used
-        this.delegate = underlying;
     }
 
     @Override
     public void write(byte[] buf, int off, int len) {
-        delegate.write(buf, off, len);
+        QuarkusConsole.INSTANCE.write(buf, off, len);
     }
 
     void write(String s) {
-        delegate.write(s);
+        QuarkusConsole.INSTANCE.write(s);
     }
 
     @Override

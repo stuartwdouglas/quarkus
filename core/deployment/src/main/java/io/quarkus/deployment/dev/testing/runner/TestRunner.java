@@ -285,9 +285,10 @@ public class TestRunner {
             }
             promptHandler.setStatus(sb.toString() + "\u001b[0m");
         }
+        //this will re-print when using the basic console
+        promptHandler.setPrompt(RUNNING_PROMPT);
         if (firstRun) {
             firstRun = false;
-            promptHandler.setPrompt(RUNNING_PROMPT);
         }
 
     }

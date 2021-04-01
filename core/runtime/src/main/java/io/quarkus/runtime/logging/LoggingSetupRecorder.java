@@ -327,7 +327,7 @@ public class LoggingSetupRecorder {
         }
     }
 
-    private static boolean hasColorSupport() {
+    public static boolean hasColorSupport() {
 
         if (IS_WINDOWS) {
             // On Windows without a known good emulator

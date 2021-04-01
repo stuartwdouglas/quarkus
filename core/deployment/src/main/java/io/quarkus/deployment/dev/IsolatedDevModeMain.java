@@ -73,11 +73,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     private static final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
     static {
-        try {
-            QuarkusConsole.main(new String[0]);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        QuarkusConsole.installPrintStream();
     }
 
     private synchronized void firstStart(QuarkusClassLoader deploymentClassLoader, List<CodeGenData> codeGens) {

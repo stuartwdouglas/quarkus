@@ -1,73 +1,31 @@
 package io.quarkus.deployment.dev.console;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayDeque;
 import java.util.function.Consumer;
 
 import org.aesh.readline.tty.terminal.TerminalConnection;
-import org.aesh.terminal.Attributes;
 import org.aesh.terminal.Connection;
-import org.aesh.terminal.tty.Size;
-import org.aesh.terminal.utils.ANSI;
 
-public class QuarkusConsole implements Consumer<Connection> {
+import io.quarkus.deployment.TestConfig;
 
-    public static volatile QuarkusConsole INSTANCE;
+public abstract class QuarkusConsole {
 
-    private final ArrayDeque<InputHolder> inputHandlers = new ArrayDeque<>();
+    protected final ArrayDeque<InputHolder> inputHandlers = new ArrayDeque<>();
 
-    private Size size;
-    private Attributes attributes;
-    private Connection connection;
+    public static volatile QuarkusConsole INSTANCE = new BasicConsole(false, false, System.out);
 
-    private String statusMessage;
-    private String promptMessage;
-    private int totalStatusLines = 0;
-    private String emptyLine;
-    private int lastWriteCursorX;
+    private static volatile boolean installed;
 
-    @Override
-    public synchronized void accept(Connection connection) {
-        INSTANCE = this;
-        this.connection = connection;
-        RedirectPrintStream ps = new RedirectPrintStream(this);
-        System.setOut(ps);
-        System.setErr(ps);
-        connection.openNonBlocking();
-        setup(connection);
-    }
-
-    private synchronized QuarkusConsole setStatusMessage(String statusMessage) {
-        StringBuilder buffer = new StringBuilder();
-        clearStatusMessages(buffer);
-        int newLines = countLines(statusMessage) + countLines(promptMessage);
-        if (statusMessage == null) {
-            if (promptMessage != null) {
-                newLines += 2;
-            }
-        } else if (promptMessage == null) {
-            newLines += 2;
-        } else {
-            newLines += 3;
-        }
-        if (newLines > totalStatusLines) {
-            for (int i = 0; i < newLines - totalStatusLines; ++i) {
-                buffer.append("\n");
-            }
-        }
-        this.statusMessage = statusMessage;
-        this.totalStatusLines = newLines;
-        printStatusAndPrompt(buffer);
-        connection.write(buffer.toString());
-        return this;
-    }
+    private static volatile PrintStream original;
 
     public synchronized void pushInputHandler(InputHandler inputHandler) {
         InputHolder holder = inputHandlers.peek();
         if (holder != null) {
             holder.setEnabled(false);
         }
-        holder = new InputHolder(inputHandler);
+        holder = createHolder(inputHandler);
         inputHandler.promptHandler(holder);
         holder.setEnabled(true);
         inputHandlers.push(holder);
@@ -82,222 +40,73 @@ public class QuarkusConsole implements Consumer<Connection> {
         }
     }
 
-    private synchronized QuarkusConsole setPromptMessage(String promptMessage) {
-        StringBuilder buffer = new StringBuilder();
-        clearStatusMessages(buffer);
-        int newLines = countLines(statusMessage) + countLines(promptMessage);
-        if (statusMessage == null) {
-            if (promptMessage != null) {
-                newLines += 2;
-            }
-        } else if (promptMessage == null) {
-            newLines += 2;
-        } else {
-            newLines += 3;
-        }
-        if (newLines > totalStatusLines) {
-            for (int i = 0; i < newLines - totalStatusLines; ++i) {
-                buffer.append("\n");
-            }
-        }
-        this.promptMessage = promptMessage;
-        this.totalStatusLines = newLines;
-        printStatusAndPrompt(buffer);
-        connection.write(buffer.toString());
-        return this;
+    public abstract InputHolder createHolder(InputHandler inputHandler);
+
+    public abstract void write(String s);
+
+    public abstract void write(byte[] buf, int off, int len);
+
+    public static void installPrintStream() {
+        original = System.out;
+        RedirectPrintStream ps = new RedirectPrintStream();
+        System.setOut(ps);
+        System.setErr(ps);
     }
 
-    private synchronized void end(Connection conn) {
-        conn.write(ANSI.MAIN_BUFFER);
-        conn.write(ANSI.CURSOR_SHOW);
-        conn.setAttributes(attributes);
-    }
-
-    private void setup(Connection conn) {
-        size = conn.size();
-        // Ctrl-C ends the game
-        conn.setSignalHandler(event -> {
-            switch (event) {
-                case INT:
-                    //todo: why does async exit not work here
-                    //Quarkus.asyncExit();
-                    //end(conn);
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            System.exit(0);
-                        }
-                    }).start();
-                    break;
-            }
-        });
-        // Keyboard handling
-        conn.setStdinHandler(keys -> {
-            InputHolder handler = inputHandlers.peek();
-            if (handler != null) {
-                handler.handler.handleInput(keys);
-            }
-        });
-
-        StringBuilder line = new StringBuilder();
-        for (int i = 0; i < size.getWidth(); ++i) {
-            line.append(" ");
-        }
-        emptyLine = line.toString();
-
-        conn.setCloseHandler(close -> end(conn));
-        conn.setSizeHandler(size -> setup(conn));
-
-        //switch to alternate buffer
-        //conn.write(ANSI.ALTERNATE_BUFFER);
-        //conn.write(ANSI.CURSOR_HIDE);
-
-        attributes = conn.enterRawMode();
-
-        StringBuilder sb = new StringBuilder();
-        printStatusAndPrompt(sb);
-        conn.write(sb.toString());
-    }
-
-    /**
-     * prints the status messages
-     * <p>
-     * this will overwrite the bottom part of the screen
-     * callers are responsible for writing enough newlines to
-     * preserve any console history they want.
-     *
-     * @param buffer
-     */
-    private void printStatusAndPrompt(StringBuilder buffer) {
-        if (totalStatusLines == 0) {
+    public static void installConsole(TestConfig config) {
+        if (installed) {
             return;
         }
+        installed = true;
+        if (config.basicConsole) {
+            INSTANCE = new BasicConsole(config.disableColor, true, original);
+        } else {
+            try {
+                new TerminalConnection(new Consumer<Connection>() {
+                    @Override
+                    public void accept(Connection connection) {
+                        if (connection.supportsAnsi()) {
+                            INSTANCE = new AeshConsole(connection);
+                        } else {
+                            connection.close();
+                            INSTANCE = new BasicConsole(config.disableColor, true, original);
+                        }
 
-        clearStatusMessages(buffer);
-        gotoLine(buffer, size.getHeight() - totalStatusLines);
-        buffer.append("\n--\n");
-        if (statusMessage != null) {
-            buffer.append(statusMessage);
-            if (promptMessage != null) {
-                buffer.append("\n");
+                    }
+                });
+            } catch (IOException e) {
+                INSTANCE = new BasicConsole(config.disableColor, true, original);
             }
         }
-        if (promptMessage != null) {
-            buffer.append(promptMessage);
-        }
     }
 
-    private void clearStatusMessages(StringBuilder buffer) {
-        gotoLine(buffer, size.getHeight() - totalStatusLines);
-        for (int i = 0; i <= totalStatusLines; ++i) {
-            buffer.append(emptyLine);
-        }
+    public void forceBasicTerminal() {
+
     }
 
-    private StringBuilder gotoLine(StringBuilder builder, int line) {
-        return builder.append("\033[").append(line).append(";").append(0).append("H");
-    }
-
-    int countLines(String s) {
-        return countLines(s, 0);
-    }
-
-    String strip(String s) {
+    protected String stripAnsiCodes(String s) {
         if (s == null) {
             return null;
         }
-        s = s.replaceAll("\\u001B\\[39m", "");
-        s = s.replaceAll("\\u001B\\[38(.*?)m", "");
+        s = s.replaceAll("\\u001B\\[(.*?)[a-zA-Z]", "");
         return s;
     }
 
-    int countLines(String s, int cursorPos) {
-        if (s == null) {
-            return 0;
-        }
-        s = strip(s);
-        int lines = 0;
-        int curLength = cursorPos;
-        for (int i = 0; i < s.length(); ++i) {
-            if (s.charAt(i) == '\n') {
-                lines++;
-                curLength = 0;
-            } else if (curLength++ == size.getWidth()) {
-                lines++;
-                curLength = 0;
-            }
-        }
-        return lines;
-    }
-
-    public synchronized void write(String s) {
-        StringBuilder buffer = new StringBuilder();
-        clearStatusMessages(buffer);
-        int cursorPos = lastWriteCursorX;
-        gotoLine(buffer, size.getHeight());
-        String stripped = strip(s);
-        int lines = countLines(s, cursorPos);
-        int trailing = 0;
-        int index = stripped.lastIndexOf("\n");
-        if (index == -1) {
-            trailing = stripped.length();
-        } else {
-            trailing = stripped.length() - index - 1;
-        }
-
-        int newCursorPos;
-        if (lines == 0) {
-            newCursorPos = trailing + cursorPos;
-        } else {
-            newCursorPos = trailing;
-        }
-
-        if (cursorPos > 1 && lines == 0) {
-            buffer.append(s);
-            lastWriteCursorX = newCursorPos;
-            //partial line, just write it
-            connection.write(buffer.toString());
-            return;
-        }
-        if (lines == 0) {
-            lines++;
-        }
-        //move the existing content up by the number of lines
-        int appendLines = cursorPos > 1 ? lines - 1 : lines;
-        for (int i = 0; i < appendLines; ++i) {
-            buffer.append("\n");
-        }
-        buffer.append("\033[").append(size.getHeight() - totalStatusLines - lines).append(";").append(0).append("H");
-        buffer.append(s);
-        lastWriteCursorX = newCursorPos;
-        printStatusAndPrompt(buffer);
-        connection.write(buffer.toString());
-
-    }
-
-    public void write(byte[] buf, int off, int len) {
-        write(new String(buf, off, len, connection.outputEncoding()));
-    }
-
-    public static void main(String[] args) throws IOException {
-        new TerminalConnection(new QuarkusConsole());
-    }
-
-    class InputHolder implements InputHandler.ConsoleStatus {
+    protected static abstract class InputHolder implements InputHandler.ConsoleStatus {
         final InputHandler handler;
         volatile boolean enabled;
         String prompt;
         String status;
 
-        private InputHolder(InputHandler handler) {
+        protected InputHolder(InputHandler handler) {
             this.handler = handler;
         }
 
         public InputHolder setEnabled(boolean enabled) {
             this.enabled = enabled;
             if (enabled) {
-                setPrompt(prompt);
                 setStatus(status);
+                setPrompt(prompt);
             }
             return this;
         }
@@ -310,6 +119,8 @@ public class QuarkusConsole implements Consumer<Connection> {
             }
         }
 
+        protected abstract void setPromptMessage(String prompt);
+
         @Override
         public void setStatus(String status) {
             this.status = status;
@@ -317,5 +128,7 @@ public class QuarkusConsole implements Consumer<Connection> {
                 setStatusMessage(status);
             }
         }
+
+        protected abstract void setStatusMessage(String status);
     }
 }

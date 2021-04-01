@@ -1,9 +1,8 @@
 package io.quarkus.vertx.http.testrunner.tags;
 
-import io.quarkus.test.QuarkusDevModeTest;
-import io.quarkus.vertx.http.deployment.devmode.tests.TestStatus;
-import io.quarkus.vertx.http.testrunner.HelloResource;
-import io.quarkus.vertx.http.testrunner.TestRunnerTestUtils;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -11,8 +10,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
+import io.quarkus.test.QuarkusDevModeTest;
+import io.quarkus.vertx.http.deployment.devmode.tests.TestStatus;
+import io.quarkus.vertx.http.testrunner.HelloResource;
+import io.quarkus.vertx.http.testrunner.TestRunnerTestUtils;
 
 public class IncludeTagsTestCase {
 

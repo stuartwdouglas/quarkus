@@ -43,6 +43,24 @@ public class TestConfig {
      */
     @ConfigItem(defaultValue = "slow")
     public List<String> excludeTags;
+
+    /**
+     * Disable the testing status/prompt message at the bottom of the console
+     * and log these messages to STDOUT instead.
+     *
+     * Use this option if your terminal does not support ANSI escape sequences.
+     */
+    @ConfigItem(defaultValue = "false")
+    public boolean basicConsole;
+
+    /**
+     * Disable color in the testing status and prompt messages.
+     *
+     * Use this option if your terminal does not support color.
+     */
+    @ConfigItem(defaultValue = "false")
+    public boolean disableColor;
+
     /**
      * Duration to wait for the native image to built during testing
      */
