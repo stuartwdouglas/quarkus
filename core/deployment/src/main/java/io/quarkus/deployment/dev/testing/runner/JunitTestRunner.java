@@ -2,6 +2,8 @@ package io.quarkus.deployment.dev.testing.runner;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -9,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -31,6 +34,10 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.jboss.logging.Logger;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
+import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
@@ -40,6 +47,7 @@ import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.PostDiscoveryFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -70,6 +78,8 @@ public class JunitTestRunner {
     private final TestClassUsages testClassUsages;
     private final TestState testState;
     private final TestListener listener;
+    private final Set<String> includeTags;
+    private final Set<String> excludeTags;
 
     private volatile boolean testsRunning = false;
     private volatile boolean aborted;
@@ -83,6 +93,8 @@ public class JunitTestRunner {
         this.testClassUsages = builder.testClassUsages;
         this.listener = builder.listener;
         this.testState = builder.testState;
+        this.includeTags = new HashSet<>(builder.includeTags);
+        this.excludeTags = new HashSet<>(builder.excludeTags);
     }
 
     public void runTests() {
@@ -101,6 +113,11 @@ public class JunitTestRunner {
                     .selectors(quarkusTestClasses.stream().map(DiscoverySelectors::selectClass).collect(Collectors.toList()));
             if (classScanResult != null) {
                 launchBuilder.filters(testClassUsages.getTestsToRun(classScanResult.getChangedClassNames(), testState));
+            }
+            if (!includeTags.isEmpty()) {
+                launchBuilder.filters(new TagFilter(false, includeTags));
+            } else if (!excludeTags.isEmpty()) {
+                launchBuilder.filters(new TagFilter(true, excludeTags));
             }
             LauncherDiscoveryRequest request = launchBuilder
                     .build();
@@ -439,6 +456,8 @@ public class JunitTestRunner {
         private ClassScanResult classScanResult;
         private TestClassUsages testClassUsages;
         private TestListener listener;
+        private List<String> includeTags = Collections.emptyList();
+        private List<String> excludeTags = Collections.emptyList();
 
         public Builder setRunId(long runId) {
             this.runId = runId;
@@ -457,6 +476,16 @@ public class JunitTestRunner {
 
         public Builder setClassScanResult(ClassScanResult classScanResult) {
             this.classScanResult = classScanResult;
+            return this;
+        }
+
+        public Builder setIncludeTags(List<String> includeTags) {
+            this.includeTags = includeTags;
+            return this;
+        }
+
+        public Builder setExcludeTags(List<String> excludeTags) {
+            this.excludeTags = excludeTags;
             return this;
         }
 
@@ -482,6 +511,56 @@ public class JunitTestRunner {
             Objects.requireNonNull(testState, "testState");
             Objects.requireNonNull(listener, "listener");
             return new JunitTestRunner(this);
+        }
+    }
+
+    private static class TagFilter implements PostDiscoveryFilter {
+
+        final boolean exclude;
+        final Set<String> tags;
+
+        private TagFilter(boolean exclude, Set<String> tags) {
+            this.exclude = exclude;
+            this.tags = tags;
+        }
+
+        @Override
+        public FilterResult apply(TestDescriptor testDescriptor) {
+            if (testDescriptor.getSource().isPresent()) {
+                if (testDescriptor.getSource().get() instanceof MethodSource) {
+                    MethodSource methodSource = (MethodSource) testDescriptor.getSource().get();
+                    Method m = methodSource.getJavaMethod();
+                    FilterResult res = filterTags(m);
+                    if (res != null) {
+                        return res;
+                    }
+                    res = filterTags(methodSource.getJavaClass());
+                    if (res != null) {
+                        return res;
+                    }
+                    return FilterResult.includedIf(exclude);
+                }
+            }
+            return FilterResult.included("not a class");
+        }
+
+        public FilterResult filterTags(AnnotatedElement clz) {
+            Tag tag = clz.getAnnotation(Tag.class);
+            Tags tagsAnn = clz.getAnnotation(Tags.class);
+            List<Tag> all = null;
+            if (tag != null) {
+                all = Collections.singletonList(tag);
+            } else if (tagsAnn != null) {
+                all = Arrays.asList(tagsAnn.value());
+            } else {
+                return null;
+            }
+            for (Tag i : all) {
+                if (tags.contains(i.value())) {
+                    return FilterResult.includedIf(!exclude);
+                }
+            }
+            return FilterResult.includedIf(exclude);
         }
     }
 }

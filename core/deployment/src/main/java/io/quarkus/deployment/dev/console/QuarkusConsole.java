@@ -5,7 +5,6 @@ import java.util.ArrayDeque;
 import java.util.function.Consumer;
 
 import org.aesh.readline.tty.terminal.TerminalConnection;
-import org.aesh.readline.util.LoggerUtil;
 import org.aesh.terminal.Attributes;
 import org.aesh.terminal.Connection;
 import org.aesh.terminal.tty.Size;
@@ -32,10 +31,8 @@ public class QuarkusConsole implements Consumer<Connection> {
         INSTANCE = this;
         this.connection = connection;
         RedirectPrintStream ps = new RedirectPrintStream(this);
-        System.err.close();
         System.setOut(ps);
         System.setErr(ps);
-        LoggerUtil.doLog();
         connection.openNonBlocking();
         setup(connection);
     }

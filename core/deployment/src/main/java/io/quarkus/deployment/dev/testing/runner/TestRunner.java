@@ -1,5 +1,7 @@
 package io.quarkus.deployment.dev.testing.runner;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,7 +48,8 @@ public class TestRunner {
      */
     private volatile boolean disabled = true;
     private volatile boolean firstRun = true;
-    private volatile boolean consoleOutput;
+    volatile List<String> includeTags = Collections.emptyList();
+    volatile List<String> excludeTags = Collections.emptyList();
     volatile InputHandler.ConsoleStatus promptHandler;
     private JunitTestRunner runner;
 
@@ -218,6 +221,8 @@ public class TestRunner {
                     .setTestState(testState)
                     .setTestClassUsages(testClassUsages)
                     .setTestApplication(testApplication)
+                    .setIncludeTags(includeTags)
+                    .setExcludeTags(excludeTags)
                     .setListener(new JunitTestRunner.TestListener() {
                         @Override
                         public void runStarted(long toRun) {
@@ -271,13 +276,11 @@ public class TestRunner {
                             + " failed, "
                             + skipped.get()
                             + " were skipped. Tests took " + results.getTotalTime() + "ms");
-            if (consoleOutput) {
-                for (Map.Entry<String, TestClassResult> classEntry : results.getCurrentFailing().entrySet()) {
-                    for (TestResult test : classEntry.getValue().getFailing()) {
-                        log.error(
-                                "Test " + test.getDisplayName() + " failed \n",
-                                test.getTestExecutionResult().getThrowable().get());
-                    }
+            for (Map.Entry<String, TestClassResult> classEntry : results.getCurrentFailing().entrySet()) {
+                for (TestResult test : classEntry.getValue().getFailing()) {
+                    log.error(
+                            "Test " + test.getDisplayName() + " failed \n",
+                            test.getTestExecutionResult().getThrowable().get());
                 }
             }
             promptHandler.setStatus(sb.toString() + "\u001b[0m");
@@ -326,19 +329,16 @@ public class TestRunner {
         compileProblem = null;
     }
 
-    public void setConsoleOutput(boolean consoleOutput) {
-        this.consoleOutput = consoleOutput;
-    }
-
-    public boolean getConsoleOutput() {
-        return consoleOutput;
-    }
-
     public TestState getResults() {
         return testState;
     }
 
     public boolean isRunning() {
         return testsRunning;
+    }
+
+    public void setTags(List<String> includeTags, List<String> excludeTags) {
+        this.includeTags = includeTags;
+        this.excludeTags = excludeTags;
     }
 }

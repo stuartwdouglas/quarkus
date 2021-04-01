@@ -1,5 +1,6 @@
 package io.quarkus.deployment.dev.testing.runner;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -30,7 +31,7 @@ import io.quarkus.dev.testing.TracingHandler;
  */
 public class TestTracingProcessor {
 
-    private static Boolean lastEnabledValue;
+    private static TestConfig.Mode lastEnabledValue;
 
     @BuildStep(onlyIfNot = IsNormal.class)
     LogCleanupFilterBuildItem handle() {
@@ -39,22 +40,17 @@ public class TestTracingProcessor {
 
     @BuildStep(onlyIfNot = IsNormal.class)
     ServiceStartBuildItem startTesting(TestConfig config) {
-        if (RuntimeUpdatesProcessor.INSTANCE == null) {
+        if (RuntimeUpdatesProcessor.INSTANCE == null || config.enabled == TestConfig.Mode.DISABLED) {
             return null;
         }
-        RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setConsoleOutput(config.enabled);
-        if (lastEnabledValue == null || lastEnabledValue != config.enabled) {
-            //we only change this if the config value has changed
-            //the user may have enabled or disabled this via the Dev UI
-            //so we don't change it unless the config is changed, or on the
-            //first run
-            if (config.enabled) {
-                RuntimeUpdatesProcessor.INSTANCE.getTestSupport().start();
-            } else {
-                RuntimeUpdatesProcessor.INSTANCE.getTestSupport().stop();
-            }
-            lastEnabledValue = config.enabled;
+        if (config.enabled == TestConfig.Mode.ENABLED) {
+            RuntimeUpdatesProcessor.INSTANCE.getTestSupport().start();
+        } else if (config.enabled == TestConfig.Mode.PAUSED) {
+            RuntimeUpdatesProcessor.INSTANCE.getTestSupport().start(false);
+            RuntimeUpdatesProcessor.INSTANCE.getTestSupport().pause();
         }
+        RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setTags(config.includeTags.orElse(Collections.emptyList()),
+                config.excludeTags);
         return null;
     }
 

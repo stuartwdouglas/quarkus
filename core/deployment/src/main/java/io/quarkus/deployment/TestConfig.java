@@ -19,14 +19,30 @@ public class TestConfig {
 
     /**
      * If continuous testing is enabled.
+     *
      * <p>
      * If this is true results will be printed to the console. If this is false
      * continuous testing can still be used, however it needs to be explicitly
      * started from the Dev UI, and console output will not be printed.
      */
-    @ConfigItem(defaultValue = "true")
-    public boolean enabled;
+    @ConfigItem(defaultValue = "PAUSED")
+    public Mode enabled;
 
+    /**
+     * Tags that should be included for continuous testing.
+     */
+    @ConfigItem
+    public Optional<List<String>> includeTags;
+
+    /**
+     * Tags that should be excluded by default with continuous testing.
+     *
+     * This is ignored if include-tags has been set.
+     *
+     * Defaults to 'slow'
+     */
+    @ConfigItem(defaultValue = "slow")
+    public List<String> excludeTags;
     /**
      * Duration to wait for the native image to built during testing
      */
@@ -45,6 +61,16 @@ public class TestConfig {
     @ConfigItem
     Profile profile;
 
+    /**
+     * Configures the hang detection in @QuarkusTest. If no activity happens (i.e. no test callbacks are called) over
+     * this period then QuarkusTest will dump all threads stack traces, to help diagnose a potential hang.
+     *
+     * Note that the initial timeout (before Quarkus has started) will only apply if provided by a system property, as
+     * it is not possible to read all config sources until Quarkus has booted.
+     */
+    @ConfigItem(defaultValue = "10m")
+    Duration hangDetectionTimeout;
+
     @ConfigGroup
     public static class Profile {
 
@@ -62,5 +88,12 @@ public class TestConfig {
          */
         @ConfigItem(defaultValue = "")
         Optional<List<String>> tags;
+    }
+
+    public enum Mode {
+        PAUSED,
+        ENABLED,
+        DISABLED
+
     }
 }

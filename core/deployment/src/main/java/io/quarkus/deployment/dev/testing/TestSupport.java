@@ -34,7 +34,6 @@ public class TestSupport {
     volatile QuarkusCompiler compiler;
     volatile TestRunner testRunner;
     volatile boolean started;
-    volatile boolean consoleOutput;
     volatile TestRunResults testRunResults;
     private final List<CompletableFuture<TestRunResults>> resultsListeners = new ArrayList<>();
 
@@ -167,7 +166,6 @@ public class TestSupport {
 
                                     }
                                 }, testState);
-                                testRunner.setConsoleOutput(consoleOutput);
                             }
                             for (Runnable i : startListeners) {
                                 i.run();
@@ -246,16 +244,12 @@ public class TestSupport {
         }
     }
 
-    public synchronized TestSupport setConsoleOutput(boolean consoleOutput) {
-        this.consoleOutput = consoleOutput;
-        if (testRunner != null) {
-            testRunner.setConsoleOutput(consoleOutput);
-        }
-        return this;
-    }
-
     public TestRunResults getResults() {
         return testRunResults;
+    }
+
+    public void setTags(List<String> includeTags, List<String> excludeTags) {
+        testRunner.setTags(includeTags, excludeTags);
     }
 
     public static class RunStatus {
