@@ -72,10 +72,6 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
     private static volatile boolean firstStartCompleted;
     private static final CountDownLatch shutdownLatch = new CountDownLatch(1);
 
-    static {
-        QuarkusConsole.installPrintStream();
-    }
-
     private synchronized void firstStart(QuarkusClassLoader deploymentClassLoader, List<CodeGenData> codeGens) {
 
         ClassLoader old = Thread.currentThread().getContextClassLoader();

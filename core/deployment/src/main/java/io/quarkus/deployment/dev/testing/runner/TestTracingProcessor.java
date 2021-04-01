@@ -16,9 +16,11 @@ import io.quarkus.deployment.IsTest;
 import io.quarkus.deployment.TestConfig;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.annotations.Produce;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
+import io.quarkus.deployment.builditem.LogHandlerBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
 import io.quarkus.deployment.dev.console.QuarkusConsole;
@@ -40,6 +42,7 @@ public class TestTracingProcessor {
     }
 
     @BuildStep(onlyIfNot = IsNormal.class)
+    @Produce(LogHandlerBuildItem.class)
     ServiceStartBuildItem startTesting(TestConfig config) {
         QuarkusConsole.installConsole(config);
         if (RuntimeUpdatesProcessor.INSTANCE == null || config.enabled == TestConfig.Mode.DISABLED) {

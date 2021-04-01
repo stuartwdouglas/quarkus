@@ -1,7 +1,6 @@
 package io.quarkus.deployment.dev.console;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayDeque;
 import java.util.function.Consumer;
 
@@ -17,8 +16,6 @@ public abstract class QuarkusConsole {
     public static volatile QuarkusConsole INSTANCE = new BasicConsole(false, false, System.out);
 
     private static volatile boolean installed;
-
-    private static volatile PrintStream original;
 
     public synchronized void pushInputHandler(InputHandler inputHandler) {
         InputHolder holder = inputHandlers.peek();
@@ -46,20 +43,13 @@ public abstract class QuarkusConsole {
 
     public abstract void write(byte[] buf, int off, int len);
 
-    public static void installPrintStream() {
-        original = System.out;
-        RedirectPrintStream ps = new RedirectPrintStream();
-        System.setOut(ps);
-        System.setErr(ps);
-    }
-
     public static void installConsole(TestConfig config) {
         if (installed) {
             return;
         }
         installed = true;
         if (config.basicConsole) {
-            INSTANCE = new BasicConsole(config.disableColor, true, original);
+            INSTANCE = new BasicConsole(config.disableColor, true, System.out);
         } else {
             try {
                 new TerminalConnection(new Consumer<Connection>() {
@@ -67,21 +57,20 @@ public abstract class QuarkusConsole {
                     public void accept(Connection connection) {
                         if (connection.supportsAnsi()) {
                             INSTANCE = new AeshConsole(connection);
+                            RedirectPrintStream ps = new RedirectPrintStream();
+                            System.setOut(ps);
+                            System.setErr(ps);
                         } else {
                             connection.close();
-                            INSTANCE = new BasicConsole(config.disableColor, true, original);
+                            INSTANCE = new BasicConsole(config.disableColor, true, System.out);
                         }
 
                     }
                 });
             } catch (IOException e) {
-                INSTANCE = new BasicConsole(config.disableColor, true, original);
+                INSTANCE = new BasicConsole(config.disableColor, true, System.out);
             }
         }
-    }
-
-    public void forceBasicTerminal() {
-
     }
 
     protected String stripAnsiCodes(String s) {
