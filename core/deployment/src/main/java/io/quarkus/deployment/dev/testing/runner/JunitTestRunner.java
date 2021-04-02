@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,12 +25,14 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
@@ -378,6 +381,17 @@ public class JunitTestRunner {
                 throw new RuntimeException(e);
             }
         }
+        ret.sort(Comparator.comparing(new Function<Class<?>, String>() {
+            @Override
+            public String apply(Class<?> aClass) {
+                ClassInfo def = index.getClassByName(DotName.createSimple(aClass.getName()));
+                AnnotationInstance testProfile = def.classAnnotation(DotName.createSimple("io.quarkus.test.junit.TestProfile"));
+                if (testProfile == null) {
+                    return "";
+                }
+                return testProfile.value().asClass().name().toString();
+            }
+        }));
         return ret;
     }
 

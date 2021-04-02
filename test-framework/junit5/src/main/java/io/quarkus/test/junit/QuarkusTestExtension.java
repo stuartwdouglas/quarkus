@@ -73,6 +73,8 @@ import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.app.RunningQuarkusApplication;
 import io.quarkus.bootstrap.app.StartupAction;
+import io.quarkus.bootstrap.classloading.ClassPathElement;
+import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
 import io.quarkus.bootstrap.model.PathsCollection;
 import io.quarkus.bootstrap.resolver.model.QuarkusModel;
 import io.quarkus.bootstrap.runner.Timing;
@@ -80,6 +82,7 @@ import io.quarkus.bootstrap.utils.BuildToolHelper;
 import io.quarkus.builder.BuildChainBuilder;
 import io.quarkus.builder.BuildContext;
 import io.quarkus.builder.BuildStep;
+import io.quarkus.deployment.builditem.ApplicationClassPredicateBuildItem;
 import io.quarkus.deployment.builditem.TestAnnotationBuildItem;
 import io.quarkus.deployment.builditem.TestClassBeanBuildItem;
 import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
@@ -1144,7 +1147,23 @@ public class QuarkusTestExtension
                         }
                     }).produces(TestClassPredicateBuildItem.class)
                             .build();
-
+                    buildChainBuilder.addBuildStep(new BuildStep() {
+                        @Override
+                        public void execute(BuildContext context) {
+                            //we need to make sure all hot reloadable classes are application classes
+                            context.produce(new ApplicationClassPredicateBuildItem(new Predicate<String>() {
+                                @Override
+                                public boolean test(String s) {
+                                    QuarkusClassLoader cl = (QuarkusClassLoader) Thread.currentThread()
+                                            .getContextClassLoader();
+                                    //if the class file is present in this (and not the parent) CL then it is an application class
+                                    List<ClassPathElement> res = cl
+                                            .getElementsWithResource(s.replace(".", "/") + ".class", true);
+                                    return !res.isEmpty();
+                                }
+                            }));
+                        }
+                    }).produces(ApplicationClassPredicateBuildItem.class).build();
                     buildChainBuilder.addBuildStep(new BuildStep() {
                         @Override
                         public void execute(BuildContext context) {

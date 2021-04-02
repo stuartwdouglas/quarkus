@@ -51,8 +51,8 @@ public class TestTracingProcessor {
         if (config.enabled == TestConfig.Mode.ENABLED) {
             RuntimeUpdatesProcessor.INSTANCE.getTestSupport().start();
         } else if (config.enabled == TestConfig.Mode.PAUSED) {
-            RuntimeUpdatesProcessor.INSTANCE.getTestSupport().start(false);
-            RuntimeUpdatesProcessor.INSTANCE.getTestSupport().pause();
+            RuntimeUpdatesProcessor.INSTANCE.getTestSupport().init();
+            RuntimeUpdatesProcessor.INSTANCE.getTestSupport().stop();
         }
         RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setTags(config.includeTags.orElse(Collections.emptyList()),
                 config.excludeTags);

@@ -133,40 +133,7 @@ public class TestSupport {
                         if (context.getApplicationRoot().getTest().isPresent()) {
                             started = true;
                             runTests = true;
-                            if (testCuratedApplication == null) {
-                                testCuratedApplication = curatedApplication.getQuarkusBootstrap().clonedBuilder()
-                                        .setMode(QuarkusBootstrap.Mode.TEST)
-                                        .setDisableClasspathCache(true)
-                                        .setIsolateDeployment(true)
-                                        .setTest(true)
-                                        .setAuxiliaryApplication(true)
-                                        .addAdditionalApplicationArchive(new AdditionalDependency(
-                                                Paths.get(context.getApplicationRoot().getTest().get().getClassesPath()), true,
-                                                true))
-                                        .build()
-                                        .bootstrap();
-                                compiler = new QuarkusCompiler(testCuratedApplication, compilationProviders, context);
-                                testRunner = new TestRunner(context, testCuratedApplication, new Consumer<TestRunResults>() {
-                                    @Override
-                                    public void accept(TestRunResults testRunResults) {
-                                        synchronized (TestSupport.this) {
-                                            TestSupport.this.testRunResults = testRunResults;
-                                            for (CompletableFuture<TestRunResults> i : resultsListeners) {
-                                                i.complete(testRunResults);
-                                            }
-                                            resultsListeners.clear();
-                                        }
-                                        ContinuousTestingWebsocketListener.setLastState(
-                                                new ContinuousTestingWebsocketListener.State(true, testRunner.isRunning(),
-                                                        testRunResults.getTestsPassed() +
-                                                                testRunResults.getTestsFailed() +
-                                                                testRunResults.getTestsSkipped(),
-                                                        testRunResults.getTestsPassed(),
-                                                        testRunResults.getTestsFailed(), testRunResults.getTestsSkipped()));
-
-                                    }
-                                }, testState);
-                            }
+                            init();
                             for (Runnable i : startListeners) {
                                 i.run();
                             }
@@ -181,6 +148,48 @@ public class TestSupport {
         }
         if (runTests) {
             testRunner.runTests();
+        }
+    }
+
+    public void init() {
+        if (testCuratedApplication == null) {
+            try {
+                testCuratedApplication = curatedApplication.getQuarkusBootstrap().clonedBuilder()
+                        .setMode(QuarkusBootstrap.Mode.TEST)
+                        .setDisableClasspathCache(true)
+                        .setIsolateDeployment(true)
+                        .setTest(true)
+                        .setAuxiliaryApplication(true)
+                        .addAdditionalApplicationArchive(new AdditionalDependency(
+                                Paths.get(context.getApplicationRoot().getTest().get().getClassesPath()), true,
+                                true))
+                        .build()
+                        .bootstrap();
+                compiler = new QuarkusCompiler(testCuratedApplication, compilationProviders, context);
+                testRunner = new TestRunner(context, testCuratedApplication, new Consumer<TestRunResults>() {
+                    @Override
+                    public void accept(TestRunResults testRunResults) {
+                        synchronized (TestSupport.this) {
+                            TestSupport.this.testRunResults = testRunResults;
+                            for (CompletableFuture<TestRunResults> i : resultsListeners) {
+                                i.complete(testRunResults);
+                            }
+                            resultsListeners.clear();
+                        }
+                        ContinuousTestingWebsocketListener.setLastState(
+                                new ContinuousTestingWebsocketListener.State(true, testRunner.isRunning(),
+                                        testRunResults.getTestsPassed() +
+                                                testRunResults.getTestsFailed() +
+                                                testRunResults.getTestsSkipped(),
+                                        testRunResults.getTestsPassed(),
+                                        testRunResults.getTestsFailed(), testRunResults.getTestsSkipped()));
+
+                    }
+                }, testState);
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
