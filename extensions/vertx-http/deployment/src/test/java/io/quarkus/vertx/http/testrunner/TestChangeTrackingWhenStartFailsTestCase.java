@@ -4,6 +4,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,9 @@ public class TestChangeTrackingWhenStartFailsTestCase {
             .setArchiveProducer(new Supplier<JavaArchive>() {
                 @Override
                 public JavaArchive get() {
-                    return ShrinkWrap.create(JavaArchive.class).addClasses(HelloResource.class, StartupFailer.class);
+                    return ShrinkWrap.create(JavaArchive.class).addClasses(HelloResource.class, StartupFailer.class).add(
+                            new StringAsset("quarkus.test.continuous-testing=enabled\nq"),
+                            "application.properties");
                 }
             })
             .setTestArchiveProducer(new Supplier<JavaArchive>() {

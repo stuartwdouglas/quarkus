@@ -129,10 +129,10 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     private final TestSupport testSupport;
 
     public RuntimeUpdatesProcessor(Path applicationRoot, DevModeContext context, QuarkusCompiler compiler,
-                                   DevModeType devModeType, BiConsumer<Set<String>, ClassScanResult> restartCallback,
-                                   BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification,
-                                   BiFunction<String, byte[], byte[]> classTransformers,
-                                   TestSupport testSupport) {
+            DevModeType devModeType, BiConsumer<Set<String>, ClassScanResult> restartCallback,
+            BiConsumer<DevModeContext.ModuleInfo, String> copyResourceNotification,
+            BiFunction<String, byte[], byte[]> classTransformers,
+            TestSupport testSupport) {
         this.applicationRoot = applicationRoot;
         this.context = context;
         this.compiler = compiler;
@@ -480,8 +480,8 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
      * {@link RuntimeUpdatesProcessor#checkIfFileModified(Path, Map, boolean)} during the first scan.
      */
     ClassScanResult checkForChangedClasses(QuarkusCompiler compiler,
-                                           Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf, boolean firstScan,
-                                           TimestampSet timestampSet) {
+            Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf, boolean firstScan,
+            TimestampSet timestampSet) {
         ClassScanResult classScanResult = new ClassScanResult();
         boolean ignoreFirstScanChanges = firstScan;
 
@@ -538,8 +538,8 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     }
 
     private void checkForClassFilesChangesInModule(DevModeContext.ModuleInfo module, List<Path> moduleChangedSourceFiles,
-                                                   boolean isInitialRun, ClassScanResult classScanResult,
-                                                   Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf, TimestampSet timestampSet) {
+            boolean isInitialRun, ClassScanResult classScanResult,
+            Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf, TimestampSet timestampSet) {
         if (cuf.apply(module).getClassesPath() == null) {
             return;
         }
@@ -595,8 +595,8 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     }
 
     private Path retrieveSourceFilePathForClassFile(Path classFilePath, List<Path> moduleChangedSourceFiles,
-                                                    DevModeContext.ModuleInfo module, Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf,
-                                                    TimestampSet timestampSet) {
+            DevModeContext.ModuleInfo module, Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf,
+            TimestampSet timestampSet) {
         Path sourceFilePath = timestampSet.classFilePathToSourceFilePath.get(classFilePath);
         if (sourceFilePath == null || moduleChangedSourceFiles.contains(sourceFilePath)) {
             sourceFilePath = compiler.findSourcePath(classFilePath, cuf.apply(module).getSourcePaths(),
@@ -629,7 +629,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     }
 
     Set<String> checkForFileChange(Function<DevModeContext.ModuleInfo, DevModeContext.CompilationUnit> cuf,
-                                   TimestampSet timestampSet) {
+            TimestampSet timestampSet) {
         Set<String> ret = new HashSet<>();
         for (DevModeContext.ModuleInfo module : context.getAllModules()) {
             final Set<Path> moduleResources = correspondingResources.computeIfAbsent(module.getName(),
@@ -733,12 +733,12 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     }
 
     private boolean sourceFileWasRecentModified(final Path sourcePath, boolean ignoreFirstScanChanges,
-                                                TimestampSet timestampSet) {
+            TimestampSet timestampSet) {
         return checkIfFileModified(sourcePath, sourceFileTimestamps, ignoreFirstScanChanges);
     }
 
     private boolean classFileWasRecentModified(final Path classFilePath, boolean ignoreFirstScanChanges,
-                                               TimestampSet timestampSet) {
+            TimestampSet timestampSet) {
         return checkIfFileModified(classFilePath, timestampSet.classFileChangeTimeStamps, ignoreFirstScanChanges);
     }
 

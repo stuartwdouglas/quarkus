@@ -152,6 +152,9 @@ public class TestSupport {
     }
 
     public void init() {
+        if (!context.getApplicationRoot().getTest().isPresent()) {
+            return;
+        }
         if (testCuratedApplication == null) {
             try {
                 testCuratedApplication = curatedApplication.getQuarkusBootstrap().clonedBuilder()
@@ -258,7 +261,17 @@ public class TestSupport {
     }
 
     public void setTags(List<String> includeTags, List<String> excludeTags) {
+        if (testRunner == null) {
+            return;
+        }
         testRunner.setTags(includeTags, excludeTags);
+    }
+
+    public void setPatterns(String include, String exclude) {
+        if (testRunner == null) {
+            return;
+        }
+        testRunner.setPatterns(include, exclude);
     }
 
     public static class RunStatus {

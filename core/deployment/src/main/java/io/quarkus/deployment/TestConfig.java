@@ -26,7 +26,7 @@ public class TestConfig {
      * started from the Dev UI, and console output will not be printed.
      */
     @ConfigItem(defaultValue = "PAUSED")
-    public Mode enabled;
+    public Mode continuousTesting;
 
     /**
      * Tags that should be included for continuous testing.
@@ -44,6 +44,20 @@ public class TestConfig {
     @ConfigItem(defaultValue = "slow")
     public Optional<List<String>> excludeTags;
 
+    /**
+     * Tests that should be included for continuous testing. This is a regular expression.
+     */
+    @ConfigItem
+    public Optional<String> includePattern;
+
+    /**
+     * Tests that should be excluded with continuous testing. This is a regular expression.
+     *
+     * This is ignored if include-pattern has been set.
+     *
+     */
+    @ConfigItem
+    public Optional<String> excludePattern;
     /**
      * Disable the testing status/prompt message at the bottom of the console
      * and log these messages to STDOUT instead.

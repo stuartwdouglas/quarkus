@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.LogRecord;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -83,6 +84,8 @@ public class JunitTestRunner {
     private final TestListener listener;
     private final Set<String> includeTags;
     private final Set<String> excludeTags;
+    private final Pattern include;
+    private final Pattern exclude;
 
     private volatile boolean testsRunning = false;
     private volatile boolean aborted;
@@ -98,6 +101,8 @@ public class JunitTestRunner {
         this.testState = builder.testState;
         this.includeTags = new HashSet<>(builder.includeTags);
         this.excludeTags = new HashSet<>(builder.excludeTags);
+        this.include = builder.include;
+        this.exclude = builder.exclude;
     }
 
     public void runTests() {
@@ -121,6 +126,11 @@ public class JunitTestRunner {
                 launchBuilder.filters(new TagFilter(false, includeTags));
             } else if (!excludeTags.isEmpty()) {
                 launchBuilder.filters(new TagFilter(true, excludeTags));
+            }
+            if (include != null) {
+                launchBuilder.filters(new RegexFilter(false, include));
+            } else if (exclude != null) {
+                launchBuilder.filters(new RegexFilter(true, exclude));
             }
             LauncherDiscoveryRequest request = launchBuilder
                     .build();
@@ -482,6 +492,8 @@ public class JunitTestRunner {
         private TestListener listener;
         private List<String> includeTags = Collections.emptyList();
         private List<String> excludeTags = Collections.emptyList();
+        private Pattern include;
+        private Pattern exclude;
 
         public Builder setRunId(long runId) {
             this.runId = runId;
@@ -528,6 +540,16 @@ public class JunitTestRunner {
             return this;
         }
 
+        public Builder setInclude(Pattern include) {
+            this.include = include;
+            return this;
+        }
+
+        public Builder setExclude(Pattern exclude) {
+            this.exclude = exclude;
+            return this;
+        }
+
         public JunitTestRunner build() {
             Objects.requireNonNull(devModeContext, "devModeContext");
             Objects.requireNonNull(testClassUsages, "testClassUsages");
@@ -536,6 +558,7 @@ public class JunitTestRunner {
             Objects.requireNonNull(listener, "listener");
             return new JunitTestRunner(this);
         }
+
     }
 
     private static class TagFilter implements PostDiscoveryFilter {
@@ -565,7 +588,7 @@ public class JunitTestRunner {
                     return FilterResult.includedIf(exclude);
                 }
             }
-            return FilterResult.included("not a class");
+            return FilterResult.included("not a method");
         }
 
         public FilterResult filterTags(AnnotatedElement clz) {
@@ -585,6 +608,32 @@ public class JunitTestRunner {
                 }
             }
             return FilterResult.includedIf(exclude);
+        }
+    }
+
+    private static class RegexFilter implements PostDiscoveryFilter {
+
+        final boolean exclude;
+        final Pattern pattern;
+
+        private RegexFilter(boolean exclude, Pattern pattern) {
+            this.exclude = exclude;
+            this.pattern = pattern;
+        }
+
+        @Override
+        public FilterResult apply(TestDescriptor testDescriptor) {
+            if (testDescriptor.getSource().isPresent()) {
+                if (testDescriptor.getSource().get() instanceof MethodSource) {
+                    MethodSource methodSource = (MethodSource) testDescriptor.getSource().get();
+                    String name = methodSource.getJavaClass().getName();
+                    if (pattern.matcher(name).matches()) {
+                        return FilterResult.includedIf(!exclude);
+                    }
+                    return FilterResult.includedIf(exclude);
+                }
+            }
+            return FilterResult.included("not a method");
         }
     }
 }

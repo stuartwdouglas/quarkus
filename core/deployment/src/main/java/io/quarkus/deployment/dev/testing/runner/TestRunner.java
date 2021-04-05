@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import org.jboss.logging.Logger;
 import org.junit.platform.engine.TestExecutionResult;
@@ -51,6 +52,8 @@ public class TestRunner {
     private volatile boolean firstRun = true;
     volatile List<String> includeTags = Collections.emptyList();
     volatile List<String> excludeTags = Collections.emptyList();
+    volatile Pattern include = null;
+    volatile Pattern exclude = null;
     volatile InputHandler.ConsoleStatus promptHandler;
     private JunitTestRunner runner;
 
@@ -80,7 +83,6 @@ public class TestRunner {
         @Override
         public void promptHandler(InputHandler.ConsoleStatus promptHandler) {
             TestRunner.this.promptHandler = promptHandler;
-            promptHandler.setPrompt(DISABLED_PROMPT);
         }
     };
 
@@ -224,6 +226,8 @@ public class TestRunner {
                     .setTestApplication(testApplication)
                     .setIncludeTags(includeTags)
                     .setExcludeTags(excludeTags)
+                    .setInclude(include)
+                    .setExclude(exclude)
                     .setListener(new JunitTestRunner.TestListener() {
                         @Override
                         public void runStarted(long toRun) {
@@ -349,5 +353,10 @@ public class TestRunner {
     public void setTags(List<String> includeTags, List<String> excludeTags) {
         this.includeTags = includeTags;
         this.excludeTags = excludeTags;
+    }
+
+    public void setPatterns(String include, String exclude) {
+        this.include = include == null ? null : Pattern.compile(include);
+        this.exclude = exclude == null ? null : Pattern.compile(exclude);
     }
 }

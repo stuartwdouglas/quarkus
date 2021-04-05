@@ -23,7 +23,8 @@ public class IncludeTagsTestCase {
                 @Override
                 public JavaArchive get() {
                     return ShrinkWrap.create(JavaArchive.class).addClass(HelloResource.class)
-                            .add(new StringAsset("quarkus.test.include-tags=a"), "application.properties");
+                            .add(new StringAsset("quarkus.test.continuous-testing=enabled\nquarkus.test.include-tags=a"),
+                                    "application.properties");
                 }
             })
             .setTestArchiveProducer(new Supplier<JavaArchive>() {
@@ -45,7 +46,7 @@ public class IncludeTagsTestCase {
         test.modifyResourceFile("application.properties", new Function<String, String>() {
             @Override
             public String apply(String s) {
-                return "quarkus.test.include-tags=c";
+                return "quarkus.test.continuous-testing=enabled\nquarkus.test.include-tags=c";
             }
         });
         ts = TestRunnerTestUtils.waitForRun(2);
@@ -58,7 +59,7 @@ public class IncludeTagsTestCase {
         test.modifyResourceFile("application.properties", new Function<String, String>() {
             @Override
             public String apply(String s) {
-                return "";
+                return "quarkus.test.continuous-testing=enabled\n";
             }
         });
         ts = TestRunnerTestUtils.waitForRun(3);

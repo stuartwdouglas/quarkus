@@ -1,4 +1,4 @@
-package io.quarkus.vertx.http.testrunner.tags;
+package io.quarkus.vertx.http.testrunner.includes;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -15,7 +15,7 @@ import io.quarkus.vertx.http.deployment.devmode.tests.TestStatus;
 import io.quarkus.vertx.http.testrunner.HelloResource;
 import io.quarkus.vertx.http.testrunner.TestRunnerTestUtils;
 
-public class ExcludeTagsTestCase {
+public class IncludePatternTestCase {
 
     @RegisterExtension
     static QuarkusDevModeTest test = new QuarkusDevModeTest()
@@ -23,14 +23,15 @@ public class ExcludeTagsTestCase {
                 @Override
                 public JavaArchive get() {
                     return ShrinkWrap.create(JavaArchive.class).addClass(HelloResource.class)
-                            .add(new StringAsset("quarkus.test.continuous-testing=enabled\nquarkus.test.exclude-tags=a"),
+                            .add(new StringAsset(
+                                    "quarkus.test.continuous-testing=enabled\nquarkus.test.include-pattern=.*BarET"),
                                     "application.properties");
                 }
             })
             .setTestArchiveProducer(new Supplier<JavaArchive>() {
                 @Override
                 public JavaArchive get() {
-                    return ShrinkWrap.create(JavaArchive.class).addClass(TaggedET.class);
+                    return ShrinkWrap.create(JavaArchive.class).addClasses(FooET.class, BarET.class);
                 }
             });
 
@@ -39,20 +40,20 @@ public class ExcludeTagsTestCase {
         TestStatus ts = TestRunnerTestUtils.waitForFirstRunToComplete();
         Assertions.assertEquals(1L, ts.getLastRun());
         Assertions.assertEquals(0L, ts.getTestsFailed());
-        Assertions.assertEquals(3L, ts.getTestsPassed());
+        Assertions.assertEquals(1L, ts.getTestsPassed());
         Assertions.assertEquals(0L, ts.getTestsSkipped());
         Assertions.assertEquals(-1L, ts.getRunning());
 
         test.modifyResourceFile("application.properties", new Function<String, String>() {
             @Override
             public String apply(String s) {
-                return "quarkus.test.continuous-testing=enabled\nquarkus.test.exclude-tags=c";
+                return "quarkus.test.continuous-testing=enabled\nquarkus.test.include-pattern=io\\.quarkus.*";
             }
         });
         ts = TestRunnerTestUtils.waitForRun(2);
         Assertions.assertEquals(2L, ts.getLastRun());
         Assertions.assertEquals(0L, ts.getTestsFailed());
-        Assertions.assertEquals(4L, ts.getTestsPassed());
+        Assertions.assertEquals(2L, ts.getTestsPassed());
         Assertions.assertEquals(0L, ts.getTestsSkipped());
         Assertions.assertEquals(-1L, ts.getRunning());
 
@@ -65,7 +66,7 @@ public class ExcludeTagsTestCase {
         ts = TestRunnerTestUtils.waitForRun(3);
         Assertions.assertEquals(3L, ts.getLastRun());
         Assertions.assertEquals(0L, ts.getTestsFailed());
-        Assertions.assertEquals(5L, ts.getTestsPassed());
+        Assertions.assertEquals(2L, ts.getTestsPassed());
         Assertions.assertEquals(0L, ts.getTestsSkipped());
         Assertions.assertEquals(-1L, ts.getRunning());
     }

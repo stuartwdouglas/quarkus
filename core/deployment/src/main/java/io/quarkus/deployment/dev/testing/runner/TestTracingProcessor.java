@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import io.quarkus.deployment.IsDevelopment;
 import org.jboss.jandex.ClassInfo;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -12,6 +11,7 @@ import org.objectweb.asm.Opcodes;
 
 import io.quarkus.bootstrap.classloading.ClassPathElement;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.IsNormal;
 import io.quarkus.deployment.IsTest;
 import io.quarkus.deployment.TestConfig;
@@ -42,9 +42,9 @@ public class TestTracingProcessor {
         return new LogCleanupFilterBuildItem("org.junit.platform.launcher.core.EngineDiscoveryOrchestrator", "0 containers");
     }
 
-    @BuildStep(onlyIf= IsDevelopment.class)
+    @BuildStep(onlyIf = IsDevelopment.class)
     ServiceStartBuildItem setupConsole(TestConfig config) {
-        if (RuntimeUpdatesProcessor.INSTANCE == null || config.enabled == TestConfig.Mode.DISABLED) {
+        if (RuntimeUpdatesProcessor.INSTANCE == null || config.continuousTesting == TestConfig.Mode.DISABLED) {
             return null;
         }
         QuarkusConsole.installConsole(config);
@@ -54,17 +54,19 @@ public class TestTracingProcessor {
     @BuildStep(onlyIfNot = IsNormal.class)
     @Produce(LogHandlerBuildItem.class)
     ServiceStartBuildItem startTesting(TestConfig config) {
-        if (RuntimeUpdatesProcessor.INSTANCE == null || config.enabled == TestConfig.Mode.DISABLED) {
+        if (RuntimeUpdatesProcessor.INSTANCE == null || config.continuousTesting == TestConfig.Mode.DISABLED) {
             return null;
         }
-        if (config.enabled == TestConfig.Mode.ENABLED) {
+        if (config.continuousTesting == TestConfig.Mode.ENABLED) {
             RuntimeUpdatesProcessor.INSTANCE.getTestSupport().start();
-        } else if (config.enabled == TestConfig.Mode.PAUSED) {
+        } else if (config.continuousTesting == TestConfig.Mode.PAUSED) {
             RuntimeUpdatesProcessor.INSTANCE.getTestSupport().init();
             RuntimeUpdatesProcessor.INSTANCE.getTestSupport().stop();
         }
         RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setTags(config.includeTags.orElse(Collections.emptyList()),
                 config.excludeTags.orElse(Collections.emptyList()));
+        RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setPatterns(config.includePattern.orElse(null),
+                config.excludePattern.orElse(null));
         return null;
     }
 
