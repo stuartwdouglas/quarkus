@@ -22,6 +22,12 @@ public class AeshConsole extends QuarkusConsole {
         this.connection = connection;
         connection.openNonBlocking();
         setup(connection);
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                connection.close();
+            }
+        }, "Console Shutdown Hoot"));
     }
 
     private synchronized AeshConsole setStatusMessage(String statusMessage) {

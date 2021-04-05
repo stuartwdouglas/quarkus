@@ -342,6 +342,8 @@ public class DevMojo extends AbstractMojo {
                 if (System.currentTimeMillis() > nextCheck) {
                     nextCheck = System.currentTimeMillis() + 100;
                     if (!runner.alive()) {
+                        //reset the terminal
+                        System.out.println("\u001B[0m");
                         if (runner.exitValue() != 0) {
                             throw new MojoExecutionException("Dev mode process did not complete successfully");
                         }

@@ -42,7 +42,7 @@ public class TestConfig {
      * Defaults to 'slow'
      */
     @ConfigItem(defaultValue = "slow")
-    public List<String> excludeTags;
+    public Optional<List<String>> excludeTags;
 
     /**
      * Disable the testing status/prompt message at the bottom of the console

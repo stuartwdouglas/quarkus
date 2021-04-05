@@ -43,7 +43,7 @@ public abstract class QuarkusConsole {
 
     public abstract void write(byte[] buf, int off, int len);
 
-    public static void installConsole(TestConfig config) {
+    public static synchronized void installConsole(TestConfig config) {
         if (installed) {
             return;
         }

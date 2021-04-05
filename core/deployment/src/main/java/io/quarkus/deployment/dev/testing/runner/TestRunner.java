@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import org.jboss.logging.Logger;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.launcher.TestIdentifier;
 import org.opentest4j.TestAbortedException;
 
 import io.quarkus.bootstrap.app.CuratedApplication;
@@ -238,8 +239,6 @@ public class TestRunner {
                                 skipped.incrementAndGet();
                             }
                             methodCount.incrementAndGet();
-                            promptHandler.setStatus("Running " + methodCount.get() + "/" + totalNoTests
-                                    + (failureCount.get() == 0 ? "." : ". " + failureCount + " failures so far."));
                         }
 
                         @Override
@@ -249,6 +248,15 @@ public class TestRunner {
 
                         @Override
                         public void runAborted() {
+                        }
+
+                        @Override
+                        public void testStarted(TestIdentifier testIdentifier, String className) {
+                            promptHandler.setStatus("Running " + methodCount.get() + "/" + totalNoTests
+                                    + (failureCount.get() == 0 ? "."
+                                            : ". " + failureCount + " failures so far.")
+                                    + " Running: "
+                                    + className + "#" + testIdentifier.getDisplayName());
                         }
                     })
                     .build();

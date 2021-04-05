@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import io.quarkus.deployment.IsDevelopment;
 import org.jboss.jandex.ClassInfo;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -41,10 +42,18 @@ public class TestTracingProcessor {
         return new LogCleanupFilterBuildItem("org.junit.platform.launcher.core.EngineDiscoveryOrchestrator", "0 containers");
     }
 
+    @BuildStep(onlyIf= IsDevelopment.class)
+    ServiceStartBuildItem setupConsole(TestConfig config) {
+        if (RuntimeUpdatesProcessor.INSTANCE == null || config.enabled == TestConfig.Mode.DISABLED) {
+            return null;
+        }
+        QuarkusConsole.installConsole(config);
+        return null;
+    }
+
     @BuildStep(onlyIfNot = IsNormal.class)
     @Produce(LogHandlerBuildItem.class)
     ServiceStartBuildItem startTesting(TestConfig config) {
-        QuarkusConsole.installConsole(config);
         if (RuntimeUpdatesProcessor.INSTANCE == null || config.enabled == TestConfig.Mode.DISABLED) {
             return null;
         }
@@ -55,7 +64,7 @@ public class TestTracingProcessor {
             RuntimeUpdatesProcessor.INSTANCE.getTestSupport().stop();
         }
         RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setTags(config.includeTags.orElse(Collections.emptyList()),
-                config.excludeTags);
+                config.excludeTags.orElse(Collections.emptyList()));
         return null;
     }
 

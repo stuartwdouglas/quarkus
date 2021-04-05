@@ -158,6 +158,15 @@ public class JunitTestRunner {
 
                 @Override
                 public void executionStarted(TestIdentifier testIdentifier) {
+                    String className = "";
+                    if (testIdentifier.getSource().isPresent()) {
+                        if (testIdentifier.getSource().get() instanceof MethodSource) {
+                            className = ((MethodSource) testIdentifier.getSource().get()).getClassName();
+                        } else if (testIdentifier.getSource().get() instanceof ClassSource) {
+                            className = ((ClassSource) testIdentifier.getSource().get()).getClassName();
+                        }
+                    }
+                    listener.testStarted(testIdentifier, className);
                     waitTillResumed();
                     touchedClasses.push(Collections.synchronizedSet(new HashSet<>()));
                 }
@@ -387,9 +396,9 @@ public class JunitTestRunner {
                 ClassInfo def = index.getClassByName(DotName.createSimple(aClass.getName()));
                 AnnotationInstance testProfile = def.classAnnotation(DotName.createSimple("io.quarkus.test.junit.TestProfile"));
                 if (testProfile == null) {
-                    return "";
+                    return "$$" + aClass.getName();
                 }
-                return testProfile.value().asClass().name().toString();
+                return testProfile.value().asClass().name().toString() + "$$" + aClass.getName();
             }
         }));
         return ret;
@@ -413,6 +422,7 @@ public class JunitTestRunner {
 
         void runAborted();
 
+        void testStarted(TestIdentifier testIdentifier, String className);
     }
 
     private class TestLogCapturingHandler implements Predicate<LogRecord> {
