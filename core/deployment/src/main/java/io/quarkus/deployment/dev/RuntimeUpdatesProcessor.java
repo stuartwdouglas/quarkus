@@ -1,20 +1,5 @@
 package io.quarkus.deployment.dev;
 
-import io.quarkus.bootstrap.runner.Timing;
-import io.quarkus.changeagent.ClassChangeAgent;
-import io.quarkus.deployment.dev.testing.TestSupport;
-import io.quarkus.deployment.dev.testing.runner.TestRunner;
-import io.quarkus.deployment.util.FSWatchUtil;
-import io.quarkus.deployment.util.FileUtil;
-import io.quarkus.dev.spi.DevModeType;
-import io.quarkus.dev.spi.HotReplacementContext;
-import io.quarkus.dev.spi.HotReplacementSetup;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.Index;
-import org.jboss.jandex.IndexView;
-import org.jboss.jandex.Indexer;
-import org.jboss.logging.Logger;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
@@ -58,7 +43,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.groupingBy;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
@@ -75,7 +59,6 @@ import io.quarkus.deployment.util.FileUtil;
 import io.quarkus.dev.spi.DevModeType;
 import io.quarkus.dev.spi.HotReplacementContext;
 import io.quarkus.dev.spi.HotReplacementSetup;
-import static java.util.stream.Collectors.toList;
 
 public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable {
 
@@ -395,7 +378,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                         Timing.convertToBigDecimalSeconds(System.nanoTime() - startNanoseconds));
             }
             return false;
-            
+
         } finally {
             scanLock.unlock();
             testSupport.resume();
@@ -791,7 +774,6 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         boolean includeTest = test.watchedFileTimestamps.isEmpty();
         this.watchedFilePaths = watchedFilePaths;
         main.watchedFileTimestamps.clear();
-        test.watchedFileTimestamps.clear();
         Map<String, Boolean> extraWatchedFilePaths = new HashMap<>();
         for (DevModeContext.ModuleInfo module : context.getAllModules()) {
             String rootPath = module.getMain().getResourcePath();
@@ -824,6 +806,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                     }
                     if (includeTest) {
                         test.watchedFileTimestamps.put(config, 0L);
+                        main.watchedFileTimestamps.putAll(extraWatchedFileTimestamps);
                     }
                 }
             }
