@@ -14,7 +14,6 @@ public class AeshConsole extends QuarkusConsole {
     private String statusMessage;
     private String promptMessage;
     private int totalStatusLines = 0;
-    private String emptyLine;
     private int lastWriteCursorX;
 
     public AeshConsole(Connection connection) {
@@ -116,12 +115,6 @@ public class AeshConsole extends QuarkusConsole {
             }
         });
 
-        StringBuilder line = new StringBuilder();
-        for (int i = 0; i < size.getWidth(); ++i) {
-            line.append(" ");
-        }
-        emptyLine = line.toString();
-
         conn.setCloseHandler(close -> end(conn));
         conn.setSizeHandler(size -> setup(conn));
 
@@ -166,9 +159,7 @@ public class AeshConsole extends QuarkusConsole {
 
     private void clearStatusMessages(StringBuilder buffer) {
         gotoLine(buffer, size.getHeight() - totalStatusLines);
-        for (int i = 0; i <= totalStatusLines; ++i) {
-            buffer.append(emptyLine);
-        }
+        buffer.append("\033[J");
     }
 
     private StringBuilder gotoLine(StringBuilder builder, int line) {
