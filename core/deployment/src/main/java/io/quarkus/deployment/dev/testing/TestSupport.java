@@ -202,6 +202,9 @@ public class TestSupport {
             for (Runnable i : stopListeners) {
                 i.run();
             }
+        }
+        if (testRunner != null) {
+
             testRunner.disable();
         }
     }
