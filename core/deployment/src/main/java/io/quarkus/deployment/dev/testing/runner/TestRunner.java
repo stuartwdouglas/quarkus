@@ -56,6 +56,7 @@ public class TestRunner {
     volatile Pattern exclude = null;
     volatile InputHandler.ConsoleStatus promptHandler;
     private JunitTestRunner runner;
+    private String lastStatus;
 
     private final InputHandler inputHandler = new InputHandler() {
 
@@ -64,7 +65,7 @@ public class TestRunner {
             if (disabled) {
                 for (int i : keys) {
                     if (i == 'e') {
-                        TestSupport.instance().start(true);
+                        TestSupport.instance().start();
                     }
                 }
             } else if (!firstRun) {
@@ -195,11 +196,16 @@ public class TestRunner {
         if (!disabled) {
             return;
         }
-        firstRun = true;
-        promptHandler.setStatus(null);
-        promptHandler.setPrompt(FIRST_RUN_PROMPT);
-        ContinuousTestingWebsocketListener.setRunning(true);
         disabled = false;
+        if (firstRun) {
+            promptHandler.setStatus(null);
+            promptHandler.setPrompt(FIRST_RUN_PROMPT);
+            ContinuousTestingWebsocketListener.setRunning(true);
+            runTests();
+        } else {
+            promptHandler.setPrompt(RUNNING_PROMPT);
+            promptHandler.setStatus(lastStatus);
+        }
     }
 
     private void runInternal(ClassScanResult classScanResult) {
@@ -278,10 +284,9 @@ public class TestRunner {
         }
         resultHandler.accept(results);
         if (results.getCurrentFailing().isEmpty()) {
-            promptHandler.setStatus(
-                    "\u001B[32mTests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
-                            + " were skipped. Tests took " + (results.getTotalTime())
-                            + "ms." + "\u001b[0m");
+            lastStatus = "\u001B[32mTests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
+                    + " were skipped. Tests took " + (results.getTotalTime())
+                    + "ms." + "\u001b[0m";
         } else {
             StringBuilder sb = new StringBuilder(
                     "\u001B[91mTest run failed, " + methodCount.get() + " tests were run, " + results.getCurrentFailing().size()
@@ -295,10 +300,11 @@ public class TestRunner {
                             test.getTestExecutionResult().getThrowable().get());
                 }
             }
-            promptHandler.setStatus(sb.toString() + "\u001b[0m");
+            lastStatus = sb.toString() + "\u001b[0m";
         }
         //this will re-print when using the basic console
         promptHandler.setPrompt(RUNNING_PROMPT);
+        promptHandler.setStatus(lastStatus);
         if (firstRun) {
             firstRun = false;
         }

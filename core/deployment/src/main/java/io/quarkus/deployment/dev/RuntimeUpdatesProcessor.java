@@ -110,6 +110,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     private static volatile IndexView lastStartIndex;
 
     private final TestSupport testSupport;
+    private volatile boolean firstTestScanComplete;
 
     public RuntimeUpdatesProcessor(Path applicationRoot, DevModeContext context, QuarkusCompiler compiler,
             DevModeType devModeType, BiConsumer<Set<String>, ClassScanResult> restartCallback,
@@ -127,7 +128,10 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         testSupport.addStartListener(new Runnable() {
             @Override
             public void run() {
-                checkForChangedTestClasses(true);
+                if (!firstTestScanComplete) {
+                    checkForChangedTestClasses(true);
+                    firstTestScanComplete = true;
+                }
                 startTestScanningTimer();
             }
         });
@@ -172,7 +176,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
                     public void run() {
                         periodicTestCompile();
                     }
-                }, 1000, 1000);
+                }, 1, 1000);
             }
         }
         return timer;

@@ -120,10 +120,6 @@ public class TestSupport {
     }
 
     public void start() {
-        start(false);
-    }
-
-    public void start(boolean runTests) {
         if (!started) {
             synchronized (this) {
                 if (!started) {
@@ -132,7 +128,6 @@ public class TestSupport {
                     try {
                         if (context.getApplicationRoot().getTest().isPresent()) {
                             started = true;
-                            runTests = true;
                             init();
                             for (Runnable i : startListeners) {
                                 i.run();
@@ -145,9 +140,6 @@ public class TestSupport {
 
                 }
             }
-        }
-        if (runTests) {
-            testRunner.runTests();
         }
     }
 
