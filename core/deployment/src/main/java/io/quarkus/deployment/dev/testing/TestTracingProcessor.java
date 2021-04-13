@@ -27,6 +27,7 @@ import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
 import io.quarkus.deployment.dev.console.QuarkusConsole;
 import io.quarkus.deployment.logging.LogCleanupFilterBuildItem;
+import io.quarkus.dev.spi.DevModeType;
 import io.quarkus.dev.testing.TracingHandler;
 
 /**
@@ -64,23 +65,28 @@ public class TestTracingProcessor {
 
     @BuildStep(onlyIfNot = IsNormal.class)
     @Produce(LogHandlerBuildItem.class)
-    ServiceStartBuildItem startTesting(TestConfig config, LiveReloadBuildItem liveReloadBuildItem) {
+    ServiceStartBuildItem startTesting(TestConfig config, LiveReloadBuildItem liveReloadBuildItem,
+            LaunchModeBuildItem launchModeBuildItem) {
         if (RuntimeUpdatesProcessor.INSTANCE == null || config.continuousTesting == TestConfig.Mode.DISABLED) {
             return null;
         }
+        if (launchModeBuildItem.getDevModeType().orElse(null) != DevModeType.LOCAL) {
+            return null;
+        }
+        TestSupport testSupport = TestSupport.instance();
         if (!liveReloadBuildItem.isLiveReload()) {
             if (config.continuousTesting == TestConfig.Mode.ENABLED) {
-                RuntimeUpdatesProcessor.INSTANCE.getTestSupport().start();
+                testSupport.start();
             } else if (config.continuousTesting == TestConfig.Mode.PAUSED) {
-                RuntimeUpdatesProcessor.INSTANCE.getTestSupport().init();
-                RuntimeUpdatesProcessor.INSTANCE.getTestSupport().stop();
+                testSupport.init();
+                testSupport.stop();
             }
         }
-        RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setTags(config.includeTags.orElse(Collections.emptyList()),
+        testSupport.setTags(config.includeTags.orElse(Collections.emptyList()),
                 config.excludeTags.orElse(Collections.emptyList()));
-        RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setPatterns(config.includePattern.orElse(null),
+        testSupport.setPatterns(config.includePattern.orElse(null),
                 config.excludePattern.orElse(null));
-        RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setConfiguredDisplayTestOutput(config.displayTestOutput);
+        testSupport.setConfiguredDisplayTestOutput(config.displayTestOutput);
         return null;
     }
 

@@ -6,9 +6,11 @@ import java.util.Map;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildStep;
+import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.dev.testing.TestClassResult;
 import io.quarkus.deployment.dev.testing.TestRunResults;
 import io.quarkus.deployment.dev.testing.TestSupport;
+import io.quarkus.dev.spi.DevModeType;
 import io.quarkus.devconsole.spi.DevConsoleRouteBuildItem;
 import io.quarkus.devconsole.spi.DevConsoleTemplateInfoBuildItem;
 import io.vertx.core.Handler;
@@ -18,12 +20,18 @@ import io.vertx.ext.web.RoutingContext;
 
 public class TestsProcessor {
     @BuildStep(onlyIf = IsDevelopment.class)
-    public DevConsoleTemplateInfoBuildItem results() {
+    public DevConsoleTemplateInfoBuildItem results(LaunchModeBuildItem launchModeBuildItem) {
+        if (launchModeBuildItem.getDevModeType().orElse(null) != DevModeType.LOCAL) {
+            return null;
+        }
         return new DevConsoleTemplateInfoBuildItem("tests", TestSupport.instance());
     }
 
-    @BuildStep
-    DevConsoleRouteBuildItem handleTestStatus() {
+    @BuildStep(onlyIf = IsDevelopment.class)
+    DevConsoleRouteBuildItem handleTestStatus(LaunchModeBuildItem launchModeBuildItem) {
+        if (launchModeBuildItem.getDevModeType().orElse(null) != DevModeType.LOCAL) {
+            return null;
+        }
         //GET tests/status
         //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)
         //GET tests/results
@@ -48,8 +56,11 @@ public class TestsProcessor {
         });
     }
 
-    @BuildStep
-    DevConsoleRouteBuildItem toggleTestRunner() {
+    @BuildStep(onlyIf = IsDevelopment.class)
+    DevConsoleRouteBuildItem toggleTestRunner(LaunchModeBuildItem launchModeBuildItem) {
+        if (launchModeBuildItem.getDevModeType().orElse(null) != DevModeType.LOCAL) {
+            return null;
+        }
         //GET tests/status
         //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)
         //GET tests/results
@@ -66,8 +77,11 @@ public class TestsProcessor {
         });
     }
 
-    @BuildStep
-    DevConsoleRouteBuildItem runAllTests() {
+    @BuildStep(onlyIf = IsDevelopment.class)
+    DevConsoleRouteBuildItem runAllTests(LaunchModeBuildItem launchModeBuildItem) {
+        if (launchModeBuildItem.getDevModeType().orElse(null) != DevModeType.LOCAL) {
+            return null;
+        }
         //GET tests/status
         //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)
         //GET tests/results
@@ -80,8 +94,11 @@ public class TestsProcessor {
         });
     }
 
-    @BuildStep
-    DevConsoleRouteBuildItem handleTestResult() {
+    @BuildStep(onlyIf = IsDevelopment.class)
+    DevConsoleRouteBuildItem handleTestResult(LaunchModeBuildItem launchModeBuildItem) {
+        if (launchModeBuildItem.getDevModeType().orElse(null) != DevModeType.LOCAL) {
+            return null;
+        }
         //GET tests/status
         //DISABLED, RUNNING (run id), RUN (run id, start time, nextRunQueued)
         //GET tests/results

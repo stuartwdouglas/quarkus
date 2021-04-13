@@ -127,26 +127,28 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         this.copyResourceNotification = copyResourceNotification;
         this.classTransformers = classTransformers;
         this.testSupport = testSupport;
-        testSupport.addListener(new TestListener() {
-            @Override
-            public void testsEnabled() {
-                if (!firstTestScanComplete) {
-                    checkForChangedTestClasses(true);
-                    firstTestScanComplete = true;
+        if (testSupport != null) {
+            testSupport.addListener(new TestListener() {
+                @Override
+                public void testsEnabled() {
+                    if (!firstTestScanComplete) {
+                        checkForChangedTestClasses(true);
+                        firstTestScanComplete = true;
+                    }
+                    startTestScanningTimer();
                 }
-                startTestScanningTimer();
-            }
 
-            @Override
-            public void testsDisabled() {
-                synchronized (RuntimeUpdatesProcessor.this) {
-                    if (timer != null) {
-                        timer.cancel();
-                        timer = null;
+                @Override
+                public void testsDisabled() {
+                    synchronized (RuntimeUpdatesProcessor.this) {
+                        if (timer != null) {
+                            timer.cancel();
+                            timer = null;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     public TestSupport getTestSupport() {
@@ -287,7 +289,9 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     public boolean doScan(boolean userInitiated) throws IOException {
         scanLock.lock();
         try {
-            testSupport.pause();
+            if (testSupport != null) {
+                testSupport.pause();
+            }
             final long startNanoseconds = System.nanoTime();
             for (Runnable step : preScanSteps) {
                 try {
@@ -386,7 +390,9 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
 
         } finally {
             scanLock.unlock();
-            testSupport.resume();
+            if (testSupport != null) {
+                testSupport.resume();
+            }
         }
     }
 

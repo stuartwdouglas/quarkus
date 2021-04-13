@@ -110,7 +110,6 @@ import io.quarkus.test.junit.callback.QuarkusTestBeforeEachCallback;
 import io.quarkus.test.junit.callback.QuarkusTestMethodContext;
 import io.quarkus.test.junit.internal.DeepClone;
 import io.quarkus.test.junit.internal.SerializationWithXStreamFallbackDeepClone;
-import io.quarkus.test.junit.internal.XStreamDeepClone;
 
 public class QuarkusTestExtension
         implements BeforeEachCallback, AfterEachCallback, BeforeAllCallback, InvocationInterceptor, AfterAllCallback,

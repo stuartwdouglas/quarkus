@@ -23,12 +23,6 @@ import io.quarkus.runtime.annotations.Recorder;
 @Recorder
 public class JaxrsClientReactiveRecorder extends ResteasyReactiveCommonRecorder {
 
-    public static final Supplier<Executor> EXECUTOR_SUPPLIER = new Supplier<Executor>() {
-        @Override
-        public Executor get() {
-            return ExecutorRecorder.getCurrent();
-        }
-    };
     private static volatile Serialisers serialisers;
     private static volatile GenericTypeMapping genericTypeMapping;
 
