@@ -135,16 +135,16 @@ public class DevConsoleProcessor {
             @Override
             public void run() {
                 virtualBootstrap = null;
-                if (devConsoleVertx != null) {
-                    devConsoleVertx.close();
-                    devConsoleVertx = null;
-                }
                 if (channel != null) {
                     try {
                         channel.close().sync();
                     } catch (InterruptedException e) {
                         throw new RuntimeException("failed to close virtual http");
                     }
+                }
+                if (devConsoleVertx != null) {
+                    devConsoleVertx.close();
+                    devConsoleVertx = null;
                 }
             }
         });
