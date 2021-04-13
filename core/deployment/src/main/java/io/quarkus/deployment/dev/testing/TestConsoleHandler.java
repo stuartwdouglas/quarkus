@@ -18,7 +18,7 @@ public class TestConsoleHandler implements TestListener {
 
     public static final String DISABLED_PROMPT = "\u001b[33mTests Disabled, press [e] to enable\u001b[0m";
     public static final String FIRST_RUN_PROMPT = "\u001b[33mRunning Tests for the first time\u001b[0m";
-    public static final String RUNNING_PROMPT = "Press [r] to re-run, [v] to view full results, [d] to disable, [?] for more options>";
+    public static final String RUNNING_PROMPT = "Press [r] to re-run, [v] to view full results, [d] to disable, [h] for more options>";
     public static final String ABORTED_PROMPT = "Test run aborted.";
 
     boolean firstRun = true;
@@ -62,7 +62,7 @@ public class TestConsoleHandler implements TestListener {
                         }
                     } else if (k == 'd') {
                         TestSupport.instance().stop();
-                    } else if (k == '?') {
+                    } else if (k == 'h') {
                         printUsage();
                     }
                 }
@@ -88,7 +88,7 @@ public class TestConsoleHandler implements TestListener {
         System.out.println("o - Toggle test output");
         System.out.println("i - Toggle instrumentation based reload");
         System.out.println("d - Disable tests");
-        System.out.println("? - Display this help");
+        System.out.println("h - Display this help");
 
     }
 

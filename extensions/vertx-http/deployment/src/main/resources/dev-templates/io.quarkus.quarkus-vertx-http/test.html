@@ -4,22 +4,22 @@
 {#body}
 
 <div id="tables" class="table-responsive">
-    {#for cn in info:tests.results.failing}
+    {#for cn in info:tests.results.failing.orEmpty}
     <div class="col mb-12">
         <div class="card h-100 shadow">
             <div class="card-header bg-danger text-light">
                 {cn.className}
             </div>
-            <div class="card-body">
+            <div class="card-body bg-dark">
                 {#for r in cn.failing}
                 <div>
                 <p class="card-text text-danger">
                     {r.displayName}
                 </p>
-                <p class="card-text text-danger">
+                <p class="card-text">
                     {#for log in r.logOutput}
                     <p class="card-text">
-                        {log.message}
+                        {log.raw}
                     </p>
                     {/for}
                 </p>
@@ -50,11 +50,19 @@
             <div class="card-header bg-success text-light">
                 {cn.className}
             </div>
-            <div class="card-body">
+            <div class="card-body bg-dark">
                 {#for r in cn.passing}
                   {#if r.test}
                     <p class="card-text text-success">
                         {r.displayName}
+                    </p>
+
+                    <p class="card-text">
+                        {#for log in r.logOutput}
+                        <p class="card-text">
+                            {log.raw}
+                        </p>
+                        {/for}
                     </p>
                   {/if}
                 {/for}
@@ -62,6 +70,14 @@
                     {#if r.test}
                         <p class="card-text text-warning">
                             {r.displayName}
+                        </p>
+
+                        <p class="card-text">
+                            {#for log in r.logOutput}
+                            <p class="card-text">
+                                {log.raw}
+                            </p>
+                            {/for}
                         </p>
                     {/if}
                 {/for}

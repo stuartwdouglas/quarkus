@@ -1,5 +1,6 @@
 package io.quarkus.deployment.dev.testing;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.AnnotatedElement;
@@ -7,6 +8,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -457,8 +459,18 @@ public class JunitTestRunner {
             while (cl.getParent() != null) {
                 if (cl == testApplication.getAugmentClassLoader()
                         || cl == testApplication.getBaseRuntimeClassLoader()) {
+                    //TODO: for convenience we save the log records as HTML rather than ansci here
                     synchronized (logOutput) {
-                        logOutput.add(logRecord);
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        HtmlAnsiOutputStream outputStream = new HtmlAnsiOutputStream(out) {
+                        };
+                        try {
+                            outputStream.write(logRecord.getBytes(StandardCharsets.UTF_8));
+                            logOutput.add(new String(out.toByteArray(), StandardCharsets.UTF_8));
+                        } catch (IOException e) {
+                            log.error("Failed to capture log record", e);
+                            logOutput.add(logRecord);
+                        }
                     }
                     return displayInConsole;
                 }
@@ -633,4 +645,5 @@ public class JunitTestRunner {
             return FilterResult.included("not a method");
         }
     }
+
 }
