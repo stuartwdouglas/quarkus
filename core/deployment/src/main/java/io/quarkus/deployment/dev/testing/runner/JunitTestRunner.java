@@ -65,6 +65,7 @@ import io.quarkus.deployment.dev.ClassScanResult;
 import io.quarkus.deployment.dev.DevModeContext;
 import io.quarkus.deployment.dev.testing.TestClassResult;
 import io.quarkus.deployment.dev.testing.TestResult;
+import io.quarkus.deployment.dev.testing.TestRunListener;
 import io.quarkus.deployment.dev.testing.TestRunResults;
 import io.quarkus.dev.testing.ContinuousTestingLogHandler;
 import io.quarkus.dev.testing.TracingHandler;
@@ -81,7 +82,7 @@ public class JunitTestRunner {
     private final ClassScanResult classScanResult;
     private final TestClassUsages testClassUsages;
     private final TestState testState;
-    private final TestListener listener;
+    private final List<TestRunListener> listeners;
     private final Set<String> includeTags;
     private final Set<String> excludeTags;
     private final Pattern include;
@@ -97,7 +98,7 @@ public class JunitTestRunner {
         this.testApplication = builder.testApplication;
         this.classScanResult = builder.classScanResult;
         this.testClassUsages = builder.testClassUsages;
-        this.listener = builder.listener;
+        this.listeners = builder.listeners;
         this.testState = builder.testState;
         this.includeTags = new HashSet<>(builder.includeTags);
         this.excludeTags = new HashSet<>(builder.excludeTags);
@@ -140,7 +141,9 @@ public class JunitTestRunner {
                 return;
             }
             long toRun = testPlan.countTestIdentifiers(TestIdentifier::isTest);
-            listener.runStarted(toRun);
+            for (TestRunListener listener : listeners) {
+                listener.runStarted(toRun);
+            }
             log.debug("Starting test run with " + quarkusTestClasses.size() + " test cases");
             TestLogCapturingHandler logHandler = new TestLogCapturingHandler();
             ContinuousTestingLogHandler.setLogHandler(logHandler);
@@ -176,7 +179,9 @@ public class JunitTestRunner {
                             className = ((ClassSource) testIdentifier.getSource().get()).getClassName();
                         }
                     }
-                    listener.testStarted(testIdentifier, className);
+                    for (TestRunListener listener : listeners) {
+                        listener.testStarted(testIdentifier, className);
+                    }
                     waitTillResumed();
                     touchedClasses.push(Collections.synchronizedSet(new HashSet<>()));
                 }
@@ -232,7 +237,9 @@ public class JunitTestRunner {
                                 logHandler.captureOutput(), testIdentifier.isTest(), runId);
                         results.put(id, result);
                         if (result.isTest()) {
-                            listener.testComplete(result);
+                            for (TestRunListener listener : listeners) {
+                                listener.testComplete(result);
+                            }
                         }
                     }
                     if (testExecutionResult.getStatus() == TestExecutionResult.Status.FAILED) {
@@ -281,8 +288,11 @@ public class JunitTestRunner {
 
             ContinuousTestingLogHandler.setLogHandler(null);
             List<TestResult> historicFailures = testState.getHistoricFailures(resultsByClass);
-            listener.runComplete(new TestRunResults(runId, classScanResult, classScanResult == null, start,
-                    System.currentTimeMillis(), toResultsMap(historicFailures, resultsByClass)));
+
+            for (TestRunListener listener : listeners) {
+                listener.runComplete(new TestRunResults(runId, classScanResult, classScanResult == null, start,
+                        System.currentTimeMillis(), toResultsMap(historicFailures, resultsByClass)));
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -292,7 +302,9 @@ public class JunitTestRunner {
     }
 
     public synchronized void abort() {
-        listener.runAborted();
+        for (TestRunListener listener : listeners) {
+            listener.runAborted();
+        }
         aborted = true;
         notifyAll();
     }
@@ -422,19 +434,6 @@ public class JunitTestRunner {
         return testsRunning;
     }
 
-    public interface TestListener {
-
-        void runStarted(long toRun);
-
-        void testComplete(TestResult result);
-
-        void runComplete(TestRunResults results);
-
-        void runAborted();
-
-        void testStarted(TestIdentifier testIdentifier, String className);
-    }
-
     private class TestLogCapturingHandler implements Predicate<LogRecord> {
 
         private final List<LogRecord> logOutput;
@@ -489,7 +488,7 @@ public class JunitTestRunner {
         private CuratedApplication testApplication;
         private ClassScanResult classScanResult;
         private TestClassUsages testClassUsages;
-        private TestListener listener;
+        private List<TestRunListener> listeners = new ArrayList<>();
         private List<String> includeTags = Collections.emptyList();
         private List<String> excludeTags = Collections.emptyList();
         private Pattern include;
@@ -530,8 +529,8 @@ public class JunitTestRunner {
             return this;
         }
 
-        public Builder setListener(TestListener listener) {
-            this.listener = listener;
+        public Builder addListener(TestRunListener listener) {
+            this.listeners.add(listener);
             return this;
         }
 
@@ -555,7 +554,6 @@ public class JunitTestRunner {
             Objects.requireNonNull(testClassUsages, "testClassUsages");
             Objects.requireNonNull(testApplication, "testApplication");
             Objects.requireNonNull(testState, "testState");
-            Objects.requireNonNull(listener, "listener");
             return new JunitTestRunner(this);
         }
 

@@ -19,15 +19,14 @@ import io.quarkus.deployment.dev.testing.runner.TestRunner;
 import io.quarkus.deployment.dev.testing.runner.TestState;
 import io.quarkus.dev.testing.ContinuousTestingWebsocketListener;
 
-public class TestSupport {
+public class TestSupport implements TestController {
 
     private static final Logger log = Logger.getLogger(TestSupport.class);
 
     final CuratedApplication curatedApplication;
     final List<CompilationProvider> compilationProviders;
     final DevModeContext context;
-    final List<Runnable> startListeners = new ArrayList<>();
-    final List<Runnable> stopListeners = new ArrayList<>();
+    final List<TestListener> testListeners = new ArrayList<>();
     final TestState testState = new TestState();
 
     volatile CuratedApplication testCuratedApplication;
@@ -53,6 +52,10 @@ public class TestSupport {
             return false;
         }
         return testRunner.isRunning();
+    }
+
+    public List<TestListener> getTestListeners() {
+        return testListeners;
     }
 
     /**
@@ -129,8 +132,8 @@ public class TestSupport {
                         if (context.getApplicationRoot().getTest().isPresent()) {
                             started = true;
                             init();
-                            for (Runnable i : startListeners) {
-                                i.run();
+                            for (TestListener i : testListeners) {
+                                i.testsEnabled();
                             }
                             testRunner.enable();
                         }
@@ -191,8 +194,8 @@ public class TestSupport {
     public synchronized void stop() {
         if (started) {
             started = false;
-            for (Runnable i : stopListeners) {
-                i.run();
+            for (TestListener i : testListeners) {
+                i.testsDisabled();
             }
         }
         if (testRunner != null) {
@@ -201,22 +204,19 @@ public class TestSupport {
         }
     }
 
-    public void addStartListener(Runnable runnable) {
+    public void addListener(TestListener listener) {
         boolean run = false;
         synchronized (this) {
-            startListeners.add(runnable);
+            testListeners.add(listener);
             if (started) {
                 run = true;
             }
         }
+        listener.listenerRegistered(this);
         if (run) {
             //run outside lock
-            runnable.run();
+            listener.testsEnabled();
         }
-    }
-
-    public synchronized void addStopListener(Runnable runnable) {
-        stopListeners.add(runnable);
     }
 
     public boolean isStarted() {
@@ -269,6 +269,16 @@ public class TestSupport {
         testRunner.setPatterns(include, exclude);
     }
 
+    @Override
+    public TestState currentState() {
+        return getTestRunner().getResults();
+    }
+
+    @Override
+    public void runAllTests() {
+        getTestRunner().runTests();
+    }
+
     public static class RunStatus {
 
         final long lastRun;
@@ -287,4 +297,5 @@ public class TestSupport {
             return running;
         }
     }
+
 }

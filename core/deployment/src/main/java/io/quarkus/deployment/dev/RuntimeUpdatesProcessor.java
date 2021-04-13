@@ -52,6 +52,7 @@ import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.runner.Timing;
 import io.quarkus.changeagent.ClassChangeAgent;
+import io.quarkus.deployment.dev.testing.TestListener;
 import io.quarkus.deployment.dev.testing.TestSupport;
 import io.quarkus.deployment.dev.testing.runner.TestRunner;
 import io.quarkus.deployment.util.FSWatchUtil;
@@ -125,19 +126,18 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
         this.copyResourceNotification = copyResourceNotification;
         this.classTransformers = classTransformers;
         this.testSupport = testSupport;
-        testSupport.addStartListener(new Runnable() {
+        testSupport.addListener(new TestListener() {
             @Override
-            public void run() {
+            public void testsEnabled() {
                 if (!firstTestScanComplete) {
                     checkForChangedTestClasses(true);
                     firstTestScanComplete = true;
                 }
                 startTestScanningTimer();
             }
-        });
-        testSupport.addStopListener(new Runnable() {
+
             @Override
-            public void run() {
+            public void testsDisabled() {
                 synchronized (RuntimeUpdatesProcessor.this) {
                     if (timer != null) {
                         timer.cancel();

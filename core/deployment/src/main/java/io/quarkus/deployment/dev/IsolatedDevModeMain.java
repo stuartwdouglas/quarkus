@@ -237,6 +237,7 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
             }
             QuarkusCompiler compiler = new QuarkusCompiler(curatedApplication, compilationProviders, context);
             TestSupport testSupport = new TestSupport(curatedApplication, compilationProviders, context);
+
             RuntimeUpdatesProcessor processor = new RuntimeUpdatesProcessor(appRoot, context, compiler,
                     devModeType, this::restartCallback, null, new BiFunction<String, byte[], byte[]>() {
                         @Override

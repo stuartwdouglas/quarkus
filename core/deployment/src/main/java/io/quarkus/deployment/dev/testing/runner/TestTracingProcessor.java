@@ -25,6 +25,7 @@ import io.quarkus.deployment.builditem.LogHandlerBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
 import io.quarkus.deployment.dev.console.QuarkusConsole;
+import io.quarkus.deployment.dev.testing.TestSupport;
 import io.quarkus.deployment.logging.LogCleanupFilterBuildItem;
 import io.quarkus.dev.testing.TracingHandler;
 
@@ -36,6 +37,7 @@ import io.quarkus.dev.testing.TracingHandler;
 public class TestTracingProcessor {
 
     private static TestConfig.Mode lastEnabledValue;
+    private static boolean consoleInstalled = false;
 
     @BuildStep(onlyIfNot = IsNormal.class)
     LogCleanupFilterBuildItem handle() {
@@ -47,7 +49,15 @@ public class TestTracingProcessor {
         if (RuntimeUpdatesProcessor.INSTANCE == null || config.continuousTesting == TestConfig.Mode.DISABLED) {
             return null;
         }
-        QuarkusConsole.installConsole(config);
+        if (consoleInstalled) {
+            return null;
+        }
+        if (config.console) {
+            QuarkusConsole.installConsole(config);
+            TestConsoleHandler consoleHandler = new TestConsoleHandler();
+            consoleHandler.install();
+            TestSupport.instance().addListener(consoleHandler);
+        }
         return null;
     }
 

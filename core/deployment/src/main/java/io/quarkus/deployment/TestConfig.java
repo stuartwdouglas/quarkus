@@ -76,6 +76,14 @@ public class TestConfig {
     public boolean disableColor;
 
     /**
+     * If test results and status should be displayed in the console.
+     *
+     * If this is false results can still be viewed in the dev console.
+     */
+    @ConfigItem(defaultValue = "true")
+    public boolean console;
+
+    /**
      * Duration to wait for the native image to built during testing
      */
     @ConfigItem(defaultValue = "PT5M")
