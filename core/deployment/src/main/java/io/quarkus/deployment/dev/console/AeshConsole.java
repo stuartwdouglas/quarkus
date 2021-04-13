@@ -87,6 +87,7 @@ public class AeshConsole extends QuarkusConsole {
         conn.write(ANSI.MAIN_BUFFER);
         conn.write(ANSI.CURSOR_SHOW);
         conn.setAttributes(attributes);
+        conn.write("\033[c");
     }
 
     private void setup(Connection conn) {

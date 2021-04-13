@@ -1,4 +1,4 @@
-package io.quarkus.deployment.dev.testing.runner;
+package io.quarkus.deployment.dev.testing;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +25,6 @@ import io.quarkus.deployment.builditem.LogHandlerBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
 import io.quarkus.deployment.dev.console.QuarkusConsole;
-import io.quarkus.deployment.dev.testing.TestSupport;
 import io.quarkus.deployment.logging.LogCleanupFilterBuildItem;
 import io.quarkus.dev.testing.TracingHandler;
 

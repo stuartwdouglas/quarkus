@@ -2,7 +2,6 @@ package io.quarkus.vertx.http.deployment.devmode.tests;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.quarkus.deployment.IsDevelopment;
@@ -38,7 +37,7 @@ public class TestsProcessor {
                 testStatus.setLastRun(status.getLastRun());
                 testStatus.setRunning(status.getRunning());
                 if (status.getLastRun() > 0) {
-                    TestRunResults result = TestSupport.instance().getCompletedResults(status.getLastRun());
+                    TestRunResults result = TestSupport.instance().getResults();
                     testStatus.setTestsFailed(result.getTestsFailed());
                     testStatus.setTestsPassed(result.getTestsPassed());
                     testStatus.setTestsSkipped(result.getTestsSkipped());
@@ -90,24 +89,19 @@ public class TestsProcessor {
         return new DevConsoleRouteBuildItem("tests/result", "GET", new Handler<RoutingContext>() {
             @Override
             public void handle(RoutingContext event) {
-                long run = Long.parseLong(event.request().params().get("run"));
-                TestSupport.instance().getRunningResults(run).whenComplete(new BiConsumer<TestRunResults, Throwable>() {
-                    @Override
-                    public void accept(TestRunResults testRunResults, Throwable throwable) {
-                        if (throwable != null) {
-                            event.fail(throwable);
-                        } else {
-                            jsonResponse(event);
-                            Map<String, ClassResult> results = new HashMap<>();
-                            for (Map.Entry<String, TestClassResult> entry : testRunResults.getResults().entrySet()) {
-                                results.put(entry.getKey(), new ClassResult(entry.getValue()));
-                            }
-                            SuiteResult result = new SuiteResult(results);
-                            event.response().end(JsonObject.mapFrom(result).encode());
+                TestRunResults testRunResults = TestSupport.instance().getResults();
+                if (testRunResults == null) {
+                    event.response().setStatusCode(204).end();
+                } else {
 
-                        }
+                    jsonResponse(event);
+                    Map<String, ClassResult> results = new HashMap<>();
+                    for (Map.Entry<String, TestClassResult> entry : testRunResults.getResults().entrySet()) {
+                        results.put(entry.getKey(), new ClassResult(entry.getValue()));
                     }
-                });
+                    SuiteResult result = new SuiteResult(results);
+                    event.response().end(JsonObject.mapFrom(result).encode());
+                }
             }
         });
     }

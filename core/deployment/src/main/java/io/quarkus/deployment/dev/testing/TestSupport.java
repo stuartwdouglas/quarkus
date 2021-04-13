@@ -2,9 +2,9 @@ package io.quarkus.deployment.dev.testing;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import org.jboss.logging.Logger;
 
@@ -15,9 +15,6 @@ import io.quarkus.deployment.dev.CompilationProvider;
 import io.quarkus.deployment.dev.DevModeContext;
 import io.quarkus.deployment.dev.QuarkusCompiler;
 import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
-import io.quarkus.deployment.dev.testing.runner.TestRunner;
-import io.quarkus.deployment.dev.testing.runner.TestState;
-import io.quarkus.dev.testing.ContinuousTestingWebsocketListener;
 
 public class TestSupport implements TestController {
 
@@ -34,7 +31,10 @@ public class TestSupport implements TestController {
     volatile TestRunner testRunner;
     volatile boolean started;
     volatile TestRunResults testRunResults;
-    private final List<CompletableFuture<TestRunResults>> resultsListeners = new ArrayList<>();
+    volatile List<String> includeTags = Collections.emptyList();
+    volatile List<String> excludeTags = Collections.emptyList();
+    volatile Pattern include = null;
+    volatile Pattern exclude = null;
 
     public TestSupport(CuratedApplication curatedApplication, List<CompilationProvider> compilationProviders,
             DevModeContext context) {
@@ -56,49 +56,6 @@ public class TestSupport implements TestController {
 
     public List<TestListener> getTestListeners() {
         return testListeners;
-    }
-
-    /**
-     * Gets the results for an already completed test run, whoes ID is equal to or larger than the provided id.
-     */
-    public synchronized TestRunResults getCompletedResults(long expectedId) {
-        if (testRunner == null) {
-            throw new IllegalStateException("Test runner not started");
-        }
-        TestRunResults tr = testRunResults;
-        if (tr != null) {
-            if (tr.getId() >= expectedId) {
-                return tr;
-            }
-        }
-        throw new IllegalStateException("Test run with provided id has not completed yet");
-    }
-
-    /**
-     * Gets the results for a test run, whoes ID is equal to or larger than the provided id.
-     * <p>
-     * This can be used to wait for a currently running test suite by using {@link #getStatus()} to
-     * get the currently running id, and then passing it to this method.
-     */
-    public synchronized CompletableFuture<TestRunResults> getRunningResults(long expectedId) {
-        CompletableFuture<TestRunResults> ret = new CompletableFuture<>();
-        if (testRunner == null) {
-            ret.completeExceptionally(new IllegalStateException("Test runner not started"));
-            return ret;
-        }
-        TestRunResults tr = testRunResults;
-        if (tr != null) {
-            if (tr.getId() >= expectedId) {
-                ret.complete(tr);
-                return ret;
-            }
-        }
-        long status = testRunner.getRunningTestRunId();
-        if (status == -1 || expectedId > status) {
-            ret.completeExceptionally(new IllegalStateException("Test run with provided id has not started yet"));
-        }
-        resultsListeners.add(ret);
-        return ret;
     }
 
     /**
@@ -126,8 +83,6 @@ public class TestSupport implements TestController {
         if (!started) {
             synchronized (this) {
                 if (!started) {
-                    ContinuousTestingWebsocketListener
-                            .setLastState(new ContinuousTestingWebsocketListener.State(true, true, 0L, 0L, 0L, 0L));
                     try {
                         if (context.getApplicationRoot().getTest().isPresent()) {
                             started = true;
@@ -164,26 +119,7 @@ public class TestSupport implements TestController {
                         .build()
                         .bootstrap();
                 compiler = new QuarkusCompiler(testCuratedApplication, compilationProviders, context);
-                testRunner = new TestRunner(context, testCuratedApplication, new Consumer<TestRunResults>() {
-                    @Override
-                    public void accept(TestRunResults testRunResults) {
-                        synchronized (TestSupport.this) {
-                            TestSupport.this.testRunResults = testRunResults;
-                            for (CompletableFuture<TestRunResults> i : resultsListeners) {
-                                i.complete(testRunResults);
-                            }
-                            resultsListeners.clear();
-                        }
-                        ContinuousTestingWebsocketListener.setLastState(
-                                new ContinuousTestingWebsocketListener.State(true, testRunner.isRunning(),
-                                        testRunResults.getTestsPassed() +
-                                                testRunResults.getTestsFailed() +
-                                                testRunResults.getTestsSkipped(),
-                                        testRunResults.getTestsPassed(),
-                                        testRunResults.getTestsFailed(), testRunResults.getTestsSkipped()));
-
-                    }
-                }, testState);
+                testRunner = new TestRunner(this, context, testCuratedApplication);
 
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -256,22 +192,18 @@ public class TestSupport implements TestController {
     }
 
     public void setTags(List<String> includeTags, List<String> excludeTags) {
-        if (testRunner == null) {
-            return;
-        }
-        testRunner.setTags(includeTags, excludeTags);
+        this.includeTags = includeTags;
+        this.excludeTags = excludeTags;
     }
 
     public void setPatterns(String include, String exclude) {
-        if (testRunner == null) {
-            return;
-        }
-        testRunner.setPatterns(include, exclude);
+        this.include = include == null ? null : Pattern.compile(include);
+        this.exclude = exclude == null ? null : Pattern.compile(exclude);
     }
 
     @Override
     public TestState currentState() {
-        return getTestRunner().getResults();
+        return testState;
     }
 
     @Override

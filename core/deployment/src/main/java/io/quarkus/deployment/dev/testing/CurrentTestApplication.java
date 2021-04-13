@@ -1,4 +1,4 @@
-package io.quarkus.deployment.dev.testing.runner;
+package io.quarkus.deployment.dev.testing;
 
 import java.util.function.Consumer;
 

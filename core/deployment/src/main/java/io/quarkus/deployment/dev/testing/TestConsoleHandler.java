@@ -1,4 +1,4 @@
-package io.quarkus.deployment.dev.testing.runner;
+package io.quarkus.deployment.dev.testing;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -10,13 +10,6 @@ import org.junit.platform.launcher.TestIdentifier;
 
 import io.quarkus.deployment.dev.console.InputHandler;
 import io.quarkus.deployment.dev.console.QuarkusConsole;
-import io.quarkus.deployment.dev.testing.TestClassResult;
-import io.quarkus.deployment.dev.testing.TestController;
-import io.quarkus.deployment.dev.testing.TestListener;
-import io.quarkus.deployment.dev.testing.TestResult;
-import io.quarkus.deployment.dev.testing.TestRunListener;
-import io.quarkus.deployment.dev.testing.TestRunResults;
-import io.quarkus.deployment.dev.testing.TestSupport;
 
 public class TestConsoleHandler implements TestListener {
 
@@ -25,6 +18,7 @@ public class TestConsoleHandler implements TestListener {
     public static final String DISABLED_PROMPT = "\u001b[33mTests Disabled, press [e] to enable\u001b[0m";
     public static final String FIRST_RUN_PROMPT = "\u001b[33mRunning Tests for the first time\u001b[0m";
     public static final String RUNNING_PROMPT = "Press [r] to re-run, [v] to view full results, [d] to disable, [?] for more options>";
+    public static final String ABORTED_PROMPT = "Test run aborted.";
 
     boolean firstRun = true;
     boolean disabled = true;
@@ -119,7 +113,6 @@ public class TestConsoleHandler implements TestListener {
 
             @Override
             public void testComplete(TestResult result) {
-
                 if (result.getTestExecutionResult().getStatus() == TestExecutionResult.Status.FAILED) {
                     failureCount.incrementAndGet();
                 } else if (result.getTestExecutionResult().getStatus() == TestExecutionResult.Status.ABORTED) {
@@ -130,6 +123,7 @@ public class TestConsoleHandler implements TestListener {
 
             @Override
             public void runComplete(TestRunResults results) {
+                firstRun = false;
                 if (results.getCurrentFailing().isEmpty()) {
                     lastStatus = "\u001B[32mTests all passed, " + methodCount.get() + " tests were run, " + skipped.get()
                             + " were skipped. Tests took " + (results.getTotalTime())
@@ -157,7 +151,9 @@ public class TestConsoleHandler implements TestListener {
 
             @Override
             public void runAborted() {
-                promptHandler.setStatus("Test run aborted.");
+                promptHandler.setStatus(ABORTED_PROMPT);
+                promptHandler.setPrompt(RUNNING_PROMPT);
+                firstRun = false;
             }
 
             @Override

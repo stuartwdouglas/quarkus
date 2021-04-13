@@ -1,4 +1,4 @@
-package io.quarkus.deployment.dev.testing.runner;
+package io.quarkus.deployment.dev.testing;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,9 +12,6 @@ import java.util.stream.Collectors;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
-
-import io.quarkus.deployment.dev.testing.TestClassResult;
-import io.quarkus.deployment.dev.testing.TestResult;
 
 public class TestState {
 

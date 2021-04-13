@@ -86,7 +86,7 @@ import io.quarkus.deployment.builditem.ApplicationClassPredicateBuildItem;
 import io.quarkus.deployment.builditem.TestAnnotationBuildItem;
 import io.quarkus.deployment.builditem.TestClassBeanBuildItem;
 import io.quarkus.deployment.builditem.TestClassPredicateBuildItem;
-import io.quarkus.deployment.dev.testing.runner.CurrentTestApplication;
+import io.quarkus.deployment.dev.testing.CurrentTestApplication;
 import io.quarkus.dev.testing.TracingHandler;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.configuration.DurationConverter;

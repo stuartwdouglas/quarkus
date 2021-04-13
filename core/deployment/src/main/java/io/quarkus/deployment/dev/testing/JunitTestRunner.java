@@ -1,4 +1,4 @@
-package io.quarkus.deployment.dev.testing.runner;
+package io.quarkus.deployment.dev.testing;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,10 +63,6 @@ import org.opentest4j.TestAbortedException;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.deployment.dev.ClassScanResult;
 import io.quarkus.deployment.dev.DevModeContext;
-import io.quarkus.deployment.dev.testing.TestClassResult;
-import io.quarkus.deployment.dev.testing.TestResult;
-import io.quarkus.deployment.dev.testing.TestRunListener;
-import io.quarkus.deployment.dev.testing.TestRunResults;
 import io.quarkus.dev.testing.ContinuousTestingLogHandler;
 import io.quarkus.dev.testing.TracingHandler;
 

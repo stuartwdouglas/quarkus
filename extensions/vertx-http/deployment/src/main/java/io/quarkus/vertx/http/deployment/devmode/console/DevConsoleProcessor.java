@@ -53,6 +53,7 @@ import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.LogHandlerBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
+import io.quarkus.deployment.dev.testing.TestSupport;
 import io.quarkus.deployment.ide.EffectiveIdeBuildItem;
 import io.quarkus.deployment.ide.Ide;
 import io.quarkus.deployment.logging.LoggingSetupBuildItem;
@@ -363,11 +364,12 @@ public class DevConsoleProcessor {
                 .handler(logStreamRecorder.websocketHandler(historyHandlerBuildItem.value))
                 .build());
 
-        // Add continous testing
+        // Add continuous testing
         routeBuildItemBuildProducer.produce(nonApplicationRootPathBuildItem.routeBuilder()
                 .route("dev/test")
                 .handler(recorder.continousTestHandler())
                 .build());
+        TestSupport.instance().addListener(new ContinuousTestingWebSocketListener());
 
         for (DevConsoleRouteBuildItem i : routes) {
             Entry<String, String> groupAndArtifact = i.groupIdAndArtifactId(curateOutcomeBuildItem);

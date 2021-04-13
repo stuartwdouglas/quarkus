@@ -1,11 +1,7 @@
-package io.quarkus.deployment.dev.testing.runner;
+package io.quarkus.deployment.dev.testing;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import org.jboss.logging.Logger;
 import org.opentest4j.TestAbortedException;
@@ -13,20 +9,15 @@ import org.opentest4j.TestAbortedException;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.deployment.dev.ClassScanResult;
 import io.quarkus.deployment.dev.DevModeContext;
-import io.quarkus.deployment.dev.testing.TestListener;
-import io.quarkus.deployment.dev.testing.TestRunListener;
-import io.quarkus.deployment.dev.testing.TestRunResults;
-import io.quarkus.deployment.dev.testing.TestSupport;
-import io.quarkus.dev.testing.ContinuousTestingWebsocketListener;
 
 public class TestRunner {
 
     private static final Logger log = Logger.getLogger(TestRunner.class);
     private static final AtomicLong COUNTER = new AtomicLong();
 
+    private final TestSupport testSupport;
     private final DevModeContext devModeContext;
     private final CuratedApplication testApplication;
-    private final Consumer<TestRunResults> resultHandler;
 
     private boolean testsRunning = false;
     private boolean testsQueued = false;
@@ -35,25 +26,18 @@ public class TestRunner {
     private Throwable compileProblem;
 
     private final TestClassUsages testClassUsages = new TestClassUsages();
-    private final TestState testState;
     private boolean paused;
     /**
      * disabled is different to paused, when the runner is disabled we abort all runs rather than pausing them.
      */
     private volatile boolean disabled = true;
     private volatile boolean firstRun = true;
-    volatile List<String> includeTags = Collections.emptyList();
-    volatile List<String> excludeTags = Collections.emptyList();
-    volatile Pattern include = null;
-    volatile Pattern exclude = null;
     private JunitTestRunner runner;
 
-    public TestRunner(DevModeContext devModeContext, CuratedApplication testApplication, Consumer<TestRunResults> resultHandler,
-            TestState testState) {
+    public TestRunner(TestSupport testSupport, DevModeContext devModeContext, CuratedApplication testApplication) {
+        this.testSupport = testSupport;
         this.devModeContext = devModeContext;
         this.testApplication = testApplication;
-        this.resultHandler = resultHandler;
-        this.testState = testState;
     }
 
     public void runTests() {
@@ -96,7 +80,6 @@ public class TestRunner {
             @Override
             public void run() {
                 try {
-                    ContinuousTestingWebsocketListener.setInProgress(true);
                     runInternal(classScanResult);
                 } finally {
                     waitTillResumed();
@@ -115,8 +98,6 @@ public class TestRunner {
                     }
                     if (run) {
                         runTests(current);
-                    } else {
-                        ContinuousTestingWebsocketListener.setInProgress(false);
                     }
                 }
             }
@@ -126,7 +107,6 @@ public class TestRunner {
     }
 
     public synchronized void pause() {
-        //todo
         paused = true;
         if (runner != null) {
             runner.pause();
@@ -142,7 +122,6 @@ public class TestRunner {
     }
 
     public synchronized void disable() {
-        ContinuousTestingWebsocketListener.setRunning(false);
         disabled = true;
         notifyAll();
         if (runner != null) {
@@ -156,7 +135,6 @@ public class TestRunner {
         }
         disabled = false;
         if (firstRun) {
-            ContinuousTestingWebsocketListener.setRunning(true);
             runTests();
         }
     }
@@ -176,23 +154,23 @@ public class TestRunner {
                     .setClassScanResult(classScanResult)
                     .setDevModeContext(devModeContext)
                     .setRunId(runId)
-                    .setTestState(testState)
+                    .setTestState(testSupport.testState)
                     .setTestClassUsages(testClassUsages)
                     .setTestApplication(testApplication)
-                    .setIncludeTags(includeTags)
-                    .setExcludeTags(excludeTags)
-                    .setInclude(include)
-                    .setExclude(exclude)
-                    .addListener(new TestRunListener() {
-                        @Override
-                        public void runComplete(TestRunResults results) {
-                            resultHandler.accept(results);
-                        }
-
-                    });
-            for (TestListener i : TestSupport.instance().getTestListeners()) {
+                    .setIncludeTags(testSupport.includeTags)
+                    .setExcludeTags(testSupport.excludeTags)
+                    .setInclude(testSupport.include)
+                    .setExclude(testSupport.exclude);
+            for (TestListener i : testSupport.testListeners) {
                 i.testRunStarted(builder::addListener);
             }
+            builder.addListener(new TestRunListener() {
+                @Override
+                public void runComplete(TestRunResults results) {
+                    testSupport.testRunResults = results;
+
+                }
+            });
             runner = builder
                     .build();
             if (paused) {
@@ -237,21 +215,7 @@ public class TestRunner {
         compileProblem = null;
     }
 
-    public TestState getResults() {
-        return testState;
-    }
-
     public boolean isRunning() {
         return testsRunning;
-    }
-
-    public void setTags(List<String> includeTags, List<String> excludeTags) {
-        this.includeTags = includeTags;
-        this.excludeTags = excludeTags;
-    }
-
-    public void setPatterns(String include, String exclude) {
-        this.include = include == null ? null : Pattern.compile(include);
-        this.exclude = exclude == null ? null : Pattern.compile(exclude);
     }
 }
