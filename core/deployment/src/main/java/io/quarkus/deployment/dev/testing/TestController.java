@@ -6,4 +6,7 @@ public interface TestController {
 
     void runAllTests();
 
+    void setDisplayTestOutput(boolean displayTestOutput);
+
+    void runFailedTests();
 }

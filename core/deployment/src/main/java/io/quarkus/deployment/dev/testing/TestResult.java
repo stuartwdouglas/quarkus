@@ -1,7 +1,6 @@
 package io.quarkus.deployment.dev.testing;
 
 import java.util.List;
-import java.util.logging.LogRecord;
 
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
@@ -12,12 +11,12 @@ public class TestResult {
     final String testClass;
     final UniqueId uniqueId;
     final TestExecutionResult testExecutionResult;
-    final List<LogRecord> logOutput;
+    final List<String> logOutput;
     final boolean test;
     final long runId;
 
     public TestResult(String displayName, String testClass, UniqueId uniqueId, TestExecutionResult testExecutionResult,
-            List<LogRecord> logOutput, boolean test, long runId) {
+            List<String> logOutput, boolean test, long runId) {
         this.displayName = displayName;
         this.testClass = testClass;
         this.uniqueId = uniqueId;
@@ -31,7 +30,7 @@ public class TestResult {
         return testExecutionResult;
     }
 
-    public List<LogRecord> getLogOutput() {
+    public List<String> getLogOutput() {
         return logOutput;
     }
 

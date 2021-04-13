@@ -3,6 +3,7 @@ package io.quarkus.deployment.dev.console;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.aesh.readline.tty.terminal.TerminalConnection;
 import org.aesh.terminal.Connection;
@@ -16,6 +17,8 @@ public abstract class QuarkusConsole {
     public static volatile QuarkusConsole INSTANCE = new BasicConsole(false, false, System.out);
 
     private static volatile boolean installed;
+
+    protected volatile Predicate<String> outputFilter;
 
     public synchronized void pushInputHandler(InputHandler inputHandler) {
         InputHolder holder = inputHandlers.peek();
@@ -79,6 +82,10 @@ public abstract class QuarkusConsole {
         }
         s = s.replaceAll("\\u001B\\[(.*?)[a-zA-Z]", "");
         return s;
+    }
+
+    public void setOutputFilter(Predicate<String> logHandler) {
+        this.outputFilter = logHandler;
     }
 
     protected static abstract class InputHolder implements InputHandler.ConsoleStatus {

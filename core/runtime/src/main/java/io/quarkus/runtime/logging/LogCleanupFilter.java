@@ -3,14 +3,11 @@ package io.quarkus.runtime.logging;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import org.jboss.logging.Logger;
-
-import io.quarkus.dev.testing.ContinuousTestingLogHandler;
 
 public class LogCleanupFilter implements Filter {
 
@@ -27,13 +24,6 @@ public class LogCleanupFilter implements Filter {
         // Only allow filtering messages of warning level and lower
         if (record.getLevel().intValue() > Level.WARNING.intValue()) {
             return true;
-        }
-        //handle log messages for continous testing
-        Predicate<LogRecord> handler = ContinuousTestingLogHandler.getLogHandler();
-        if (handler != null) {
-            if (!handler.test(record)) {
-                return false;
-            }
         }
 
         LogCleanupFilterElement filterElement = filterElements.get(record.getLoggerName());

@@ -29,6 +29,12 @@ public class TestConfig {
     public Mode continuousTesting;
 
     /**
+     * If output from the running tests should be displayed in the console.
+     */
+    @ConfigItem(defaultValue = "false")
+    public boolean displayTestOutput;
+
+    /**
      * Tags that should be included for continuous testing.
      */
     @ConfigItem

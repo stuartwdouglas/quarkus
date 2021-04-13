@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.logging.LogRecord;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,7 +62,7 @@ import org.opentest4j.TestAbortedException;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.deployment.dev.ClassScanResult;
 import io.quarkus.deployment.dev.DevModeContext;
-import io.quarkus.dev.testing.ContinuousTestingLogHandler;
+import io.quarkus.deployment.dev.console.QuarkusConsole;
 import io.quarkus.dev.testing.TracingHandler;
 
 /**
@@ -79,10 +78,12 @@ public class JunitTestRunner {
     private final TestClassUsages testClassUsages;
     private final TestState testState;
     private final List<TestRunListener> listeners;
+    List<PostDiscoveryFilter> additionalFilters;
     private final Set<String> includeTags;
     private final Set<String> excludeTags;
     private final Pattern include;
     private final Pattern exclude;
+    private final boolean displayInConsole;
 
     private volatile boolean testsRunning = false;
     private volatile boolean aborted;
@@ -95,11 +96,13 @@ public class JunitTestRunner {
         this.classScanResult = builder.classScanResult;
         this.testClassUsages = builder.testClassUsages;
         this.listeners = builder.listeners;
+        this.additionalFilters = builder.additionalFilters;
         this.testState = builder.testState;
         this.includeTags = new HashSet<>(builder.includeTags);
         this.excludeTags = new HashSet<>(builder.excludeTags);
         this.include = builder.include;
         this.exclude = builder.exclude;
+        this.displayInConsole = builder.displayInConsole;
     }
 
     public void runTests() {
@@ -129,6 +132,9 @@ public class JunitTestRunner {
             } else if (exclude != null) {
                 launchBuilder.filters(new RegexFilter(true, exclude));
             }
+            if (!additionalFilters.isEmpty()) {
+                launchBuilder.filters(additionalFilters.toArray(new PostDiscoveryFilter[0]));
+            }
             LauncherDiscoveryRequest request = launchBuilder
                     .build();
             TestPlan testPlan = launcher.discover(request);
@@ -142,7 +148,7 @@ public class JunitTestRunner {
             }
             log.debug("Starting test run with " + quarkusTestClasses.size() + " test cases");
             TestLogCapturingHandler logHandler = new TestLogCapturingHandler();
-            ContinuousTestingLogHandler.setLogHandler(logHandler);
+            QuarkusConsole.INSTANCE.setOutputFilter(logHandler);
 
             final Deque<Set<String>> touchedClasses = new LinkedBlockingDeque<>();
             final AtomicReference<Set<String>> startupClasses = new AtomicReference<>();
@@ -282,7 +288,7 @@ public class JunitTestRunner {
                 testState.classesRemoved(classScanResult.getDeletedClassNames());
             }
 
-            ContinuousTestingLogHandler.setLogHandler(null);
+            QuarkusConsole.INSTANCE.setOutputFilter(null);
             List<TestResult> historicFailures = testState.getHistoricFailures(resultsByClass);
 
             for (TestRunListener listener : listeners) {
@@ -292,7 +298,7 @@ public class JunitTestRunner {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            ContinuousTestingLogHandler.setLogHandler(null);
+            QuarkusConsole.INSTANCE.setOutputFilter(null);
             Thread.currentThread().setContextClassLoader(old);
         }
     }
@@ -430,48 +436,33 @@ public class JunitTestRunner {
         return testsRunning;
     }
 
-    private class TestLogCapturingHandler implements Predicate<LogRecord> {
+    private class TestLogCapturingHandler implements Predicate<String> {
 
-        private final List<LogRecord> logOutput;
+        private final List<String> logOutput;
 
         public TestLogCapturingHandler() {
             this.logOutput = new ArrayList<>();
         }
 
-        public List<LogRecord> captureOutput() {
-            List<LogRecord> ret = new ArrayList<>(logOutput);
+        public List<String> captureOutput() {
+            List<String> ret = new ArrayList<>(logOutput);
             logOutput.clear();
             return ret;
         }
 
         @Override
-        public boolean test(LogRecord logRecord) {
-            int threadId = logRecord.getThreadID();
-            Thread thread = null;
-            if (threadId == Thread.currentThread().getId()) {
-                thread = Thread.currentThread();
-            } else {
-                for (Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
-                    if (e.getKey().getId() == threadId) {
-                        thread = e.getKey();
-                        break;
+        public boolean test(String logRecord) {
+            Thread thread = Thread.currentThread();
+            ClassLoader cl = thread.getContextClassLoader();
+            while (cl.getParent() != null) {
+                if (cl == testApplication.getAugmentClassLoader()
+                        || cl == testApplication.getBaseRuntimeClassLoader()) {
+                    synchronized (logOutput) {
+                        logOutput.add(logRecord);
                     }
+                    return displayInConsole;
                 }
-            }
-            if (thread != null) {
-                ClassLoader cl = thread.getContextClassLoader();
-                while (cl.getParent() != null) {
-                    if (cl == testApplication.getAugmentClassLoader()
-                            || cl == testApplication.getBaseRuntimeClassLoader()) {
-                        synchronized (logOutput) {
-                            if (logOutput.isEmpty() || logOutput.get(logOutput.size() - 1) != logRecord) { //this can be called multiple times
-                                logOutput.add(logRecord);
-                            }
-                        }
-                        return false;
-                    }
-                    cl = cl.getParent();
-                }
+                cl = cl.getParent();
             }
             return true;
         }
@@ -484,11 +475,13 @@ public class JunitTestRunner {
         private CuratedApplication testApplication;
         private ClassScanResult classScanResult;
         private TestClassUsages testClassUsages;
-        private List<TestRunListener> listeners = new ArrayList<>();
+        private final List<TestRunListener> listeners = new ArrayList<>();
+        private final List<PostDiscoveryFilter> additionalFilters = new ArrayList<>();
         private List<String> includeTags = Collections.emptyList();
         private List<String> excludeTags = Collections.emptyList();
         private Pattern include;
         private Pattern exclude;
+        private boolean displayInConsole;
 
         public Builder setRunId(long runId) {
             this.runId = runId;
@@ -530,6 +523,11 @@ public class JunitTestRunner {
             return this;
         }
 
+        public Builder addAdditionalFilter(PostDiscoveryFilter filter) {
+            this.additionalFilters.add(filter);
+            return this;
+        }
+
         public Builder setTestState(TestState testState) {
             this.testState = testState;
             return this;
@@ -542,6 +540,11 @@ public class JunitTestRunner {
 
         public Builder setExclude(Pattern exclude) {
             this.exclude = exclude;
+            return this;
+        }
+
+        public Builder setDisplayInConsole(boolean displayInConsole) {
+            this.displayInConsole = displayInConsole;
             return this;
         }
 

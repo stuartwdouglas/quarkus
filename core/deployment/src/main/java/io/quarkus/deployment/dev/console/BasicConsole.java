@@ -68,6 +68,11 @@ class BasicConsole extends QuarkusConsole {
 
     @Override
     public void write(String s) {
+        if (outputFilter != null) {
+            if (!outputFilter.test(s)) {
+                return;
+            }
+        }
         if (noColor || !LoggingSetupRecorder.hasColorSupport()) {
             printStream.print(stripAnsiCodes(s));
         } else {
@@ -80,4 +85,5 @@ class BasicConsole extends QuarkusConsole {
     public void write(byte[] buf, int off, int len) {
         write(new String(buf, off, len, Charset.defaultCharset()));
     }
+
 }

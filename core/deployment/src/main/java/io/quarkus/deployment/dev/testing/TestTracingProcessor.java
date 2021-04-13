@@ -76,6 +76,7 @@ public class TestTracingProcessor {
                 config.excludeTags.orElse(Collections.emptyList()));
         RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setPatterns(config.includePattern.orElse(null),
                 config.excludePattern.orElse(null));
+        RuntimeUpdatesProcessor.INSTANCE.getTestSupport().setConfiguredDisplayTestOutput(config.displayTestOutput);
         return null;
     }
 

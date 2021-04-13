@@ -1,9 +1,16 @@
 package io.quarkus.deployment.dev.testing;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.logging.Logger;
+import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.UniqueId;
+import org.junit.platform.launcher.PostDiscoveryFilter;
 import org.opentest4j.TestAbortedException;
 
 import io.quarkus.bootstrap.app.CuratedApplication;
@@ -22,6 +29,7 @@ public class TestRunner {
     private boolean testsRunning = false;
     private boolean testsQueued = false;
     private ClassScanResult queuedChanges = null;
+    private boolean queuedFailureRun;
 
     private Throwable compileProblem;
 
@@ -51,7 +59,15 @@ public class TestRunner {
         return -1;
     }
 
+    public void runFailedTests() {
+        runTests(null, true);
+    }
+
     public void runTests(ClassScanResult classScanResult) {
+        runTests(classScanResult, false);
+    }
+
+    private void runTests(ClassScanResult classScanResult, boolean reRunFailures) {
         if (compileProblem != null) {
             return;
         }
@@ -61,8 +77,19 @@ public class TestRunner {
         if (disabled) {
             return;
         }
+        if (reRunFailures && testSupport.testRunResults == null) {
+            return;
+        }
+        if (reRunFailures && testSupport.testRunResults.getCurrentFailing().isEmpty()) {
+            log.error("Not re-running failed tests, as all tests passed");
+            return;
+        }
         synchronized (TestRunner.this) {
             if (testsRunning) {
+                if (reRunFailures) {
+                    log.error("Not re-running failed tests, as tests are already in progress.");
+                    return;
+                }
                 if (testsQueued) {
                     if (queuedChanges != null) { //if this is null a full run is scheduled
                         this.queuedChanges = ClassScanResult.merge(this.queuedChanges, classScanResult);
@@ -80,7 +107,7 @@ public class TestRunner {
             @Override
             public void run() {
                 try {
-                    runInternal(classScanResult);
+                    runInternal(classScanResult, reRunFailures);
                 } finally {
                     waitTillResumed();
                     boolean run = false;
@@ -139,7 +166,7 @@ public class TestRunner {
         }
     }
 
-    private void runInternal(ClassScanResult classScanResult) {
+    private void runInternal(ClassScanResult classScanResult, boolean reRunFailures) {
         final long runId = COUNTER.incrementAndGet();
 
         AtomicReference<TestRunResults> resultsRef = new AtomicReference<>();
@@ -157,10 +184,25 @@ public class TestRunner {
                     .setTestState(testSupport.testState)
                     .setTestClassUsages(testClassUsages)
                     .setTestApplication(testApplication)
+                    .setDisplayInConsole(testSupport.displayTestOutput)
                     .setIncludeTags(testSupport.includeTags)
                     .setExcludeTags(testSupport.excludeTags)
                     .setInclude(testSupport.include)
                     .setExclude(testSupport.exclude);
+            if (reRunFailures) {
+                Set<UniqueId> ids = new HashSet<>();
+                for (Map.Entry<String, TestClassResult> e : testSupport.testRunResults.getCurrentFailing().entrySet()) {
+                    for (TestResult test : e.getValue().getFailing()) {
+                        ids.add(test.uniqueId);
+                    }
+                }
+                builder.addAdditionalFilter(new PostDiscoveryFilter() {
+                    @Override
+                    public FilterResult apply(TestDescriptor testDescriptor) {
+                        return FilterResult.includedIf(ids.contains(testDescriptor.getUniqueId()));
+                    }
+                });
+            }
             for (TestListener i : testSupport.testListeners) {
                 i.testRunStarted(builder::addListener);
             }
@@ -218,4 +260,5 @@ public class TestRunner {
     public boolean isRunning() {
         return testsRunning;
     }
+
 }

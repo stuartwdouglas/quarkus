@@ -8,6 +8,7 @@ import org.jboss.logging.Logger;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TestIdentifier;
 
+import io.quarkus.deployment.dev.RuntimeUpdatesProcessor;
 import io.quarkus.deployment.dev.console.InputHandler;
 import io.quarkus.deployment.dev.console.QuarkusConsole;
 
@@ -41,13 +42,28 @@ public class TestConsoleHandler implements TestListener {
                     }
                 }
             } else if (!firstRun) {
+                //TODO: some of this is a bit yuck, this needs some work
                 for (int k : keys) {
                     if (k == 'r') {
                         testController.runAllTests();
+                    }
+                    if (k == 'f') {
+                        testController.runFailedTests();
                     } else if (k == 'v') {
                         printFullResults();
+                    } else if (k == 'i') {
+                        RuntimeUpdatesProcessor.INSTANCE.toggleInstrumentation();
+                    } else if (k == 'o') {
+                        TestSupport.instance().setDisplayTestOutput(!TestSupport.instance().displayTestOutput);
+                        if (TestSupport.instance().displayTestOutput) {
+                            log.info("Test output enabled");
+                        } else {
+                            log.info("Test output disabled");
+                        }
                     } else if (k == 'd') {
                         TestSupport.instance().stop();
+                    } else if (k == '?') {
+                        printUsage();
                     }
                 }
             }
@@ -65,7 +81,21 @@ public class TestConsoleHandler implements TestListener {
         promptHandler.setStatus(DISABLED_PROMPT);
     }
 
+    public void printUsage() {
+        System.out.println("r - Re-run all tests");
+        System.out.println("f - Re-run failed tests");
+        System.out.println("v - Print failures from the last test run");
+        System.out.println("o - Toggle test output");
+        System.out.println("i - Toggle instrumentation based reload");
+        System.out.println("d - Disable tests");
+        System.out.println("? - Display this help");
+
+    }
+
     private void printFullResults() {
+        if (testController.currentState().getFailingClasses().isEmpty()) {
+            log.info("All tests passed, no output to display");
+        }
         for (TestClassResult i : testController.currentState().getFailingClasses()) {
             for (TestResult failed : i.getFailing()) {
                 log.error(

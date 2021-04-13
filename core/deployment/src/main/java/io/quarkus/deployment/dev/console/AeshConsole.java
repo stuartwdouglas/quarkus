@@ -191,6 +191,11 @@ public class AeshConsole extends QuarkusConsole {
     }
 
     public synchronized void write(String s) {
+        if (outputFilter != null) {
+            if (!outputFilter.test(s)) {
+                return;
+            }
+        }
         StringBuilder buffer = new StringBuilder();
         clearStatusMessages(buffer);
         int cursorPos = lastWriteCursorX;

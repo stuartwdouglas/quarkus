@@ -112,6 +112,7 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
 
     private final TestSupport testSupport;
     private volatile boolean firstTestScanComplete;
+    private volatile Boolean instrumentationEnabled;
 
     public RuntimeUpdatesProcessor(Path applicationRoot, DevModeContext context, QuarkusCompiler compiler,
             DevModeType devModeType, BiConsumer<Set<String>, ClassScanResult> restartCallback,
@@ -390,6 +391,9 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
     }
 
     private Boolean instrumentationEnabled() {
+        if (instrumentationEnabled != null) {
+            return instrumentationEnabled;
+        }
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
@@ -866,6 +870,15 @@ public class RuntimeUpdatesProcessor implements HotReplacementContext, Closeable
             throw new UncheckedIOException(e);
         }
         return files;
+    }
+
+    public void toggleInstrumentation() {
+        instrumentationEnabled = !instrumentationEnabled();
+        if (instrumentationEnabled) {
+            log.info("Instrumentation based restart enabled");
+        } else {
+            log.info("Instrumentation based restart disabled");
+        }
     }
 
     static class TimestampSet {

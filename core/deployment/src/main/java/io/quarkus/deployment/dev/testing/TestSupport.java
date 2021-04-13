@@ -35,6 +35,8 @@ public class TestSupport implements TestController {
     volatile List<String> excludeTags = Collections.emptyList();
     volatile Pattern include = null;
     volatile Pattern exclude = null;
+    volatile boolean displayTestOutput;
+    volatile Boolean explicitDisplayTestOutput;
 
     public TestSupport(CuratedApplication curatedApplication, List<CompilationProvider> compilationProviders,
             DevModeContext context) {
@@ -201,6 +203,14 @@ public class TestSupport implements TestController {
         this.exclude = exclude == null ? null : Pattern.compile(exclude);
     }
 
+    public TestSupport setConfiguredDisplayTestOutput(boolean displayTestOutput) {
+        if (explicitDisplayTestOutput != null) {
+            this.displayTestOutput = displayTestOutput;
+        }
+        this.displayTestOutput = displayTestOutput;
+        return this;
+    }
+
     @Override
     public TestState currentState() {
         return testState;
@@ -209,6 +219,17 @@ public class TestSupport implements TestController {
     @Override
     public void runAllTests() {
         getTestRunner().runTests();
+    }
+
+    @Override
+    public void setDisplayTestOutput(boolean displayTestOutput) {
+        this.explicitDisplayTestOutput = displayTestOutput;
+        this.displayTestOutput = displayTestOutput;
+    }
+
+    @Override
+    public void runFailedTests() {
+        getTestRunner().runFailedTests();
     }
 
     public static class RunStatus {
