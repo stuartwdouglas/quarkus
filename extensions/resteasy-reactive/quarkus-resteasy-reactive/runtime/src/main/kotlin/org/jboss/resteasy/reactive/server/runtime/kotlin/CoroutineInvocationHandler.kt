@@ -1,12 +1,12 @@
-package org.jboss.resteasy.reactive.server.handlers
+package org.jboss.resteasy.reactive.server.runtime.kotlin
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jboss.resteasy.reactive.server.core.ResteasyReactiveRequestContext
-import org.jboss.resteasy.reactive.server.spi.CoroutineEndpointInvoker
+import org.jboss.resteasy.reactive.server.spi.EndpointInvoker
 import org.jboss.resteasy.reactive.server.spi.ServerRestHandler
 
-class CoroutineInvocationHandler(private val invoker: CoroutineEndpointInvoker) : ServerRestHandler {
+class CoroutineInvocationHandler(private val invoker: EndpointInvoker) : ServerRestHandler {
     override fun handle(requestContext: ResteasyReactiveRequestContext) {
         if (requestContext.result != null) {
             return
@@ -15,7 +15,11 @@ class CoroutineInvocationHandler(private val invoker: CoroutineEndpointInvoker) 
         requestContext.suspend()
         GlobalScope.launch {
             try {
-                requestContext.result = invoker.invoke(requestContext.endpointInstance, requestContext.parameters)
+                if (invoker is CoroutineEndpointInvoker) {
+                    requestContext.result = invoker.invokeCoroutine(requestContext.endpointInstance, requestContext.parameters)
+                } else {
+                    throw Exception("Not a CoroutineEndpointInvoker")
+                }
             } catch (t: Throwable) {
                 // passing true since the target doesn't change and we want response filters to be able to know what the resource method was
                 requestContext.handleException(t, true)

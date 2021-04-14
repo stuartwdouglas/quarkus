@@ -10,9 +10,7 @@ import org.jboss.resteasy.reactive.common.model.MethodParameter;
 import org.jboss.resteasy.reactive.common.model.ResourceMethod;
 import org.jboss.resteasy.reactive.common.processor.HashUtil;
 import org.jboss.resteasy.reactive.server.processor.EndpointInvokerFactory;
-import org.jboss.resteasy.reactive.server.spi.CoroutineEndpointInvoker;
 import org.jboss.resteasy.reactive.server.spi.EndpointInvoker;
-import org.jboss.resteasy.reactive.server.spi.StandardEndpointInvoker;
 
 import io.quarkus.deployment.GeneratedClassGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -21,11 +19,9 @@ import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.resteasy.reactive.server.runtime.ResteasyReactiveRecorder;
-import kotlin.coroutines.Continuation;
 
 public class QuarkusInvokerFactory implements EndpointInvokerFactory {
 
-    public static final String CONTINUATION = "kotlin.coroutines.Continuation";
     final BuildProducer<GeneratedClassBuildItem> generatedClassBuildItemBuildProducer;
     final ResteasyReactiveRecorder recorder;
 
@@ -37,52 +33,7 @@ public class QuarkusInvokerFactory implements EndpointInvokerFactory {
 
     @Override
     public Supplier<EndpointInvoker> create(ResourceMethod method, ClassInfo currentClassInfo, MethodInfo info) {
-        return info.parameters().stream().anyMatch(p -> p.name().toString().equals(CONTINUATION))
-                ? createCoroutineInvoker(method, currentClassInfo, info)
-                : createStandardInvoker(method, currentClassInfo, info);
-    }
 
-    private Supplier<EndpointInvoker> createCoroutineInvoker(ResourceMethod method, ClassInfo currentClassInfo,
-            MethodInfo info) {
-        StringBuilder sigBuilder = new StringBuilder();
-        sigBuilder.append(method.getName())
-                .append(method.getReturnType());
-        for (MethodParameter t : method.getParameters()) {
-            sigBuilder.append(t);
-        }
-        String baseName = currentClassInfo.name() + "$quarkuscoroutineinvoker$" + method.getName() + "_"
-                + HashUtil.sha1(sigBuilder.toString());
-        try (ClassCreator classCreator = new ClassCreator(
-                new GeneratedClassGizmoAdaptor(generatedClassBuildItemBuildProducer, true), baseName, null,
-                Object.class.getName(), CoroutineEndpointInvoker.class.getName())) {
-
-            try (MethodCreator mc = classCreator.getMethodCreator("invoke", Object.class, Object.class, Object[].class,
-                    Continuation.class)) {
-                ResultHandle[] args = new ResultHandle[method.getParameters().length + 1];
-                ResultHandle array = mc.getMethodParam(1);
-                for (int i = 0; i < method.getParameters().length; ++i) {
-                    args[i] = mc.readArrayValue(array, i);
-                }
-                args[args.length - 1] = mc.getMethodParam(2);
-                ResultHandle res;
-                if (Modifier.isInterface(currentClassInfo.flags())) {
-                    res = mc.invokeInterfaceMethod(info, mc.getMethodParam(0), args);
-                } else {
-                    res = mc.invokeVirtualMethod(info, mc.getMethodParam(0), args);
-                }
-                if (info.returnType().kind() == Type.Kind.VOID) {
-                    mc.returnValue(mc.loadNull());
-                } else {
-                    mc.returnValue(res);
-                }
-            }
-
-        }
-        return recorder.invoker(baseName);
-    }
-
-    private Supplier<EndpointInvoker> createStandardInvoker(ResourceMethod method, ClassInfo currentClassInfo,
-            MethodInfo info) {
         StringBuilder sigBuilder = new StringBuilder();
         sigBuilder.append(method.getName())
                 .append(method.getReturnType());
@@ -93,8 +44,7 @@ public class QuarkusInvokerFactory implements EndpointInvokerFactory {
                 + HashUtil.sha1(sigBuilder.toString());
         try (ClassCreator classCreator = new ClassCreator(
                 new GeneratedClassGizmoAdaptor(generatedClassBuildItemBuildProducer, true), baseName, null,
-                Object.class.getName(), StandardEndpointInvoker.class.getName())) {
-
+                Object.class.getName(), EndpointInvoker.class.getName())) {
             MethodCreator mc = classCreator.getMethodCreator("invoke", Object.class, Object.class, Object[].class);
             ResultHandle[] args = new ResultHandle[method.getParameters().length];
             ResultHandle array = mc.getMethodParam(1);

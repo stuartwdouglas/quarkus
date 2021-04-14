@@ -1,13 +1,13 @@
 package org.jboss.resteasy.reactive.server.handlers;
 
 import org.jboss.resteasy.reactive.server.core.ResteasyReactiveRequestContext;
+import org.jboss.resteasy.reactive.server.spi.EndpointInvoker;
 import org.jboss.resteasy.reactive.server.spi.ServerRestHandler;
-import org.jboss.resteasy.reactive.server.spi.StandardEndpointInvoker;
 
 public class InvocationHandler implements ServerRestHandler {
-    private final StandardEndpointInvoker invoker;
+    private final EndpointInvoker invoker;
 
-    public InvocationHandler(StandardEndpointInvoker invoker) {
+    public InvocationHandler(EndpointInvoker invoker) {
         this.invoker = invoker;
     }
 

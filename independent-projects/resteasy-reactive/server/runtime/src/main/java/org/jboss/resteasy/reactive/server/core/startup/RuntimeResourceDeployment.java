@@ -58,7 +58,6 @@ import org.jboss.resteasy.reactive.server.core.serialization.FixedEntityWriter;
 import org.jboss.resteasy.reactive.server.core.serialization.FixedEntityWriterArray;
 import org.jboss.resteasy.reactive.server.handlers.AbortChainHandler;
 import org.jboss.resteasy.reactive.server.handlers.BlockingHandler;
-import org.jboss.resteasy.reactive.server.handlers.CoroutineInvocationHandler;
 import org.jboss.resteasy.reactive.server.handlers.ExceptionHandler;
 import org.jboss.resteasy.reactive.server.handlers.FixedProducesHandler;
 import org.jboss.resteasy.reactive.server.handlers.FormBodyHandler;
@@ -80,12 +79,10 @@ import org.jboss.resteasy.reactive.server.model.HandlerChainCustomizer;
 import org.jboss.resteasy.reactive.server.model.ParamConverterProviders;
 import org.jboss.resteasy.reactive.server.model.ServerMethodParameter;
 import org.jboss.resteasy.reactive.server.model.ServerResourceMethod;
-import org.jboss.resteasy.reactive.server.spi.CoroutineEndpointInvoker;
 import org.jboss.resteasy.reactive.server.spi.EndpointInvoker;
 import org.jboss.resteasy.reactive.server.spi.ResteasyReactiveResourceInfo;
 import org.jboss.resteasy.reactive.server.spi.ServerMessageBodyWriter;
 import org.jboss.resteasy.reactive.server.spi.ServerRestHandler;
-import org.jboss.resteasy.reactive.server.spi.StandardEndpointInvoker;
 import org.jboss.resteasy.reactive.server.util.ScoreSystem;
 import org.jboss.resteasy.reactive.spi.BeanFactory;
 
@@ -304,10 +301,11 @@ public class RuntimeResourceDeployment {
         }
         addHandlers(handlers, method, info, HandlerChainCustomizer.Phase.BEFORE_METHOD_INVOKE);
         EndpointInvoker invoker = method.getInvoker().get();
-        if (invoker instanceof CoroutineEndpointInvoker) {
-            handlers.add(new CoroutineInvocationHandler((CoroutineEndpointInvoker) invoker));
+        ServerRestHandler alternate = alternateInvoker(method, invoker);
+        if (alternate != null) {
+            handlers.add(alternate);
         } else {
-            handlers.add(new InvocationHandler((StandardEndpointInvoker) invoker));
+            handlers.add(new InvocationHandler(invoker));
         }
         addHandlers(handlers, method, info, HandlerChainCustomizer.Phase.AFTER_METHOD_INVOKE);
 
@@ -441,6 +439,16 @@ public class RuntimeResourceDeployment {
         for (int i = 0; i < method.getHandlerChainCustomizers().size(); i++) {
             handlers.addAll(method.getHandlerChainCustomizers().get(i).handlers(phase));
         }
+    }
+
+    private ServerRestHandler alternateInvoker(ServerResourceMethod method, EndpointInvoker invoker) {
+        for (int i = 0; i < method.getHandlerChainCustomizers().size(); i++) {
+            ServerRestHandler ret = method.getHandlerChainCustomizers().get(i).alternateInvocationHandler(invoker);
+            if (ret != null) {
+                return ret;
+            }
+        }
+        return null;
     }
 
     public ParameterExtractor parameterExtractor(Map<String, Integer> pathParameterIndexes, boolean locatableResource,
