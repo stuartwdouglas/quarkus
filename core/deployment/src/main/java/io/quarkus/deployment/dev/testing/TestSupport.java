@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
 import org.jboss.logging.Logger;
@@ -24,7 +25,7 @@ public class TestSupport implements TestController {
     final CuratedApplication curatedApplication;
     final List<CompilationProvider> compilationProviders;
     final DevModeContext context;
-    final List<TestListener> testListeners = new ArrayList<>();
+    final List<TestListener> testListeners = new CopyOnWriteArrayList<>();
     final TestState testState = new TestState();
 
     volatile CuratedApplication testCuratedApplication;
