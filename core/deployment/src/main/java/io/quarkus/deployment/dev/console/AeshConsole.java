@@ -69,9 +69,12 @@ public class AeshConsole extends QuarkusConsole {
                 newLines += 3;
             }
             if (newLines > totalStatusLines) {
+                StringBuilder nb = new StringBuilder();
                 for (int i = 0; i < newLines - totalStatusLines; ++i) {
-                    buffer.append("\n");
+                    nb.append("\n");
                 }
+                writeQueue.add(nb.toString());
+                deadlockSafeWrite();
             }
             this.statusMessage = statusMessage;
             this.totalStatusLines = newLines;
@@ -207,10 +210,11 @@ public class AeshConsole extends QuarkusConsole {
     private void printStatusAndPrompt(StringBuilder buffer) {
         if (totalStatusLines == 0) {
             return;
+        } else if (totalStatusLines < size.getHeight()) {
+            //if the console is tiny we don't do this
+            clearStatusMessages(buffer);
+            gotoLine(buffer, size.getHeight() - totalStatusLines);
         }
-
-        clearStatusMessages(buffer);
-        gotoLine(buffer, size.getHeight() - totalStatusLines);
         buffer.append("\n--\n");
         if (statusMessage != null) {
             buffer.append(statusMessage);
