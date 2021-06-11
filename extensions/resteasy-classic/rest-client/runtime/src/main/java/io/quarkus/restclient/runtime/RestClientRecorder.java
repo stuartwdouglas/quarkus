@@ -1,6 +1,7 @@
 package io.quarkus.restclient.runtime;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.inject.spi.CDI;
@@ -64,6 +65,10 @@ public class RestClientRecorder {
         RestClientBuilderImpl.setProviderFactory(clientProviderFactory);
         ResteasyClientBuilderImpl.setProviderFactory(clientProviderFactory);
         providerFactory = clientProviderFactory;
+    }
+
+    public void setPathTemplateData(Map<String, String> pathTemplateData) {
+        QuarkusRestClientBuilder.PATH_TEMPLATE_INJECTION_FILTER = new PathTemplateInjectionFilter(pathTemplateData);
     }
 
     private static void registerProviders(ResteasyProviderFactory providerFactory, boolean useBuiltIn,

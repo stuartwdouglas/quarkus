@@ -311,17 +311,13 @@ public class OpenTelemetryTestCase {
         Assertions.assertEquals(parentSpanId, spanData.get("parent_spanId"));
         Assertions.assertEquals(parentTraceId, spanData.get("parent_traceId"));
         Assertions.assertTrue((Boolean) spanData.get("parent_valid"));
-        Assertions.assertTrue((Boolean) spanData.get("parent_remote"));
+        Assertions.assertFalse((Boolean) spanData.get("parent_remote"));
 
         Assertions.assertEquals("GET", spanData.get("attr_http.method"));
-        Assertions.assertEquals("1.1", spanData.get("attr_http.flavor"));
-        Assertions.assertEquals("/client/pong/one", spanData.get("attr_http.target"));
-        Assertions.assertEquals(pathParamUrl.getAuthority(), spanData.get("attr_http.host"));
-        Assertions.assertEquals("http", spanData.get("attr_http.scheme"));
-        Assertions.assertEquals("/client/pong/{message}", spanData.get("attr_http.route"));
+        Assertions.assertEquals("http://localhost:8081/client/pong/one", spanData.get("attr_http.url"));
         Assertions.assertEquals("200", spanData.get("attr_http.status_code"));
-        Assertions.assertNotNull(spanData.get("attr_http.client_ip"));
-        Assertions.assertNotNull(spanData.get("attr_http.user_agent"));
+
+        parentSpanId = (String) spanData.get("spanId");
 
         // Server span of client
         spanData = spans.get(0);
@@ -334,10 +330,10 @@ public class OpenTelemetryTestCase {
         Assertions.assertEquals(SpanKind.SERVER.toString(), spanData.get("kind"));
         Assertions.assertTrue((Boolean) spanData.get("ended"));
 
-        Assertions.assertEquals(SpanId.getInvalid(), spanData.get("parent_spanId"));
-        Assertions.assertEquals(TraceId.getInvalid(), spanData.get("parent_traceId"));
-        Assertions.assertFalse((Boolean) spanData.get("parent_valid"));
-        Assertions.assertFalse((Boolean) spanData.get("parent_remote"));
+        Assertions.assertEquals(parentSpanId, spanData.get("parent_spanId"));
+        Assertions.assertEquals(parentTraceId, spanData.get("parent_traceId"));
+        Assertions.assertTrue((Boolean) spanData.get("parent_valid"));
+        Assertions.assertTrue((Boolean) spanData.get("parent_remote"));
 
         Assertions.assertEquals("GET", spanData.get("attr_http.method"));
         Assertions.assertEquals("1.1", spanData.get("attr_http.flavor"));

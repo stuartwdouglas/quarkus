@@ -93,6 +93,7 @@ public class QuarkusRestClientBuilder implements RestClientBuilder {
     public static final MethodInjectionFilter METHOD_INJECTION_FILTER = new MethodInjectionFilter();
     public static final ClientHeadersRequestFilter HEADERS_REQUEST_FILTER = new ClientHeadersRequestFilter();
 
+    static PathTemplateInjectionFilter PATH_TEMPLATE_INJECTION_FILTER;
     static ResteasyProviderFactory PROVIDER_FACTORY;
 
     public static void setProviderFactory(ResteasyProviderFactory providerFactory) {
@@ -304,6 +305,11 @@ public class QuarkusRestClientBuilder implements RestClientBuilder {
             this.executorService = Executors.newCachedThreadPool();
             resteasyClientBuilder.executorService(executorService, true);
         }
+
+        if (PATH_TEMPLATE_INJECTION_FILTER != null) {
+            resteasyClientBuilder.register(PATH_TEMPLATE_INJECTION_FILTER);
+        }
+
         resteasyClientBuilder.register(DEFAULT_MEDIA_TYPE_FILTER);
         resteasyClientBuilder.register(METHOD_INJECTION_FILTER);
         resteasyClientBuilder.register(HEADERS_REQUEST_FILTER);
