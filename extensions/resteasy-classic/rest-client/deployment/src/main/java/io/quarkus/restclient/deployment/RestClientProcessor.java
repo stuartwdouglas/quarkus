@@ -4,14 +4,12 @@ import java.io.Closeable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.SessionScoped;
@@ -77,12 +75,15 @@ import io.quarkus.deployment.pkg.PackageConfig;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.restclient.NoopHostnameVerifier;
+import io.quarkus.restclient.runtime.PathFeatureHandler;
+import io.quarkus.restclient.runtime.PathTemplateInjectionFilter;
 import io.quarkus.restclient.runtime.RestClientBase;
 import io.quarkus.restclient.runtime.RestClientRecorder;
 import io.quarkus.resteasy.common.deployment.JaxrsProvidersToRegisterBuildItem;
 import io.quarkus.resteasy.common.deployment.RestClientBuildItem;
 import io.quarkus.resteasy.common.deployment.ResteasyInjectionReadyBuildItem;
 import io.quarkus.resteasy.common.spi.ResteasyDotNames;
+import io.quarkus.resteasy.common.spi.ResteasyJaxrsProviderBuildItem;
 import io.quarkus.runtime.metrics.MetricsFactory;
 
 class RestClientProcessor {
@@ -104,8 +105,6 @@ class RestClientProcessor {
     private static final DotName CLIENT_HEADER_PARAM = DotName.createSimple(ClientHeaderParam.class.getName());
 
     private static final String PROVIDERS_SERVICE_FILE = "META-INF/services/" + Providers.class.getName();
-
-    private static final Pattern MULTIPLE_SLASH_PATTERN = Pattern.compile("//+");
 
     @BuildStep
     void setupProviders(BuildProducer<NativeImageResourceBuildItem> resources,
@@ -183,13 +182,11 @@ class RestClientProcessor {
             BuildProducer<ReflectiveHierarchyBuildItem> reflectiveHierarchy,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeans,
             BuildProducer<ServiceProviderBuildItem> serviceProvider,
-            BuildProducer<PathTemplateBuildItem> pathTemplatesBuildItem,
             BuildProducer<RestClientBuildItem> restClient) {
 
         // According to the spec only rest client interfaces annotated with RegisterRestClient are registered as beans
         Map<DotName, ClassInfo> interfaces = new HashMap<>();
         Set<Type> returnTypes = new HashSet<>();
-        Map<String, String> pathTemplates = new HashMap<>();
 
         IndexView index = CompositeIndex.create(beanArchiveIndexBuildItem.getIndex(), combinedIndexBuildItem.getIndex());
 
@@ -236,7 +233,6 @@ class RestClientProcessor {
 
         for (Map.Entry<DotName, ClassInfo> entry : interfaces.entrySet()) {
             DotName restClientName = entry.getKey();
-            pathTemplates.putAll(generatePathTemplates(capabilities, metricsCapability, entry.getKey(), entry.getValue()));
             ExtendedBeanConfigurator configurator = SyntheticBeanBuildItem.configure(restClientName);
             // The spec is not clear whether we should add superinterfaces too - let's keep aligned with SmallRye for now
             configurator.addType(restClientName);
@@ -273,66 +269,18 @@ class RestClientProcessor {
 
             syntheticBeans.produce(configurator.done());
         }
+    }
 
-        if (!pathTemplates.isEmpty()) {
-            pathTemplatesBuildItem.produce(new PathTemplateBuildItem(pathTemplates));
+    @BuildStep
+    void clientTracingFeature(Capabilities capabilities,
+            Optional<MetricsCapabilityBuildItem> metricsCapability, BuildProducer<ResteasyJaxrsProviderBuildItem> producer) {
+        if (isTracingRequired(capabilities, metricsCapability)) {
+            producer.produce(new ResteasyJaxrsProviderBuildItem(PathFeatureHandler.class.getName()));
+            producer.produce(new ResteasyJaxrsProviderBuildItem(PathTemplateInjectionFilter.class.getName()));
         }
     }
 
-    private Map<String, String> generatePathTemplates(Capabilities capabilities,
-            Optional<MetricsCapabilityBuildItem> metricsCapability, DotName interfaceName, ClassInfo classInfo) {
-        if (isRequired(capabilities, metricsCapability)) {
-            Map<String, String> templates = new HashMap<>();
-
-            for (MethodInfo methodInfo : classInfo.methods()) {
-                if (!isDefault(methodInfo.flags())) {
-                    templates.put(interfaceName.toString() + "." + methodInfo.name(), constructPath(methodInfo));
-                }
-            }
-
-            return templates;
-        }
-        return Collections.emptyMap();
-    }
-
-    private String constructPath(MethodInfo methodInfo) {
-        AnnotationInstance annotation = methodInfo.annotation(PATH);
-
-        StringBuilder stringBuilder;
-        if (annotation != null) {
-            stringBuilder = new StringBuilder(slashify(annotation.value().asString()));
-        } else {
-            stringBuilder = new StringBuilder();
-        }
-
-        // Look for @Path annotation on the class
-        annotation = methodInfo.declaringClass().classAnnotation(PATH);
-        if (annotation != null) {
-            stringBuilder.insert(0, slashify(annotation.value().asString()));
-        }
-
-        // Now make sure there is a leading path, and no duplicates
-        return MULTIPLE_SLASH_PATTERN.matcher('/' + stringBuilder.toString()).replaceAll("/");
-    }
-
-    String slashify(String path) {
-        // avoid doubles later. Empty for now
-        if (path == null || path.isEmpty() || "/".equals(path)) {
-            return "";
-        }
-        // remove doubles
-        path = MULTIPLE_SLASH_PATTERN.matcher(path).replaceAll("/");
-        // Label value consistency: result should not end with a slash
-        if (path.endsWith("/")) {
-            path = path.substring(0, path.length() - 1);
-        }
-        if (path.isEmpty() || path.startsWith("/")) {
-            return path;
-        }
-        return '/' + path;
-    }
-
-    private boolean isRequired(Capabilities capabilities,
+    private boolean isTracingRequired(Capabilities capabilities,
             Optional<MetricsCapabilityBuildItem> metricsCapability) {
         return (capabilities.isPresent(Capability.OPENTELEMETRY_TRACER) ||
                 (metricsCapability.isPresent()
@@ -343,14 +291,6 @@ class RestClientProcessor {
             List<RestClientAnnotationProviderBuildItem> restClientAnnotationProviders) {
         return restClientAnnotationProviders.stream().filter(p -> (classInfo.classAnnotation(p.getAnnotationName()) != null))
                 .map(p -> p.getProviderClass()).collect(Collectors.toList());
-    }
-
-    @BuildStep
-    @Record(ExecutionTime.STATIC_INIT)
-    void setPathTemplates(PathTemplateBuildItem pathTemplates, RestClientRecorder recorder) {
-        if (pathTemplates != null) {
-            recorder.setPathTemplateData(pathTemplates.getPathTemplates());
-        }
     }
 
     @BuildStep
