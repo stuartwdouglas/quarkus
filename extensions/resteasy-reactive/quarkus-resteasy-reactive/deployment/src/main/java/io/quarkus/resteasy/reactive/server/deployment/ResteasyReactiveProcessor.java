@@ -6,7 +6,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +61,6 @@ import org.jboss.resteasy.reactive.server.model.DynamicFeatures;
 import org.jboss.resteasy.reactive.server.model.Features;
 import org.jboss.resteasy.reactive.server.model.HandlerChainCustomizer;
 import org.jboss.resteasy.reactive.server.model.ParamConverterProviders;
-import org.jboss.resteasy.reactive.server.model.ServerResourceMethod;
 import org.jboss.resteasy.reactive.server.processor.scanning.MethodScanner;
 import org.jboss.resteasy.reactive.spi.BeanFactory;
 
@@ -278,7 +276,6 @@ public class ResteasyReactiveProcessor {
             ContextResolversBuildItem contextResolversBuildItem,
             List<ApplicationClassPredicateBuildItem> applicationClassPredicateBuildItems,
             List<MethodScannerBuildItem> methodScanners, ResteasyReactiveServerConfig serverConfig,
-            List<ServerResourceMethodCustomizerBuildItem> serverResourceMethodCustomizerBuildItems,
             LaunchModeBuildItem launchModeBuildItem)
             throws NoSuchMethodException {
 
@@ -531,8 +528,6 @@ public class ResteasyReactiveProcessor {
 
             String deploymentPath = sanitizeApplicationPath(applicationPath);
 
-            applyResourceMethodCustomization(serverResourceMethodCustomizerBuildItems, resourceClasses, deploymentPath);
-
             // Handler used for both the default and non-default deployment path (specified as application path or resteasyConfig.path)
             // Routes use the order VertxHttpRecorder.DEFAULT_ROUTE_ORDER + 1 to ensure the default route is called before the resteasy one
             Class<? extends Application> applicationClass = application == null ? Application.class : application.getClass();
@@ -577,39 +572,6 @@ public class ResteasyReactiveProcessor {
                 routes.produce(
                         RouteBuildItem.builder().orderedRoute(matchPath, VertxHttpRecorder.DEFAULT_ROUTE_ORDER + 1)
                                 .handler(handler).build());
-            }
-        }
-    }
-
-    private void applyResourceMethodCustomization(
-            List<ServerResourceMethodCustomizerBuildItem> serverResourceMethodCustomizerBuildItems,
-            List<ResourceClass> resourceClasses, String deploymentPath) {
-        if (serverResourceMethodCustomizerBuildItems.isEmpty()) {
-            return;
-        }
-        List<ServerResourceMethodCustomizerBuildItem.ServerResourceMethodCustomizer> serverResourceMethodCustomizers = new ArrayList<>(
-                serverResourceMethodCustomizerBuildItems.size());
-        for (ServerResourceMethodCustomizerBuildItem bi : serverResourceMethodCustomizerBuildItems) {
-            serverResourceMethodCustomizers.add(bi.getCustomizer());
-        }
-        serverResourceMethodCustomizers
-                .sort(new Comparator<ServerResourceMethodCustomizerBuildItem.ServerResourceMethodCustomizer>() {
-                    @Override
-                    public int compare(ServerResourceMethodCustomizerBuildItem.ServerResourceMethodCustomizer o1,
-                            ServerResourceMethodCustomizerBuildItem.ServerResourceMethodCustomizer o2) {
-                        return Integer.compare(o1.priority(), o2.priority());
-                    }
-                });
-
-        for (ResourceClass resourceClass : resourceClasses) {
-            for (ResourceMethod resourceMethod : resourceClass.getMethods()) {
-                if (!(resourceMethod instanceof ServerResourceMethod)) {
-                    return; // should never happen
-                }
-                ServerResourceMethod serverResourceMethod = ((ServerResourceMethod) resourceMethod);
-                for (ServerResourceMethodCustomizerBuildItem.ServerResourceMethodCustomizer customizer : serverResourceMethodCustomizers) {
-                    customizer.customize(new CustomizerContextImpl(serverResourceMethod, resourceClass, deploymentPath));
-                }
             }
         }
     }
@@ -751,33 +713,5 @@ public class ResteasyReactiveProcessor {
         reader.setMediaTypeStrings(Collections.singletonList(mediaType));
         reader.setConstraint(constraint);
         recorder.registerReader(serialisers, entityClass.getName(), reader);
-    }
-
-    private static class CustomizerContextImpl
-            implements ServerResourceMethodCustomizerBuildItem.ServerResourceMethodCustomizer.Context {
-        private final ServerResourceMethod serverResourceMethod;
-        private final ResourceClass resourceClass;
-        private final String deploymentPath;
-
-        CustomizerContextImpl(ServerResourceMethod serverResourceMethod, ResourceClass resourceClass, String deploymentPath) {
-            this.serverResourceMethod = serverResourceMethod;
-            this.resourceClass = resourceClass;
-            this.deploymentPath = deploymentPath;
-        }
-
-        @Override
-        public ServerResourceMethod resourceMethod() {
-            return serverResourceMethod;
-        }
-
-        @Override
-        public ResourceClass resourceClass() {
-            return resourceClass;
-        }
-
-        @Override
-        public String deploymentPath() {
-            return deploymentPath;
-        }
     }
 }
