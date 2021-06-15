@@ -24,14 +24,11 @@ public class QuarkusRestPathTemplateInterceptor {
     @AroundInvoke
     Object restMethodInvoke(InvocationContext context) throws Exception {
         QuarkusRestPathTemplate annotation = getAnnotation(context);
-        try {
-            return context.proceed();
-        } finally {
-            if (annotation != null) {
-                ((HttpServerRequestInternal) request.getCurrent().request()).context().putLocal("UrlPathTemplate",
-                        annotation.value());
-            }
+        if (annotation != null) {
+            ((HttpServerRequestInternal) request.getCurrent().request()).context().putLocal("UrlPathTemplate",
+                    annotation.value());
         }
+        return context.proceed();
     }
 
     @SuppressWarnings("unchecked")
