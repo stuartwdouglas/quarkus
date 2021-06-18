@@ -180,12 +180,12 @@ public class KubernetesDeployer {
                 log.info("Applied: " + i.getKind() + " " + i.getMetadata().getName() + ".");
             });
 
-            printExposeInformation(client, list, openshiftConfig, applicationInfo);
+            String url = discoverExposeInformation(client, list, openshiftConfig, applicationInfo);
 
             HasMetadata m = list.getItems().stream().filter(r -> r.getKind().equals(deploymentTarget.getKind()))
                     .findFirst().orElseThrow(() -> new IllegalStateException(
                             "No " + deploymentTarget.getKind() + " found under: " + manifest.getAbsolutePath()));
-            return new DeploymentResultBuildItem(m.getMetadata().getName(), m.getMetadata().getLabels());
+            return new DeploymentResultBuildItem(m.getMetadata().getName(), m.getMetadata().getLabels(), url);
         } catch (FileNotFoundException e) {
             throw new IllegalStateException("Can't find generated kubernetes manifest: " + manifest.getAbsolutePath());
         } catch (KubernetesClientException e) {
@@ -197,7 +197,7 @@ public class KubernetesDeployer {
 
     }
 
-    private void printExposeInformation(KubernetesClient client, KubernetesList list, OpenshiftConfig openshiftConfig,
+    private String discoverExposeInformation(KubernetesClient client, KubernetesList list, OpenshiftConfig openshiftConfig,
             ApplicationInfoBuildItem applicationInfo) {
         String generatedRouteName = ResourceNameUtil.getResourceName(openshiftConfig, applicationInfo);
         List<HasMetadata> items = list.getItems();
@@ -210,12 +210,14 @@ public class KubernetesDeployer {
                     boolean isTLS = (route.getSpec().getTls() != null);
                     String host = route.getSpec().getHost();
                     log.infov("The deployed application can be accessed at: http{0}://{1}", isTLS ? "s" : "", host);
+                    return String.format("http%s://%s", isTLS ? "s" : "", host);
                 } catch (KubernetesClientException ignored) {
 
                 }
                 break;
             }
         }
+        return null;
     }
 
     private static boolean shouldDeleteExisting(DeploymentTargetEntry deploymentTarget, HasMetadata resource) {

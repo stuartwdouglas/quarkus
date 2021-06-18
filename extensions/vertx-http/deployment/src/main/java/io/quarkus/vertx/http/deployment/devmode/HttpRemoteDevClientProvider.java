@@ -7,7 +7,6 @@ import org.jboss.logging.Logger;
 import io.quarkus.deployment.dev.remote.RemoteDevClient;
 import io.quarkus.deployment.dev.remote.RemoteDevClientProvider;
 import io.quarkus.runtime.LiveReloadConfig;
-import io.quarkus.runtime.configuration.ConfigInstantiator;
 
 public class HttpRemoteDevClientProvider implements RemoteDevClientProvider {
 
@@ -19,11 +18,7 @@ public class HttpRemoteDevClientProvider implements RemoteDevClientProvider {
     public static volatile LiveReloadConfig liveReloadConfig;
 
     @Override
-    public Optional<RemoteDevClient> getClient() {
-        if (liveReloadConfig == null) {
-            liveReloadConfig = new LiveReloadConfig();
-            ConfigInstantiator.handleObject(liveReloadConfig);
-        }
+    public Optional<RemoteDevClient> getClient(LiveReloadConfig liveReloadConfig) {
         if (!liveReloadConfig.url.isPresent()) {
             return Optional.empty();
         }

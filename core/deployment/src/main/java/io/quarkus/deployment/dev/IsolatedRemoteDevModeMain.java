@@ -6,12 +6,17 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,23 +33,29 @@ import java.util.function.Supplier;
 
 import org.jboss.logging.Logger;
 
+import io.quarkus.bootstrap.BootstrapException;
 import io.quarkus.bootstrap.app.AugmentAction;
 import io.quarkus.bootstrap.app.AugmentResult;
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.JarResult;
+import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.runner.Timing;
 import io.quarkus.deployment.dev.remote.DefaultRemoteDevClient;
+import io.quarkus.deployment.dev.remote.IsolatedRemoteDevDeployTask;
 import io.quarkus.deployment.dev.remote.RemoteDevClient;
 import io.quarkus.deployment.dev.remote.RemoteDevClientProvider;
 import io.quarkus.deployment.mutability.DevModeTask;
 import io.quarkus.deployment.pkg.PackageConfig;
 import io.quarkus.deployment.pkg.steps.JarResultBuildStep;
 import io.quarkus.deployment.steps.ClassTransformingBuildStep;
+import io.quarkus.dev.console.TempSystemProperties;
 import io.quarkus.dev.spi.DeploymentFailedStartHandler;
 import io.quarkus.dev.spi.DevModeType;
 import io.quarkus.dev.spi.HotReplacementSetup;
 import io.quarkus.dev.spi.RemoteDevState;
 import io.quarkus.runner.bootstrap.AugmentActionImpl;
+import io.quarkus.runtime.LiveReloadConfig;
+import io.quarkus.runtime.configuration.ConfigInstantiator;
 import io.quarkus.runtime.logging.LoggingSetupRecorder;
 import io.quarkus.runtime.util.HashUtil;
 
@@ -67,12 +78,12 @@ public class IsolatedRemoteDevModeMain implements BiConsumer<CuratedApplication,
     private static volatile Path appRoot;
     private static volatile Map<DevModeContext.ModuleInfo, Set<String>> copiedStaticResources = new HashMap<>();
 
-    static RemoteDevClient createClient(CuratedApplication curatedApplication) {
+    static RemoteDevClient createClient(CuratedApplication curatedApplication, LiveReloadConfig liveReloadConfig) {
         ServiceLoader<RemoteDevClientProvider> providers = ServiceLoader.load(RemoteDevClientProvider.class,
                 curatedApplication.getAugmentClassLoader());
         RemoteDevClient client = null;
         for (RemoteDevClientProvider provider : providers) {
-            Optional<RemoteDevClient> opt = provider.getClient();
+            Optional<RemoteDevClient> opt = provider.getClient(liveReloadConfig);
             if (opt.isPresent()) {
                 client = opt.get();
                 break;
@@ -223,8 +234,14 @@ public class IsolatedRemoteDevModeMain implements BiConsumer<CuratedApplication,
                 appRoot = result.getPath().getParent();
                 currentHashes = createHashes(appRoot);
             }
+            LiveReloadConfig liveReloadConfig = new LiveReloadConfig();
+            ConfigInstantiator.handleObject(liveReloadConfig);
+            if (liveReloadConfig.url.isEmpty()) {
+                //we have no URL. Lets ask for a deployment and wire up everything ourselves
+                tryContainerDeployment(liveReloadConfig);
+            }
 
-            remoteDevClient = createClient(curatedApplication);
+            remoteDevClient = createClient(curatedApplication, liveReloadConfig);
             remoteDevClientSession = doConnect();
 
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -241,6 +258,57 @@ public class IsolatedRemoteDevModeMain implements BiConsumer<CuratedApplication,
             }, "Quarkus Shutdown Thread"));
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void tryContainerDeployment(LiveReloadConfig liveReloadConfig) {
+        ClassLoader old = Thread.currentThread().getContextClassLoader();
+        try (TempSystemProperties tempSystemProperties = new TempSystemProperties()) {
+            tempSystemProperties.set("quarkus.package.type", "mutable-jar");
+            tempSystemProperties.set("quarkus.kubernetes.deploy", "true");
+
+            tempSystemProperties.set("quarkus.openshift.route.expose", "true");
+            tempSystemProperties.set("quarkus.kubernetes-client.trust-certs", "true");
+            tempSystemProperties.set("quarkus.openshift.env.vars.QUARKUS_LAUNCH_DEVMODE", "true");
+            Map<String, Object> results = new HashMap<>();
+            if (liveReloadConfig.password.isEmpty()) {
+                byte[] password = new byte[30];
+                new SecureRandom().nextBytes(password);
+                String pw = Base64.getEncoder().encodeToString(password);
+                liveReloadConfig.password = Optional.of(pw);
+                tempSystemProperties.set("quarkus.live-reload.password", pw);
+                tempSystemProperties.set("quarkus.openshift.env.vars.QUARKUS_LIVE_RELOAD_PASSWORD", pw);
+            }
+            try {
+                CuratedApplication app = curatedApplication.getQuarkusBootstrap().clonedBuilder()
+                        .setMode(QuarkusBootstrap.Mode.PROD)
+                        .setIsolateDeployment(true)
+                        .setBaseClassLoader(getClass().getClassLoader())
+                        .build().bootstrap();
+                Thread.currentThread().setContextClassLoader(app.getAugmentClassLoader());
+                app.runInAugmentClassLoader(IsolatedRemoteDevDeployTask.class.getName(), results);
+                liveReloadConfig.url = Optional.ofNullable((String) results.get("url"));
+                if (liveReloadConfig.url.isPresent()) {
+                    for (;;) {
+                        System.out.println("Waiting for app to come up");
+                        Thread.sleep(1000);
+                        HttpURLConnection con = (HttpURLConnection) new URL(liveReloadConfig.url.get()).openConnection();
+                        if (con.getResponseCode() == 200) {
+                            break;
+                        }
+                    }
+                }
+            } catch (BootstrapException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                Thread.currentThread().setContextClassLoader(old);
+            }
         }
     }
 
@@ -349,4 +417,5 @@ public class IsolatedRemoteDevModeMain implements BiConsumer<CuratedApplication,
         });
         return hashes;
     }
+
 }
