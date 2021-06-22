@@ -24,8 +24,7 @@ public class LogbackRecorder {
 
     private static volatile LoggerContext defaultLoggerContext;
 
-    public RuntimeValue<Optional<Handler>> createHandler() {
-
+    public void init() {
         if (defaultLoggerContext == null) {
             defaultLoggerContext = new LoggerContext();
             try {
@@ -65,6 +64,10 @@ public class LogbackRecorder {
                 Util.report("Failed to instantiate [" + LoggerContext.class.getName() + "]", t);
             }
         }
+
+    }
+
+    public RuntimeValue<Optional<Handler>> createHandler() {
 
         return new RuntimeValue<>(Optional.of(new ExtHandler() {
 
