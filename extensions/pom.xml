@@ -187,6 +187,7 @@
         <module>logging-json</module>
         <module>logging-sentry</module>
         <module>logging-gelf</module>
+        <module>logging-logback</module>
 
         <!-- Templating -->
         <module>qute</module>

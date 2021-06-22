@@ -210,6 +210,7 @@
         <testcontainers.version>1.15.3</testcontainers.version>
         <docker-java.version>3.2.8</docker-java.version> <!-- must be the version Testcontainers use -->
         <aesh-readline.version>2.1</aesh-readline.version>
+        <logback.version>1.2.3</logback.version>
     </properties>
 
     <dependencyManagement>
@@ -2443,6 +2444,16 @@
             <dependency>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-logging-gelf-deployment</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-logging-logback</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-logging-logback-deployment</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -5010,6 +5021,12 @@
                         <artifactId>animal-sniffer-annotations</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
             </dependency>
 
             <!-- Spring -->

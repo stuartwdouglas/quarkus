@@ -189,6 +189,10 @@ public class AeshConsole extends QuarkusConsole {
             } else {
                 attributes = conn.getAttributes();
             }
+            for (int i = 0; i < messages.length; i++) {
+                String msg = messages[i];
+                setMessage(i, msg);
+            }
 
             StringBuilder sb = new StringBuilder();
             printStatusAndPrompt(sb);
