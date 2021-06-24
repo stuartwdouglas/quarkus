@@ -256,8 +256,10 @@ public class JarResultBuildStep {
             for (Set<TransformedClassesBuildItem.TransformedClass> transformedClassesSet : transformedClasses
                     .getTransformedClassesByJar().values()) {
                 for (TransformedClassesBuildItem.TransformedClass transformedClass : transformedClassesSet) {
-                    classes.append(transformedClass.getFileName().replace('/', '.').replace(".class", ""))
-                            .append(System.lineSeparator());
+                    if (transformedClass.getData() != null) {
+                        classes.append(transformedClass.getFileName().replace('/', '.').replace(".class", ""))
+                                .append(System.lineSeparator());
+                    }
                 }
             }
 
@@ -590,10 +592,12 @@ public class JarResultBuildStep {
                         .getTransformedClassesByJar().values()) {
                     for (TransformedClassesBuildItem.TransformedClass transformed : transformedSet) {
                         Path target = out.getPath(transformed.getFileName());
-                        if (target.getParent() != null) {
-                            Files.createDirectories(target.getParent());
+                        if (transformed.getData() != null) {
+                            if (target.getParent() != null) {
+                                Files.createDirectories(target.getParent());
+                            }
+                            Files.write(target, transformed.getData());
                         }
-                        Files.write(target, transformed.getData());
                     }
                 }
             }
@@ -1147,12 +1151,14 @@ public class JarResultBuildStep {
         for (Set<TransformedClassesBuildItem.TransformedClass> transformed : transformedClassesBuildItem
                 .getTransformedClassesByJar().values()) {
             for (TransformedClassesBuildItem.TransformedClass i : transformed) {
-                Path target = runnerZipFs.getPath(i.getFileName());
-                handleParent(runnerZipFs, i.getFileName(), seen);
-                try (final OutputStream out = wrapForJDK8232879(Files.newOutputStream(target))) {
-                    out.write(i.getData());
+                if (i.getData() != null) {
+                    Path target = runnerZipFs.getPath(i.getFileName());
+                    handleParent(runnerZipFs, i.getFileName(), seen);
+                    try (final OutputStream out = wrapForJDK8232879(Files.newOutputStream(target))) {
+                        out.write(i.getData());
+                    }
+                    seen.put(i.getFileName(), "Current Application");
                 }
-                seen.put(i.getFileName(), "Current Application");
             }
         }
         for (GeneratedClassBuildItem i : generatedClasses) {
