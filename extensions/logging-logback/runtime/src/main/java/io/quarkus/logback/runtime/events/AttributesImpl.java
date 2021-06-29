@@ -8,12 +8,12 @@ import io.quarkus.runtime.annotations.RecordableConstructor;
 
 public class AttributesImpl implements Attributes {
 
-    public Attribute[] attributus;
+    public Attribute[] attributes;
 
     public AttributesImpl(Attributes at) {
-        attributus = new Attribute[at.getLength()];
+        attributes = new Attribute[at.getLength()];
         for (int i = 0; i < at.getLength(); ++i) {
-            attributus[i] = new Attribute(at.getLocalName(i), at.getValue(i), at.getType(i), at.getURI(i), at.getQName(i));
+            attributes[i] = new Attribute(at.getLocalName(i), at.getValue(i), at.getType(i), at.getURI(i), at.getQName(i));
         }
     }
 
@@ -23,38 +23,38 @@ public class AttributesImpl implements Attributes {
 
     @Override
     public int getLength() {
-        return attributus.length;
+        return attributes.length;
     }
 
     @Override
     public String getURI(int index) {
-        return attributus[index].uri;
+        return attributes[index].uri;
     }
 
     @Override
     public String getLocalName(int index) {
-        return attributus[index].localName;
+        return attributes[index].localName;
     }
 
     @Override
     public String getQName(int index) {
-        return attributus[index].qName;
+        return attributes[index].qName;
     }
 
     @Override
     public String getType(int index) {
-        return attributus[index].type;
+        return attributes[index].type;
     }
 
     @Override
     public String getValue(int index) {
-        return attributus[index].value;
+        return attributes[index].value;
     }
 
     @Override
     public int getIndex(String uri, String localName) {
-        for (int i = 0; i < attributus.length; ++i) {
-            Attribute at = attributus[i];
+        for (int i = 0; i < attributes.length; ++i) {
+            Attribute at = attributes[i];
             if (Objects.equals(uri, at.uri) && Objects.equals(localName, at.localName)) {
                 return i;
             }
@@ -64,8 +64,8 @@ public class AttributesImpl implements Attributes {
 
     @Override
     public int getIndex(String qName) {
-        for (int i = 0; i < attributus.length; ++i) {
-            Attribute at = attributus[i];
+        for (int i = 0; i < attributes.length; ++i) {
+            Attribute at = attributes[i];
             if (Objects.equals(qName, at.qName)) {
                 return i;
             }
@@ -79,7 +79,7 @@ public class AttributesImpl implements Attributes {
         if (index == -1) {
             return null;
         }
-        return attributus[index].type;
+        return attributes[index].type;
     }
 
     @Override
@@ -88,7 +88,7 @@ public class AttributesImpl implements Attributes {
         if (index == -1) {
             return null;
         }
-        return attributus[index].type;
+        return attributes[index].type;
     }
 
     @Override
@@ -97,7 +97,7 @@ public class AttributesImpl implements Attributes {
         if (index == -1) {
             return null;
         }
-        return attributus[index].value;
+        return attributes[index].value;
     }
 
     @Override
@@ -106,15 +106,15 @@ public class AttributesImpl implements Attributes {
         if (index == -1) {
             return null;
         }
-        return attributus[index].value;
+        return attributes[index].value;
     }
 
     public static class Attribute {
-        public final String localName;
-        public final String value;
-        public final String type;
-        public final String uri;
-        public final String qName;
+        public String localName;
+        public String value;
+        public String type;
+        public String uri;
+        public String qName;
 
         @RecordableConstructor
         public Attribute(String localName, String value, String type, String uri, String qName) {

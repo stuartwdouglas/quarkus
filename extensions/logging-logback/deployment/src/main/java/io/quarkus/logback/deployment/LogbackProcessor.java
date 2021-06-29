@@ -3,10 +3,13 @@ package io.quarkus.logback.deployment;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -16,14 +19,22 @@ import ch.qos.logback.core.joran.event.EndEvent;
 import ch.qos.logback.core.joran.event.SaxEvent;
 import ch.qos.logback.core.joran.event.StartEvent;
 import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.spi.LifeCycle;
 import ch.qos.logback.core.util.Loader;
+import io.quarkus.deployment.GeneratedClassGizmoAdaptor;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.LogHandlerBuildItem;
 import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
+import io.quarkus.gizmo.ClassCreator;
+import io.quarkus.gizmo.FieldDescriptor;
+import io.quarkus.gizmo.MethodCreator;
+import io.quarkus.gizmo.MethodDescriptor;
+import io.quarkus.logback.runtime.DelayedStart;
 import io.quarkus.logback.runtime.LogbackRecorder;
 import io.quarkus.logback.runtime.events.BodySub;
 import io.quarkus.logback.runtime.events.EndSub;
@@ -35,7 +46,8 @@ public class LogbackProcessor {
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep
     void init(LogbackRecorder recorder, RecorderContext context,
-            BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer)
+            BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer,
+            BuildProducer<GeneratedClassBuildItem> generatedClasses)
             throws JoranException {
         URL url = getUrl();
         if (url == null) {
@@ -59,6 +71,7 @@ public class LogbackProcessor {
         List<String> rootPath = Arrays.asList("configuration", "root");
         String rootLevel = null;
         Map<String, String> levels = new HashMap<>();
+        Set<String> allClasses = new HashSet<>();
         for (SaxEvent i : events.get()) {
             if (i instanceof StartEvent) {
                 StartEvent s = ((StartEvent) i);
@@ -68,14 +81,46 @@ public class LogbackProcessor {
                         levels.put(s.attributes.getValue("name"), level);
                     }
                 } else if (Objects.equals(rootPath, s.elementPath.getCopyOfPartList())) {
-
                     String level = s.attributes.getValue("level");
                     if (level != null) {
                         rootLevel = level;
                     }
                 }
+                int classIndex = s.attributes.getIndex("class");
+                if (classIndex != -1) {
+                    allClasses.add(s.attributes.getValue(classIndex));
+                }
             }
         }
+
+        Set<String> delayedClasses = new HashSet<>();
+        for (String i : allClasses) {
+            try {
+                Class<?> c = Thread.currentThread().getContextClassLoader().loadClass(i);
+                if (LifeCycle.class.isAssignableFrom(c)) {
+                    delayedClasses.add(i);
+                }
+            } catch (ClassNotFoundException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+
+        for (String i : delayedClasses) {
+            try (ClassCreator c = new ClassCreator(
+                    new GeneratedClassGizmoAdaptor(generatedClasses,
+                            (Function<String, String>) s -> s.substring(s.length() - LogbackRecorder.DELAYED.length())),
+                    i + LogbackRecorder.DELAYED, null, i, DelayedStart.class.getName())) {
+                MethodCreator start = c.getMethodCreator("start", void.class);
+                start.invokeInterfaceMethod(MethodDescriptor.ofMethod(List.class, "add", boolean.class, Object.class),
+                        start.readStaticField(FieldDescriptor.of(LogbackRecorder.class, "DELAYED_START_HANDLERS", List.class)),
+                        start.getThis());
+                start.returnValue(null);
+                MethodCreator method = c.getMethodCreator("doQuarkusDelayedStart", void.class);
+                method.invokeSpecialMethod(MethodDescriptor.ofMethod(i, "start", void.class), method.getThis());
+                method.returnValue(null);
+            }
+        }
+
         if (rootLevel != null) {
             runTimeConfigurationDefaultBuildItemBuildProducer
                     .produce(new RunTimeConfigurationDefaultBuildItem("quarkus.log.level", rootLevel));
@@ -84,7 +129,8 @@ public class LogbackProcessor {
             runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(
                     "quarkus.log.categories.\\\"" + e.getKey() + "\\\".level", e.getValue()));
         }
-        recorder.init(events.get());
+
+        recorder.init(events.get(), delayedClasses);
     }
 
     @BuildStep
