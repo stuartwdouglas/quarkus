@@ -1,7 +1,11 @@
 package io.quarkus.logback.deployment;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ch.qos.logback.classic.LoggerContext;
@@ -13,10 +17,12 @@ import ch.qos.logback.core.joran.event.SaxEvent;
 import ch.qos.logback.core.joran.event.StartEvent;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.Loader;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.LogHandlerBuildItem;
+import io.quarkus.deployment.builditem.RunTimeConfigurationDefaultBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.logback.runtime.LogbackRecorder;
 import io.quarkus.logback.runtime.events.BodySub;
@@ -28,7 +34,13 @@ public class LogbackProcessor {
 
     @Record(ExecutionTime.STATIC_INIT)
     @BuildStep
-    void init(LogbackRecorder recorder, RecorderContext context) throws JoranException {
+    void init(LogbackRecorder recorder, RecorderContext context,
+            BuildProducer<RunTimeConfigurationDefaultBuildItem> runTimeConfigurationDefaultBuildItemBuildProducer)
+            throws JoranException {
+        URL url = getUrl();
+        if (url == null) {
+            return;
+        }
         context.registerSubstitution(StartEvent.class, StartSub.class, EventSubstitution.class);
         context.registerSubstitution(BodyEvent.class, BodySub.class, EventSubstitution.class);
         context.registerSubstitution(EndEvent.class, EndSub.class, EventSubstitution.class);
@@ -41,8 +53,37 @@ public class LogbackProcessor {
             }
         };
         configurator.setContext(new LoggerContext());
-        configurator.doConfigure(getUrl());
+        configurator.doConfigure(url);
 
+        List<String> loggerPath = Arrays.asList("configuration", "logger");
+        List<String> rootPath = Arrays.asList("configuration", "root");
+        String rootLevel = null;
+        Map<String, String> levels = new HashMap<>();
+        for (SaxEvent i : events.get()) {
+            if (i instanceof StartEvent) {
+                StartEvent s = ((StartEvent) i);
+                if (Objects.equals(loggerPath, s.elementPath.getCopyOfPartList())) {
+                    String level = s.attributes.getValue("level");
+                    if (level != null) {
+                        levels.put(s.attributes.getValue("name"), level);
+                    }
+                } else if (Objects.equals(rootPath, s.elementPath.getCopyOfPartList())) {
+
+                    String level = s.attributes.getValue("level");
+                    if (level != null) {
+                        rootLevel = level;
+                    }
+                }
+            }
+        }
+        if (rootLevel != null) {
+            runTimeConfigurationDefaultBuildItemBuildProducer
+                    .produce(new RunTimeConfigurationDefaultBuildItem("quarkus.log.level", rootLevel));
+        }
+        for (Map.Entry<String, String> e : levels.entrySet()) {
+            runTimeConfigurationDefaultBuildItemBuildProducer.produce(new RunTimeConfigurationDefaultBuildItem(
+                    "quarkus.log.categories.\\\"" + e.getKey() + "\\\".level", e.getValue()));
+        }
         recorder.init(events.get());
     }
 
