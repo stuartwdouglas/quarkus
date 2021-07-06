@@ -50,6 +50,7 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Consume;
 import io.quarkus.deployment.annotations.ExecutionTime;
+import io.quarkus.deployment.annotations.Produce;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
@@ -57,6 +58,7 @@ import io.quarkus.deployment.builditem.LogHandlerBuildItem;
 import io.quarkus.deployment.builditem.ServiceStartBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.dev.BrowserOpenerBuildItem;
+import io.quarkus.deployment.dev.FailedStartBuildItem;
 import io.quarkus.deployment.ide.EffectiveIdeBuildItem;
 import io.quarkus.deployment.ide.Ide;
 import io.quarkus.deployment.logging.LoggingSetupBuildItem;
@@ -245,6 +247,7 @@ public class DevConsoleProcessor {
     }
 
     @BuildStep(onlyIf = IsDevelopment.class)
+    @Produce(FailedStartBuildItem.class)
     public ServiceStartBuildItem buildTimeTemplates(List<DevConsoleTemplateInfoBuildItem> items,
             CurateOutcomeBuildItem curateOutcomeBuildItem) {
         Map<String, Map<String, Object>> results = new HashMap<>();
@@ -280,6 +283,7 @@ public class DevConsoleProcessor {
     }
 
     @BuildStep(onlyIf = IsDevelopment.class)
+    @Produce(FailedStartBuildItem.class)
     @Record(ExecutionTime.RUNTIME_INIT)
     public void runtimeTemplates(List<DevConsoleRuntimeTemplateInfoBuildItem> items, DevConsoleRecorder recorder,
             List<ServiceStartBuildItem> gate) {
@@ -290,6 +294,7 @@ public class DevConsoleProcessor {
 
     @BuildStep(onlyIf = IsDevelopment.class)
     @Record(ExecutionTime.STATIC_INIT)
+    @Produce(FailedStartBuildItem.class)
     public HistoryHandlerBuildItem handler(BuildProducer<LogHandlerBuildItem> logHandlerBuildItemBuildProducer,
             LogStreamRecorder recorder, DevUIConfig devUiConfig) {
         RuntimeValue<Optional<HistoryHandler>> handler = recorder.handler(devUiConfig.historySize);
@@ -299,6 +304,7 @@ public class DevConsoleProcessor {
 
     @Consume(LoggingSetupBuildItem.class)
     @BuildStep(onlyIf = IsDevelopment.class)
+    @Produce(FailedStartBuildItem.class)
     public ServiceStartBuildItem setupDeploymentSideHandling(List<DevTemplatePathBuildItem> devTemplatePaths,
             CurateOutcomeBuildItem curateOutcomeBuildItem,
             BuildSystemTargetBuildItem buildSystemTargetBuildItem,
@@ -340,6 +346,7 @@ public class DevConsoleProcessor {
 
     @Record(ExecutionTime.RUNTIME_INIT)
     @Consume(LoggingSetupBuildItem.class)
+    @Produce(FailedStartBuildItem.class)
     @BuildStep(onlyIf = IsDevelopment.class)
     public void setupDevConsoleRoutes(
             DevConsoleRecorder recorder,
@@ -460,6 +467,7 @@ public class DevConsoleProcessor {
             Optional<EffectiveIdeBuildItem> effectiveIdeBuildItem,
             NonApplicationRootPathBuildItem nonApplicationRootPathBuildItem, LaunchModeBuildItem launchModeBuildItem) {
         EngineBuilder builder = Engine.builder().addDefaults();
+        builder.strictRendering(false);
 
         // Escape some characters for HTML templates
         builder.addResultMapper(new HtmlEscaper());

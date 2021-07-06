@@ -259,6 +259,9 @@ public class IsolatedDevModeMain implements BiConsumer<CuratedApplication, Map<S
                     Thread.currentThread().setContextClassLoader(curatedApplication.getAugmentClassLoader());
                     LoggingSetupRecorder.handleFailedStart();
                 }
+                //try and bring the dev console up at the very least
+                augmentAction.performCustomBuild(FailedStartConsumer.class.getName(), null,
+                        FailedStartBuildItem.class.getName());
             }
         } finally {
             restarting = false;

@@ -116,6 +116,7 @@ public class VertxHttpRecorder {
     private static final Logger LOGGER = Logger.getLogger(VertxHttpRecorder.class.getName());
 
     private static volatile Handler<RoutingContext> hotReplacementHandler;
+    private static volatile Handler<RoutingContext> hotReplacementErrorReportHandler;
     private static volatile HotReplacementContext hotReplacementContext;
     private static volatile RemoteSyncHandler remoteSyncHandler;
 
@@ -156,8 +157,10 @@ public class VertxHttpRecorder {
         }
     };
 
-    public static void setHotReplacement(Handler<RoutingContext> handler, HotReplacementContext hrc) {
+    public static void setHotReplacement(Handler<RoutingContext> handler, HotReplacementContext hrc,
+            Handler<RoutingContext> errorReportHandler) {
         hotReplacementHandler = handler;
+        hotReplacementErrorReportHandler = errorReportHandler;
         hotReplacementContext = hrc;
     }
 
@@ -175,11 +178,13 @@ public class VertxHttpRecorder {
             //it is possible start failed after the server was started
             //we shut it down in this case, as we have no idea what state it is in
             final Handler<RoutingContext> prevHotReplacementHandler = hotReplacementHandler;
+            final Handler<RoutingContext> prevHotReplacementErrorReportHandler = hotReplacementErrorReportHandler;
             shutDownDevMode();
             // reset back to the older live reload handler, so that it can be used
             // to watch any artifacts that need hot deployment to fix the reason which caused
             // the server start to fail
             hotReplacementHandler = prevHotReplacementHandler;
+            hotReplacementErrorReportHandler = prevHotReplacementErrorReportHandler;
         }
         Supplier<Vertx> supplier = VertxCoreRecorder.getVertx();
         Vertx vertx;
@@ -203,6 +208,8 @@ public class VertxHttpRecorder {
             Router router = Router.router(vertx);
             if (hotReplacementHandler != null) {
                 router.route().order(Integer.MIN_VALUE).blockingHandler(hotReplacementHandler);
+                //the error report is last, so the dev UI can still work if there is an error
+                router.route().order(Integer.MAX_VALUE).blockingHandler(hotReplacementErrorReportHandler);
             }
 
             Handler<HttpServerRequest> root = router;
@@ -343,13 +350,10 @@ public class VertxHttpRecorder {
             if (hotReplacementHandler != null) {
                 //recorders are always executed in the current CL
                 ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
-                httpRouteRouter.route().order(Integer.MIN_VALUE).handler(new Handler<RoutingContext>() {
-                    @Override
-                    public void handle(RoutingContext event) {
-                        Thread.currentThread().setContextClassLoader(currentCl);
-                        hotReplacementHandler.handle(event);
-                    }
-                });
+                httpRouteRouter.route().order(Integer.MIN_VALUE)
+                        .handler(new TcclWrappingHandler(currentCl, hotReplacementHandler));
+                httpRouteRouter.route().order(Integer.MAX_VALUE)
+                        .handler(new TcclWrappingHandler(currentCl, hotReplacementErrorReportHandler));
             }
             root = httpRouteRouter;
         } else {
@@ -358,13 +362,9 @@ public class VertxHttpRecorder {
             mainRouter.mountSubRouter(rootPath, httpRouteRouter);
             if (hotReplacementHandler != null) {
                 ClassLoader currentCl = Thread.currentThread().getContextClassLoader();
-                mainRouter.route().order(Integer.MIN_VALUE).handler(new Handler<RoutingContext>() {
-                    @Override
-                    public void handle(RoutingContext event) {
-                        Thread.currentThread().setContextClassLoader(currentCl);
-                        hotReplacementHandler.handle(event);
-                    }
-                });
+                mainRouter.route().order(Integer.MIN_VALUE).handler(new TcclWrappingHandler(currentCl, hotReplacementHandler));
+                mainRouter.route().order(Integer.MAX_VALUE)
+                        .handler(new TcclWrappingHandler(currentCl, hotReplacementErrorReportHandler));
             }
             root = mainRouter;
         }
@@ -1251,5 +1251,21 @@ public class VertxHttpRecorder {
                 }
             }
         };
+    }
+
+    private static class TcclWrappingHandler implements Handler<RoutingContext> {
+        private final ClassLoader currentCl;
+        private final Handler<RoutingContext> hrh;
+
+        public TcclWrappingHandler(ClassLoader currentCl, Handler<RoutingContext> hrh) {
+            this.currentCl = currentCl;
+            this.hrh = hrh;
+        }
+
+        @Override
+        public void handle(RoutingContext event) {
+            Thread.currentThread().setContextClassLoader(currentCl);
+            hrh.handle(event);
+        }
     }
 }

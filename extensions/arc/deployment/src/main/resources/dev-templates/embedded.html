@@ -1,3 +1,4 @@
+{#if info:arcContainer}
 <a href="{urlbase}/beans" class="badge badge-light">
   <i class="fa fa-egg fa-fw"></i>
   Beans <span class="badge badge-light">{info:devBeanInfos.beans.size}</span></a>
@@ -19,3 +20,4 @@
 <a href="{urlbase}/removed-beans" class="badge badge-light">
   <i class="fa fa-trash-alt fa-fw"></i>
   Removed Beans <span class="badge badge-light">{info:arcContainer.removedBeans.size}</span></a>
+{/if}

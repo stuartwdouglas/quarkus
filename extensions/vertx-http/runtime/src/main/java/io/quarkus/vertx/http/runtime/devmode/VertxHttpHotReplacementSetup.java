@@ -25,7 +25,8 @@ public class VertxHttpHotReplacementSetup implements HotReplacementSetup {
         // ensure that Vert.x runs in dev mode, this prevents Vert.x from caching static resources
         System.setProperty("vertxweb.environment", "dev");
         this.hotReplacementContext = context;
-        VertxHttpRecorder.setHotReplacement(this::handleHotReplacementRequest, hotReplacementContext);
+        VertxHttpRecorder.setHotReplacement(this::handleHotReplacementRequest, hotReplacementContext,
+                this::handleHotReplacementError);
         hotReplacementContext.addPreScanStep(new Runnable() {
             @Override
             public void run() {
@@ -39,13 +40,16 @@ public class VertxHttpHotReplacementSetup implements HotReplacementSetup {
         VertxHttpRecorder.startServerAfterFailedStart();
     }
 
+    void handleHotReplacementError(RoutingContext routingContext) {
+        if (hotReplacementContext.getDeploymentProblem() != null) {
+            handleDeploymentProblem(routingContext, hotReplacementContext.getDeploymentProblem());
+            return;
+        }
+    }
+
     void handleHotReplacementRequest(RoutingContext routingContext) {
         if ((nextUpdate > System.currentTimeMillis() && !hotReplacementContext.isTest())
                 || routingContext.request().headers().contains(HEADER_NAME)) {
-            if (hotReplacementContext.getDeploymentProblem() != null) {
-                handleDeploymentProblem(routingContext, hotReplacementContext.getDeploymentProblem());
-                return;
-            }
             routingContext.next();
             return;
         }
@@ -67,10 +71,6 @@ public class VertxHttpHotReplacementSetup implements HotReplacementSetup {
                             return;
                         }
                     }
-                }
-                if (hotReplacementContext.getDeploymentProblem() != null) {
-                    event.fail(hotReplacementContext.getDeploymentProblem());
-                    return;
                 }
                 event.complete(restart);
             }
