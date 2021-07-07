@@ -121,6 +121,7 @@ public abstract class QuarkusConsole {
         String status;
         String results;
         String compileError;
+        String help;
 
         protected InputHolder(InputHandler handler) {
             this.handler = handler;
@@ -133,6 +134,7 @@ public abstract class QuarkusConsole {
                 setPrompt(prompt);
                 setResults(results);
                 setCompileError(compileError);
+                setHelp(help);
             }
             return this;
         }
@@ -169,6 +171,14 @@ public abstract class QuarkusConsole {
             }
         }
 
+        @Override
+        public void setHelp(String help) {
+            this.help = help;
+            if (enabled) {
+                setHelpMessage(help);
+            }
+        }
+
         protected abstract void setStatusMessage(String status);
 
         protected abstract void setPromptMessage(String prompt);
@@ -176,5 +186,7 @@ public abstract class QuarkusConsole {
         protected abstract void setResultsMessage(String results);
 
         protected abstract void setCompileErrorMessage(String results);
+
+        protected abstract void setHelpMessage(String results);
     }
 }

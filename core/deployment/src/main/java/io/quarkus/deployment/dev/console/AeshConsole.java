@@ -398,6 +398,11 @@ public class AeshConsole extends QuarkusConsole {
         }
 
         @Override
+        public void setHelpMessage(String helpString) {
+            setMessage(4, helpString);
+        }
+
+        @Override
         public void doReadLine() {
             if (!inputSupport) {
                 return;
@@ -407,5 +412,6 @@ public class AeshConsole extends QuarkusConsole {
             doingReadline = true;
 
         }
+
     }
 }

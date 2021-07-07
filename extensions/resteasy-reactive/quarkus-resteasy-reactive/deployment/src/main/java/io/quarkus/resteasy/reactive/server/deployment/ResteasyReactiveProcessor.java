@@ -34,6 +34,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
+import org.jboss.resteasy.reactive.common.core.BlockingNotAllowedException;
 import org.jboss.resteasy.reactive.common.core.Serialisers;
 import org.jboss.resteasy.reactive.common.core.SingletonBeanFactory;
 import org.jboss.resteasy.reactive.common.model.InjectableBean;
@@ -80,12 +81,14 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.ApplicationClassPredicateBuildItem;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
+import io.quarkus.deployment.builditem.ExceptionGuideMapperBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.ShutdownContextBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
+import io.quarkus.deployment.dev.testing.MessageFormat;
 import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.MethodCreator;
@@ -118,6 +121,7 @@ import io.quarkus.resteasy.reactive.spi.MessageBodyReaderBuildItem;
 import io.quarkus.resteasy.reactive.spi.MessageBodyReaderOverrideBuildItem;
 import io.quarkus.resteasy.reactive.spi.MessageBodyWriterBuildItem;
 import io.quarkus.resteasy.reactive.spi.MessageBodyWriterOverrideBuildItem;
+import io.quarkus.runtime.BlockingOperationNotAllowedException;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.security.AuthenticationCompletionException;
 import io.quarkus.security.AuthenticationFailedException;
@@ -241,6 +245,42 @@ public class ResteasyReactiveProcessor {
         Set<String> beanParams = resourceScanningResultBuildItem.get().getResult()
                 .getBeanParams();
         unremoveableBeans.produce(UnremovableBeanBuildItem.beanClassNames(beanParams.toArray(new String[0])));
+    }
+
+    @BuildStep
+    ExceptionGuideMapperBuildItem helpMessage() {
+        return new ExceptionGuideMapperBuildItem(10, new Function<Throwable, String>() {
+            @Override
+            public String apply(Throwable throwable) {
+                Throwable c = throwable;
+                while (c != null) {
+                    if (c.getClass().getName().equals(BlockingNotAllowedException.class.getName())
+                            || c.getClass().getName().equals(BlockingOperationNotAllowedException.class.getName())) {
+                        return checkExceptionStack(throwable);
+                    }
+                    c = c.getCause();
+                }
+                return null;
+            }
+
+            private String checkExceptionStack(Throwable throwable) {
+                Throwable c = throwable;
+                while (c != null) {
+                    for (StackTraceElement frame : c.getStackTrace()) {
+                        //we need to make sure this actually happened within a resource method
+                        //and not somewhere else
+                        if (frame.getClassName().startsWith("org.jboss.resteasy.reactive")) {
+                            return MessageFormat.BLUE + "For more info on the " + throwable.getClass().getSimpleName()
+                                    + " please see https://quarkus.io/guides/resteasy-reactive#execution-model-blocking-non-blocking"
+                                    + MessageFormat.RESET;
+                        }
+                    }
+                    c = c.getCause();
+                }
+                return null;
+            }
+        });
+
     }
 
     @BuildStep

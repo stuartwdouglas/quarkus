@@ -18,5 +18,7 @@ public interface InputHandler {
         default void doReadLine() {
 
         }
+
+        void setHelp(String helpString);
     }
 }

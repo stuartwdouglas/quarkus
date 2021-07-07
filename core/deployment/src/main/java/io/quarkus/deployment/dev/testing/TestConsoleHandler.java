@@ -26,10 +26,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
 
 import org.jboss.logging.Logger;
-import org.jboss.logmanager.LogManager;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.launcher.TestIdentifier;
 
@@ -72,6 +75,8 @@ public class TestConsoleHandler implements TestListener {
 
     private List<Runnable> restoreLogLevelsTasks;
     private org.jboss.logmanager.Level currentLevel;
+    private final List<Function<Throwable, String>> thrownExceptionHelpMappers;
+    private volatile Throwable lastThrown;
 
     /**
      * If HTTP is not present we add the 'press s to reload' option to the prompt
@@ -79,9 +84,11 @@ public class TestConsoleHandler implements TestListener {
      */
     private final boolean hasHttp;
 
-    public TestConsoleHandler(DevModeType devModeType, Consumer<String> browserOpener, boolean hasHttp) {
+    public TestConsoleHandler(DevModeType devModeType, Consumer<String> browserOpener,
+            List<Function<Throwable, String>> thrownExceptionHelpMappers, boolean hasHttp) {
         this.devModeType = devModeType;
         this.browserOpener = browserOpener;
+        this.thrownExceptionHelpMappers = thrownExceptionHelpMappers;
         this.hasHttp = hasHttp;
     }
 
@@ -92,6 +99,34 @@ public class TestConsoleHandler implements TestListener {
             @Override
             public void run() {
                 QuarkusConsole.INSTANCE.popInputHandler();
+            }
+        });
+        ((org.jboss.logmanager.LogManager) LogManager.getLogManager()).getLogger("").addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                    if (!Thread.currentThread().getContextClassLoader().toString().contains("TEST")) {//huge hack
+                        if (record.getThrown() != null) {
+                            for (Function<Throwable, String> mapper : thrownExceptionHelpMappers) {
+                                String res = mapper.apply(record.getThrown());
+                                if (res != null) {
+                                    promptHandler.setHelp(res);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void flush() {
+
+            }
+
+            @Override
+            public void close() throws SecurityException {
+
             }
         });
     }

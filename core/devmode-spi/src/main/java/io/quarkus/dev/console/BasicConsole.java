@@ -101,28 +101,17 @@ public class BasicConsole extends QuarkusConsole {
 
             @Override
             protected void setCompileErrorMessage(String results) {
-                if (results == null) {
-                    return;
-                }
-                DISABLE_FILTER.set(true);
-                try {
-                    System.out.println(results);
-                } finally {
-                    DISABLE_FILTER.set(false);
-                }
+                setResultsMessage(results);
             }
 
             @Override
             protected void setStatusMessage(String status) {
-                if (status == null) {
-                    return;
-                }
-                DISABLE_FILTER.set(true);
-                try {
-                    System.out.println(status);
-                } finally {
-                    DISABLE_FILTER.set(false);
-                }
+                setResultsMessage(status);
+            }
+
+            @Override
+            protected void setHelpMessage(String status) {
+                setResultsMessage(status);
             }
         };
     }

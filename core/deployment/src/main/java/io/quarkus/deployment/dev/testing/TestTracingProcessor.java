@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import org.jboss.jandex.ClassInfo;
 import org.objectweb.asm.ClassVisitor;
@@ -23,6 +24,7 @@ import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.Produce;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
+import io.quarkus.deployment.builditem.ExceptionGuideMapperBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.LogHandlerBuildItem;
@@ -52,7 +54,8 @@ public class TestTracingProcessor {
     @Produce(TestSetupBuildItem.class)
     void setupConsole(TestConfig config, BuildProducer<TestListenerBuildItem> testListenerBuildItemBuildProducer,
             LaunchModeBuildItem launchModeBuildItem, Capabilities capabilities, ConsoleConfig consoleConfig,
-            Optional<BrowserOpenerBuildItem> browserOpener) {
+            Optional<BrowserOpenerBuildItem> browserOpener,
+            List<ExceptionGuideMapperBuildItem> exceptionGuideMapperBuildItems) {
         if (!TestSupport.instance().isPresent() || config.continuousTesting == TestConfig.Mode.DISABLED
                 || config.flatClassPath) {
             return;
@@ -65,6 +68,8 @@ public class TestTracingProcessor {
             ConsoleHelper.installConsole(config, consoleConfig);
             TestConsoleHandler consoleHandler = new TestConsoleHandler(launchModeBuildItem.getDevModeType().get(),
                     browserOpener.map(BrowserOpenerBuildItem::getBrowserOpener).orElse(null),
+                    exceptionGuideMapperBuildItems.stream().sorted().map(ExceptionGuideMapperBuildItem::getMapper)
+                            .collect(Collectors.toList()),
                     capabilities.isPresent(Capability.VERTX_HTTP));
             consoleHandler.install();
             testListenerBuildItemBuildProducer.produce(new TestListenerBuildItem(consoleHandler));
