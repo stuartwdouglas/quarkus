@@ -2,7 +2,6 @@ package io.quarkus.deployment.console;
 
 import java.util.Optional;
 
-import io.quarkus.runtime.configuration.ConfigInstantiator;
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import io.quarkus.deployment.Capabilities;
