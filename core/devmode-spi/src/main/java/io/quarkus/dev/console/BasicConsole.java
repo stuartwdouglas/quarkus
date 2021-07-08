@@ -19,11 +19,11 @@ public class BasicConsole extends QuarkusConsole {
     };
     final PrintStream printStream;
     final boolean inputSupport;
-    final boolean noColor;
+    final boolean color;
     volatile boolean readingLine;
 
-    public BasicConsole(boolean noColor, boolean inputSupport, PrintStream printStream) {
-        this.noColor = noColor;
+    public BasicConsole(boolean color, boolean inputSupport, PrintStream printStream) {
+        this.color = color;
         this.inputSupport = inputSupport;
         this.printStream = printStream;
         if (inputSupport) {
@@ -137,7 +137,7 @@ public class BasicConsole extends QuarkusConsole {
                 }
             }
         }
-        if (noColor || !hasColorSupport()) {
+        if (!color) {
             printStream.print(stripAnsiCodes(s));
         } else {
             printStream.print(s);

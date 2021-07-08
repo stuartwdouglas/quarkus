@@ -49,6 +49,7 @@ import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.configuration.ConfigInstantiator;
+import io.quarkus.runtime.console.ConsoleRuntimeConfig;
 import io.quarkus.runtime.logging.CategoryBuildTimeConfig;
 import io.quarkus.runtime.logging.CleanupFilterConfig;
 import io.quarkus.runtime.logging.InheritableLevel;
@@ -128,6 +129,7 @@ public final class LoggingResourceProcessor {
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
     LoggingSetupBuildItem setupLoggingRuntimeInit(LoggingSetupRecorder recorder, LogConfig log, LogBuildTimeConfig buildLog,
+            ConsoleRuntimeConfig consoleRuntimeConfig,
             List<LogHandlerBuildItem> handlerBuildItems,
             List<NamedLogHandlersBuildItem> namedHandlerBuildItems, List<LogConsoleFormatBuildItem> consoleFormatItems,
             Optional<ConsoleFormatterBannerBuildItem> possibleBannerBuildItem,
@@ -149,7 +151,7 @@ public final class LoggingResourceProcessor {
             if (bannerBuildItem != null) {
                 possibleSupplier = bannerBuildItem.getBannerSupplier();
             }
-            recorder.initializeLogging(log, buildLog, handlers, namedHandlers,
+            recorder.initializeLogging(log, buildLog, consoleRuntimeConfig, handlers, namedHandlers,
                     consoleFormatItems.stream().map(LogConsoleFormatBuildItem::getFormatterValue).collect(Collectors.toList()),
                     possibleSupplier);
             LogConfig logConfig = new LogConfig();
@@ -162,7 +164,9 @@ public final class LoggingResourceProcessor {
                         : filterElement.getTargetLevel();
                 logConfig.filters.put(filterElement.getLoggerName(), value);
             }
-            LoggingSetupRecorder.initializeBuildTimeLogging(logConfig, buildLog);
+            ConsoleRuntimeConfig crc = new ConsoleRuntimeConfig();
+            ConfigInstantiator.handleObject(crc);
+            LoggingSetupRecorder.initializeBuildTimeLogging(logConfig, buildLog, crc);
             ((QuarkusClassLoader) Thread.currentThread().getContextClassLoader()).addCloseTask(new Runnable() {
                 @Override
                 public void run() {
