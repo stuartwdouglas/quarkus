@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public @interface QuarkusIntegrationTest {
 
     /**
+     * If quarkus should automatically start the application. If this is set to false then you need to use
+     * @return
+     */
+    boolean start() default true;
+
+    /**
      * If used as a field of class annotated with {@link QuarkusIntegrationTest}, the field is populated
      * with an implementation that allows accessing contextual test information
      */
@@ -44,5 +51,41 @@ public @interface QuarkusIntegrationTest {
          * If no dev services where launched, the map will be empty.
          */
         Map<String, String> devServicesProperties();
+
+        /**
+         * Returns a launcher that can be used to launch the application. This can only be used if {@link #start()} is false.
+         *
+         * @return A new launch builder
+         */
+        LaunchBuilder newBuilder();
+    }
+
+    interface LaunchBuilder {
+
+        LaunchBuilder systemProperty(String name, String value);
+        LaunchBuilder jvmArg(String arg);
+        LaunchBuilder environmentVariable(String name, String value);
+
+        LaunchResult launchToCompletion(String... args);
+
+    }
+
+    class LaunchResult {
+
+        final int statusCode;
+        final String output;
+
+        public LaunchResult(int statusCode, String output) {
+            this.statusCode = statusCode;
+            this.output = output;
+        }
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public String getOutput() {
+            return output;
+        }
     }
 }
