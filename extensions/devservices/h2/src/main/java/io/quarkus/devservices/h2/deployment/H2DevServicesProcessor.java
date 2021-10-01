@@ -78,7 +78,7 @@ public class H2DevServicesProcessor {
                                                         + tcpServer.getStatus());
                                     }
                                 }
-                            });
+                            }, null);
                 } catch (SQLException throwables) {
                     throw new RuntimeException(throwables);
                 }

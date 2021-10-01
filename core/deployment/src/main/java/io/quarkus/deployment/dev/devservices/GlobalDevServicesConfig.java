@@ -1,6 +1,7 @@
 package io.quarkus.deployment.dev.devservices;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
@@ -21,6 +22,11 @@ public class GlobalDevServicesConfig {
      */
     @ConfigItem
     public Optional<Duration> timeout;
+    /**
+     * Dev services that can be started by manually specifying the image.
+     */
+    @ConfigItem
+    public Map<String, CustomDevServicesConfig> custom;
 
     public static class Enabled implements BooleanSupplier {
 

@@ -22,15 +22,18 @@ public interface DevServicesDatasourceProvider {
     class RunningDevServicesDatasource {
 
         private final String url;
+        private final String internalUrl;
         private final String username;
         private final String password;
         private final Closeable closeTask;
 
-        public RunningDevServicesDatasource(String url, String username, String password, Closeable closeTask) {
+        public RunningDevServicesDatasource(String url, String username, String password, Closeable closeTask,
+                String internalUrl) {
             this.url = url;
             this.username = username;
             this.password = password;
             this.closeTask = closeTask;
+            this.internalUrl = internalUrl;
         }
 
         public String getUrl() {
@@ -49,6 +52,9 @@ public interface DevServicesDatasourceProvider {
             return password;
         }
 
+        public String getInternalUrl() {
+            return internalUrl;
+        }
     }
 
 }

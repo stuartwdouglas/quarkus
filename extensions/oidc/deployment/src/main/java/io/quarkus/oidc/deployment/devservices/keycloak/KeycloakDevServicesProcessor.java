@@ -49,10 +49,10 @@ import io.quarkus.deployment.builditem.DevServicesSharedNetworkBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.console.ConsoleInstalledBuildItem;
 import io.quarkus.deployment.console.StartupLogCompressor;
+import io.quarkus.deployment.dev.devservices.ContainerAddress;
+import io.quarkus.deployment.dev.devservices.ContainerLocator;
 import io.quarkus.deployment.dev.devservices.GlobalDevServicesConfig;
 import io.quarkus.deployment.logging.LoggingSetupBuildItem;
-import io.quarkus.devservices.common.ContainerAddress;
-import io.quarkus.devservices.common.ContainerLocator;
 import io.quarkus.oidc.deployment.OidcBuildStep.IsEnabled;
 import io.quarkus.oidc.deployment.devservices.OidcDevServicesBuildItem;
 import io.quarkus.oidc.deployment.devservices.OidcDevServicesUtils;
@@ -361,20 +361,18 @@ public class KeycloakDevServicesProcessor {
         @Override
         protected void configure() {
             super.configure();
-            if (useSharedNetwork) {
-                // When a shared network is requested for the launched containers, we need to configure
-                // the container to use it. We also need to create a hostname that will be applied to the returned
-                // Keycloak URL
-                setNetwork(Network.SHARED);
-                hostName = "keycloak-" + Base58.randomString(5);
-                setNetworkAliases(Collections.singletonList(hostName));
-            } else {
-                if (fixedExposedPort.isPresent()) {
-                    addFixedExposedPort(fixedExposedPort.getAsInt(), KEYCLOAK_PORT);
-                }
-                // we always add this one in order to avoid dumb warning messages from the wait strategy...
-                addExposedPort(KEYCLOAK_PORT);
+            // When a shared network is requested for the launched containers, we need to configure
+            // the container to use it. We also need to create a hostname that will be applied to the returned
+            // Keycloak URL
+            setNetwork(Network.SHARED);
+            hostName = "keycloak-" + Base58.randomString(5);
+            setNetworkAliases(Collections.singletonList(hostName));
+
+            if (fixedExposedPort.isPresent()) {
+                addFixedExposedPort(fixedExposedPort.getAsInt(), KEYCLOAK_PORT);
             }
+            // we always add this one in order to avoid dumb warning messages from the wait strategy...
+            addExposedPort(KEYCLOAK_PORT);
 
             if (sharedContainer && LaunchMode.current() == LaunchMode.DEVELOPMENT) {
                 withLabel(DEV_SERVICE_LABEL, containerLabelValue);

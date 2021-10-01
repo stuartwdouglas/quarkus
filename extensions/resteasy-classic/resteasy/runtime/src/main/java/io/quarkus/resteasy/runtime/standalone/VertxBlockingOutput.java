@@ -89,7 +89,7 @@ public class VertxBlockingOutput implements VertxOutput {
                     if (last) {
                         request.response().end(createBuffer(data));
                     } else {
-                        request.response().write(createBuffer(data));
+                        request.response().write(createBuffer(data)).toCompletionStage().toCompletableFuture().get();
                     }
                 } catch (Exception e) {
                     if (data != null && data.refCnt() > 0) {

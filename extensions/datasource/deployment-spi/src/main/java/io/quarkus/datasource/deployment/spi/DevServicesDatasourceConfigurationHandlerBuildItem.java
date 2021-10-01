@@ -1,11 +1,12 @@
 package io.quarkus.datasource.deployment.spi;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import io.quarkus.builder.item.MultiBuildItem;
+import io.quarkus.deployment.builditem.DevServicesConfigResultBuildItem;
 import io.quarkus.runtime.configuration.ConfigUtils;
 
 /**
@@ -54,12 +55,21 @@ public final class DevServicesDatasourceConfigurationHandlerBuildItem extends Mu
                     @Override
                     public Map<String, String> apply(String dsName,
                             DevServicesDatasourceProvider.RunningDevServicesDatasource runningDevDb) {
+                        Map<String, String> ret = new HashMap<>();
                         if (dsName == null) {
-                            return Collections.singletonMap("quarkus.datasource.jdbc.url", runningDevDb.getUrl());
+                            ret.put("quarkus.datasource.jdbc.url", runningDevDb.getUrl());
+                            if (runningDevDb.getInternalUrl() != null) {
+                                ret.put(DevServicesConfigResultBuildItem.INTERNAL_PREFIX + "quarkus.datasource.jdbc.url",
+                                        runningDevDb.getInternalUrl());
+                            }
                         } else {
-                            return Collections.singletonMap("quarkus.datasource.\"" + dsName + "\".jdbc.url",
-                                    runningDevDb.getUrl());
+                            ret.put("quarkus.datasource.\"" + dsName + "\".jdbc.url", runningDevDb.getUrl());
+                            if (runningDevDb.getInternalUrl() != null) {
+                                ret.put(DevServicesConfigResultBuildItem.INTERNAL_PREFIX + "quarkus.datasource.\"" + dsName
+                                        + "\".jdbc.url", runningDevDb.getInternalUrl());
+                            }
                         }
+                        return ret;
                     }
                 }, new Predicate<String>() {
                     @Override
@@ -80,13 +90,24 @@ public final class DevServicesDatasourceConfigurationHandlerBuildItem extends Mu
                     @Override
                     public Map<String, String> apply(String dsName,
                             DevServicesDatasourceProvider.RunningDevServicesDatasource runningDevDb) {
+                        Map<String, String> ret = new HashMap<>();
                         if (dsName == null) {
-                            return Collections.singletonMap("quarkus.datasource.reactive.url",
+                            ret.put("quarkus.datasource.reactive.url",
                                     runningDevDb.getUrl().replaceFirst("jdbc:", "vertx-reactive:"));
+                            if (runningDevDb.getInternalUrl() != null) {
+                                ret.put(DevServicesConfigResultBuildItem.INTERNAL_PREFIX + "quarkus.datasource.reactive.url",
+                                        runningDevDb.getInternalUrl().replaceFirst("jdbc:", "vertx-reactive:"));
+                            }
                         } else {
-                            return Collections.singletonMap("quarkus.datasource.\"" + dsName + "\".reactive.url",
+                            ret.put("quarkus.datasource.\"" + dsName + "\".reactive.url",
                                     runningDevDb.getUrl().replaceFirst("jdbc:", "vertx-reactive:"));
+                            if (runningDevDb.getInternalUrl() != null) {
+                                ret.put(DevServicesConfigResultBuildItem.INTERNAL_PREFIX + "quarkus.datasource.\"" + dsName
+                                        + "\".reactive.url",
+                                        runningDevDb.getInternalUrl().replaceFirst("jdbc:", "vertx-reactive:"));
+                            }
                         }
+                        return ret;
                     }
                 }, new Predicate<String>() {
                     @Override

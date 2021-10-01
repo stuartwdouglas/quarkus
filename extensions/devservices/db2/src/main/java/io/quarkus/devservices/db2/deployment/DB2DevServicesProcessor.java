@@ -16,7 +16,7 @@ import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProvider;
 import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProviderBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.DevServicesSharedNetworkBuildItem;
-import io.quarkus.devservices.common.ConfigureUtil;
+import io.quarkus.deployment.dev.devservices.ConfigureUtil;
 import io.quarkus.runtime.LaunchMode;
 
 public class DB2DevServicesProcessor {
@@ -56,7 +56,7 @@ public class DB2DevServicesProcessor {
 
                                 LOG.info("Dev Services for IBM Db2 shut down.");
                             }
-                        });
+                        }, container.getInternalJdbcUrl());
             }
         });
     }
@@ -78,12 +78,9 @@ public class DB2DevServicesProcessor {
         protected void configure() {
             super.configure();
 
-            if (useSharedNetwork) {
-                hostName = ConfigureUtil.configureSharedNetwork(this, "db2");
-                return;
-            }
+            hostName = ConfigureUtil.configureSharedNetwork(this, "db2");
 
-            if (fixedExposedPort.isPresent()) {
+            if (fixedExposedPort.isPresent() && !useSharedNetwork) {
                 addFixedExposedPort(fixedExposedPort.getAsInt(), DB2_PORT);
             }
         }
@@ -97,11 +94,15 @@ public class DB2DevServicesProcessor {
                 // in this case we expose the URL using the network alias we created in 'configure'
                 // and the container port since the application communicating with this container
                 // won't be doing port mapping
-                String additionalUrlParams = constructUrlParameters(":", ";", ";");
-                return "jdbc:db2://" + hostName + ":" + DB2_PORT + "/" + getDatabaseName() + additionalUrlParams;
+                return getInternalJdbcUrl();
             } else {
                 return super.getJdbcUrl();
             }
+        }
+
+        public String getInternalJdbcUrl() {
+            String additionalUrlParams = constructUrlParameters(":", ";", ";");
+            return "jdbc:db2://" + hostName + ":" + DB2_PORT + "/" + getDatabaseName() + additionalUrlParams;
         }
     }
 }

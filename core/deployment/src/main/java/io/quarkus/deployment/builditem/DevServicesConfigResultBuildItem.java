@@ -11,6 +11,14 @@ import io.quarkus.builder.item.MultiBuildItem;
  */
 public final class DevServicesConfigResultBuildItem extends MultiBuildItem {
 
+    /**
+     * bit of a hack, but this prefix is used to specify values that only apply to containers running
+     * inside the shared docker network (and not on the host network).
+     *
+     * This allows custom dev services to talk to other dev services
+     */
+    public static final String INTERNAL_PREFIX = "$$[DOCKER-INTERNAL]$$";
+
     final String key;
     final String value;
 

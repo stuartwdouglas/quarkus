@@ -26,7 +26,6 @@
         <module>mssql</module>
         <module>db2</module>
         <module>oracle</module>
-        <module>common</module>
     </modules>
 
 </project>

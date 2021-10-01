@@ -80,7 +80,7 @@ public class DerbyDevServicesProcessor {
                                         throw new RuntimeException(e);
                                     }
                                 }
-                            });
+                            }, null);
                 } catch (Exception throwable) {
                     throw new RuntimeException(throwable);
                 }

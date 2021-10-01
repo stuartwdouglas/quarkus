@@ -16,7 +16,7 @@ import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProvider;
 import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProviderBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.DevServicesSharedNetworkBuildItem;
-import io.quarkus.devservices.common.ConfigureUtil;
+import io.quarkus.deployment.dev.devservices.ConfigureUtil;
 import io.quarkus.runtime.LaunchMode;
 
 public class OracleDevServicesProcessor {
@@ -58,7 +58,7 @@ public class OracleDevServicesProcessor {
 
                                 LOG.info("Dev Services for Oracle shut down.");
                             }
-                        });
+                        }, container.getInternalJdbcUrl());
             }
         });
     }
@@ -99,10 +99,14 @@ public class OracleDevServicesProcessor {
                 // in this case we expose the URL using the network alias we created in 'configure'
                 // and the container port since the application communicating with this container
                 // won't be doing port mapping
-                return "jdbc:oracle:thin//" + hostName + ":" + PORT + ":" + getDatabaseName();
+                return getInternalJdbcUrl();
             } else {
                 return super.getJdbcUrl();
             }
+        }
+
+        public String getInternalJdbcUrl() {
+            return "jdbc:oracle:thin//" + hostName + ":" + PORT + ":" + getDatabaseName();
         }
     }
 }

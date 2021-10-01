@@ -1,4 +1,4 @@
-package io.quarkus.devservices.common;
+package io.quarkus.deployment.dev.devservices;
 
 import java.util.Arrays;
 import java.util.Optional;

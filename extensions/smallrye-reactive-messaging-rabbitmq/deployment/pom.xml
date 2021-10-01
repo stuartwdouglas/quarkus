@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-devservices-common</artifactId>
+            <artifactId>quarkus-junit4-mock</artifactId>
         </dependency>
     </dependencies>
 

@@ -16,7 +16,7 @@ import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProvider;
 import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProviderBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.DevServicesSharedNetworkBuildItem;
-import io.quarkus.devservices.common.ConfigureUtil;
+import io.quarkus.deployment.dev.devservices.ConfigureUtil;
 import io.quarkus.runtime.LaunchMode;
 
 public class MariaDBDevServicesProcessor {
@@ -54,7 +54,7 @@ public class MariaDBDevServicesProcessor {
 
                                 LOG.info("Dev Services for MariaDB shut down.");
                             }
-                        });
+                        }, container.getInternalJdbcUrl());
             }
         });
     }
@@ -76,12 +76,9 @@ public class MariaDBDevServicesProcessor {
         protected void configure() {
             super.configure();
 
-            if (useSharedNetwork) {
-                hostName = ConfigureUtil.configureSharedNetwork(this, "mariadb");
-                return;
-            }
+            hostName = ConfigureUtil.configureSharedNetwork(this, "mariadb");
 
-            if (fixedExposedPort.isPresent()) {
+            if (fixedExposedPort.isPresent() && !useSharedNetwork) {
                 addFixedExposedPort(fixedExposedPort.getAsInt(), PORT);
             }
         }
@@ -90,11 +87,15 @@ public class MariaDBDevServicesProcessor {
         // from being able to determine the status of the container (which it does by trying to acquire a connection)
         public String getEffectiveJdbcUrl() {
             if (useSharedNetwork) {
-                String additionalUrlParams = constructUrlParameters("?", "&");
-                return "jdbc:mariadb://" + hostName + ":" + PORT + "/" + getDatabaseName() + additionalUrlParams;
+                return getInternalJdbcUrl();
             } else {
                 return super.getJdbcUrl();
             }
+        }
+
+        public String getInternalJdbcUrl() {
+            String additionalUrlParams = constructUrlParameters("?", "&");
+            return "jdbc:mariadb://" + hostName + ":" + PORT + "/" + getDatabaseName() + additionalUrlParams;
         }
     }
 }

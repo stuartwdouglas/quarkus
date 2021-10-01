@@ -31,9 +31,9 @@ import io.quarkus.deployment.builditem.DevServicesSharedNetworkBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.console.ConsoleInstalledBuildItem;
 import io.quarkus.deployment.console.StartupLogCompressor;
+import io.quarkus.deployment.dev.devservices.ContainerLocator;
 import io.quarkus.deployment.dev.devservices.GlobalDevServicesConfig;
 import io.quarkus.deployment.logging.LoggingSetupBuildItem;
-import io.quarkus.devservices.common.ContainerLocator;
 import io.quarkus.redis.client.deployment.RedisBuildTimeConfig.DevServiceConfiguration;
 import io.quarkus.redis.client.runtime.RedisClientUtil;
 import io.quarkus.redis.client.runtime.RedisConfig;
@@ -226,15 +226,12 @@ public class DevServicesRedisProcessor {
         protected void configure() {
             super.configure();
 
-            if (useSharedNetwork) {
-                // When a shared network is requested for the launched containers, we need to configure
-                // the container to use it. We also need to create a hostname that will be applied to the returned
-                // Redis URL
-                setNetwork(Network.SHARED);
-                hostName = "redis-" + Base58.randomString(5);
-                setNetworkAliases(Collections.singletonList(hostName));
-                return;
-            }
+            // When a shared network is requested for the launched containers, we need to configure
+            // the container to use it. We also need to create a hostname that will be applied to the returned
+            // Redis URL
+            setNetwork(Network.SHARED);
+            hostName = "redis-" + Base58.randomString(5);
+            setNetworkAliases(Collections.singletonList(hostName));
 
             if (fixedExposedPort.isPresent()) {
                 addFixedExposedPort(fixedExposedPort.getAsInt(), REDIS_EXPOSED_PORT);

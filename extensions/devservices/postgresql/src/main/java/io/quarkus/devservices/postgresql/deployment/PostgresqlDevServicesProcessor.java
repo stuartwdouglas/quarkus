@@ -16,7 +16,7 @@ import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProvider;
 import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProviderBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.DevServicesSharedNetworkBuildItem;
-import io.quarkus.devservices.common.ConfigureUtil;
+import io.quarkus.deployment.dev.devservices.ConfigureUtil;
 import io.quarkus.runtime.LaunchMode;
 
 public class PostgresqlDevServicesProcessor {
@@ -54,7 +54,7 @@ public class PostgresqlDevServicesProcessor {
 
                                 LOG.info("Dev Services for PostgreSQL shut down.");
                             }
-                        });
+                        }, container.getInternalJdbcUrl());
             }
         });
     }
@@ -76,12 +76,8 @@ public class PostgresqlDevServicesProcessor {
         protected void configure() {
             super.configure();
 
-            if (useSharedNetwork) {
-                hostName = ConfigureUtil.configureSharedNetwork(this, "postgres");
-                return;
-            }
-
-            if (fixedExposedPort.isPresent()) {
+            hostName = ConfigureUtil.configureSharedNetwork(this, "postgres");
+            if (fixedExposedPort.isPresent() && !useSharedNetwork) {
                 addFixedExposedPort(fixedExposedPort.getAsInt(), PostgreSQLContainer.POSTGRESQL_PORT);
             }
         }
@@ -95,12 +91,16 @@ public class PostgresqlDevServicesProcessor {
                 // in this case we expose the URL using the network alias we created in 'configure'
                 // and the container port since the application communicating with this container
                 // won't be doing port mapping
-                String additionalUrlParams = constructUrlParameters("?", "&");
-                return "jdbc:postgresql://" + hostName + ":" + POSTGRESQL_PORT
-                        + "/" + getDatabaseName() + additionalUrlParams;
+                return getInternalJdbcUrl();
             } else {
                 return super.getJdbcUrl();
             }
+        }
+
+        public String getInternalJdbcUrl() {
+            String additionalUrlParams = constructUrlParameters("?", "&");
+            return "jdbc:postgresql://" + hostName + ":" + POSTGRESQL_PORT
+                    + "/" + getDatabaseName() + additionalUrlParams;
         }
     }
 }

@@ -16,7 +16,7 @@ import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProvider;
 import io.quarkus.datasource.deployment.spi.DevServicesDatasourceProviderBuildItem;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.builditem.DevServicesSharedNetworkBuildItem;
-import io.quarkus.devservices.common.ConfigureUtil;
+import io.quarkus.deployment.dev.devservices.ConfigureUtil;
 import io.quarkus.runtime.LaunchMode;
 
 public class MySQLDevServicesProcessor {
@@ -53,7 +53,7 @@ public class MySQLDevServicesProcessor {
 
                                 LOG.info("Dev Services for MySQL shut down.");
                             }
-                        });
+                        }, container.getInternalJdbcUrl());
             }
         });
     }
@@ -75,10 +75,7 @@ public class MySQLDevServicesProcessor {
         protected void configure() {
             super.configure();
 
-            if (useSharedNetwork) {
-                hostName = ConfigureUtil.configureSharedNetwork(this, "mssql");
-                return;
-            }
+            hostName = ConfigureUtil.configureSharedNetwork(this, "mssql");
 
             if (fixedExposedPort.isPresent()) {
                 addFixedExposedPort(fixedExposedPort.getAsInt(), MySQLContainer.MYSQL_PORT);
@@ -92,11 +89,15 @@ public class MySQLDevServicesProcessor {
                 // in this case we expose the URL using the network alias we created in 'configure'
                 // and the container port since the application communicating with this container
                 // won't be doing port mapping
-                String additionalUrlParams = constructUrlParameters("?", "&");
-                return "jdbc:mysql://" + hostName + ":" + MYSQL_PORT + "/" + getDatabaseName() + additionalUrlParams;
+                return getInternalJdbcUrl();
             } else {
                 return super.getJdbcUrl();
             }
+        }
+
+        public String getInternalJdbcUrl() {
+            String additionalUrlParams = constructUrlParameters("?", "&");
+            return "jdbc:mysql://" + hostName + ":" + MYSQL_PORT + "/" + getDatabaseName() + additionalUrlParams;
         }
     }
 }

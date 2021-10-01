@@ -23,9 +23,9 @@ import io.quarkus.deployment.builditem.DevServicesSharedNetworkBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.console.ConsoleInstalledBuildItem;
 import io.quarkus.deployment.console.StartupLogCompressor;
+import io.quarkus.deployment.dev.devservices.ContainerLocator;
 import io.quarkus.deployment.dev.devservices.GlobalDevServicesConfig;
 import io.quarkus.deployment.logging.LoggingSetupBuildItem;
-import io.quarkus.devservices.common.ContainerLocator;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.configuration.ConfigUtils;
 
@@ -265,10 +265,9 @@ public class DevServicesApicurioRegistryProcessor {
             this.port = fixedExposedPort;
             this.useSharedNetwork = useSharedNetwork;
             withNetwork(Network.SHARED);
-            if (useSharedNetwork) {
-                hostName = "kafka-" + Base58.randomString(5);
-                setNetworkAliases(Collections.singletonList(hostName));
-            } else {
+            hostName = "kafka-" + Base58.randomString(5);
+            setNetworkAliases(Collections.singletonList(hostName));
+            if (!useSharedNetwork) {
                 withExposedPorts(APICURIO_REGISTRY_PORT);
             }
             if (serviceName != null) { // Only adds the label in dev mode.

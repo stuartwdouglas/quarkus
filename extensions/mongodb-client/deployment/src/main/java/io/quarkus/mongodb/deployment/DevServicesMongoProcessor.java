@@ -31,9 +31,9 @@ import io.quarkus.deployment.builditem.DevServicesSharedNetworkBuildItem;
 import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.console.ConsoleInstalledBuildItem;
 import io.quarkus.deployment.console.StartupLogCompressor;
+import io.quarkus.deployment.dev.devservices.ConfigureUtil;
 import io.quarkus.deployment.dev.devservices.GlobalDevServicesConfig;
 import io.quarkus.deployment.logging.LoggingSetupBuildItem;
-import io.quarkus.devservices.common.ConfigureUtil;
 import io.quarkus.mongodb.runtime.MongodbConfig;
 import io.quarkus.runtime.configuration.ConfigUtils;
 
@@ -306,13 +306,8 @@ public class DevServicesMongoProcessor {
         @Override
         protected void configure() {
             super.configure();
-
-            if (useSharedNetwork) {
-                hostName = ConfigureUtil.configureSharedNetwork(this, "mongo");
-                return;
-            }
-
-            if (fixedExposedPort != null) {
+            hostName = ConfigureUtil.configureSharedNetwork(this, "mongo");
+            if (fixedExposedPort != null && !useSharedNetwork) {
                 addFixedExposedPort(fixedExposedPort, MONGODB_INTERNAL_PORT);
             }
         }

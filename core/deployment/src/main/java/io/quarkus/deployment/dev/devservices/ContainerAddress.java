@@ -1,4 +1,4 @@
-package io.quarkus.devservices.common;
+package io.quarkus.deployment.dev.devservices;
 
 public class ContainerAddress {
     private final String host;
