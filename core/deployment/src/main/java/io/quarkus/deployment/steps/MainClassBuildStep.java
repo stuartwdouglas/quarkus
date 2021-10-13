@@ -45,6 +45,7 @@ import io.quarkus.deployment.builditem.LaunchModeBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.MainBytecodeRecorderBuildItem;
 import io.quarkus.deployment.builditem.MainClassBuildItem;
+import io.quarkus.deployment.builditem.MainMethodCustomizerBuildItem;
 import io.quarkus.deployment.builditem.ObjectSubstitutionBuildItem;
 import io.quarkus.deployment.builditem.QuarkusApplicationClassBuildItem;
 import io.quarkus.deployment.builditem.RecordableConstructorBuildItem;
@@ -111,6 +112,7 @@ public class MainClassBuildStep {
     void build(List<StaticBytecodeRecorderBuildItem> staticInitTasks,
             List<ObjectSubstitutionBuildItem> substitutions,
             List<MainBytecodeRecorderBuildItem> mainMethod,
+            List<MainMethodCustomizerBuildItem> mainMethodCustomizerBuildItems,
             List<SystemPropertyBuildItem> properties,
             List<JavaLibraryPathAdditionalPathBuildItem> javaLibraryPathAdditionalPaths,
             List<FeatureBuildItem> features,
@@ -270,6 +272,11 @@ public class MainClassBuildStep {
 
         tryBlock = mv.tryBlock();
         tryBlock.invokeStaticMethod(CONFIGURE_STEP_TIME_START);
+        List<MainMethodCustomizerBuildItem> customizers = new ArrayList<>(mainMethodCustomizerBuildItems);
+        Collections.sort(customizers);
+        for (var i : customizers) {
+            i.getConsumer().accept(tryBlock);
+        }
         for (MainBytecodeRecorderBuildItem holder : mainMethod) {
             writeRecordedBytecode(holder.getBytecodeRecorder(), holder.getGeneratedStartupContextClassName(), substitutions,
                     recordableConstructorBuildItems,

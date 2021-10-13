@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import io.quarkus.bootstrap.app.CuratedApplication;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.jboss.logging.Logger;
@@ -57,6 +58,7 @@ public class QuarkusAugmentor {
     private final Properties buildSystemProperties;
     private final Path targetDir;
     private final ApplicationModel effectiveModel;
+    private final CuratedApplication curatedApplication;
     private final String baseName;
     private final Consumer<ConfigBuilder> configCustomizer;
     private final boolean rebuild;
@@ -84,6 +86,7 @@ public class QuarkusAugmentor {
         this.auxiliaryApplication = builder.auxiliaryApplication;
         this.auxiliaryDevModeType = Optional.ofNullable(builder.auxiliaryDevModeType);
         this.test = builder.test;
+        this.curatedApplication = builder.curatedApplication;
     }
 
     public BuildResult run() throws Exception {
@@ -154,7 +157,7 @@ public class QuarkusAugmentor {
                             auxiliaryDevModeType, test))
                     .produce(new BuildSystemTargetBuildItem(targetDir, baseName, rebuild,
                             buildSystemProperties == null ? new Properties() : buildSystemProperties))
-                    .produce(new AppModelProviderBuildItem(effectiveModel));
+                    .produce(new AppModelProviderBuildItem(effectiveModel, curatedApplication));
             for (PathCollection i : additionalApplicationArchives) {
                 execBuilder.produce(new AdditionalApplicationArchiveBuildItem(i));
             }
@@ -188,7 +191,8 @@ public class QuarkusAugmentor {
 
     public static final class Builder {
 
-        public DevModeType auxiliaryDevModeType;
+        DevModeType auxiliaryDevModeType;
+        CuratedApplication curatedApplication;
         boolean rebuild;
         List<PathCollection> additionalApplicationArchives = new ArrayList<>();
         Collection<Path> excludedFromIndexing = Collections.emptySet();
@@ -262,6 +266,15 @@ public class QuarkusAugmentor {
 
         public Builder setTest(boolean test) {
             this.test = test;
+            return this;
+        }
+
+        public CuratedApplication getCuratedApplication() {
+            return curatedApplication;
+        }
+
+        public Builder setCuratedApplication(CuratedApplication curatedApplication) {
+            this.curatedApplication = curatedApplication;
             return this;
         }
 

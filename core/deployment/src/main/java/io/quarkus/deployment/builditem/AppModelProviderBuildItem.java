@@ -1,5 +1,6 @@
 package io.quarkus.deployment.builditem;
 
+import io.quarkus.bootstrap.app.CuratedApplication;
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.model.ApplicationModel;
@@ -12,9 +13,11 @@ public final class AppModelProviderBuildItem extends SimpleBuildItem {
     private static final Logger log = Logger.getLogger(AppModelProviderBuildItem.class);
 
     private final ApplicationModel appModel;
+    private final CuratedApplication curatedApplication;
 
-    public AppModelProviderBuildItem(ApplicationModel appModel) {
+    public AppModelProviderBuildItem(ApplicationModel appModel, CuratedApplication curatedApplication) {
         this.appModel = appModel;
+        this.curatedApplication = curatedApplication;
     }
 
     public ApplicationModel validateAndGet(BootstrapConfig config) {
@@ -33,5 +36,9 @@ public final class AppModelProviderBuildItem extends SimpleBuildItem {
             }
         }
         return appModel;
+    }
+
+    public CuratedApplication getCuratedApplication() {
+        return curatedApplication;
     }
 }

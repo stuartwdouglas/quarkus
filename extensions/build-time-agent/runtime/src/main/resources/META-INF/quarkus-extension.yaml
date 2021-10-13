@@ -1,0 +1,14 @@
+---
+name: "Build Time Agent - Javagent support for native image"
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+metadata:
+  keywords:
+  - "build-time-agent"
+  - "javaagent"
+  - "javagent"
+  - "agent"
+  categories:
+    - "core"
+  status: "experimental"
+  config:
+  - "quarkus.build-time-agent."

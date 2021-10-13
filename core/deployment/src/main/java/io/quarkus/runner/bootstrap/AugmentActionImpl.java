@@ -299,6 +299,7 @@ public class AugmentActionImpl implements AugmentAction {
 
             QuarkusAugmentor.Builder builder = QuarkusAugmentor.builder()
                     .setRoot(quarkusBootstrap.getApplicationRoot())
+                    .setCuratedApplication(curatedApplication)
                     .setClassLoader(classLoader)
                     .setTargetDir(quarkusBootstrap.getTargetDirectory())
                     .setDeploymentClassLoader(deploymentClassLoader)
