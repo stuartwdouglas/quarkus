@@ -1,4 +1,4 @@
-package io.quarkus.smallrye.reactivemessaging.kafka;
+package io.quarkus.smallrye.reactivemessaging.kafka.runtime;
 
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigRoot;
