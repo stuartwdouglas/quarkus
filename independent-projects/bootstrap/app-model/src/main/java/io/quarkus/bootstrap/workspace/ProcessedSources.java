@@ -1,12 +1,12 @@
 package io.quarkus.bootstrap.workspace;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public interface ProcessedSources {
 
-    File getSourceDir();
+    Path getSourceDir();
 
-    File getDestinationDir();
+    Path getDestinationDir();
 
     default <T> T getValue(Object key, Class<T> type) {
         return null;

@@ -2,7 +2,6 @@ package io.quarkus.bootstrap.workspace;
 
 import io.quarkus.paths.PathCollection;
 import java.io.File;
-import java.util.Collection;
 
 public interface WorkspaceModule {
 
@@ -12,13 +11,9 @@ public interface WorkspaceModule {
 
     File getBuildDir();
 
-    Collection<ProcessedSources> getMainSources();
+    CompilationUnit getMainCompilationUnit();
 
-    Collection<ProcessedSources> getMainResources();
-
-    Collection<ProcessedSources> getTestSources();
-
-    Collection<ProcessedSources> getTestResources();
+    CompilationUnit getTestCompilationUnit();
 
     PathCollection getBuildFiles();
 }

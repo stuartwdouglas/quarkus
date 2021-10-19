@@ -318,9 +318,9 @@ public class LocalProject {
     public WorkspaceModule toWorkspaceModule() {
         final DefaultWorkspaceModule module = new DefaultWorkspaceModule(
                 new GAV(key.getGroupId(), key.getArtifactId(), getVersion()), dir.toFile(), getOutputDir().toFile());
-        module.addMainSources(new DefaultProcessedSources(getSourcesSourcesDir().toFile(), getClassesDir().toFile()));
+        module.addMainSources(new DefaultProcessedSources(getSourcesSourcesDir(), getClassesDir()));
         addMainResources(module);
-        module.addTestSources(new DefaultProcessedSources(getTestSourcesSourcesDir().toFile(), getTestClassesDir().toFile()));
+        module.addTestSources(new DefaultProcessedSources(getTestSourcesSourcesDir(), getTestClassesDir()));
         addTestResources(module);
         module.setBuildFiles(PathList.of(getRawModel().getPomFile().toPath()));
         return module;
@@ -331,12 +331,12 @@ public class LocalProject {
                 : rawModel.getBuild().getResources();
         if (resources.isEmpty()) {
             module.addMainResources(new DefaultProcessedSources(
-                    resolveRelativeToBaseDir(null, "src/main/resources").toFile(), getClassesDir().toFile()));
+                    resolveRelativeToBaseDir(null, "src/main/resources"), getClassesDir()));
         } else {
             for (Resource r : resources) {
                 module.addMainResources(
-                        new DefaultProcessedSources(resolveRelativeToBaseDir(r.getDirectory(), "src/main/resources").toFile(),
-                                resolveRelativeToBuildDir(r.getTargetPath(), "classes").toFile()));
+                        new DefaultProcessedSources(resolveRelativeToBaseDir(r.getDirectory(), "src/main/resources"),
+                                resolveRelativeToBuildDir(r.getTargetPath(), "classes")));
             }
         }
     }
@@ -346,12 +346,12 @@ public class LocalProject {
                 : rawModel.getBuild().getTestResources();
         if (resources.isEmpty()) {
             module.addTestResources(new DefaultProcessedSources(
-                    resolveRelativeToBaseDir(null, "src/test/resources").toFile(), getTestClassesDir().toFile()));
+                    resolveRelativeToBaseDir(null, "src/test/resources"), getTestClassesDir()));
         } else {
             for (Resource r : resources) {
                 module.addTestResources(
-                        new DefaultProcessedSources(resolveRelativeToBaseDir(r.getDirectory(), "src/test/resources").toFile(),
-                                resolveRelativeToBuildDir(r.getTargetPath(), "test-classes").toFile()));
+                        new DefaultProcessedSources(resolveRelativeToBaseDir(r.getDirectory(), "src/test/resources"),
+                                resolveRelativeToBuildDir(r.getTargetPath(), "test-classes")));
             }
         }
     }

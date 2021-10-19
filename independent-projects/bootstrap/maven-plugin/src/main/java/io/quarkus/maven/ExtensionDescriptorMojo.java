@@ -14,7 +14,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.quarkus.bootstrap.BootstrapConstants;
 import io.quarkus.bootstrap.model.AppArtifactCoords;
 import io.quarkus.bootstrap.model.AppArtifactKey;
-import io.quarkus.bootstrap.model.AppModel;
+import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.bootstrap.resolver.maven.BootstrapMavenContext;
 import io.quarkus.bootstrap.resolver.maven.BootstrapMavenException;
 import io.quarkus.bootstrap.resolver.maven.MavenArtifactResolver;
@@ -268,22 +268,22 @@ public class ExtensionDescriptorMojo extends AbstractMojo {
 
         if (parentFirstArtifacts != null && !parentFirstArtifacts.isEmpty()) {
             String val = String.join(",", parentFirstArtifacts);
-            props.put(AppModel.PARENT_FIRST_ARTIFACTS, val);
+            props.put(ApplicationModel.PARENT_FIRST_ARTIFACTS, val);
         }
 
         if (runnerParentFirstArtifacts != null && !runnerParentFirstArtifacts.isEmpty()) {
             String val = String.join(",", runnerParentFirstArtifacts);
-            props.put(AppModel.RUNNER_PARENT_FIRST_ARTIFACTS, val);
+            props.put(ApplicationModel.RUNNER_PARENT_FIRST_ARTIFACTS, val);
         }
 
         if (excludedArtifacts != null && !excludedArtifacts.isEmpty()) {
             String val = String.join(",", excludedArtifacts);
-            props.put(AppModel.EXCLUDED_ARTIFACTS, val);
+            props.put(ApplicationModel.EXCLUDED_ARTIFACTS, val);
         }
 
         if (lesserPriorityArtifacts != null && !lesserPriorityArtifacts.isEmpty()) {
             String val = String.join(",", lesserPriorityArtifacts);
-            props.put(AppModel.LESSER_PRIORITY_ARTIFACTS, val);
+            props.put(ApplicationModel.LESSER_PRIORITY_ARTIFACTS, val);
         }
 
         final Path output = outputDirectory.toPath().resolve(BootstrapConstants.META_INF);

@@ -22,6 +22,9 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import io.quarkus.bootstrap.workspace.CompilationUnit;
+import io.quarkus.bootstrap.workspace.Workspace;
+import io.quarkus.bootstrap.workspace.WorkspaceModule;
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.app.CuratedApplication;
@@ -48,7 +51,7 @@ public class QuarkusCompiler implements Closeable {
 
     public QuarkusCompiler(CuratedApplication application,
             List<CompilationProvider> compilationProviders,
-            DevModeContext context)
+            Workspace workspace, DevModeContext context)
             throws IOException {
         this.compilationProviders = compilationProviders;
 
@@ -65,7 +68,7 @@ public class QuarkusCompiler implements Closeable {
             toParse.add(new File(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8.name())).getAbsolutePath());
         }
         Set<File> classPathElements = new HashSet<>();
-        for (DevModeContext.ModuleInfo i : context.getAllModules()) {
+        for (DevModeContext.ModuleInfo i : workspace.getWorkspaceModules()) {
             if (i.getMain().getClassesPath() != null) {
                 classPathElements.add(new File(i.getMain().getClassesPath()));
             }
@@ -140,7 +143,7 @@ public class QuarkusCompiler implements Closeable {
                 }
             }
         }
-        for (DevModeContext.ModuleInfo i : context.getAllModules()) {
+        for (WorkspaceModule i : workspace.getWorkspaceModules()) {
             setupSourceCompilationContext(context, classPathElements, i, i.getMain(),
                     "classes");
             if (application.getQuarkusBootstrap().getMode() == QuarkusBootstrap.Mode.TEST && i.getTest().isPresent()) {
@@ -153,8 +156,8 @@ public class QuarkusCompiler implements Closeable {
         }
     }
 
-    public void setupSourceCompilationContext(DevModeContext context, Set<File> classPathElements, DevModeContext.ModuleInfo i,
-            DevModeContext.CompilationUnit compilationUnit, String name) {
+    public void setupSourceCompilationContext(DevModeContext context, Set<File> classPathElements, WorkspaceModule module,
+            CompilationUnit compilationUnit, String name) {
         if (!compilationUnit.getSourcePaths().isEmpty()) {
             if (compilationUnit.getClassesPath() == null) {
                 log.warn("No " + name + " directory found for module '" + i.getName()
@@ -164,9 +167,9 @@ public class QuarkusCompiler implements Closeable {
             compilationUnit.getSourcePaths().forEach(sourcePath -> {
                 this.compilationContexts.put(sourcePath.toString(),
                         new CompilationProvider.Context(
-                                i.getName(),
+                                module.getName(),
                                 classPathElements,
-                                i.getProjectDirectory() == null ? null : new File(i.getProjectDirectory()),
+                                module.getModuleDir(),
                                 sourcePath.toFile(),
                                 new File(compilationUnit.getClassesPath()),
                                 context.getSourceEncoding(),
@@ -195,12 +198,13 @@ public class QuarkusCompiler implements Closeable {
         }
     }
 
-    public Path findSourcePath(Path classFilePath, PathsCollection sourcePaths, String classesPath) {
+    public Path findSourcePath(Path classFilePath, CompilationUnit compilationUnit) {
         for (CompilationProvider compilationProvider : compilationProviders) {
-            Path sourcePath = compilationProvider.getSourcePath(classFilePath, sourcePaths, classesPath);
-
-            if (sourcePath != null) {
-                return sourcePath;
+            for (var i : compilationUnit.getSources()) {
+                Path sourcePath = compilationProvider.getSourcePath(classFilePath, PathsCollection.of(i.getSourceDir()), i.getDestinationDir().toAbsolutePath().toString());
+                if (sourcePath != null) {
+                    return sourcePath;
+                }
             }
         }
         return null;

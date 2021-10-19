@@ -1,7 +1,7 @@
 package io.quarkus.bootstrap.workspace;
 
-import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -9,27 +9,27 @@ import java.util.Objects;
 
 public class DefaultProcessedSources implements ProcessedSources, Serializable {
 
-    private final File srcDir;
-    private final File destinationDir;
+    private final Path srcDir;
+    private final Path destinationDir;
     private final Map<Object, Object> data;
 
-    public DefaultProcessedSources(File srcDir, File destinationDir) {
+    public DefaultProcessedSources(Path srcDir, Path destinationDir) {
         this(srcDir, destinationDir, Collections.emptyMap());
     }
 
-    public DefaultProcessedSources(File srcDir, File destinationDir, Map<Object, Object> data) {
+    public DefaultProcessedSources(Path srcDir, Path destinationDir, Map<Object, Object> data) {
         this.srcDir = srcDir;
         this.destinationDir = destinationDir;
         this.data = data;
     }
 
     @Override
-    public File getSourceDir() {
+    public Path getSourceDir() {
         return srcDir;
     }
 
     @Override
-    public File getDestinationDir() {
+    public Path getDestinationDir() {
         return destinationDir;
     }
 

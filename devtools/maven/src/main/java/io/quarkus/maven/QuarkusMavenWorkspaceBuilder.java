@@ -1,6 +1,8 @@
 package io.quarkus.maven;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Resource;
@@ -24,21 +26,21 @@ class QuarkusMavenWorkspaceBuilder {
         final DefaultWorkspaceModule module = new DefaultWorkspaceModule(getId(project), project.getBasedir(),
                 new File(build.getDirectory()));
 
-        final File classesDir = new File(build.getOutputDirectory());
+        final Path classesDir = Paths.get(build.getOutputDirectory());
         project.getCompileSourceRoots()
-                .forEach(s -> module.addMainSources(new DefaultProcessedSources(new File(s), classesDir)));
-        final File testClassesDir = new File(build.getTestOutputDirectory());
+                .forEach(s -> module.addMainSources(new DefaultProcessedSources(Paths.get(s), classesDir)));
+        final Path testClassesDir = Paths.get(build.getTestOutputDirectory());
         project.getTestCompileSourceRoots()
-                .forEach(s -> module.addTestSources(new DefaultProcessedSources(new File(s), testClassesDir)));
+                .forEach(s -> module.addTestSources(new DefaultProcessedSources(Paths.get(s), testClassesDir)));
 
         for (Resource r : build.getResources()) {
-            module.addMainResources(new DefaultProcessedSources(new File(r.getDirectory()),
-                    r.getTargetPath() == null ? classesDir : new File(r.getTargetPath())));
+            module.addMainResources(new DefaultProcessedSources(Paths.get(r.getDirectory()),
+                    r.getTargetPath() == null ? classesDir : Paths.get(r.getTargetPath())));
         }
 
         for (Resource r : build.getTestResources()) {
-            module.addTestResources(new DefaultProcessedSources(new File(r.getDirectory()),
-                    r.getTargetPath() == null ? testClassesDir : new File(r.getTargetPath())));
+            module.addTestResources(new DefaultProcessedSources(Paths.get(r.getDirectory()),
+                    r.getTargetPath() == null ? testClassesDir : Paths.get(r.getTargetPath())));
         }
 
         module.setBuildFiles(PathList.of(project.getFile().toPath()));

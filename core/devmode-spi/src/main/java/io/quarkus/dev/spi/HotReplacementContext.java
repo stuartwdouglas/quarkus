@@ -8,9 +8,8 @@ import java.util.function.Consumer;
 
 public interface HotReplacementContext {
 
+    //TODO: remove this
     Path getClassesDir();
-
-    List<Path> getSourcesDir();
 
     List<Path> getResourcesDir();
 
