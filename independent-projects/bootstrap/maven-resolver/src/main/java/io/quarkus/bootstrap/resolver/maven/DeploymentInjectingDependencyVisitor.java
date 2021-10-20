@@ -641,11 +641,11 @@ public class DeploymentInjectingDependencyVisitor {
         if (preferWorkspacePaths && module != null) {
             final PathList.Builder pathBuilder = PathList.builder();
             if ("tests".equals(artifact.getClassifier())) {
-                collectResolvedPaths(pathBuilder, module.getTestSources());
-                collectResolvedPaths(pathBuilder, module.getTestResources());
+                collectResolvedPaths(pathBuilder, module.getTestCompilationUnit().getSources());
+                collectResolvedPaths(pathBuilder, module.getTestCompilationUnit().getResources());
             } else {
-                collectResolvedPaths(pathBuilder, module.getMainSources());
-                collectResolvedPaths(pathBuilder, module.getMainResources());
+                collectResolvedPaths(pathBuilder, module.getMainCompilationUnit().getSources());
+                collectResolvedPaths(pathBuilder, module.getMainCompilationUnit().getResources());
             }
             if (!pathBuilder.isEmpty()) {
                 return pathBuilder.build();
@@ -656,8 +656,8 @@ public class DeploymentInjectingDependencyVisitor {
 
     private static void collectResolvedPaths(final PathList.Builder pathBuilder, Collection<ProcessedSources> srcs) {
         for (ProcessedSources src : srcs) {
-            if (src.getDestinationDir().exists()) {
-                final Path p = src.getDestinationDir().toPath();
+            if (Files.exists(src.getDestinationDir())) {
+                final Path p = src.getDestinationDir();
                 if (!pathBuilder.contains(p)) {
                     pathBuilder.add(p);
                 }

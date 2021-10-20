@@ -42,8 +42,9 @@ public class IDELauncherImpl implements Closeable {
                 final ApplicationModel quarkusModel = BuildToolHelper.enableGradleAppModelForDevMode(classesDir);
                 context.put(BootstrapConstants.SERIALIZED_APP_MODEL, BootstrapUtils.serializeAppModel(quarkusModel, false));
 
-                final Path launchingModulePath = quarkusModel.getApplicationModule().getMainSources().iterator().next()
-                        .getDestinationDir().toPath();
+                final Path launchingModulePath = quarkusModel.getApplicationModule().getMainCompilationUnit().getSources()
+                        .iterator().next()
+                        .getDestinationDir();
 
                 // Gradle uses a different output directory for classes, we override the one used by the IDE
                 builder.setProjectRoot(launchingModulePath)
@@ -51,14 +52,14 @@ public class IDELauncherImpl implements Closeable {
                         .setTargetDirectory(quarkusModel.getApplicationModule().getBuildDir().toPath());
 
                 for (WorkspaceModule additionalModule : quarkusModel.getWorkspaceModules()) {
-                    additionalModule.getMainSources().forEach(src -> {
+                    additionalModule.getMainCompilationUnit().getSources().forEach(src -> {
                         builder.addAdditionalApplicationArchive(
-                                new AdditionalDependency(src.getDestinationDir().toPath(), true, false));
+                                new AdditionalDependency(src.getDestinationDir(), true, false));
 
                     });
-                    additionalModule.getMainResources().forEach(src -> {
+                    additionalModule.getMainCompilationUnit().getResources().forEach(src -> {
                         builder.addAdditionalApplicationArchive(
-                                new AdditionalDependency(src.getDestinationDir().toPath(), true, false));
+                                new AdditionalDependency(src.getDestinationDir(), true, false));
 
                     });
                 }

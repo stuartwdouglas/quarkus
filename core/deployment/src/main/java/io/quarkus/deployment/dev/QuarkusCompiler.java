@@ -22,14 +22,14 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
-import io.quarkus.bootstrap.workspace.CompilationUnit;
-import io.quarkus.bootstrap.workspace.Workspace;
-import io.quarkus.bootstrap.workspace.WorkspaceModule;
 import org.jboss.logging.Logger;
 
 import io.quarkus.bootstrap.app.CuratedApplication;
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.model.PathsCollection;
+import io.quarkus.bootstrap.workspace.CompilationUnit;
+import io.quarkus.bootstrap.workspace.Workspace;
+import io.quarkus.bootstrap.workspace.WorkspaceModule;
 import io.quarkus.maven.dependency.ResolvedDependency;
 
 /**
@@ -201,7 +201,8 @@ public class QuarkusCompiler implements Closeable {
     public Path findSourcePath(Path classFilePath, CompilationUnit compilationUnit) {
         for (CompilationProvider compilationProvider : compilationProviders) {
             for (var i : compilationUnit.getSources()) {
-                Path sourcePath = compilationProvider.getSourcePath(classFilePath, PathsCollection.of(i.getSourceDir()), i.getDestinationDir().toAbsolutePath().toString());
+                Path sourcePath = compilationProvider.getSourcePath(classFilePath, PathsCollection.of(i.getSourceDir()),
+                        i.getDestinationDir().toAbsolutePath().toString());
                 if (sourcePath != null) {
                     return sourcePath;
                 }

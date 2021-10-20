@@ -7,16 +7,19 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public class DefaultWorkspaceModule implements WorkspaceModule, Serializable {
 
     private final WorkspaceModuleId id;
     private final File moduleDir;
     private final File buildDir;
-    private final Collection<ProcessedSources> mainSources = new ArrayList<>(1);
-    private final Collection<ProcessedSources> mainResources = new ArrayList<>(1);
-    private final Collection<ProcessedSources> testSources = new ArrayList<>(1);
-    private final Collection<ProcessedSources> testResources = new ArrayList<>(1);
+    private final List<ProcessedSources> mainSources = new ArrayList<>(1);
+    private final List<ProcessedSources> mainResources = new ArrayList<>(1);
+    private final List<ProcessedSources> testSources = new ArrayList<>(1);
+    private final List<ProcessedSources> testResources = new ArrayList<>(1);
+    private final CompilationUnit main;
+    private final CompilationUnit test;
     private PathCollection buildFiles;
 
     public DefaultWorkspaceModule(WorkspaceModuleId id, File moduleDir, File buildDir) {
@@ -24,6 +27,8 @@ public class DefaultWorkspaceModule implements WorkspaceModule, Serializable {
         this.id = id;
         this.moduleDir = moduleDir;
         this.buildDir = buildDir;
+        this.main = new DefaultCompilationUnit(mainSources, mainResources);
+        this.test = new DefaultCompilationUnit(testSources, testResources);
     }
 
     @Override
@@ -41,18 +46,8 @@ public class DefaultWorkspaceModule implements WorkspaceModule, Serializable {
         return buildDir;
     }
 
-    @Override
-    public Collection<ProcessedSources> getMainSources() {
-        return mainSources;
-    }
-
     public void addMainSources(ProcessedSources mainSources) {
         this.mainSources.add(mainSources);
-    }
-
-    @Override
-    public Collection<ProcessedSources> getMainResources() {
-        return mainResources;
     }
 
     public void addMainResources(ProcessedSources mainResources) {
@@ -60,17 +55,17 @@ public class DefaultWorkspaceModule implements WorkspaceModule, Serializable {
     }
 
     @Override
-    public Collection<ProcessedSources> getTestSources() {
-        return testSources;
+    public CompilationUnit getMainCompilationUnit() {
+        return null;
+    }
+
+    @Override
+    public CompilationUnit getTestCompilationUnit() {
+        return null;
     }
 
     public void addTestSources(ProcessedSources testSources) {
         this.testSources.add(testSources);
-    }
-
-    @Override
-    public Collection<ProcessedSources> getTestResources() {
-        return testResources;
     }
 
     public void addTestResources(ProcessedSources testResources) {
@@ -91,10 +86,10 @@ public class DefaultWorkspaceModule implements WorkspaceModule, Serializable {
         final StringBuilder buf = new StringBuilder();
         buf.append(id);
         buf.append(" ").append(moduleDir);
-        appendSources(buf, "sources", getMainSources());
-        appendSources(buf, "resources", getMainResources());
-        appendSources(buf, "test-sources", getTestSources());
-        appendSources(buf, "test-resources", getTestResources());
+        appendSources(buf, "sources", getMainCompilationUnit().getSources());
+        appendSources(buf, "resources", getMainCompilationUnit().getResources());
+        appendSources(buf, "test-sources", getTestCompilationUnit().getSources());
+        appendSources(buf, "test-resources", getTestCompilationUnit().getResources());
         return buf.toString();
     }
 

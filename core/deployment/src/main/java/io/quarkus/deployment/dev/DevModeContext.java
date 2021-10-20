@@ -3,16 +3,12 @@ package io.quarkus.deployment.dev;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import io.quarkus.bootstrap.app.QuarkusBootstrap;
@@ -30,7 +26,8 @@ import io.quarkus.maven.dependency.ArtifactKey;
  */
 public class DevModeContext implements Serializable {
 
-    public static final CompilationUnit EMPTY_COMPILATION_UNIT = new DefaultCompilationUnit(Collections.emptyList(), Collections.emptyList());
+    public static final CompilationUnit EMPTY_COMPILATION_UNIT = new DefaultCompilationUnit(Collections.emptyList(),
+            Collections.emptyList());
 
     public static final String ENABLE_PREVIEW_FLAG = "--enable-preview";
 
@@ -283,7 +280,6 @@ public class DevModeContext implements Serializable {
             private PathsCollection sourceParents = PathsCollection.of();
             private String targetDir;
 
-
             public Builder setArtifactKey(ArtifactKey appArtifactKey) {
                 this.appArtifactKey = appArtifactKey;
                 return this;
@@ -319,7 +315,6 @@ public class DevModeContext implements Serializable {
             }
         }
     }
-
 
     public boolean isEnablePreview() {
         if (compilerOptions == null) {

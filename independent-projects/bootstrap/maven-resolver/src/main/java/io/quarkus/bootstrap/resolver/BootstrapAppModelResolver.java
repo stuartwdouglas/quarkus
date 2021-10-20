@@ -345,17 +345,17 @@ public class BootstrapAppModelResolver implements AppModelResolver {
         PathCollection resolvedPaths = null;
         if ((devmode || test) && resolvedModule != null) {
             final PathList.Builder pathBuilder = PathList.builder();
-            for (ProcessedSources src : resolvedModule.getMainSources()) {
-                if (src.getDestinationDir().exists()) {
-                    final Path p = src.getDestinationDir().toPath();
+            for (ProcessedSources src : resolvedModule.getMainCompilationUnit().getSources()) {
+                if (Files.exists(src.getDestinationDir())) {
+                    final Path p = src.getDestinationDir();
                     if (!pathBuilder.contains(p)) {
                         pathBuilder.add(p);
                     }
                 }
             }
-            for (ProcessedSources src : resolvedModule.getMainResources()) {
-                if (src.getDestinationDir().exists()) {
-                    final Path p = src.getDestinationDir().toPath();
+            for (ProcessedSources src : resolvedModule.getMainCompilationUnit().getResources()) {
+                if (Files.exists(src.getDestinationDir())) {
+                    final Path p = src.getDestinationDir();
                     if (!pathBuilder.contains(p)) {
                         pathBuilder.add(p);
                     }
