@@ -25,6 +25,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.release>11</maven.compiler.release>
+        <version.compiler.plugin>3.8.1</version.compiler.plugin>
 
         <enforcer-api.version>3.0.0-M3</enforcer-api.version>
         <maven-invoker-plugin.version>3.2.2</maven-invoker-plugin.version>

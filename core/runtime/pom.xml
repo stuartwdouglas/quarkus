@@ -90,6 +90,13 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-bootstrap-runner</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jdk-misc</artifactId>
+            <version>${version.jdk-misc}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!--
           This is required to ensure that the extension processor is built.

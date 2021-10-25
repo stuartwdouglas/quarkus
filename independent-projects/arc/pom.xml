@@ -49,6 +49,7 @@
 
         <version.surefire.plugin>3.0.0-M5</version.surefire.plugin>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <version.compiler.plugin>3.8.1</version.compiler.plugin>
     </properties>
 
     <modules>

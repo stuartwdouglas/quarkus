@@ -24,6 +24,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.release>11</maven.compiler.release>
+        <version.compiler.plugin>3.8.1</version.compiler.plugin>
 
         <!-- These properties are used by CreateProjectMojo to add the Maven Wrapper -->
         <proposed-maven-version>3.8.1</proposed-maven-version>
