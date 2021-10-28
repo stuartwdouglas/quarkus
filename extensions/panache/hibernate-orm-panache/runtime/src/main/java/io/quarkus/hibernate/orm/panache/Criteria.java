@@ -1,6 +1,7 @@
 package io.quarkus.hibernate.orm.panache;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Criteria<T> {
 
@@ -12,6 +13,10 @@ public class Criteria<T> {
     }
 
     public static <T> Criteria<T> and(Criteria<T> ... crits) {
+
+    }
+
+    public static <T, S> Criteria<T> join(Function<T, S> join, Criteria<S> criteria) {
 
     }
 
