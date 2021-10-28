@@ -185,6 +185,10 @@ public abstract class PanacheEntityBase {
         throw implementationInjectionMissing();
     }
 
+    public static <T extends PanacheEntityBase> PanacheQuery<T> findByCriteria(Criteria<T> criteria) {
+        throw implementationInjectionMissing();
+    }
+
     /**
      * Find entities using a query, with named parameters.
      *

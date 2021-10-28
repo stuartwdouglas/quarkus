@@ -15,8 +15,8 @@ public class MyTestResource {
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public MyEntity get(@PathParam long id) {
-        MyEntity ret = MyEntity.findById(id);
+    public Person get(@PathParam long id) {
+        Person ret = Person.findById(id);
         if (ret == null)
             throw new WebApplicationException(Response.Status.NOT_FOUND);
         return ret;

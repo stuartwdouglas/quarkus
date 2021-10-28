@@ -15,11 +15,11 @@ public class EntityManagerTest {
     static QuarkusUnitTest runner = new QuarkusUnitTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addAsResource("application-test.properties", "application.properties")
-                    .addClasses(MyEntity.class));
+                    .addClasses(Person.class));
 
     @Test
     void entityManagerShouldExist() {
-        MyEntity entity = new MyEntity();
+        Person entity = new Person();
         assertNotNull(entity.getEntityManager());
     }
 

@@ -16,7 +16,7 @@ public class PanacheHotReloadTestCase {
     @RegisterExtension
     final static QuarkusDevModeTest TEST = new QuarkusDevModeTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addClasses(MyEntity.class, MyTestResource.class)
+                    .addClasses(Person.class, MyTestResource.class)
                     .addAsResource("application-test.properties", "application.properties")
                     .addAsResource("import.sql"));
 
@@ -25,7 +25,7 @@ public class PanacheHotReloadTestCase {
         String expectedName = "{\"id\":1,\"name\":\"my name\"}";
         assertBodyIs(expectedName);
 
-        TEST.modifySourceFile(MyEntity.class, new Function<String, String>() {
+        TEST.modifySourceFile(Person.class, new Function<String, String>() {
             @Override
             public String apply(String s) {
                 return s.replace("public String name;", "public String name;public String tag;");
