@@ -1,8 +1,6 @@
-package io.quarkus.resteasy.reactive.server.common.runtime;
+package org.jboss.resteasy.reactive.server.spi;
 
 import java.util.function.Supplier;
-
-import org.jboss.resteasy.reactive.server.spi.EndpointInvoker;
 
 public interface EndpointInvokerFactory {
 
