@@ -38,6 +38,8 @@ public class QuarkusEntryPoint {
             DevModeMediator.doDevMode(appRoot);
         } else if (Boolean.getBoolean("quarkus.launch.rebuild")) {
             doReaugment(appRoot);
+        } else if (Boolean.getBoolean("quarkus.launch.debug-agent")) {
+            doRunDebugAgent(appRoot);
         } else {
             SerializedApplication app;
             // the magic number here is close to the smallest possible dat file
@@ -54,6 +56,30 @@ public class QuarkusEntryPoint {
             } finally {
                 QuarkusForkJoinWorkerThread.setQuarkusAppClassloader(null);
                 appRunnerClassLoader.close();
+            }
+        }
+    }
+
+    private static void doRunDebugAgent(Path appRoot) throws IOException, ClassNotFoundException, IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
+        try (ObjectInputStream in = new ObjectInputStream(
+                Files.newInputStream(appRoot.resolve(LIB_DEPLOYMENT_DEPLOYMENT_CLASS_PATH_DAT)))) {
+            List<String> paths = (List<String>) in.readObject();
+            //yuck, should use runner class loader
+            URLClassLoader loader = new URLClassLoader(paths.stream().map((s) -> {
+                try {
+                    return appRoot.resolve(s).toUri().toURL();
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toArray(URL[]::new));
+            Thread.currentThread().setContextClassLoader(loader);
+            //this needs vert.x on the class path
+            try {
+                loader.loadClass("io.quarkus.vertx.http.deployment.devmode.RemoteDebugAgent")
+                        .getDeclaredMethod("main").invoke(null);
+            } finally {
+                loader.close();
             }
         }
     }

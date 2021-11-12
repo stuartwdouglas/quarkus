@@ -87,6 +87,9 @@ public class HttpRemoteDevClient implements RemoteDevClient {
             url = HttpRemoteDevClient.this.url;
             httpThread = new Thread(this, "Remote dev client thread");
             httpThread.start();
+
+            //TODO: this does not really belog here, but its fine for a PoC
+
         }
 
         private void sendData(Map.Entry<String, byte[]> entry, String session) throws IOException {
@@ -140,6 +143,12 @@ public class HttpRemoteDevClient implements RemoteDevClient {
                 throw createIOException(
                         "Server did not start a remote dev session. Make sure the environment variable 'QUARKUS_LAUNCH_DEVMODE' is set to 'true' when launching the server");
             }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    RemoteDebugSocketProvider.run(devUrl.getHost(), devUrl.getPort());
+                }
+            }).start();
             String result = new String(IoUtil.readBytes(connection.getInputStream()), StandardCharsets.UTF_8);
             Set<String> changed = new HashSet<>();
             changed.addAll(Arrays.asList(result.split(";")));

@@ -22,6 +22,10 @@
             <artifactId>quarkus-vertx-http</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-http-proxy</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-vertx-http-deployment-spi</artifactId>
         </dependency>
