@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,6 +14,8 @@ import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class QuarkusEntryPoint {
@@ -28,18 +31,41 @@ public class QuarkusEntryPoint {
         doRun(args);
     }
 
-    private static void doRun(Object args) throws IOException, ClassNotFoundException, IllegalAccessException,
+    private static void doRun(String[] args) throws IOException, ClassNotFoundException, IllegalAccessException,
             InvocationTargetException, NoSuchMethodException {
         String path = QuarkusEntryPoint.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         String decodedPath = URLDecoder.decode(path, "UTF-8");
         Path appRoot = new File(decodedPath).toPath().getParent().getParent().getParent();
 
-        if (Boolean.parseBoolean(System.getenv("QUARKUS_LAUNCH_DEVMODE"))) {
+        if (Boolean.parseBoolean(System.getenv("QUARKUS_LAUNCH_DEVMODE_DEBUG"))) {
+            if (System.getProperty("quarkus.launch.actual-process") == null) {
+                //first process, this is the debug agent
+
+                List<String> execArgs = new ArrayList<>();
+                final String java = JavaBinFinder.findBin();
+                execArgs.add(java);
+                //launch in debug mode
+                execArgs.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"); //listen on a hard coded port
+                execArgs.add("-Dquarkus.launch.actual-process=true"); //this is needed to stop this code path just being re-executed
+                execArgs.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
+                execArgs.add("-jar");
+                execArgs.add(appRoot.resolve("quarkus-run.jar").toAbsolutePath().toString());
+                execArgs.addAll(Arrays.asList(args));
+                System.out.println("EXECUTING " + execArgs);
+                new ProcessBuilder(execArgs)
+                        .inheritIO()
+                        .start();
+
+                doRunDebugAgent(appRoot);
+            } else {
+                //second process, the main quarkus app
+                //just launch dev mode
+                DevModeMediator.doDevMode(appRoot);
+            }
+        } else if (Boolean.parseBoolean(System.getenv("QUARKUS_LAUNCH_DEVMODE"))) {
             DevModeMediator.doDevMode(appRoot);
         } else if (Boolean.getBoolean("quarkus.launch.rebuild")) {
             doReaugment(appRoot);
-        } else if (Boolean.getBoolean("quarkus.launch.debug-agent")) {
-            doRunDebugAgent(appRoot);
         } else {
             SerializedApplication app;
             // the magic number here is close to the smallest possible dat file
