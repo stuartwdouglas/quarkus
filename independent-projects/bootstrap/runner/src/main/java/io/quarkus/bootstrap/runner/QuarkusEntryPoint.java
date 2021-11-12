@@ -31,7 +31,7 @@ public class QuarkusEntryPoint {
         doRun(args);
     }
 
-    private static void doRun(String[] args) throws IOException, ClassNotFoundException, IllegalAccessException,
+    private static void doRun(Object args) throws IOException, ClassNotFoundException, IllegalAccessException,
             InvocationTargetException, NoSuchMethodException {
         String path = QuarkusEntryPoint.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         String decodedPath = URLDecoder.decode(path, "UTF-8");
@@ -47,10 +47,11 @@ public class QuarkusEntryPoint {
                 //launch in debug mode
                 execArgs.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000"); //listen on a hard coded port
                 execArgs.add("-Dquarkus.launch.actual-process=true"); //this is needed to stop this code path just being re-executed
+                execArgs.add("-Dquarkus.http.port=8081"); //force 8081
                 execArgs.addAll(ManagementFactory.getRuntimeMXBean().getInputArguments());
                 execArgs.add("-jar");
                 execArgs.add(appRoot.resolve("quarkus-run.jar").toAbsolutePath().toString());
-                execArgs.addAll(Arrays.asList(args));
+                execArgs.addAll(Arrays.asList((String[]) args));
                 System.out.println("EXECUTING " + execArgs);
                 new ProcessBuilder(execArgs)
                         .inheritIO()
