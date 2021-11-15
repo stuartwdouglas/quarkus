@@ -372,6 +372,11 @@ public class VertxResteasyReactiveRequestContext extends ResteasyReactiveRequest
     }
 
     @Override
+    public String getResponseHeader(String name) {
+        return response.headers().get(name);
+    }
+
+    @Override
     public boolean closed() {
         return response.closed();
     }

@@ -1,20 +1,18 @@
-package io.quarkus.resteasy.reactive.jsonb.runtime.serialisers;
+package org.jboss.resteasy.reactive.server.jsonb;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-
 import javax.inject.Inject;
 import javax.json.bind.Jsonb;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-
 import org.jboss.resteasy.reactive.common.providers.serialisers.JsonMessageBodyWriterUtil;
+import org.jboss.resteasy.reactive.server.providers.serialisers.json.JsonMessageServerBodyWriterUtil;
 import org.jboss.resteasy.reactive.server.spi.ServerMessageBodyWriter;
 import org.jboss.resteasy.reactive.server.spi.ServerRequestContext;
-import org.jboss.resteasy.reactive.server.vertx.providers.serialisers.json.JsonMessageServerBodyWriterUtil;
 
 public class JsonbMessageBodyWriter extends ServerMessageBodyWriter.AllWriteableMessageBodyWriter {
 

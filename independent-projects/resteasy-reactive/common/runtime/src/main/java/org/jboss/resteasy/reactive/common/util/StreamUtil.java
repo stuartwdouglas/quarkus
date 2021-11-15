@@ -1,9 +1,7 @@
-package io.quarkus.resteasy.reactive.server.runtime;
+package org.jboss.resteasy.reactive.common.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-
-import org.jboss.resteasy.reactive.common.util.EmptyInputStream;
 
 public final class StreamUtil {
 
