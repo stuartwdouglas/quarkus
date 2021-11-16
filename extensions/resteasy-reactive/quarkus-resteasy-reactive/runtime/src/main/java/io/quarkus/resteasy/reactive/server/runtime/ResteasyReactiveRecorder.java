@@ -22,7 +22,6 @@ import org.jboss.resteasy.reactive.server.core.ExceptionMapping;
 import org.jboss.resteasy.reactive.server.core.RequestContextFactory;
 import org.jboss.resteasy.reactive.server.core.ResteasyReactiveRequestContext;
 import org.jboss.resteasy.reactive.server.core.ServerSerialisers;
-import org.jboss.resteasy.reactive.server.core.startup.CustomServerRestHandlers;
 import org.jboss.resteasy.reactive.server.core.startup.RuntimeDeploymentManager;
 import org.jboss.resteasy.reactive.server.handlers.RestInitialHandler;
 import org.jboss.resteasy.reactive.server.jaxrs.ProvidersImpl;
@@ -32,7 +31,6 @@ import org.jboss.resteasy.reactive.server.spi.EndpointInvokerFactory;
 import org.jboss.resteasy.reactive.server.spi.ServerRestHandler;
 import org.jboss.resteasy.reactive.server.util.RuntimeResourceVisitor;
 import org.jboss.resteasy.reactive.server.util.ScoreSystem;
-import org.jboss.resteasy.reactive.server.vertx.BlockingInputHandler;
 import org.jboss.resteasy.reactive.server.vertx.ResteasyReactiveVertxHandler;
 import org.jboss.resteasy.reactive.spi.BeanFactory;
 import org.jboss.resteasy.reactive.spi.ThreadSetupAction;
@@ -116,7 +114,6 @@ public class ResteasyReactiveRecorder extends ResteasyReactiveCommonRecorder imp
         }
 
         RuntimeDeploymentManager runtimeDeploymentManager = new RuntimeDeploymentManager(info, EXECUTOR_SUPPLIER,
-                new CustomServerRestHandlers(new BlockingInputHandlerSupplier()),
                 closeTaskHandler, contextFactory, new ArcThreadSetupAction(beanContainer.requestContext()),
                 vertxConfig.rootPath);
         Deployment deployment = runtimeDeploymentManager.deploy();
@@ -217,14 +214,6 @@ public class ResteasyReactiveRecorder extends ResteasyReactiveCommonRecorder imp
 
     public ServerSerialisers createServerSerialisers() {
         return new ServerSerialisers();
-    }
-
-    private static class BlockingInputHandlerSupplier implements Supplier<ServerRestHandler> {
-
-        @Override
-        public ServerRestHandler get() {
-            return new BlockingInputHandler();
-        }
     }
 
 }

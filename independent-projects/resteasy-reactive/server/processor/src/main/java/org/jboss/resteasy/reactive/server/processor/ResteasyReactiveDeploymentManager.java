@@ -41,7 +41,6 @@ import org.jboss.resteasy.reactive.server.core.ExceptionMapping;
 import org.jboss.resteasy.reactive.server.core.RequestContextFactory;
 import org.jboss.resteasy.reactive.server.core.ServerSerialisers;
 import org.jboss.resteasy.reactive.server.core.reflection.ReflectiveContextInjectedBeanFactory;
-import org.jboss.resteasy.reactive.server.core.startup.CustomServerRestHandlers;
 import org.jboss.resteasy.reactive.server.core.startup.RuntimeDeploymentManager;
 import org.jboss.resteasy.reactive.server.handlers.RestInitialHandler;
 import org.jboss.resteasy.reactive.server.model.ContextResolvers;
@@ -55,7 +54,6 @@ import org.jboss.resteasy.reactive.server.processor.scanning.ResteasyReactiveFea
 import org.jboss.resteasy.reactive.server.processor.scanning.ResteasyReactiveParamConverterScanner;
 import org.jboss.resteasy.reactive.server.spi.RuntimeConfigurableServerRestHandler;
 import org.jboss.resteasy.reactive.server.spi.RuntimeConfiguration;
-import org.jboss.resteasy.reactive.server.spi.ServerRestHandler;
 import org.jboss.resteasy.reactive.spi.BeanFactory;
 import org.jboss.resteasy.reactive.spi.ThreadSetupAction;
 
@@ -309,8 +307,7 @@ public class ResteasyReactiveDeploymentManager {
         }
 
         public RunnableApplication createApplication(RuntimeConfiguration runtimeConfiguration,
-                RequestContextFactory requestContextFactory, Executor executor,
-                Supplier<ServerRestHandler> blockingInputHandler) {
+                RequestContextFactory requestContextFactory, Executor executor) {
 
             DeploymentInfo info = new DeploymentInfo()
                     .setApplicationPath("/")
@@ -348,9 +345,9 @@ public class ResteasyReactiveDeploymentManager {
             List<Closeable> closeTasks = new ArrayList<>();
             String path = getApplicationPath();
             RuntimeDeploymentManager runtimeDeploymentManager = new RuntimeDeploymentManager(info, () -> executor,
-                    new CustomServerRestHandlers(blockingInputHandler),
-                    closeable -> closeTasks.add(closeable), requestContextFactory, ThreadSetupAction.NOOP, path);
+                    closeTasks::add, requestContextFactory, ThreadSetupAction.NOOP, path);
             Deployment deployment = runtimeDeploymentManager.deploy();
+            deployment.setRuntimeConfiguration(runtimeConfiguration);
             RestInitialHandler initialHandler = new RestInitialHandler(deployment);
             List<RuntimeConfigurableServerRestHandler> runtimeConfigurableServerRestHandlers = deployment
                     .getRuntimeConfigurableServerRestHandlers();

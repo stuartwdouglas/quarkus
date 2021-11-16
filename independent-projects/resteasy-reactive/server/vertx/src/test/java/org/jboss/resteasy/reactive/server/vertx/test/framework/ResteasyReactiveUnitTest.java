@@ -38,7 +38,6 @@ import org.jboss.resteasy.reactive.server.core.reflection.ReflectiveContextInjec
 import org.jboss.resteasy.reactive.server.processor.ResteasyReactiveDeploymentManager;
 import org.jboss.resteasy.reactive.server.processor.scanning.AsyncReturnTypeScanner;
 import org.jboss.resteasy.reactive.server.spi.DefaultRuntimeConfiguration;
-import org.jboss.resteasy.reactive.server.vertx.BlockingInputHandler;
 import org.jboss.resteasy.reactive.server.vertx.ResteasyReactiveVertxHandler;
 import org.jboss.resteasy.reactive.server.vertx.VertxRequestContextFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -206,7 +205,7 @@ public class ResteasyReactiveUnitTest implements BeforeAllCallback, AfterAllCall
         DefaultRuntimeConfiguration runtimeConfiguration = new DefaultRuntimeConfiguration(Duration.ofMinutes(1), true,
                 System.getProperty("java.io.tmpdir"), StandardCharsets.UTF_8, Optional.empty(), 100000);
         ResteasyReactiveDeploymentManager.RunnableApplication application = prepared.createApplication(runtimeConfiguration,
-                new VertxRequestContextFactory(), executor, BlockingInputHandler::new);
+                new VertxRequestContextFactory(), executor);
 
         ResteasyReactiveVertxHandler handler = new ResteasyReactiveVertxHandler(application.getInitialHandler());
         String path = application.getPath();

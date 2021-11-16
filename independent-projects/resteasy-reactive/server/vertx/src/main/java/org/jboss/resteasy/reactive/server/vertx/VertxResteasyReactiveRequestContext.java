@@ -213,7 +213,8 @@ public class VertxResteasyReactiveRequestContext extends ResteasyReactiveRequest
         if (existingData == null) {
             return createInputStream();
         }
-        return new VertxInputStream(context, 10000, Unpooled.wrappedBuffer(existingData), this);
+        return new VertxInputStream(context, getDeployment().getRuntimeConfiguration().readTimeout().toMillis(),
+                Unpooled.wrappedBuffer(existingData), this);
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.jboss.resteasy.reactive.server.mapping.RequestMapper;
 import org.jboss.resteasy.reactive.server.model.ContextResolvers;
 import org.jboss.resteasy.reactive.server.model.ParamConverterProviders;
 import org.jboss.resteasy.reactive.server.spi.RuntimeConfigurableServerRestHandler;
+import org.jboss.resteasy.reactive.server.spi.RuntimeConfiguration;
 import org.jboss.resteasy.reactive.server.spi.ServerRestHandler;
 import org.jboss.resteasy.reactive.spi.BeanFactory.BeanInstance;
 import org.jboss.resteasy.reactive.spi.ThreadSetupAction;
@@ -41,6 +42,8 @@ public class Deployment {
     private final List<RequestMapper.RequestPath<RestInitialHandler.InitialMatch>> classMappers;
     private final List<RuntimeConfigurableServerRestHandler> runtimeConfigurableServerRestHandlers;
     private final boolean resumeOn404;
+    //this is not final, as it is set after startup
+    private RuntimeConfiguration runtimeConfiguration;
 
     public Deployment(ExceptionMapping exceptionMapping, ContextResolvers contextResolvers,
             ServerSerialisers serialisers,
@@ -102,7 +105,7 @@ public class Deployment {
 
     /**
      * Application path prefix. Must start with "/" and not end with a "/". Cannot be null.
-     * 
+     *
      * @return the application path prefix, or an empty string.
      */
     public String getPrefix() {
@@ -171,5 +174,17 @@ public class Deployment {
 
     public List<RuntimeConfigurableServerRestHandler> getRuntimeConfigurableServerRestHandlers() {
         return runtimeConfigurableServerRestHandlers;
+    }
+
+    public RuntimeConfiguration getRuntimeConfiguration() {
+        return runtimeConfiguration;
+    }
+
+    public Deployment setRuntimeConfiguration(RuntimeConfiguration runtimeConfiguration) {
+        if (this.runtimeConfiguration != null) {
+            throw new IllegalStateException("runtime config has already been set");
+        }
+        this.runtimeConfiguration = runtimeConfiguration;
+        return this;
     }
 }
