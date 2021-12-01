@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 
 import static io.quarkus.hibernate.orm.panache.Criteria.and;
 import static io.quarkus.hibernate.orm.panache.Criteria.eq;
+import static io.quarkus.hibernate.orm.panache.Criteria.in;
 import static io.quarkus.hibernate.orm.panache.Criteria.join;
 
 @Entity
@@ -33,4 +34,9 @@ class Foo {
         }), join(s -> s.address, eq(a -> a.street = "Fake St"))));
     }
 
+    void inQuery() {
+        PanacheQuery<Person> query = Person.findByCriteria(in((s,v) -> {
+            s.firstName = v;
+        }, "Loïc", "Stuart"));
+    }
 }
