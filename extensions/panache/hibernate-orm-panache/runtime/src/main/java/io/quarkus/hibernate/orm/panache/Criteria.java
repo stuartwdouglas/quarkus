@@ -12,7 +12,7 @@ public class Criteria<T> {
     public static<T> Criteria<T> eq(Consumer<T> consumer) {
 
     }
-    public static<T,V> Criteria<T> in(BiConsumer<T, V> consumer, V... params) {
+    public static<T,V> Criteria<T> in(Function<T, V> consumer, V... params) {
 
     }
 

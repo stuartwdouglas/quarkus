@@ -1,5 +1,6 @@
 package io.quarkus.hibernate.orm.panache.deployment.test;
 
+import io.quarkus.hibernate.orm.panache.Aggregate;
 import io.quarkus.hibernate.orm.panache.Criteria;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -15,6 +16,7 @@ import static io.quarkus.hibernate.orm.panache.Criteria.join;
 public class Person extends PanacheEntity {
     public String firstName;
     public String lastName;
+    int age;
     public Address address;
 
 }
@@ -35,8 +37,10 @@ class Foo {
     }
 
     void inQuery() {
-        PanacheQuery<Person> query = Person.findByCriteria(in((s,v) -> {
-            s.firstName = v;
-        }, "Loïc", "Stuart"));
+        PanacheQuery<Person> query = Person.findByCriteria(in(s -> s.firstName, "Loïc", "Stuart"));
+    }
+
+    void sumQuery() {
+        PanacheQuery<Integer> query = Person.<Person, Integer>aggregateByCriteria(Aggregate.sum(s -> s.age),in(s -> s.firstName, "Loïc", "Stuart"));
     }
 }
