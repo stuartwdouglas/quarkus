@@ -6,6 +6,7 @@ import io.quarkus.arc.Arc;
 import io.quarkus.arc.ArcContainer;
 import io.quarkus.arc.Components;
 import io.quarkus.arc.ComponentsProvider;
+import io.quarkus.arc.ContextReferenceFactory;
 import io.quarkus.arc.InjectableBean;
 import io.quarkus.arc.InjectableContext;
 import io.quarkus.arc.InjectableDecorator;
@@ -95,7 +96,9 @@ public class ArcContainerImpl implements ArcContainer {
 
     private volatile ExecutorService executorService;
 
-    public ArcContainerImpl() {
+    private final ContextReferenceFactory contextReferenceFactory;
+
+    public ArcContainerImpl(ContextReferenceFactory contextReferenceFactory) {
         id = String.valueOf(ID_GENERATOR.incrementAndGet());
         running = new AtomicBoolean(true);
         beans = new ArrayList<>();
@@ -105,10 +108,12 @@ public class ArcContainerImpl implements ArcContainer {
         observers = new ArrayList<>();
         transitiveInterceptorBindings = new HashMap<>();
         qualifierNonbindingMembers = new HashMap<>();
+        this.contextReferenceFactory = contextReferenceFactory == null ? new ThreadLocalContextReferenceFactory()
+                : contextReferenceFactory;
 
         applicationContext = new ApplicationContext();
         singletonContext = new SingletonContext();
-        requestContext = new RequestContext();
+        requestContext = new RequestContext(this.contextReferenceFactory.create());
         contexts = new HashMap<>();
         putContext(requestContext);
         putContext(applicationContext);
@@ -327,6 +332,11 @@ public class ArcContainerImpl implements ArcContainer {
 
     public void setExecutor(ExecutorService executor) {
         this.executorService = executor;
+    }
+
+    @Override
+    public ContextReferenceFactory getContextReferenceFactory() {
+        return contextReferenceFactory;
     }
 
     @Override

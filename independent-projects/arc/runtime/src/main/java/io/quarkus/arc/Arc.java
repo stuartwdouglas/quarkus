@@ -11,17 +11,21 @@ public final class Arc {
 
     private static final AtomicReference<ArcContainerImpl> INSTANCE = new AtomicReference<>();
 
+    public static ArcContainer initialize() {
+        return initialize(null);
+    }
+
     /**
      * 
      * @return the initialized container
      */
-    public static ArcContainer initialize() {
+    public static ArcContainer initialize(ContextReferenceFactory contextReferenceFactory) {
         ArcContainerImpl container = INSTANCE.get();
         if (container == null) {
             synchronized (INSTANCE) {
                 container = INSTANCE.get();
                 if (container == null) {
-                    container = new ArcContainerImpl();
+                    container = new ArcContainerImpl(contextReferenceFactory);
                     // Set the container instance first because Arc.container() can be used within ArcContainerImpl.init() 
                     INSTANCE.set(container);
                     container.init();

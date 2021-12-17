@@ -32,6 +32,7 @@ import org.jboss.jandex.Type;
 import org.jboss.logging.Logger;
 
 import io.quarkus.arc.ArcContainer;
+import io.quarkus.arc.ContextReferenceFactory;
 import io.quarkus.arc.deployment.BeanRegistrationPhaseBuildItem.BeanConfiguratorBuildItem;
 import io.quarkus.arc.deployment.ContextRegistrationPhaseBuildItem.ContextConfiguratorBuildItem;
 import io.quarkus.arc.deployment.ObserverRegistrationPhaseBuildItem.ObserverConfiguratorBuildItem;
@@ -102,6 +103,7 @@ import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import io.quarkus.runtime.test.TestApplicationClassPredicate;
 import io.quarkus.runtime.util.HashUtil;
@@ -472,7 +474,8 @@ public class ArcProcessor {
             BuildProducer<GeneratedClassBuildItem> generatedClass,
             LiveReloadBuildItem liveReloadBuildItem,
             BuildProducer<GeneratedResourceBuildItem> generatedResource,
-            BuildProducer<BytecodeTransformerBuildItem> bytecodeTransformer) throws Exception {
+            BuildProducer<BytecodeTransformerBuildItem> bytecodeTransformer,
+            Optional<ContextReferenceFactoryBuildItem> customContextReferenceFactory) throws Exception {
 
         for (ValidationErrorBuildItem validationError : validationErrors) {
             for (Throwable error : validationError.getValues()) {
@@ -535,7 +538,11 @@ public class ArcProcessor {
             reflectiveClasses.produce(new ReflectiveClassBuildItem(true, false, binding.name().toString()));
         }
 
-        ArcContainer container = recorder.getContainer(shutdown);
+        RuntimeValue<ContextReferenceFactory> contextReferenceFactory = null;
+        if (customContextReferenceFactory.isPresent()) {
+            contextReferenceFactory = customContextReferenceFactory.get().getFactory();
+        }
+        ArcContainer container = recorder.initContainer(shutdown, contextReferenceFactory);
         BeanContainer beanContainer = recorder.initBeanContainer(container,
                 beanContainerListenerBuildItems.stream().map(BeanContainerListenerBuildItem::getBeanContainerListener)
                         .collect(Collectors.toList()));

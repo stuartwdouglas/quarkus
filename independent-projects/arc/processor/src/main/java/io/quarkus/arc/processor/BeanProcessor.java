@@ -69,7 +69,6 @@ public class BeanProcessor {
     private final boolean generateSources;
     private final boolean allowMocking;
     private final boolean transformUnproxyableClasses;
-    private final boolean failOnInterceptedPrivateMethod;
     private final List<Function<BeanInfo, Consumer<BytecodeCreator>>> suppressConditionGenerators;
 
     // This predicate is used to filter annotations for InjectionPoint metadata
@@ -87,7 +86,6 @@ public class BeanProcessor {
         this.generateSources = builder.generateSources;
         this.allowMocking = builder.allowMocking;
         this.transformUnproxyableClasses = builder.transformUnproxyableClasses;
-        this.failOnInterceptedPrivateMethod = builder.failOnInterceptedPrivateMethod;
         this.suppressConditionGenerators = builder.suppressConditionGenerators;
 
         // Initialize all build processors
