@@ -25,6 +25,7 @@ import io.quarkus.bootstrap.app.QuarkusBootstrap;
 import io.quarkus.bootstrap.app.RunningQuarkusApplication;
 import io.quarkus.bootstrap.app.StartupAction;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+import io.quarkus.bootstrap.logging.InitialConfigurator;
 import io.quarkus.builder.BuildResult;
 import io.quarkus.deployment.builditem.ApplicationClassNameBuildItem;
 import io.quarkus.deployment.builditem.DevServicesLauncherConfigResultBuildItem;
@@ -36,8 +37,14 @@ import io.quarkus.deployment.builditem.TransformedClassesBuildItem;
 import io.quarkus.deployment.configuration.RunTimeConfigurationGenerator;
 import io.quarkus.dev.appstate.ApplicationStateNotification;
 import io.quarkus.runtime.ApplicationLifecycleManager;
+import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.configuration.ConfigInstantiator;
 import io.quarkus.runtime.configuration.RuntimeOverrideConfigSource;
+import io.quarkus.runtime.console.ConsoleRuntimeConfig;
+import io.quarkus.runtime.logging.LogBuildTimeConfig;
+import io.quarkus.runtime.logging.LogConfig;
+import io.quarkus.runtime.logging.LoggingSetupRecorder;
 
 public class StartupActionImpl implements StartupAction {
 
@@ -98,6 +105,7 @@ public class StartupActionImpl implements StartupAction {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    setupShutdownLogging();
                     Thread.currentThread().setContextClassLoader(runtimeClassLoader);
                     try {
                         start.invoke(null, (Object) (args == null ? new String[0] : args));
@@ -115,6 +123,7 @@ public class StartupActionImpl implements StartupAction {
                                 log.error("Failed to run close task", t);
                             }
                         }
+                        InitialConfigurator.DELAYED_HANDLER.close();
                     }
                 }
             }, "Quarkus Main Thread");
@@ -186,6 +195,7 @@ public class StartupActionImpl implements StartupAction {
             }
             return result.get();
         } finally {
+            setupShutdownLogging();
             runtimeClassLoader.close();
             Thread.currentThread().setContextClassLoader(old);
             for (var i : buildResult.consumeMulti(RuntimeApplicationShutdownBuildItem.class)) {
@@ -195,6 +205,7 @@ public class StartupActionImpl implements StartupAction {
                     log.error("Failed to run close task", t);
                 }
             }
+            InitialConfigurator.DELAYED_HANDLER.close();
         }
     }
 
@@ -239,6 +250,7 @@ public class StartupActionImpl implements StartupAction {
             return new RunningQuarkusApplicationImpl(new Closeable() {
                 @Override
                 public void close() throws IOException {
+                    setupShutdownLogging();
                     try {
                         ClassLoader original = Thread.currentThread().getContextClassLoader();
                         try {
@@ -266,6 +278,7 @@ public class StartupActionImpl implements StartupAction {
                             //dev mode might be about to restart, so we leave it
                             curatedApplication.close();
                         }
+                        InitialConfigurator.DELAYED_HANDLER.close();
                     }
                 }
             }, runtimeClassLoader);
@@ -278,6 +291,18 @@ public class StartupActionImpl implements StartupAction {
             Thread.currentThread().setContextClassLoader(old);
         }
 
+    }
+
+    private void setupShutdownLogging() {
+        LogConfig logConfig = new LogConfig();
+        ConfigInstantiator.handleObject(logConfig);
+        LogBuildTimeConfig buildLog = new LogBuildTimeConfig();
+        ConfigInstantiator.handleObject(buildLog);
+        ConsoleRuntimeConfig crc = new ConsoleRuntimeConfig();
+        ConfigInstantiator.handleObject(crc);
+        LoggingSetupRecorder.initializeBuildTimeLogging(logConfig, buildLog, crc,
+                curatedApplication.getQuarkusBootstrap().getMode() == QuarkusBootstrap.Mode.TEST ? LaunchMode.TEST
+                        : LaunchMode.DEVELOPMENT);
     }
 
     @Override
