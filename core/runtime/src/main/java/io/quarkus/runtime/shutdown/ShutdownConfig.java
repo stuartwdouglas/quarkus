@@ -18,6 +18,13 @@ public class ShutdownConfig {
     @ConfigItem
     public Optional<Duration> timeout;
 
+    /**
+     * The amount of time to wait before starting shutdown. During this time health checks will report the service as down,
+     * but requests will still be processed.
+     */
+    @ConfigItem
+    public Optional<Duration> delay;
+
     public boolean isShutdownTimeoutSet() {
         return timeout.isPresent() && timeout.get().toMillis() > 0;
     }

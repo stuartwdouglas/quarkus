@@ -12,6 +12,7 @@ import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.quarkus.smallrye.health.runtime.ShutdownReadinessCheck;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.health.Liveness;
@@ -358,6 +359,11 @@ class SmallRyeHealthProcessor {
     @BuildStep
     ShutdownListenerBuildItem shutdownListener() {
         return new ShutdownListenerBuildItem(new ShutdownReadinessListener());
+    }
+
+    @BuildStep
+    AdditionalBeanBuildItem shutdownBean() {
+        return AdditionalBeanBuildItem.builder().addBeanClass(ShutdownReadinessCheck.class).build();
     }
 
     // UI

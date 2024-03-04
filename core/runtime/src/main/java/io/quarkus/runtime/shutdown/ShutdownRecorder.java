@@ -17,6 +17,7 @@ public class ShutdownRecorder {
 
     private static volatile List<ShutdownListener> shutdownListeners;
     private static volatile Optional<Duration> waitTime;
+    private static volatile Optional<Duration> delayTime;
 
     final ShutdownConfig shutdownConfig;
 
@@ -27,6 +28,7 @@ public class ShutdownRecorder {
     public void setListeners(List<ShutdownListener> listeners) {
         shutdownListeners = listeners;
         waitTime = shutdownConfig.timeout;
+        delayTime = shutdownConfig.delay;
     }
 
     public static void runShutdown() {
@@ -39,7 +41,9 @@ public class ShutdownRecorder {
             for (ShutdownListener i : shutdownListeners) {
                 i.preShutdown(new LatchShutdownNotification(preShutdown));
             }
-
+            if (delayTime.isPresent()) {
+                Thread.sleep(delayTime.get());
+            }
             preShutdown.await();
             CountDownLatch shutdown = new CountDownLatch(shutdownListeners.size());
             for (ShutdownListener i : shutdownListeners) {
